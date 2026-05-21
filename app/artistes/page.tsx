@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export default async function ArtistesPage() {
   const { data: artistes, error } = await supabase
     .from("artistes")
@@ -29,6 +31,12 @@ export default async function ArtistesPage() {
           + Nouvel artiste
         </a>
       </div>
+
+      {(!artistes || artistes.length === 0) && (
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-10 text-center">
+          <p className="text-zinc-400">Aucun artiste pour le moment.</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         {artistes?.map((artiste) => (
