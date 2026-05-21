@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { supabaseBrowser } from "../../../lib/supabase-browser";
+import UploadCover from "../../../components/UploadCover";
+
+type Artiste = {
+  id: string;
+  nom: string;
+};
 
 export default function NouveauProjetPage() {
   const router = useRouter();
@@ -11,59 +17,41 @@ export default function NouveauProjetPage() {
   const [type, setType] = useState("");
   const [statut, setStatut] = useState("");
   const [dateSortie, setDateSortie] = useState("");
-  const [budgetPromo, setBudgetPromo] = useState("");
   const [notes, setNotes] = useState("");
+  const [coverUrl, setCoverUrl] = useState("");
   const [artisteId, setArtisteId] = useState("");
-  const [cover, setCover] = useState<File | null>(null);
-  const [artistes, setArtistes] = useState<any[]>([]);
+
+  const [artistes, setArtistes] = useState<Artiste[]>([]);
 
   useEffect(() => {
     async function fetchArtistes() {
-      const { data } = await supabase
+      const { data } = await supabaseBrowser
         .from("artistes")
-        .select("*")
-        .order("nom", { ascending: true });
+        .select("id, nom")
+        .order("nom");
 
-      if (data) setArtistes(data);
+      setArtistes(data || []);
     }
 
     fetchArtistes();
   }, []);
 
-  async function ajouterProjet(e: React.FormEvent) {
+  async function handleSubmit(
+    e: React.FormEvent
+  ) {
     e.preventDefault();
 
-    let coverUrl = "";
-
-    if (cover) {
-      const fileName = `${Date.now()}-${cover.name}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("project-covers")
-        .upload(fileName, cover);
-
-      if (uploadError) {
-        alert(uploadError.message);
-        return;
-      }
-
-      const { data } = supabase.storage
-        .from("project-covers")
-        .getPublicUrl(fileName);
-
-      coverUrl = data.publicUrl;
-    }
-
-    const { error } = await supabase.from("projets").insert({
-      titre,
-      type: type || null,
-      statut: statut || null,
-      date_sortie: dateSortie || null,
-      budget_promo: budgetPromo ? Number(budgetPromo) : null,
-      notes: notes || null,
-      artiste_id: artisteId || null,
-      cover_url: coverUrl || null,
-    });
+    const { error } = await supabaseBrowser
+      .from("projets")
+      .insert({
+        titre,
+        type,
+        statut,
+        date_sortie: dateSortie || null,
+        notes,
+        cover_url: coverUrl,
+        artiste_id: artisteId || null,
+      });
 
     if (error) {
       alert(error.message);
@@ -76,94 +64,128 @@ export default function NouveauProjetPage() {
 
   return (
     <main className="p-10 text-white">
-      <h1 className="text-4xl font-bold mb-8">Nouveau projet</h1>
+      <div className="mb-8">
+        <h1 className="text-5xl font-bold">
+          Nouveau projet
+        </h1>
 
-      <form onSubmit={ajouterProjet} className="max-w-xl space-y-5">
-        <input
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          placeholder="Titre du projet"
-          value={titre}
-          onChange={(e) => setTitre(e.target.value)}
-          required
-        />
+        <p className="mt-2 text-zinc-400">
+          Ajouter un single, EP ou album
+        </p>
+      </div>
 
-        <select
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-        >
-          <option value="">Type de projet</option>
-          <option value="Single">Single</option>
-          <option value="EP">EP</option>
-          <option value="Album">Album</option>
-          <option value="Clip">Clip</option>
-          <option value="Freestyle">Freestyle</option>
-          <option value="Live session">Live session</option>
-        </select>
+      <form
+        onSubmit={handleSubmit}
+        className="grid max-w-6xl grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]"
+      >
+        <div className="space-y-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
 
-        <select
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          value={statut}
-          onChange={(e) => setStatut(e.target.value)}
-        >
-          <option value="">Statut</option>
-          <option value="Idée">Idée</option>
-          <option value="En préparation">En préparation</option>
-          <option value="Enregistrement">Enregistrement</option>
-          <option value="Mix / Master">Mix / Master</option>
-          <option value="Promo">Promo</option>
-          <option value="Sorti">Sorti</option>
-        </select>
+          <input
+            value={titre}
+            onChange={(e) => setTitre(e.target.value)}
+            placeholder="Titre du projet"
+            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+            required
+          />
 
-        <input
-          type="date"
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          value={dateSortie}
-          onChange={(e) => setDateSortie(e.target.value)}
-        />
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+          >
+            <option value="">Type de projet</option>
+            <option value="Single">Single</option>
+            <option value="EP">EP</option>
+            <option value="Album">Album</option>
+            <option value="Mixtape">Mixtape</option>
+          </select>
 
-        <input
-          type="number"
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          placeholder="Budget promo"
-          value={budgetPromo}
-          onChange={(e) => setBudgetPromo(e.target.value)}
-        />
-
-        <select
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          value={artisteId}
-          onChange={(e) => setArtisteId(e.target.value)}
-        >
-          <option value="">Sélectionner un artiste</option>
-
-          {artistes.map((artiste) => (
-            <option key={artiste.id} value={artiste.id}>
-              {artiste.nom}
+          <select
+            value={statut}
+            onChange={(e) => setStatut(e.target.value)}
+            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+          >
+            <option value="">Statut rollout</option>
+            <option value="En préparation">
+              En préparation
             </option>
-          ))}
-        </select>
+            <option value="En promo">
+              En promo
+            </option>
+            <option value="Sorti">
+              Sorti
+            </option>
+            <option value="Suspendu">
+              Suspendu
+            </option>
+          </select>
 
-        <input
-          type="file"
-          accept="image/*"
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          onChange={(e) => setCover(e.target.files?.[0] || null)}
-        />
+          <select
+            value={artisteId}
+            onChange={(e) =>
+              setArtisteId(e.target.value)
+            }
+            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+          >
+            <option value="">
+              Sélectionner un artiste
+            </option>
 
-        <textarea
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          placeholder="Notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
+            {artistes.map((artiste) => (
+              <option
+                key={artiste.id}
+                value={artiste.id}
+              >
+                {artiste.nom}
+              </option>
+            ))}
+          </select>
 
-        <button
-          type="submit"
-          className="rounded-xl bg-white text-black px-6 py-4 font-semibold hover:bg-zinc-200 transition"
-        >
-          Créer le projet
-        </button>
+          <input
+            type="date"
+            value={dateSortie}
+            onChange={(e) =>
+              setDateSortie(e.target.value)
+            }
+            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+          />
+
+          <textarea
+            value={notes}
+            onChange={(e) =>
+              setNotes(e.target.value)
+            }
+            placeholder="Notes rollout / stratégie / promo..."
+            className="min-h-40 w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+          />
+
+          <button
+            type="submit"
+            className="w-full rounded-xl bg-white px-5 py-4 font-medium text-black transition hover:opacity-90"
+          >
+            Créer le projet
+          </button>
+        </div>
+
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+          <h2 className="mb-4 text-xl font-semibold">
+            Cover du projet
+          </h2>
+
+          {coverUrl ? (
+            <img
+              src={coverUrl}
+              alt="Preview cover"
+              className="mb-5 aspect-square w-full rounded-2xl object-cover"
+            />
+          ) : (
+            <div className="mb-5 flex aspect-square items-center justify-center rounded-2xl bg-zinc-800 text-zinc-500">
+              Preview cover
+            </div>
+          )}
+
+          <UploadCover onUpload={setCoverUrl} />
+        </div>
       </form>
     </main>
   );
