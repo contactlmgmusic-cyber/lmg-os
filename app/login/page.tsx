@@ -1,27 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 
 export default function LoginPage() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleLogin(
+    e: React.FormEvent
+  ) {
     e.preventDefault();
 
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } =
+      await supabaseBrowser.auth.signInWithPassword({
+        email,
+        password,
+      });
 
     setLoading(false);
 
@@ -37,6 +41,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-black px-6">
       <div className="w-full max-w-md rounded-3xl border border-zinc-800 bg-zinc-950 p-8 shadow-2xl">
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white">
             LMG OS
@@ -47,7 +52,11 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form
+          onSubmit={handleLogin}
+          className="space-y-5"
+        >
+
           <div>
             <label className="mb-2 block text-sm text-zinc-300">
               Email
@@ -57,7 +66,9 @@ export default function LoginPage() {
               type="email"
               placeholder="contact@lmg.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) =>
+                setEmail(e.target.value)
+              }
               className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-white outline-none transition focus:border-white"
             />
           </div>
@@ -71,7 +82,9 @@ export default function LoginPage() {
               type="password"
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) =>
+                setPassword(e.target.value)
+              }
               className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-white outline-none transition focus:border-white"
             />
           </div>
@@ -87,8 +100,11 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-xl bg-white px-4 py-3 font-medium text-black transition hover:opacity-90 disabled:opacity-50"
           >
-            {loading ? "Connexion..." : "Se connecter"}
+            {loading
+              ? "Connexion..."
+              : "Se connecter"}
           </button>
+
         </form>
       </div>
     </div>
