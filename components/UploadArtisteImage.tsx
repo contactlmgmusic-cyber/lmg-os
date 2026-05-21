@@ -10,9 +10,7 @@ export default function UploadArtisteImage({
 }) {
   const [uploading, setUploading] = useState(false);
 
-  async function handleUpload(
-    e: React.ChangeEvent<HTMLInputElement>
-  ) {
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
 
     if (!file) return;
@@ -20,12 +18,16 @@ export default function UploadArtisteImage({
     setUploading(true);
 
     const fileExt = file.name.split(".").pop();
-
-    const fileName = `${Date.now()}.${fileExt}`;
+    const fileName = `${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2)}.${fileExt}`;
 
     const { error } = await supabaseBrowser.storage
       .from("artistes")
-      .upload(fileName, file);
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: true,
+      });
 
     if (error) {
       alert(error.message);
@@ -38,7 +40,6 @@ export default function UploadArtisteImage({
       .getPublicUrl(fileName);
 
     onUpload(data.publicUrl);
-
     setUploading(false);
   }
 
