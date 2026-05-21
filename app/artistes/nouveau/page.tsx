@@ -1,51 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { supabaseBrowser } from "../../../lib/supabase-browser";
+import UploadArtisteImage from "../../../components/UploadArtisteImage";
 
 export default function NouvelArtistePage() {
   const router = useRouter();
 
   const [nom, setNom] = useState("");
+  const [instagram, setInstagram] = useState("");
   const [style, setStyle] = useState("");
   const [statut, setStatut] = useState("");
-  const [instagram, setInstagram] = useState("");
-  const [notes, setNotes] = useState("");
-  const [photo, setPhoto] = useState<File | null>(null);
+  const [bio, setBio] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
 
-  async function ajouterArtiste(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    let photoUrl = "";
-
-    if (photo) {
-      const fileName = `${Date.now()}-${photo.name}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("artist-photos")
-        .upload(fileName, photo);
-
-      if (uploadError) {
-        alert(uploadError.message);
-        return;
-      }
-
-      const { data } = supabase.storage
-        .from("artist-photos")
-        .getPublicUrl(fileName);
-
-      photoUrl = data.publicUrl;
-    }
-
-    const { error } = await supabase.from("artistes").insert({
-      nom,
-      style,
-      statut,
-      instagram,
-      notes,
-      photo_url: photoUrl,
-    });
+    const { error } = await supabaseBrowser
+      .from("artistes")
+      .insert({
+        nom,
+        instagram,
+        style,
+        statut,
+        bio,
+        photo_url: photoUrl,
+      });
 
     if (error) {
       alert(error.message);
@@ -58,57 +40,89 @@ export default function NouvelArtistePage() {
 
   return (
     <main className="p-10 text-white">
-      <h1 className="text-4xl font-bold mb-8">Nouvel artiste</h1>
+      <div className="mb-8">
+        <h1 className="text-5xl font-bold">
+          Nouvel artiste
+        </h1>
 
-      <form onSubmit={ajouterArtiste} className="max-w-xl space-y-5">
-        <input
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          placeholder="Nom de l’artiste"
-          value={nom}
-          onChange={(e) => setNom(e.target.value)}
-        />
+        <p className="mt-2 text-zinc-400">
+          Ajouter un artiste dans LMG OS
+        </p>
+      </div>
 
-        <input
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          placeholder="Style musical"
-          value={style}
-          onChange={(e) => setStyle(e.target.value)}
-        />
+      <form
+        onSubmit={handleSubmit}
+        className="grid max-w-5xl grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]"
+      >
+        <div className="space-y-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+          <input
+            value={nom}
+            onChange={(e) => setNom(e.target.value)}
+            placeholder="Nom de l’artiste"
+            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+            required
+          />
 
-        <input
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          placeholder="Statut"
-          value={statut}
-          onChange={(e) => setStatut(e.target.value)}
-        />
+          <input
+            value={instagram}
+            onChange={(e) => setInstagram(e.target.value)}
+            placeholder="Instagram sans @"
+            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+          />
 
-        <input
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          placeholder="Instagram"
-          value={instagram}
-          onChange={(e) => setInstagram(e.target.value)}
-        />
+          <input
+            value={style}
+            onChange={(e) => setStyle(e.target.value)}
+            placeholder="Style musical"
+            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+          />
 
-        <textarea
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          placeholder="Notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
+          <select
+            value={statut}
+            onChange={(e) => setStatut(e.target.value)}
+            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+          >
+            <option value="">Statut</option>
+            <option value="En développement">En développement</option>
+            <option value="Signé">Signé</option>
+            <option value="Priorité LMG">Priorité LMG</option>
+            <option value="Indépendant">Indépendant</option>
+          </select>
 
-        <input
-          type="file"
-          accept="image/*"
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          onChange={(e) => setPhoto(e.target.files?.[0] || null)}
-        />
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Bio / notes artiste"
+            className="min-h-40 w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+          />
 
-        <button
-          type="submit"
-          className="rounded-xl bg-white text-black px-6 py-4 font-semibold"
-        >
-          Créer l’artiste
-        </button>
+          <button
+            type="submit"
+            className="w-full rounded-xl bg-white px-5 py-4 font-medium text-black transition hover:opacity-90"
+          >
+            Créer l’artiste
+          </button>
+        </div>
+
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+          <h2 className="mb-4 text-xl font-semibold">
+            Photo artiste
+          </h2>
+
+          {photoUrl ? (
+            <img
+              src={photoUrl}
+              alt="Preview artiste"
+              className="mb-5 h-72 w-full rounded-2xl object-cover"
+            />
+          ) : (
+            <div className="mb-5 flex h-72 items-center justify-center rounded-2xl bg-zinc-800 text-zinc-500">
+              Preview image
+            </div>
+          )}
+
+          <UploadArtisteImage onUpload={setPhotoUrl} />
+        </div>
       </form>
     </main>
   );
