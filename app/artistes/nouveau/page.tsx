@@ -1,129 +1,86 @@
-"use client";
+import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabaseBrowser } from "../../../lib/supabase-browser";
-import UploadArtisteImage from "../../../components/UploadArtisteImage";
-
-export default function NouvelArtistePage() {
-  const router = useRouter();
-
-  const [nom, setNom] = useState("");
-  const [instagram, setInstagram] = useState("");
-  const [style, setStyle] = useState("");
-  const [statut, setStatut] = useState("");
-  const [bio, setBio] = useState("");
-  const [photoUrl, setPhotoUrl] = useState("");
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    const { error } = await supabaseBrowser
-      .from("artistes")
-      .insert({
-        nom,
-        instagram,
-        style,
-        statut,
-        bio,
-        photo_url: photoUrl,
-      });
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    router.push("/artistes");
-    router.refresh();
-  }
+export default async function ArtistesPage() {
+  const { data: artistes } = await supabase
+    .from("artistes")
+    .select("*")
+    .order("created_at", {
+      ascending: false,
+    });
 
   return (
     <main className="p-10 text-white">
-      <div className="mb-8">
-        <h1 className="text-5xl font-bold">
-          Nouvel artiste
-        </h1>
+      <div className="mb-10 flex items-center justify-between">
+        <div>
+          <h1 className="text-5xl font-bold">Artistes</h1>
 
-        <p className="mt-2 text-zinc-400">
-          Ajouter un artiste dans LMG OS
-        </p>
+          <p className="mt-2 text-zinc-400">
+            Gestion des artistes LMG
+          </p>
+        </div>
+
+        <Link
+          href="/artistes/nouveau"
+          className="rounded-xl bg-white px-5 py-3 font-medium text-black"
+        >
+          + Nouvel artiste
+        </Link>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="grid max-w-5xl grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]"
-      >
-        <div className="space-y-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-          <input
-            value={nom}
-            onChange={(e) => setNom(e.target.value)}
-            placeholder="Nom de l’artiste"
-            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
-            required
-          />
-
-          <input
-            value={instagram}
-            onChange={(e) => setInstagram(e.target.value)}
-            placeholder="Instagram sans @"
-            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
-          />
-
-          <input
-            value={style}
-            onChange={(e) => setStyle(e.target.value)}
-            placeholder="Style musical"
-            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
-          />
-
-          <select
-            value={statut}
-            onChange={(e) => setStatut(e.target.value)}
-            className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
-          >
-            <option value="">Statut</option>
-            <option value="En développement">En développement</option>
-            <option value="Signé">Signé</option>
-            <option value="Priorité LMG">Priorité LMG</option>
-            <option value="Indépendant">Indépendant</option>
-          </select>
-
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="Bio / notes artiste"
-            className="min-h-40 w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
-          />
-
-          <button
-            type="submit"
-            className="w-full rounded-xl bg-white px-5 py-4 font-medium text-black transition hover:opacity-90"
-          >
-            Créer l’artiste
-          </button>
+      {(!artistes || artistes.length === 0) && (
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-10 text-center">
+          <p className="text-zinc-400">
+            Aucun artiste pour le moment.
+          </p>
         </div>
+      )}
 
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-          <h2 className="mb-4 text-xl font-semibold">
-            Photo artiste
-          </h2>
-
-          {photoUrl ? (
-            <img
-              src={photoUrl}
-              alt="Preview artiste"
-              className="mb-5 h-72 w-full rounded-2xl object-cover"
-            />
-          ) : (
-            <div className="mb-5 flex h-72 items-center justify-center rounded-2xl bg-zinc-800 text-zinc-500">
-              Preview image
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {artistes?.map((artiste) => (
+          <Link
+            key={artiste.id}
+            href={`/artistes/${artiste.id}`}
+            className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900 transition hover:-translate-y-1 hover:border-zinc-600"
+          >
+            <div className="h-56 bg-zinc-800">
+              {artiste.photo_url ? (
+                <img
+                  src={artiste.photo_url}
+                  alt={artiste.nom}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-zinc-500">
+                  Aucun visuel
+                </div>
+              )}
             </div>
-          )}
 
-          <UploadArtisteImage onUpload={setPhotoUrl} />
-        </div>
-      </form>
+            <div className="p-6">
+              <h2 className="text-2xl font-semibold">
+                {artiste.nom}
+              </h2>
+
+              <p className="mt-2 text-zinc-400">
+                {artiste.style || "Style non renseigné"}
+              </p>
+
+              <div className="mt-5 flex items-center justify-between">
+                <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
+                  {artiste.statut || "Indépendant"}
+                </span>
+
+                {artiste.instagram && (
+                  <span className="text-sm text-zinc-400">
+                    @{artiste.instagram}
+                  </span>
+                )}
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
     </main>
   );
 }
