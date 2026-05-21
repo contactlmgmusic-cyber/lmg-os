@@ -70,6 +70,27 @@ export default function ModifierArtistePage() {
     router.refresh();
   }
 
+  async function handleDelete() {
+    const confirmation = confirm(
+      "Tu es sûre de vouloir supprimer cet artiste ? Cette action est définitive."
+    );
+
+    if (!confirmation) return;
+
+    const { error } = await supabaseBrowser
+      .from("artistes")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    router.push("/artistes");
+    router.refresh();
+  }
+
   if (loading) {
     return (
       <main className="p-10 text-white">
@@ -141,6 +162,14 @@ export default function ModifierArtistePage() {
             className="w-full rounded-xl bg-white px-5 py-4 font-medium text-black transition hover:opacity-90"
           >
             Enregistrer les modifications
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="w-full rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 font-medium text-red-400 transition hover:bg-red-500/20"
+          >
+            Supprimer l’artiste
           </button>
         </div>
 
