@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProjetDetailPage({
   params,
 }: {
@@ -22,215 +24,114 @@ export default async function ProjetDetailPage({
     .eq("id", id)
     .single();
 
-  const { data: taches } = await supabase
-    .from("taches")
-    .select("*")
-    .eq("projet_id", id)
-    .order("created_at", { ascending: false });
-
-  if (error) {
+  if (error || !projet) {
     return (
       <main className="p-10 text-white">
-        <p className="text-red-400">
-          Erreur : {error.message}
-        </p>
+        <p className="text-red-400">Projet introuvable.</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
-
-      {projet.cover_url && (
-        <div className="relative w-full h-[400px]">
-
+    <main className="text-white">
+      <div className="relative h-[460px] overflow-hidden">
+        {projet.cover_url ? (
           <img
             src={projet.cover_url}
             alt={projet.titre}
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
           />
-
-          <div className="absolute inset-0 bg-black/60" />
-
-        </div>
-      )}
-
-      <div className="p-10">
-
-        <Link
-          href="/projets"
-          className="text-zinc-400 hover:text-white"
-        >
-          ← Retour aux projets
-        </Link>
-
-        <div className="mt-8 flex items-center gap-6 mb-10">
-
-          {projet.artistes?.photo_url && (
-            <img
-              src={projet.artistes.photo_url}
-              alt={projet.artistes.nom}
-              className="w-28 h-28 rounded-3xl object-cover border border-zinc-800"
-            />
-          )}
-
-          <div>
-
-            <p className="text-zinc-400 mb-2">
-              {projet.type || "Projet"}
-            </p>
-
-            <h1 className="text-6xl font-bold mb-3">
-              {projet.titre}
-            </h1>
-
-            <p className="text-2xl text-zinc-300">
-              {projet.artistes?.nom || "Artiste"}
-            </p>
-
+        ) : (
+          <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-500">
+            Aucune cover
           </div>
+        )}
 
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/20" />
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 mb-10">
+        <div className="absolute bottom-10 left-10">
+          <Link
+            href="/projets"
+            className="mb-5 block text-sm text-zinc-300 hover:text-white"
+          >
+            ← Retour aux projets
+          </Link>
 
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-
-            <p className="text-zinc-500 mb-2">
-              Statut
-            </p>
-
-            <p>
-              {projet.statut || "Non renseigné"}
-            </p>
-
-          </div>
-
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-
-            <p className="text-zinc-500 mb-2">
-              Date de sortie
-            </p>
-
-            <p>
-              {projet.date_sortie || "Non renseignée"}
-            </p>
-
-          </div>
-
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-
-            <p className="text-zinc-500 mb-2">
-              Budget promo
-            </p>
-
-            <p>
-              {projet.budget_promo
-                ? `${projet.budget_promo} €`
-                : "Non renseigné"}
-            </p>
-
-          </div>
-
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-
-            <p className="text-zinc-500 mb-2">
-              Artiste
-            </p>
-
-            <p>
-              {projet.artistes?.nom || "Non renseigné"}
-            </p>
-
-          </div>
-
-        </div>
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-10">
-
-          <div className="flex items-center justify-between mb-6">
-
-            <h2 className="text-3xl font-bold">
-              Rollout & tâches
-            </h2>
-
-            <Link
-              href="/taches/nouveau"
-              className="rounded-xl bg-white text-black px-5 py-3 font-semibold hover:bg-zinc-200 transition"
-            >
-              + Ajouter une tâche
-            </Link>
-
-          </div>
-
-          <div className="space-y-4">
-
-            {taches?.length === 0 && (
-              <p className="text-zinc-500">
-                Aucune tâche liée à ce projet.
-              </p>
-            )}
-
-            {taches?.map((tache) => (
-
-              <div
-                key={tache.id}
-                className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5"
-              >
-
-                <div className="flex items-center justify-between mb-3">
-
-                  <h3 className="font-semibold text-lg">
-                    {tache.titre}
-                  </h3>
-
-                  <span className="text-sm text-zinc-400">
-                    {tache.priorite || "Priorité"}
-                  </span>
-
-                </div>
-
-                {tache.description && (
-                  <p className="text-zinc-400 mb-4">
-                    {tache.description}
-                  </p>
-                )}
-
-                <div className="flex items-center gap-6 text-sm text-zinc-500">
-
-                  <p>
-                    Statut : {tache.statut || "Non renseigné"}
-                  </p>
-
-                  <p>
-                    Deadline :{" "}
-                    {tache.deadline || "Non renseignée"}
-                  </p>
-
-                </div>
-
-              </div>
-
-            ))}
-
-          </div>
-
-        </div>
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
-
-          <h2 className="text-3xl font-bold mb-5">
-            Notes internes
-          </h2>
-
-          <p className="text-zinc-300 leading-relaxed">
-            {projet.notes || "Aucune note pour le moment."}
+          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-400">
+            Projet musical
           </p>
 
-        </div>
+          <h1 className="text-6xl font-bold">{projet.titre}</h1>
 
+          <p className="mt-3 text-xl text-zinc-300">
+            {projet.artistes?.nom || "Artiste non lié"}
+          </p>
+        </div>
       </div>
 
+      <section className="p-10">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+            <p className="text-sm text-zinc-500">Type</p>
+            <p className="mt-2 text-xl font-semibold">
+              {projet.type || "Non renseigné"}
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+            <p className="text-sm text-zinc-500">Statut rollout</p>
+            <p className="mt-2 text-xl font-semibold">
+              {projet.statut || "Non renseigné"}
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+            <p className="text-sm text-zinc-500">Date de sortie</p>
+            <p className="mt-2 text-xl font-semibold">
+              {projet.date_sortie || "Non renseignée"}
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+            <p className="text-sm text-zinc-500">Artiste</p>
+            <p className="mt-2 text-xl font-semibold">
+              {projet.artistes?.nom || "Non lié"}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.6fr]">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+            <h2 className="text-3xl font-bold">Notes rollout</h2>
+
+            <p className="mt-5 leading-relaxed text-zinc-300">
+              {projet.notes || "Aucune note renseignée pour ce projet."}
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+            <h2 className="text-3xl font-bold">Actions</h2>
+
+            <div className="mt-6 space-y-3">
+              {projet.artistes?.id && (
+                <a
+                  href={`/artistes/${projet.artistes.id}`}
+                  className="block rounded-xl bg-white px-5 py-4 text-center font-medium text-black hover:opacity-90"
+                >
+                  Voir artiste
+                </a>
+              )}
+
+              <a
+                href={`/projets/${projet.id}/modifier`}
+                className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
+              >
+                Modifier projet
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

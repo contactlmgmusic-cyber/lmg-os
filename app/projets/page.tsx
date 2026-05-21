@@ -26,7 +26,9 @@ export default async function ProjetsPage() {
       <div className="mb-10 flex items-center justify-between">
         <div>
           <h1 className="text-5xl font-bold">Projets</h1>
-          <p className="mt-2 text-zinc-400">Singles, EP, albums et rollouts LMG</p>
+          <p className="mt-2 text-zinc-400">
+            Singles, EP, albums et rollouts LMG
+          </p>
         </div>
 
         <a
@@ -45,9 +47,10 @@ export default async function ProjetsPage() {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         {projets?.map((projet) => (
-          <div
+          <a
             key={projet.id}
-            className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900"
+            href={`/projets/${projet.id}`}
+            className="block overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900 transition hover:-translate-y-1 hover:border-zinc-600"
           >
             <div className="aspect-square bg-zinc-800">
               {projet.cover_url ? (
@@ -86,7 +89,7 @@ export default async function ProjetsPage() {
                 </span>
               </div>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </main>
