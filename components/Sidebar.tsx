@@ -1,45 +1,78 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import LogoutButton from "./LogoutButton";
+
+const links = [
+  {
+    href: "/",
+    label: "Dashboard",
+  },
+  {
+    href: "/artistes",
+    label: "Artistes",
+  },
+  {
+    href: "/projets",
+    label: "Projets",
+  },
+  {
+    href: "/taches",
+    label: "Rollout",
+  },
+  {
+    href: "/booking",
+    label: "Booking",
+  },
+  {
+    href: "/calendrier",
+    label: "Calendrier",
+  },
+  {
+    href: "/contrats",
+    label: "Contrats",
+  },
+  {
+    href: "/finances",
+    label: "Finances",
+  },
+];
 
 export default function Sidebar() {
+  const pathname = usePathname();
+
   return (
-    <aside className="w-64 bg-zinc-950 border-r border-zinc-800 p-6 min-h-screen">
-      <h1 className="text-3xl font-bold mb-10 text-white">
-        LMG OS
-      </h1>
+    <aside className="w-64 min-h-screen bg-black border-r border-zinc-800 flex flex-col justify-between p-6">
+      <div>
+        <h1 className="text-3xl font-bold text-white mb-10">
+          LMG OS
+        </h1>
 
-      <nav className="space-y-4">
-        <Link href="/" className="block text-zinc-300 hover:text-white transition">
-          Dashboard
-        </Link>
+        <nav className="space-y-2">
+          {links.map((link) => {
+            const active = pathname === link.href;
 
-        <Link href="/artistes" className="block text-zinc-300 hover:text-white transition">
-          Artistes
-        </Link>
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`block rounded-xl px-4 py-3 text-sm transition ${
+                  active
+                    ? "bg-white text-black font-medium"
+                    : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
 
-        <Link href="/projets" className="block text-zinc-300 hover:text-white transition">
-          Projets
-        </Link>
-
-        <Link href="/taches" className="block text-zinc-300 hover:text-white transition">
-          Rollout
-        </Link>
-
-        <Link href="/booking" className="block text-zinc-300 hover:text-white transition">
-          Booking
-        </Link>
-
-        <Link href="/calendrier" className="block text-zinc-300 hover:text-white transition">
-          Calendrier
-        </Link>
-
-        <Link href="/contrats" className="block text-zinc-300 hover:text-white transition">
-          Contrats
-        </Link>
-
-        <Link href="/finances" className="block text-zinc-300 hover:text-white transition">
-          Finances
-        </Link>
-      </nav>
+      <div className="pt-10">
+        <LogoutButton />
+      </div>
     </aside>
   );
 }
