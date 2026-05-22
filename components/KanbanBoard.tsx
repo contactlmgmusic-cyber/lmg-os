@@ -24,40 +24,24 @@ const colonnes = ["À faire", "En cours", "Terminé"];
 
 function normalizeStatut(statut: string | null) {
   if (!statut) return "À faire";
-
   const value = statut.trim().toLowerCase();
 
-  if (
-    value === "à faire" ||
-    value === "a faire" ||
-    value === "todo"
-  ) {
+  if (value === "à faire" || value === "a faire" || value === "todo") {
     return "À faire";
   }
 
-  if (
-    value === "en cours" ||
-    value === "encours"
-  ) {
+  if (value === "en cours" || value === "encours") {
     return "En cours";
   }
 
-  if (
-    value === "terminé" ||
-    value === "termine" ||
-    value === "done"
-  ) {
+  if (value === "terminé" || value === "termine" || value === "done") {
     return "Terminé";
   }
 
   return "À faire";
 }
 
-export default function KanbanBoard({
-  taches,
-}: {
-  taches: Tache[];
-}) {
+export default function KanbanBoard({ taches }: { taches: Tache[] }) {
   const [items, setItems] = useState(
     taches.map((tache) => ({
       ...tache,
@@ -66,16 +50,29 @@ export default function KanbanBoard({
   );
 
   async function updateStatus(id: string, statut: string) {
+    const currentTask = items.find((tache) => tache.id === id);
+
     setItems((current) =>
       current.map((tache) =>
         tache.id === id ? { ...tache, statut } : tache
       )
     );
 
-    await supabaseBrowser
+    const { error } = await supabaseBrowser
       .from("taches")
       .update({ statut })
       .eq("id", id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    await supabaseBrowser.from("activity_logs").insert({
+      type: "Tâche",
+      titre: "Tâche déplacée",
+      description: `${currentTask?.titre || "Tâche"} → ${statut}`,
+    });
   }
 
   return (
@@ -91,9 +88,7 @@ export default function KanbanBoard({
             className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6"
           >
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold">
-                {colonne}
-              </h2>
+              <h2 className="text-2xl font-bold">{colonne}</h2>
 
               <span className="rounded-full bg-black px-3 py-1 text-sm text-zinc-400">
                 {tachesColonne.length}
@@ -106,15 +101,10 @@ export default function KanbanBoard({
                   key={tache.id}
                   className="rounded-3xl border border-zinc-800 bg-black p-5"
                 >
-                  <a
-                    href={`/taches/${tache.id}`}
-                    className="block"
-                  >
+                  <a href={`/taches/${tache.id}`} className="block">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <h3 className="text-lg font-bold">
-                          {tache.titre}
-                        </h3>
+                        <h3 className="text-lg font-bold">{tache.titre}</h3>
 
                         {tache.description && (
                           <p className="mt-2 text-sm text-zinc-400">
@@ -147,53 +137,36 @@ export default function KanbanBoard({
                             className="h-full w-full object-cover"
                           />
                         ) : (
-                          tache.profiles?.nom
-                            ?.charAt(0)
-                            ?.toUpperCase() || "L"
+                          tache.profiles?.nom?.charAt(0)?.toUpperCase() || "L"
                         )}
                       </div>
 
                       <div>
                         <p className="text-sm font-medium">
-                          {tache.profiles?.nom ||
-                            "Non assigné"}
+                          {tache.profiles?.nom || "Non assigné"}
                         </p>
 
                         <p className="text-xs text-zinc-500">
-                          {tache.profiles?.role ||
-                            "member"}
+                          {tache.profiles?.role || "member"}
                         </p>
                       </div>
                     </div>
 
                     {tache.deadline && (
                       <div className="text-right">
-                        <p className="text-xs text-zinc-500">
-                          Deadline
-                        </p>
-
-                        <p className="text-sm">
-                          {tache.deadline}
-                        </p>
+                        <p className="text-xs text-zinc-500">Deadline</p>
+                        <p className="text-sm">{tache.deadline}</p>
                       </div>
                     )}
                   </div>
 
                   <select
                     value={tache.statut || "À faire"}
-                    onChange={(e) =>
-                      updateStatus(
-                        tache.id,
-                        e.target.value
-                      )
-                    }
+                    onChange={(e) => updateStatus(tache.id, e.target.value)}
                     className="mt-5 w-full rounded-2xl border border-zinc-800 bg-zinc-900 p-3 text-sm text-white"
                   >
                     {colonnes.map((statut) => (
-                      <option
-                        key={statut}
-                        value={statut}
-                      >
+                      <option key={statut} value={statut}>
                         {statut}
                       </option>
                     ))}
