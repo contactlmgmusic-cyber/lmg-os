@@ -1,25 +1,6 @@
 import { supabase } from "@/lib/supabase";
-import CalendarEventCard from "../../components/CalendarEventCard";
 
 export const dynamic = "force-dynamic";
-
-type Projet = {
-  id: string;
-  titre: string;
-  date_sortie: string;
-};
-
-type RolloutEvent = {
-  id: string;
-  titre: string;
-  date_event: string;
-  type: string;
-  statut: string;
-  projets?: {
-    id: string;
-    titre: string;
-  };
-};
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString("fr-FR", {
@@ -50,129 +31,96 @@ export default async function CalendrierPage() {
     `)
     .not("date_event", "is", null);
 
-  const projetEvents =
-    (projets as Projet[] | null)?.map((projet) => ({
+  const { data: taches } = await supabase
+    .from("taches")
+    .select("id, titre, deadline, statut, priorite")
+    .not("deadline", "is", null);
+
+  const allEvents = [
+    ...(projets || []).map((projet: any) => ({
       id: projet.id,
-      title: projet.titre,
+      titre: projet.titre,
       date: projet.date_sortie,
       type: "Sortie",
-      statut: "Release",
+      couleur: "bg-violet-500",
+      description: "Release projet",
       href: `/projets/${projet.id}`,
-      projet: null,
-    })) || [];
+    })),
 
-  const rolloutCalendarEvents =
-    (rolloutEvents as RolloutEvent[] | null)?.map((event) => ({
+    ...(rolloutEvents || []).map((event: any) => ({
       id: event.id,
-      title: event.titre,
+      titre: event.titre,
       date: event.date_event,
       type: event.type || "Rollout",
-      statut: event.statut || "À faire",
-      href: event.projets?.id ? `/projets/${event.projets.id}` : "/projets",
-      projet: event.projets?.titre || null,
-    })) || [];
+      couleur: "bg-cyan-500",
+      description: event.projets?.titre || "Rollout",
+      href: event.projets?.id ? `/projets/${event.projets.id}` : "/rollout",
+    })),
 
-  const events = [...projetEvents, ...rolloutCalendarEvents].sort((a, b) =>
-    String(a.date).localeCompare(String(b.date))
-  );
-
-  const groupedEvents = events.reduce<Record<string, typeof events>>(
-    (acc, event) => {
-      if (!acc[event.date]) {
-        acc[event.date] = [];
-      }
-
-      acc[event.date].push(event);
-      return acc;
-    },
-    {}
+    ...(taches || []).map((tache: any) => ({
+      id: tache.id,
+      titre: tache.titre,
+      date: tache.deadline,
+      type: "Tâche",
+      couleur:
+        tache.priorite === "Haute"
+          ? "bg-red-500"
+          : tache.priorite === "Moyenne"
+          ? "bg-orange-500"
+          : "bg-zinc-500",
+      description: `Statut : ${tache.statut || "À faire"}`,
+      href: `/taches/${tache.id}`,
+    })),
+  ].sort(
+    (a, b) =>
+      new Date(a.date).getTime() -
+      new Date(b.date).getTime()
   );
 
   return (
-    <main className="p-10 text-white">
-      <div className="mb-10 flex items-end justify-between">
-        <div>
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-            LMG Calendar
-          </p>
+    <main className="min-h-screen bg-black p-10 text-white">
+      <div className="mb-10">
+        <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+          LMG Workspace
+        </p>
 
-          <h1 className="text-5xl font-bold">Calendrier rollout</h1>
+        <h1 className="text-5xl font-bold">Calendrier global</h1>
 
-          <p className="mt-2 text-zinc-400">
-            Vue premium des sorties, contenus, teasers et actions promo.
-          </p>
-        </div>
-
-        <a
-          href="/rollout/nouveau"
-          className="rounded-xl bg-white px-5 py-3 font-medium text-black hover:bg-zinc-200"
-        >
-          + Ajouter action
-        </a>
+        <p className="mt-3 text-zinc-400">
+          Releases, rollout et deadlines centralisés.
+        </p>
       </div>
 
-      {events.length === 0 && (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-10 text-center">
-          <p className="text-zinc-500">Aucun événement planifié.</p>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[320px_1fr]">
-        <aside className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-          <p className="text-sm text-zinc-500">Événements planifiés</p>
-          <p className="mt-3 text-6xl font-bold">{events.length}</p>
-
-          <div className="mt-8 space-y-3">
-            <div className="flex items-center justify-between rounded-2xl bg-black p-4">
-              <span className="text-zinc-400">Sorties</span>
-              <span className="font-semibold">
-                {events.filter((event) => event.type === "Sortie").length}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between rounded-2xl bg-black p-4">
-              <span className="text-zinc-400">Actions promo</span>
-              <span className="font-semibold">
-                {events.filter((event) => event.type !== "Sortie").length}
-              </span>
-            </div>
+      <div className="space-y-4">
+        {allEvents.length === 0 && (
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8 text-zinc-500">
+            Aucun événement planifié.
           </div>
-        </aside>
+        )}
 
-        <section className="space-y-6">
-          {Object.entries(groupedEvents).map(([date, dayEvents]) => (
-            <div
-              key={date}
-              className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6"
-            >
-              <div className="mb-5 flex items-center justify-between">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">
-                    {formatDate(date)}
-                  </p>
+        {allEvents.map((event) => (
+          <a
+            key={`${event.type}-${event.id}`}
+            href={event.href}
+            className="flex items-center gap-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-5 transition hover:border-zinc-600"
+          >
+            <div className={`h-4 w-4 rounded-full ${event.couleur}`} />
 
-                  <h2 className="mt-1 text-2xl font-bold">
-                    {dayEvents.length} action
-                    {dayEvents.length > 1 ? "s" : ""}
-                  </h2>
-                </div>
-
-                <span className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300">
-                  {date}
-                </span>
-              </div>
-
-              <div className="space-y-4">
-                {dayEvents.map((event) => (
-                  <CalendarEventCard
-                    key={`${event.type}-${event.id}`}
-                    event={event}
-                  />
-                ))}
-              </div>
+            <div className="min-w-[90px] text-sm text-zinc-400">
+              {formatDate(event.date)}
             </div>
-          ))}
-        </section>
+
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold">{event.titre}</h2>
+
+              <p className="text-sm text-zinc-500">{event.description}</p>
+            </div>
+
+            <div className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300">
+              {event.type}
+            </div>
+          </a>
+        ))}
       </div>
     </main>
   );
