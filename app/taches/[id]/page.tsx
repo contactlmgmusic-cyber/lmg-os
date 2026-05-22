@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import TaskChecklist from "../../../components/TaskChecklist";
 
 export const dynamic = "force-dynamic";
 
@@ -64,12 +65,18 @@ export default async function TacheDetailPage({
             {tache.description || "Aucune description renseignée."}
           </p>
         </div>
+
+        <TaskChecklist
+          taskId={tache.id}
+          initialItems={tache.checklist || []}
+        />
+
         <a
-  href={`/taches/${tache.id}/modifier`}
-  className="mt-6 inline-block rounded-xl bg-white px-5 py-3 font-medium text-black"
->
-  Modifier la tâche
-</a>
+          href={`/taches/${tache.id}/modifier`}
+          className="mt-6 inline-block rounded-xl bg-white px-5 py-3 font-medium text-black"
+        >
+          Modifier la tâche
+        </a>
       </section>
     </main>
   );
