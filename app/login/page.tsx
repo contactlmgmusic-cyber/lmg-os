@@ -10,27 +10,16 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  async function handleLogin(
-    e: React.FormEvent
-  ) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
-    setLoading(true);
-    setError("");
-
-    const { error } =
-      await supabaseBrowser.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-    setLoading(false);
+    const { error } = await supabaseBrowser.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (error) {
-      setError(error.message);
+      alert(error.message);
       return;
     }
 
@@ -39,74 +28,46 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black px-6">
-      <div className="w-full max-w-md rounded-3xl border border-zinc-800 bg-zinc-950 p-8 shadow-2xl">
+    <main className="flex min-h-screen items-center justify-center bg-black p-10 text-white">
+      <form
+        onSubmit={handleLogin}
+        className="w-full max-w-md rounded-3xl border border-zinc-800 bg-zinc-900 p-8"
+      >
+        <h1 className="text-4xl font-bold">Connexion</h1>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">
-            LMG OS
-          </h1>
+        <p className="mt-2 text-zinc-400">
+          Accès sécurisé LMG OS.
+        </p>
 
-          <p className="mt-2 text-sm text-zinc-400">
-            Legacy Music Group Dashboard
-          </p>
-        </div>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="mt-8 w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+          required
+        />
 
-        <form
-          onSubmit={handleLogin}
-          className="space-y-5"
+        <input
+          type="password"
+          placeholder="Mot de passe"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="mt-4 w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
+          required
+        />
+
+        <button className="mt-6 w-full rounded-xl bg-white px-5 py-4 font-semibold text-black">
+          Se connecter
+        </button>
+
+        <a
+          href="/signup"
+          className="mt-5 block text-center text-sm text-zinc-400 hover:text-white"
         >
-
-          <div>
-            <label className="mb-2 block text-sm text-zinc-300">
-              Email
-            </label>
-
-            <input
-              type="email"
-              placeholder="contact@lmg.com"
-              value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
-              className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-white outline-none transition focus:border-white"
-            />
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm text-zinc-300">
-              Mot de passe
-            </label>
-
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
-              className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-white outline-none transition focus:border-white"
-            />
-          </div>
-
-          {error && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-white px-4 py-3 font-medium text-black transition hover:opacity-90 disabled:opacity-50"
-          >
-            {loading
-              ? "Connexion..."
-              : "Se connecter"}
-          </button>
-
-        </form>
-      </div>
-    </div>
+          Pas encore de compte ? Créer un compte
+        </a>
+      </form>
+    </main>
   );
 }
