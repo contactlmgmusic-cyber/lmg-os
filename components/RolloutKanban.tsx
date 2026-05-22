@@ -66,14 +66,18 @@ export default function RolloutKanban({
             key={column}
             className="min-h-[500px] rounded-3xl border border-zinc-800 bg-zinc-900 p-5"
           >
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="font-semibold">
+            <div className="mb-5">
+              <h2 className="text-3xl font-bold text-red-500">
                 {column}
               </h2>
 
-              <span className="text-sm text-zinc-500">
-                {columnEvents.length}
-              </span>
+              <p className="mt-1 text-red-500">
+                VERSION NEW ROLLOUT
+              </p>
+
+              <p className="mt-2 text-sm text-zinc-500">
+                {columnEvents.length} tâche(s)
+              </p>
             </div>
 
             <div className="space-y-4">
@@ -104,7 +108,7 @@ export default function RolloutKanban({
                   </p>
 
                   {event.notes && (
-                    <p className="mt-3 line-clamp-4 text-sm text-zinc-500">
+                    <p className="mt-3 text-sm text-zinc-500">
                       {event.notes}
                     </p>
                   )}
@@ -114,7 +118,7 @@ export default function RolloutKanban({
                     onClick={() => {
                       window.location.href = `/rollout/${event.id}`;
                     }}
-                    className="mt-4 w-full rounded-xl border border-zinc-700 px-4 py-3 text-sm text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
+                    className="mt-4 w-full rounded-xl bg-white px-4 py-3 text-sm font-medium text-black hover:opacity-90"
                   >
                     Ouvrir la fiche
                   </button>
