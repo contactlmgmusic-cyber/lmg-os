@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import TaskChecklist from "../../../components/TaskChecklist";
+import TaskComments from "../../../components/TaskComments";
 
 export const dynamic = "force-dynamic";
 
@@ -17,17 +18,30 @@ export default async function TacheDetailPage({
     .eq("id", id)
     .single();
 
+  const { data: commentaires } = await supabase
+    .from("commentaires_taches")
+    .select("*")
+    .eq("tache_id", id)
+    .order("created_at", {
+      ascending: false,
+    });
+
   if (error || !tache) {
     return (
       <main className="p-10 text-white">
-        <p className="text-red-400">Tâche introuvable.</p>
+        <p className="text-red-400">
+          Tâche introuvable.
+        </p>
       </main>
     );
   }
 
   return (
     <main className="p-10 text-white">
-      <Link href="/taches" className="text-sm text-zinc-400 hover:text-white">
+      <Link
+        href="/taches"
+        className="text-sm text-zinc-400 hover:text-white"
+      >
         ← Retour aux tâches
       </Link>
 
@@ -36,39 +50,63 @@ export default async function TacheDetailPage({
           Fiche tâche
         </p>
 
-        <h1 className="text-5xl font-bold">{tache.titre}</h1>
+        <h1 className="text-5xl font-bold">
+          {tache.titre}
+        </h1>
 
         <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="rounded-2xl border border-zinc-800 bg-black p-5">
-            <p className="text-sm text-zinc-500">Statut</p>
-            <p className="mt-2 font-semibold">{tache.statut || "À faire"}</p>
-          </div>
+            <p className="text-sm text-zinc-500">
+              Statut
+            </p>
 
-          <div className="rounded-2xl border border-zinc-800 bg-black p-5">
-            <p className="text-sm text-zinc-500">Priorité</p>
             <p className="mt-2 font-semibold">
-              {tache.priorite || "Non renseignée"}
+              {tache.statut || "À faire"}
             </p>
           </div>
 
           <div className="rounded-2xl border border-zinc-800 bg-black p-5">
-            <p className="text-sm text-zinc-500">Deadline</p>
+            <p className="text-sm text-zinc-500">
+              Priorité
+            </p>
+
             <p className="mt-2 font-semibold">
-              {tache.deadline || "Non renseignée"}
+              {tache.priorite ||
+                "Non renseignée"}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-800 bg-black p-5">
+            <p className="text-sm text-zinc-500">
+              Deadline
+            </p>
+
+            <p className="mt-2 font-semibold">
+              {tache.deadline ||
+                "Non renseignée"}
             </p>
           </div>
         </div>
 
         <div className="mt-8 rounded-2xl border border-zinc-800 bg-black p-6">
-          <h2 className="text-2xl font-bold">Description</h2>
+          <h2 className="text-2xl font-bold">
+            Description
+          </h2>
+
           <p className="mt-4 leading-relaxed text-zinc-300">
-            {tache.description || "Aucune description renseignée."}
+            {tache.description ||
+              "Aucune description renseignée."}
           </p>
         </div>
 
         <TaskChecklist
           taskId={tache.id}
           initialItems={tache.checklist || []}
+        />
+
+        <TaskComments
+          taskId={tache.id}
+          initialComments={commentaires || []}
         />
 
         <a
