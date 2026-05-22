@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { supabaseBrowser } from "../lib/supabase-browser";
 
+type Profile = {
+  id: string;
+  nom: string | null;
+  avatar_url: string | null;
+  role: string | null;
+};
+
 type Tache = {
   id: string;
   titre: string;
@@ -10,7 +17,7 @@ type Tache = {
   statut: string | null;
   priorite: string | null;
   deadline: string | null;
-  responsable: string | null;
+  profiles?: Profile | null;
 };
 
 const colonnes = ["À faire", "En cours", "Terminé"];
@@ -23,16 +30,14 @@ function normalizeStatut(statut: string | null) {
   if (
     value === "à faire" ||
     value === "a faire" ||
-    value === "todo" ||
-    value === "nouveau"
+    value === "todo"
   ) {
     return "À faire";
   }
 
   if (
     value === "en cours" ||
-    value === "encours" ||
-    value === "in progress"
+    value === "encours"
   ) {
     return "En cours";
   }
@@ -67,14 +72,10 @@ export default function KanbanBoard({
       )
     );
 
-    const { error } = await supabaseBrowser
+    await supabaseBrowser
       .from("taches")
       .update({ statut })
       .eq("id", id);
-
-    if (error) {
-      alert(error.message);
-    }
   }
 
   return (
@@ -87,65 +88,112 @@ export default function KanbanBoard({
         return (
           <section
             key={colonne}
-            className="min-h-[500px] rounded-3xl border border-zinc-800 bg-zinc-900 p-6"
+            className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6"
           >
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold">{colonne}</h2>
+              <h2 className="text-2xl font-bold">
+                {colonne}
+              </h2>
 
-              <span className="text-zinc-500">
+              <span className="rounded-full bg-black px-3 py-1 text-sm text-zinc-400">
                 {tachesColonne.length}
               </span>
             </div>
 
             <div className="space-y-4">
-              {tachesColonne.length === 0 && (
-                <p className="text-sm text-zinc-500">
-                  Aucune tâche ici.
-                </p>
-              )}
-
               {tachesColonne.map((tache) => (
                 <div
                   key={tache.id}
-                  className="rounded-2xl border border-zinc-800 bg-black p-5"
+                  className="rounded-3xl border border-zinc-800 bg-black p-5"
                 >
                   <a
                     href={`/taches/${tache.id}`}
-                    className="block text-lg font-bold hover:underline"
+                    className="block"
                   >
-                    {tache.titre}
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-bold">
+                          {tache.titre}
+                        </h3>
+
+                        {tache.description && (
+                          <p className="mt-2 text-sm text-zinc-400">
+                            {tache.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          tache.priorite === "Haute"
+                            ? "bg-red-500/20 text-red-300"
+                            : tache.priorite === "Moyenne"
+                            ? "bg-orange-500/20 text-orange-300"
+                            : "bg-zinc-800 text-zinc-300"
+                        }`}
+                      >
+                        {tache.priorite || "Basse"}
+                      </span>
+                    </div>
                   </a>
 
-                  {tache.description && (
-                    <p className="mt-3 text-sm text-zinc-400">
-                      {tache.description}
-                    </p>
-                  )}
+                  <div className="mt-5 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-zinc-800 text-sm font-bold">
+                        {tache.profiles?.avatar_url ? (
+                          <img
+                            src={tache.profiles.avatar_url}
+                            alt={tache.profiles.nom || ""}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          tache.profiles?.nom
+                            ?.charAt(0)
+                            ?.toUpperCase() || "L"
+                        )}
+                      </div>
 
-                  <p className="mt-4 text-sm text-zinc-500">
-                    Responsable :{" "}
-                    {tache.responsable || "Non assigné"}
-                  </p>
+                      <div>
+                        <p className="text-sm font-medium">
+                          {tache.profiles?.nom ||
+                            "Non assigné"}
+                        </p>
 
-                  <p className="mt-2 text-sm text-zinc-500">
-                    Deadline :{" "}
-                    {tache.deadline || "Non renseignée"}
-                  </p>
+                        <p className="text-xs text-zinc-500">
+                          {tache.profiles?.role ||
+                            "member"}
+                        </p>
+                      </div>
+                    </div>
 
-                  <p className="mt-2 text-sm text-zinc-500">
-                    Priorité :{" "}
-                    {tache.priorite || "Non renseignée"}
-                  </p>
+                    {tache.deadline && (
+                      <div className="text-right">
+                        <p className="text-xs text-zinc-500">
+                          Deadline
+                        </p>
+
+                        <p className="text-sm">
+                          {tache.deadline}
+                        </p>
+                      </div>
+                    )}
+                  </div>
 
                   <select
                     value={tache.statut || "À faire"}
                     onChange={(e) =>
-                      updateStatus(tache.id, e.target.value)
+                      updateStatus(
+                        tache.id,
+                        e.target.value
+                      )
                     }
-                    className="mt-4 w-full rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-sm text-white"
+                    className="mt-5 w-full rounded-2xl border border-zinc-800 bg-zinc-900 p-3 text-sm text-white"
                   >
                     {colonnes.map((statut) => (
-                      <option key={statut} value={statut}>
+                      <option
+                        key={statut}
+                        value={statut}
+                      >
                         {statut}
                       </option>
                     ))}

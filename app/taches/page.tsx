@@ -12,13 +12,23 @@ const supabase = createClient(
 export default async function TachesPage() {
   const { data: taches, error } = await supabase
     .from("taches")
-    .select("*")
+    .select(`
+      *,
+      profiles (
+        id,
+        nom,
+        avatar_url,
+        role
+      )
+    `)
     .order("created_at", { ascending: false });
 
   if (error) {
     return (
       <main className="p-10 text-white">
-        <p className="text-red-400">{error.message}</p>
+        <p className="text-red-400">
+          {error.message}
+        </p>
       </main>
     );
   }
@@ -31,7 +41,9 @@ export default async function TachesPage() {
             LMG Workspace
           </p>
 
-          <h1 className="text-5xl font-bold">Gestion des tâches</h1>
+          <h1 className="text-5xl font-bold">
+            Gestion des tâches
+          </h1>
 
           <p className="mt-3 text-zinc-400">
             Organisation opérationnelle du label.
