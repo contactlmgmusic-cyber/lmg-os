@@ -57,10 +57,7 @@ export default function RolloutKanban({
       alert(error.message);
       return;
     }
-
-    router.refresh();
   }
-
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-5">
