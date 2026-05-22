@@ -58,6 +58,9 @@ export default function RolloutKanban({ events }: { events: RolloutEvent[] }) {
             </div>
 
             <div className="space-y-4">
+              <p className="rounded-xl bg-red-600 p-3 text-white">
+  TEST UPDATE ROLLOUT
+</p>
               {columnEvents.map((event) => (
                 <div
                   key={event.id}
