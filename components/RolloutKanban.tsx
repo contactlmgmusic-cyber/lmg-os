@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   DragDropContext,
   Droppable,
@@ -17,47 +16,37 @@ type RolloutEvent = {
   statut: string | null;
   date_event: string | null;
   notes: string | null;
-  projets?: {
-    id: string;
-    titre: string;
-  } | null;
+  projets?: { id: string; titre: string } | null;
 };
 
 const columns = ["À faire", "En cours", "Programmé", "Publié", "Annulé"];
 
-export default function RolloutKanban({
-  events,
-}: {
-  events: RolloutEvent[];
-}) {
-  const router = useRouter();
+export default function RolloutKanban({ events }: { events: RolloutEvent[] }) {
   const [items, setItems] = useState(events);
 
-  async function onDragEnd(result: DropResult) {
-    const { destination, draggableId } = result;
-
-    if (!destination) return;
-
-    const newStatus = destination.droppableId;
-
+  async function updateStatus(id: string, newStatus: string) {
     setItems((current) =>
       current.map((event) =>
-        event.id === draggableId
-          ? { ...event, statut: newStatus }
-          : event
+        event.id === id ? { ...event, statut: newStatus } : event
       )
     );
 
     const { error } = await supabaseBrowser
       .from("rollout_events")
       .update({ statut: newStatus })
-      .eq("id", draggableId);
+      .eq("id", id);
 
     if (error) {
       alert(error.message);
-      return;
     }
   }
+
+  async function onDragEnd(result: DropResult) {
+    if (!result.destination) return;
+
+    await updateStatus(result.draggableId, result.destination.droppableId);
+  }
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-5">
@@ -115,11 +104,19 @@ export default function RolloutKanban({
                               {event.date_event || "Date non renseignée"}
                             </p>
 
-                            {event.notes && (
-                              <p className="mt-3 line-clamp-3 text-sm text-zinc-600">
-                                {event.notes}
-                              </p>
-                            )}
+                            <select
+                              value={event.statut || "À faire"}
+                              onChange={(e) =>
+                                updateStatus(event.id, e.target.value)
+                              }
+                              className="mt-4 w-full rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-sm text-white"
+                            >
+                              {columns.map((status) => (
+                                <option key={status} value={status}>
+                                  {status}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         )}
                       </Draggable>
