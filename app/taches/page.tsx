@@ -3,15 +3,14 @@ import { createClient } from "@supabase/supabase-js";
 import KanbanBoard from "@/components/KanbanBoard";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
 );
 
 export default async function TachesPage() {
-  const { data: taches, error } = await supabaseAdmin
+  const { data: taches, error } = await supabase
     .from("taches")
     .select("*")
     .order("created_at", { ascending: false });
@@ -20,7 +19,7 @@ export default async function TachesPage() {
     return (
       <main className="p-10 text-white">
         <p className="text-red-400">
-          Erreur chargement tâches : {error.message}
+          {error.message}
         </p>
       </main>
     );
