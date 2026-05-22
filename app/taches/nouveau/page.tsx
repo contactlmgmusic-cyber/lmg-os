@@ -1,18 +1,27 @@
 import { createClient } from "@supabase/supabase-js";
 import NewTaskForm from "@/components/NewTaskForm";
+
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const supabaseServer = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  (process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) as string
+  process.env.SUPABASE_SERVICE_ROLE_KEY as string
 );
 
 export default async function NouvelleTachePage() {
-  const { data: profiles } = await supabaseServer
+  const { data: profiles, error } = await supabaseServer
     .from("profiles")
     .select("id, nom")
     .order("nom", { ascending: true });
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-black p-10 text-white">
+        <p className="text-red-400">Erreur profiles : {error.message}</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -21,6 +30,10 @@ export default async function NouvelleTachePage() {
 
         <p className="mt-3 text-zinc-400">
           Créer et assigner une tâche équipe.
+        </p>
+
+        <p className="mt-3 text-sm text-zinc-500">
+          {profiles?.length || 0} membre(s) disponible(s)
         </p>
       </div>
 
