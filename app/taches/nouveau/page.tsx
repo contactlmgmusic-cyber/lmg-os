@@ -31,8 +31,7 @@ export default function NouvelleTachePage() {
       return;
     }
 
-    router.push("/taches");
-    router.refresh();
+    window.location.href = "/taches";
   }
 
   return (
