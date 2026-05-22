@@ -1,12 +1,17 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 import KanbanBoard from "@/components/KanbanBoard";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
 export default async function TachesPage() {
-  const { data: taches, error } = await supabase
+  const { data: taches, error } = await supabaseAdmin
     .from("taches")
     .select("*")
     .order("created_at", { ascending: false });
@@ -29,9 +34,7 @@ export default async function TachesPage() {
             LMG Workspace
           </p>
 
-          <h1 className="text-5xl font-bold">
-            Gestion des tâches
-          </h1>
+          <h1 className="text-5xl font-bold">Gestion des tâches</h1>
 
           <p className="mt-3 text-zinc-400">
             Organisation opérationnelle du label.
@@ -51,25 +54,6 @@ export default async function TachesPage() {
       </div>
 
       <KanbanBoard taches={taches || []} />
-
-      <div className="mt-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-        <h2 className="mb-4 text-2xl font-bold">
-          Liste brute des tâches récupérées
-        </h2>
-
-        <div className="space-y-3">
-          {taches?.map((tache) => (
-            <div
-              key={tache.id}
-              className="rounded-xl border border-zinc-800 bg-black p-4 text-sm"
-            >
-              <p>Titre : {tache.titre}</p>
-              <p>Statut : {tache.statut || "vide"}</p>
-              <p>Créée le : {tache.created_at}</p>
-            </div>
-          ))}
-        </div>
-      </div>
     </main>
   );
 }
