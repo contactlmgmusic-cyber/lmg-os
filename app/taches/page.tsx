@@ -14,7 +14,7 @@ export default async function TachesPage() {
     .from("taches")
     .select(`
       *,
-      profiles (
+      profiles!taches_responsable_id_fkey (
         id,
         nom,
         avatar_url,
