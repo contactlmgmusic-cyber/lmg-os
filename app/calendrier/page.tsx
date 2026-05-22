@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import CalendarEventCard from "@/components/CalendarEventCard";
+import CalendarEventCard from "../../components/CalendarEventCard";
 
 export const dynamic = "force-dynamic";
 
