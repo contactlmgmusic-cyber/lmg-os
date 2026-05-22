@@ -1,154 +1,102 @@
 "use client";
 
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-} from "@hello-pangea/dnd";
+import { useState } from "react";
+import { supabaseBrowser } from "../lib/supabase-browser";
 
-import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
+type Tache = {
+  id: string;
+  titre: string;
+  description: string | null;
+  statut: string | null;
+  priorite: string | null;
+  deadline: string | null;
+};
 
-export default function KanbanBoard({
-  taches,
-}: {
-  taches: any[];
-}) {
-  const router = useRouter();
+const colonnes = ["À faire", "En cours", "Terminé"];
 
-  const colonnes = {
-    "À faire": taches.filter(
-      (t) =>
-        !t.statut ||
-        t.statut === "À faire" ||
-        t.statut === "A faire"
-    ),
+export default function KanbanBoard({ taches }: { taches: Tache[] }) {
+  const [items, setItems] = useState(taches);
 
-    "En cours": taches.filter(
-      (t) => t.statut === "En cours"
-    ),
+  async function updateStatus(id: string, statut: string) {
+    setItems((current) =>
+      current.map((tache) =>
+        tache.id === id ? { ...tache, statut } : tache
+      )
+    );
 
-    "Terminé": taches.filter(
-      (t) =>
-        t.statut === "Terminé" ||
-        t.statut === "Termine"
-    ),
-  };
-
-  async function onDragEnd(result: any) {
-    if (!result.destination) return;
-
-    const taskId = result.draggableId;
-    const newStatus = result.destination.droppableId;
-
-    const { error } = await supabase
+    const { error } = await supabaseBrowser
       .from("taches")
-      .update({
-        statut: newStatus,
-      })
-      .eq("id", taskId);
+      .update({ statut })
+      .eq("id", id);
 
     if (error) {
       alert(error.message);
-      return;
     }
-
-    router.refresh();
   }
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      {colonnes.map((colonne) => {
+        const tachesColonne = items.filter(
+          (tache) => (tache.statut || "À faire") === colonne
+        );
 
-        {Object.entries(colonnes).map(
-          ([colonne, items]) => (
+        return (
+          <section
+            key={colonne}
+            className="min-h-[500px] rounded-3xl border border-zinc-800 bg-zinc-900 p-6"
+          >
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold">{colonne}</h2>
 
-            <Droppable
-              droppableId={colonne}
-              key={colonne}
-            >
-              {(provided) => (
-                <section
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 min-h-[600px]"
+              <span className="text-zinc-500">
+                {tachesColonne.length}
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              {tachesColonne.map((tache) => (
+                <div
+                  key={tache.id}
+                  className="rounded-2xl border border-zinc-800 bg-black p-5"
                 >
+                  <h3 className="text-lg font-bold">
+                    {tache.titre}
+                  </h3>
 
-                  <div className="flex items-center justify-between mb-5">
+                  {tache.description && (
+                    <p className="mt-3 text-sm text-zinc-400">
+                      {tache.description}
+                    </p>
+                  )}
 
-                    <h2 className="text-xl font-semibold">
-                      {colonne}
-                    </h2>
+                  <p className="mt-4 text-sm text-zinc-500">
+                    Deadline : {tache.deadline || "Non renseignée"}
+                  </p>
 
-                    <span className="text-sm text-zinc-500">
-                      {items.length}
-                    </span>
+                  <p className="mt-2 text-sm text-zinc-500">
+                    Priorité : {tache.priorite || "Non renseignée"}
+                  </p>
 
-                  </div>
-
-                  <div className="space-y-4">
-
-                    {items.map((tache, index) => (
-
-                      <Draggable
-                        draggableId={tache.id}
-                        index={index}
-                        key={tache.id}
-                      >
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5"
-                          >
-
-                            <div className="flex items-start justify-between gap-4 mb-3">
-
-                              <h3 className="font-semibold">
-                                {tache.titre}
-                              </h3>
-
-                              <span className="text-xs text-zinc-400">
-                                {tache.priorite || "Priorité"}
-                              </span>
-
-                            </div>
-
-                            {tache.description && (
-                              <p className="text-sm text-zinc-400 mb-4">
-                                {tache.description}
-                              </p>
-                            )}
-
-                            <div className="space-y-1 text-sm text-zinc-500">
-
-                              <p>
-                                Deadline :{" "}
-                                {tache.deadline ||
-                                  "Non renseignée"}
-                              </p>
-
-                            </div>
-
-                          </div>
-                        )}
-                      </Draggable>
-
+                  <select
+                    value={tache.statut || "À faire"}
+                    onChange={(e) =>
+                      updateStatus(tache.id, e.target.value)
+                    }
+                    className="mt-4 w-full rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-sm text-white"
+                  >
+                    {colonnes.map((statut) => (
+                      <option key={statut} value={statut}>
+                        {statut}
+                      </option>
                     ))}
-
-                    {provided.placeholder}
-
-                  </div>
-
-                </section>
-              )}
-            </Droppable>
-
-          )
-        )}
-
-      </div>
-    </DragDropContext>
+                  </select>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
   );
 }
