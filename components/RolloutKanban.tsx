@@ -30,7 +30,9 @@ export default function RolloutKanban({ events }: { events: RolloutEvent[] }) {
       .update({ statut: newStatus })
       .eq("id", id);
 
-    if (error) alert(error.message);
+    if (error) {
+      alert(error.message);
+    }
   }
 
   return (
@@ -47,6 +49,7 @@ export default function RolloutKanban({ events }: { events: RolloutEvent[] }) {
           >
             <div className="mb-5 flex items-center justify-between">
               <h2 className="font-semibold">{column}</h2>
+
               <span className="text-sm text-zinc-500">
                 {columnEvents.length}
               </span>
@@ -62,7 +65,12 @@ export default function RolloutKanban({ events }: { events: RolloutEvent[] }) {
                     {event.type || "Rollout"}
                   </p>
 
-                  <h3 className="mt-2 font-semibold">{event.titre}</h3>
+                  <a
+                    href={`/rollout/${event.id}`}
+                    className="mt-2 block font-semibold hover:underline"
+                  >
+                    {event.titre}
+                  </a>
 
                   <p className="mt-2 text-sm text-zinc-400">
                     {event.projets?.titre || "Projet non lié"}
