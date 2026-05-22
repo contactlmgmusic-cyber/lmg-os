@@ -60,9 +60,12 @@ export default function KanbanBoard({ taches }: { taches: Tache[] }) {
                   key={tache.id}
                   className="rounded-2xl border border-zinc-800 bg-black p-5"
                 >
-                  <h3 className="text-lg font-bold">
-                    {tache.titre}
-                  </h3>
+<a
+  href={`/taches/${tache.id}`}
+  className="block text-lg font-bold hover:underline"
+>
+  {tache.titre}
+</a>
 
                   {tache.description && (
                     <p className="mt-3 text-sm text-zinc-400">
