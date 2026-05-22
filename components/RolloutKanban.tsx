@@ -19,7 +19,13 @@ type RolloutEvent = {
   projets?: { id: string; titre: string } | null;
 };
 
-const columns = ["À faire", "En cours", "Programmé", "Publié", "Annulé"];
+const columns = [
+  { id: "a-faire", label: "À faire" },
+  { id: "en-cours", label: "En cours" },
+  { id: "programme", label: "Programmé" },
+  { id: "publie", label: "Publié" },
+  { id: "annule", label: "Annulé" },
+];
 
 export default function RolloutKanban({ events }: { events: RolloutEvent[] }) {
   const [items, setItems] = useState(events);
@@ -44,7 +50,13 @@ export default function RolloutKanban({ events }: { events: RolloutEvent[] }) {
   async function onDragEnd(result: DropResult) {
     if (!result.destination) return;
 
-    await updateStatus(result.draggableId, result.destination.droppableId);
+    const column = columns.find(
+      (col) => col.id === result.destination?.droppableId
+    );
+
+    if (!column) return;
+
+    await updateStatus(result.draggableId, column.label);
   }
 
   return (
@@ -52,11 +64,11 @@ export default function RolloutKanban({ events }: { events: RolloutEvent[] }) {
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-5">
         {columns.map((column) => {
           const columnEvents = items.filter(
-            (event) => (event.statut || "À faire") === column
+            (event) => (event.statut || "À faire") === column.label
           );
 
           return (
-            <Droppable droppableId={column} key={column}>
+            <Droppable droppableId={column.id} key={column.id}>
               {(provided) => (
                 <section
                   ref={provided.innerRef}
@@ -64,7 +76,7 @@ export default function RolloutKanban({ events }: { events: RolloutEvent[] }) {
                   className="min-h-[500px] rounded-3xl border border-zinc-800 bg-zinc-900 p-5"
                 >
                   <div className="mb-5 flex items-center justify-between">
-                    <h2 className="font-semibold">{column}</h2>
+                    <h2 className="font-semibold">{column.label}</h2>
                     <span className="text-sm text-zinc-500">
                       {columnEvents.length}
                     </span>
@@ -103,20 +115,6 @@ export default function RolloutKanban({ events }: { events: RolloutEvent[] }) {
                             <p className="mt-2 text-sm text-zinc-500">
                               {event.date_event || "Date non renseignée"}
                             </p>
-
-                            <select
-                              value={event.statut || "À faire"}
-                              onChange={(e) =>
-                                updateStatus(event.id, e.target.value)
-                              }
-                              className="mt-4 w-full rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-sm text-white"
-                            >
-                              {columns.map((status) => (
-                                <option key={status} value={status}>
-                                  {status}
-                                </option>
-                              ))}
-                            </select>
                           </div>
                         )}
                       </Draggable>
