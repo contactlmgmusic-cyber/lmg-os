@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabaseBrowser } from "../../../lib/supabase-browser";
 
 export default function NouvelleTachePage() {
   const router = useRouter();
@@ -12,32 +12,18 @@ export default function NouvelleTachePage() {
   const [statut, setStatut] = useState("");
   const [priorite, setPriorite] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [projetId, setProjetId] = useState("");
-  const [projets, setProjets] = useState<any[]>([]);
+  const [responsable, setResponsable] = useState("");
 
-  useEffect(() => {
-    async function fetchProjets() {
-      const { data } = await supabase
-        .from("projets")
-        .select("*")
-        .order("titre", { ascending: true });
-
-      if (data) setProjets(data);
-    }
-
-    fetchProjets();
-  }, []);
-
-  async function ajouterTache(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const { error } = await supabase.from("taches").insert({
+    const { error } = await supabaseBrowser.from("taches").insert({
       titre,
-      description: description || null,
-      statut: statut || null,
-      priorite: priorite || null,
+      description,
+      statut: statut || "À faire",
+      priorite,
       deadline: deadline || null,
-      projet_id: projetId || null,
+      responsable: responsable || null,
     });
 
     if (error) {
@@ -45,77 +31,38 @@ export default function NouvelleTachePage() {
       return;
     }
 
-    router.push("/projets");
+    router.push("/taches");
     router.refresh();
   }
 
   return (
     <main className="p-10 text-white">
-      <h1 className="text-4xl font-bold mb-8">Nouvelle tâche</h1>
+      <h1 className="mb-8 text-5xl font-bold">Nouvelle tâche</h1>
 
-      <form onSubmit={ajouterTache} className="max-w-xl space-y-5">
-        <input
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          placeholder="Titre de la tâche"
-          value={titre}
-          onChange={(e) => setTitre(e.target.value)}
-          required
-        />
+      <form onSubmit={handleSubmit} className="max-w-2xl space-y-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+        <input value={titre} onChange={(e) => setTitre(e.target.value)} placeholder="Titre" required className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white" />
 
-        <textarea
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+        <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="min-h-40 w-full rounded-xl border border-zinc-800 bg-black p-4 text-white" />
 
-        <select
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          value={statut}
-          onChange={(e) => setStatut(e.target.value)}
-        >
+        <input value={responsable} onChange={(e) => setResponsable(e.target.value)} placeholder="Responsable ex : Yli, Joseph, Designer..." className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white" />
+
+        <select value={statut} onChange={(e) => setStatut(e.target.value)} className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white">
           <option value="">Statut</option>
           <option value="À faire">À faire</option>
           <option value="En cours">En cours</option>
           <option value="Terminé">Terminé</option>
         </select>
 
-        <select
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          value={priorite}
-          onChange={(e) => setPriorite(e.target.value)}
-        >
+        <select value={priorite} onChange={(e) => setPriorite(e.target.value)} className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white">
           <option value="">Priorité</option>
           <option value="Haute">Haute</option>
           <option value="Moyenne">Moyenne</option>
           <option value="Basse">Basse</option>
         </select>
 
-        <input
-          type="date"
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
-        />
+        <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white" />
 
-        <select
-          className="w-full rounded-xl bg-zinc-900 border border-zinc-800 p-4"
-          value={projetId}
-          onChange={(e) => setProjetId(e.target.value)}
-        >
-          <option value="">Lier à un projet</option>
-
-          {projets.map((projet) => (
-            <option key={projet.id} value={projet.id}>
-              {projet.titre}
-            </option>
-          ))}
-        </select>
-
-        <button
-          type="submit"
-          className="rounded-xl bg-white text-black px-6 py-4 font-semibold hover:bg-zinc-200 transition"
-        >
+        <button className="w-full rounded-xl bg-white px-5 py-4 font-medium text-black">
           Créer la tâche
         </button>
       </form>

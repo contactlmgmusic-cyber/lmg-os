@@ -41,10 +41,7 @@ export default async function TacheDetailPage({
 
   return (
     <main className="p-10 text-white">
-      <Link
-        href="/taches"
-        className="text-sm text-zinc-400 hover:text-white"
-      >
+      <Link href="/taches" className="text-sm text-zinc-400 hover:text-white">
         ← Retour aux tâches
       </Link>
 
@@ -55,7 +52,7 @@ export default async function TacheDetailPage({
 
         <h1 className="text-5xl font-bold">{tache.titre}</h1>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-4">
           <div className="rounded-2xl border border-zinc-800 bg-black p-5">
             <p className="text-sm text-zinc-500">Statut</p>
             <p className="mt-2 font-semibold">{tache.statut || "À faire"}</p>
@@ -63,16 +60,17 @@ export default async function TacheDetailPage({
 
           <div className="rounded-2xl border border-zinc-800 bg-black p-5">
             <p className="text-sm text-zinc-500">Priorité</p>
-            <p className="mt-2 font-semibold">
-              {tache.priorite || "Non renseignée"}
-            </p>
+            <p className="mt-2 font-semibold">{tache.priorite || "Non renseignée"}</p>
           </div>
 
           <div className="rounded-2xl border border-zinc-800 bg-black p-5">
             <p className="text-sm text-zinc-500">Deadline</p>
-            <p className="mt-2 font-semibold">
-              {tache.deadline || "Non renseignée"}
-            </p>
+            <p className="mt-2 font-semibold">{tache.deadline || "Non renseignée"}</p>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-800 bg-black p-5">
+            <p className="text-sm text-zinc-500">Responsable</p>
+            <p className="mt-2 font-semibold">{tache.responsable || "Non assigné"}</p>
           </div>
         </div>
 
@@ -83,25 +81,13 @@ export default async function TacheDetailPage({
           </p>
         </div>
 
-        <TaskChecklist
-          taskId={tache.id}
-          initialItems={tache.checklist || []}
-        />
+        <TaskChecklist taskId={tache.id} initialItems={tache.checklist || []} />
 
-        <TaskFiles
-          taskId={tache.id}
-          initialFiles={fichiers || []}
-        />
+        <TaskFiles taskId={tache.id} initialFiles={fichiers || []} />
 
-        <TaskComments
-          taskId={tache.id}
-          initialComments={commentaires || []}
-        />
+        <TaskComments taskId={tache.id} initialComments={commentaires || []} />
 
-        <a
-          href={`/taches/${tache.id}/modifier`}
-          className="mt-6 inline-block rounded-xl bg-white px-5 py-3 font-medium text-black"
-        >
+        <a href={`/taches/${tache.id}/modifier`} className="mt-6 inline-block rounded-xl bg-white px-5 py-3 font-medium text-black">
           Modifier la tâche
         </a>
       </section>
