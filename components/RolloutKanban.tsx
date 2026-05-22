@@ -115,6 +115,20 @@ export default function RolloutKanban({ events }: { events: RolloutEvent[] }) {
                             <p className="mt-2 text-sm text-zinc-500">
                               {event.date_event || "Date non renseignée"}
                             </p>
+
+                            <select
+                              value={event.statut || "À faire"}
+                              onChange={(e) =>
+                                updateStatus(event.id, e.target.value)
+                              }
+                              className="mt-4 w-full rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-sm text-white"
+                            >
+                              {columns.map((column) => (
+                                <option key={column.id} value={column.label}>
+                                  {column.label}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         )}
                       </Draggable>
