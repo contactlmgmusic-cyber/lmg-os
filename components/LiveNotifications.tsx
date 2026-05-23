@@ -15,7 +15,7 @@ export default function LiveNotifications() {
 
   useEffect(() => {
     const channel = supabaseBrowser
-      .channel("live-notifications")
+      .channel("activity-logs-live")
       .on(
         "postgres_changes",
         {
@@ -28,7 +28,7 @@ export default function LiveNotifications() {
 
           setTimeout(() => {
             setNotification(null);
-          }, 4000);
+          }, 5000);
         }
       )
       .subscribe();
@@ -41,7 +41,7 @@ export default function LiveNotifications() {
   if (!notification) return null;
 
   return (
-    <div className="fixed right-6 top-6 z-50 w-96 rounded-3xl border border-zinc-700 bg-zinc-950 p-5 text-white shadow-2xl">
+    <div className="fixed right-6 top-6 z-[9999] w-96 rounded-3xl border border-white/20 bg-zinc-950 p-5 text-white shadow-2xl">
       <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
         Nouvelle activité
       </p>
