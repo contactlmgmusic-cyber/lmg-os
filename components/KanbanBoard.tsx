@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabaseBrowser } from "../lib/supabase-browser";
 
 type Profile = {
@@ -17,6 +17,7 @@ type Tache = {
   statut: string | null;
   priorite: string | null;
   deadline: string | null;
+  responsable_id?: string | null;
   profiles?: Profile | null;
 };
 
@@ -24,6 +25,7 @@ const colonnes = ["À faire", "En cours", "Terminé"];
 
 function normalizeStatut(statut: string | null) {
   if (!statut) return "À faire";
+
   const value = statut.trim().toLowerCase();
 
   if (value === "à faire" || value === "a faire" || value === "todo") {
@@ -48,6 +50,45 @@ export default function KanbanBoard({ taches }: { taches: Tache[] }) {
       statut: normalizeStatut(tache.statut),
     }))
   );
+
+  useEffect(() => {
+    const channel = supabaseBrowser
+      .channel("realtime-taches")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "taches",
+        },
+        async () => {
+          const { data } = await supabaseBrowser
+            .from("taches")
+            .select(`
+              *,
+              profiles!taches_responsable_id_fkey (
+                id,
+                nom,
+                avatar_url,
+                role
+              )
+            `)
+            .order("created_at", { ascending: false });
+
+          setItems(
+            (data || []).map((tache: Tache) => ({
+              ...tache,
+              statut: normalizeStatut(tache.statut),
+            }))
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabaseBrowser.removeChannel(channel);
+    };
+  }, []);
 
   async function updateStatus(id: string, statut: string) {
     const currentTask = items.find((tache) => tache.id === id);
@@ -96,6 +137,10 @@ export default function KanbanBoard({ taches }: { taches: Tache[] }) {
             </div>
 
             <div className="space-y-4">
+              {tachesColonne.length === 0 && (
+                <p className="text-sm text-zinc-500">Aucune tâche ici.</p>
+              )}
+
               {tachesColonne.map((tache) => (
                 <div
                   key={tache.id}
