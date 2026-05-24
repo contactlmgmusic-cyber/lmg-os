@@ -1,9 +1,10 @@
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
 export default async function EquipePage() {
-  const { data: profiles, error } = await supabase
+  const { data: members, error } = await supabase
     .from("profiles")
     .select("*")
     .order("created_at", { ascending: false });
@@ -11,7 +12,9 @@ export default async function EquipePage() {
   if (error) {
     return (
       <main className="p-10 text-white">
-        <p className="text-red-400">{error.message}</p>
+        <p className="text-red-400">
+          {error.message}
+        </p>
       </main>
     );
   }
@@ -20,49 +23,68 @@ export default async function EquipePage() {
     <main className="min-h-screen bg-black p-10 text-white">
       <div className="mb-10">
         <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-          LMG Team
+          Team
         </p>
 
-        <h1 className="text-5xl font-bold">Équipe</h1>
+        <h1 className="text-5xl font-bold">
+          Équipe LMG
+        </h1>
 
         <p className="mt-3 text-zinc-400">
-          Membres, rôles et futurs responsables des tâches.
+          Gestion des membres, rôles et accès.
         </p>
       </div>
 
+      {(!members || members.length === 0) && (
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8 text-zinc-500">
+          Aucun membre trouvé.
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {profiles?.map((profile) => (
+        {members?.map((member: any) => (
           <div
-            key={profile.id}
+            key={member.id}
             className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6"
           >
-            <div className="mb-5 flex items-center gap-4">
+            <div className="flex items-center gap-4">
               <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-zinc-800 text-2xl font-bold">
-                {profile.avatar_url ? (
+                {member.avatar_url ? (
                   <img
-                    src={profile.avatar_url}
-                    alt={profile.nom}
+                    src={member.avatar_url}
+                    alt={member.nom || ""}
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  profile.nom?.charAt(0)?.toUpperCase() || "L"
+                  member.nom?.charAt(0)?.toUpperCase() || "L"
                 )}
               </div>
 
               <div>
                 <h2 className="text-2xl font-bold">
-                  {profile.nom || "Membre LMG"}
+                  {member.nom || "Membre"}
                 </h2>
 
-                <p className="text-sm text-zinc-500">
-                  {profile.role || "member"}
+                <p className="mt-1 text-zinc-500">
+                  {member.email || "Email non renseigné"}
                 </p>
               </div>
             </div>
 
-            <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
-              Actif
-            </span>
+            <div className="mt-6">
+              <span className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300">
+                {member.role || "member"}
+              </span>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <Link
+                href={`/equipe/${member.id}/modifier`}
+                className="rounded-xl border border-zinc-700 px-4 py-3 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white"
+              >
+                Modifier
+              </Link>
+            </div>
           </div>
         ))}
       </div>
