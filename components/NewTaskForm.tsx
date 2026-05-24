@@ -81,9 +81,9 @@ export default function NewTaskForm({
           onChange={(e) => setStatut(e.target.value)}
           className="rounded-2xl border border-zinc-800 bg-black p-4 text-white"
         >
-          <option>À faire</option>
-          <option>En cours</option>
-          <option>Terminé</option>
+          <option value="À faire">À faire</option>
+          <option value="En cours">En cours</option>
+          <option value="Terminé">Terminé</option>
         </select>
 
         <select
@@ -91,9 +91,9 @@ export default function NewTaskForm({
           onChange={(e) => setPriorite(e.target.value)}
           className="rounded-2xl border border-zinc-800 bg-black p-4 text-white"
         >
-          <option>Basse</option>
-          <option>Moyenne</option>
-          <option>Haute</option>
+          <option value="Basse">Basse</option>
+          <option value="Moyenne">Moyenne</option>
+          <option value="Haute">Haute</option>
         </select>
 
         <input
@@ -132,7 +132,10 @@ export default function NewTaskForm({
         ))}
       </select>
 
-      <button className="w-full rounded-2xl bg-white px-5 py-4 font-semibold text-black">
+      <button
+        type="submit"
+        className="w-full rounded-2xl bg-white px-5 py-4 font-semibold text-black transition hover:bg-zinc-200"
+      >
         Créer la tâche
       </button>
     </form>
