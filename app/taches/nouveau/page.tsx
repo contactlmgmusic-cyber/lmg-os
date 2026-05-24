@@ -10,18 +10,15 @@ const supabaseServer = createClient(
 );
 
 export default async function NouvelleTachePage() {
-  const { data: profiles, error } = await supabaseServer
+  const { data: profiles } = await supabaseServer
     .from("profiles")
     .select("id, nom")
     .order("nom", { ascending: true });
 
-  if (error) {
-    return (
-      <main className="min-h-screen bg-black p-10 text-white">
-        <p className="text-red-400">Erreur profiles : {error.message}</p>
-      </main>
-    );
-  }
+  const { data: projets } = await supabaseServer
+    .from("projets")
+    .select("id, titre")
+    .order("titre", { ascending: true });
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -29,15 +26,11 @@ export default async function NouvelleTachePage() {
         <h1 className="text-5xl font-bold">Nouvelle tâche</h1>
 
         <p className="mt-3 text-zinc-400">
-          Créer et assigner une tâche équipe.
-        </p>
-
-        <p className="mt-3 text-sm text-zinc-500">
-          {profiles?.length || 0} membre(s) disponible(s)
+          Créer une tâche, l’assigner à un membre et la lier à un projet.
         </p>
       </div>
 
-      <NewTaskForm profiles={profiles || []} />
+      <NewTaskForm profiles={profiles || []} projets={projets || []} />
     </main>
   );
 }
