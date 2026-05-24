@@ -6,32 +6,29 @@ const openai = new OpenAI({
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const { prompt } = await req.json();
 
-    const prompt = body.prompt;
+    if (!process.env.OPENAI_API_KEY) {
+      return Response.json(
+        { error: "OPENAI_API_KEY manquante" },
+        { status: 500 }
+      );
+    }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-5",
+      model: "gpt-4o-mini",
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
           content: `
 Tu es un assistant stratégique pour un label de musique.
-
-Tu aides à :
-- créer des stratégies de sortie
-- générer des idées TikTok
-- préparer des rollout musicaux
-- proposer des tâches équipe
-- créer des campagnes virales
-
-Réponds toujours en JSON valide avec cette structure :
-
+Réponds uniquement en JSON valide avec cette structure :
 {
-  "strategy": [],
-  "content": [],
-  "rollout": [],
-  "tasks": []
+  "strategy": ["..."],
+  "content": ["..."],
+  "rollout": ["..."],
+  "tasks": ["..."]
 }
 `,
         },
@@ -40,23 +37,19 @@ Réponds toujours en JSON valide avec cette structure :
           content: prompt,
         },
       ],
-      temperature: 0.9,
     });
 
-    const text =
-      completion.choices[0].message.content || "{}";
+    const content = completion.choices[0].message.content || "{}";
 
-    return Response.json(JSON.parse(text));
-  } catch (error) {
-    console.error(error);
+    return Response.json(JSON.parse(content));
+  } catch (error: any) {
+    console.error("Erreur OpenAI:", error);
 
     return Response.json(
       {
-        error: "Erreur génération IA",
+        error: error?.message || "Erreur génération IA",
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
