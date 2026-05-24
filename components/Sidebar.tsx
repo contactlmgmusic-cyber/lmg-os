@@ -47,6 +47,13 @@ export default function Sidebar() {
   Drive
 </Link>
 
+<Link
+  href="/assistant"
+  className="block rounded-xl px-4 py-3 text-zinc-300 hover:bg-zinc-900 hover:text-white"
+>
+  Assistant IA
+</Link>
+
         <Link href="/equipe" className="block rounded-xl px-4 py-3 text-zinc-300 hover:bg-zinc-900 hover:text-white">
           Équipe
         </Link>
