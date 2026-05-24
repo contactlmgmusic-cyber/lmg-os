@@ -26,40 +26,24 @@ export default function AssistantGenerator() {
 
     setLoading(true);
 
-    setTimeout(() => {
-      setResult({
-        strategy: [
-          "Créer une identité visuelle cohérente autour du single",
-          "Construire une campagne TikTok/Reels autour du hook principal",
-          "Préparer une montée en pression progressive avant la sortie",
-          "Activer les relais proches : fans, micro-influenceurs, entourage",
-        ],
-        content: [
-          "Teaser studio session",
-          "Snippet TikTok / Reels",
-          "Cover reveal",
-          "Behind the scenes shooting",
-          "Countdown stories Instagram",
-        ],
-        rollout: [
-          "Annonce cover",
-          "Lancement pré-save",
-          "Teaser vidéo",
-          "Extrait TikTok",
-          "Jour de sortie",
-          "Repost réactions fans",
-        ],
-        tasks: [
-          "Créer les visuels promo",
-          "Programmer les posts Instagram",
-          "Uploader le projet sur DSP",
-          "Contacter les influenceurs",
-          "Préparer la campagne Meta Ads",
-        ],
-      });
+    const response = await fetch("/api/assistant", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prompt }),
+    });
 
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error || "Erreur IA");
       setLoading(false);
-    }, 1200);
+      return;
+    }
+
+    setResult(data);
+    setLoading(false);
   }
 
   async function createTasksAndRollout() {
@@ -161,7 +145,7 @@ export default function AssistantGenerator() {
             disabled={loading}
             className="rounded-2xl bg-white px-6 py-4 font-semibold text-black hover:bg-zinc-200 disabled:opacity-50"
           >
-            {loading ? "Génération..." : "Générer stratégie"}
+            {loading ? "Génération IA..." : "Générer stratégie"}
           </button>
 
           {result && (
@@ -171,9 +155,7 @@ export default function AssistantGenerator() {
               disabled={creating}
               className="rounded-2xl border border-zinc-700 px-6 py-4 font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
             >
-              {creating
-                ? "Création..."
-                : "Créer tâches + rollout"}
+              {creating ? "Création..." : "Créer tâches + rollout"}
             </button>
           )}
         </div>
@@ -181,10 +163,10 @@ export default function AssistantGenerator() {
 
       {result && (
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <SectionBlock title="Stratégie" items={result.strategy} />
-          <SectionBlock title="Idées contenu" items={result.content} />
-          <SectionBlock title="Rollout" items={result.rollout} />
-          <SectionBlock title="Tâches équipe" items={result.tasks} />
+          <SectionBlock title="Stratégie" items={result.strategy || []} />
+          <SectionBlock title="Idées contenu" items={result.content || []} />
+          <SectionBlock title="Rollout" items={result.rollout || []} />
+          <SectionBlock title="Tâches équipe" items={result.tasks || []} />
         </div>
       )}
     </div>
