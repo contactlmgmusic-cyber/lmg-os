@@ -1,5 +1,6 @@
 import Link from "next/link";
 import LogoutButton from "./LogoutButton";
+import GlobalSearch from "./GlobalSearch";
 
 export default function Sidebar() {
   return (
@@ -8,6 +9,7 @@ export default function Sidebar() {
         <h1 className="text-3xl font-bold">LMG OS</h1>
         <p className="mt-1 text-sm text-zinc-500">Label Management System</p>
       </div>
+      <GlobalSearch />
 
       <nav className="space-y-2">
         <Link href="/" className="block rounded-xl px-4 py-3 text-zinc-300 hover:bg-zinc-900 hover:text-white">
