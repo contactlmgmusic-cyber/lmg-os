@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import TaskChecklist from "../../../components/TaskChecklist";
 import TaskComments from "../../../components/TaskComments";
 import TaskFiles from "../../../components/TaskFiles";
+import AssetUploader from "../../../components/AssetUploader";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,12 @@ export default async function TacheDetailPage({
 
   const { data: fichiers } = await supabase
     .from("fichiers_taches")
+    .select("*")
+    .eq("tache_id", id)
+    .order("created_at", { ascending: false });
+
+  const { data: assets } = await supabase
+    .from("assets")
     .select("*")
     .eq("tache_id", id)
     .order("created_at", { ascending: false });
@@ -60,17 +67,23 @@ export default async function TacheDetailPage({
 
           <div className="rounded-2xl border border-zinc-800 bg-black p-5">
             <p className="text-sm text-zinc-500">Priorité</p>
-            <p className="mt-2 font-semibold">{tache.priorite || "Non renseignée"}</p>
+            <p className="mt-2 font-semibold">
+              {tache.priorite || "Non renseignée"}
+            </p>
           </div>
 
           <div className="rounded-2xl border border-zinc-800 bg-black p-5">
             <p className="text-sm text-zinc-500">Deadline</p>
-            <p className="mt-2 font-semibold">{tache.deadline || "Non renseignée"}</p>
+            <p className="mt-2 font-semibold">
+              {tache.deadline || "Non renseignée"}
+            </p>
           </div>
 
           <div className="rounded-2xl border border-zinc-800 bg-black p-5">
             <p className="text-sm text-zinc-500">Responsable</p>
-            <p className="mt-2 font-semibold">{tache.responsable || "Non assigné"}</p>
+            <p className="mt-2 font-semibold">
+              {tache.responsable || "Assigné via profil"}
+            </p>
           </div>
         </div>
 
@@ -81,13 +94,20 @@ export default async function TacheDetailPage({
           </p>
         </div>
 
+        <div className="mt-8">
+          <AssetUploader tacheId={tache.id} initialAssets={assets || []} />
+        </div>
+
         <TaskChecklist taskId={tache.id} initialItems={tache.checklist || []} />
 
         <TaskFiles taskId={tache.id} initialFiles={fichiers || []} />
 
         <TaskComments taskId={tache.id} initialComments={commentaires || []} />
 
-        <a href={`/taches/${tache.id}/modifier`} className="mt-6 inline-block rounded-xl bg-white px-5 py-3 font-medium text-black">
+        <a
+          href={`/taches/${tache.id}/modifier`}
+          className="mt-6 inline-block rounded-xl bg-white px-5 py-3 font-medium text-black"
+        >
           Modifier la tâche
         </a>
       </section>
