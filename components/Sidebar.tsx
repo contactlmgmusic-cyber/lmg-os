@@ -38,6 +38,13 @@ export default function Sidebar() {
           Projets
         </Link>
 
+        <Link
+  href="/drive"
+  className="block rounded-xl px-4 py-3 text-zinc-300 hover:bg-zinc-900 hover:text-white"
+>
+  Drive
+</Link>
+
         <Link href="/equipe" className="block rounded-xl px-4 py-3 text-zinc-300 hover:bg-zinc-900 hover:text-white">
           Équipe
         </Link>
