@@ -4,7 +4,7 @@ import GlobalSearch from "./GlobalSearch";
 
 export default function Sidebar() {
   return (
-    <aside className="fixed left-0 top-0 h-screen w-72 border-r border-zinc-800 bg-black p-6 text-white">
+    <aside className="h-screen w-72 overflow-y-auto border-r border-zinc-800 bg-black p-6 text-white">
       <div className="mb-10">
         <h1 className="text-3xl font-bold">LMG OS</h1>
         <p className="mt-1 text-sm text-zinc-500">Label Management System</p>
