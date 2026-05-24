@@ -37,6 +37,20 @@ export default async function ProjetDetailPage({
     .eq("projet_id", id)
     .order("created_at", { ascending: false });
 
+  const { data: taches } = await supabase
+    .from("taches")
+    .select(`
+      *,
+      profiles!taches_responsable_id_fkey (
+        id,
+        nom,
+        avatar_url,
+        role
+      )
+    `)
+    .eq("projet_id", id)
+    .order("created_at", { ascending: false });
+
   if (error || !projet) {
     return (
       <main className="p-10 text-white">
@@ -63,7 +77,10 @@ export default async function ProjetDetailPage({
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/20" />
 
         <div className="absolute bottom-10 left-10">
-          <Link href="/projets" className="mb-5 block text-sm text-zinc-300 hover:text-white">
+          <Link
+            href="/projets"
+            className="mb-5 block text-sm text-zinc-300 hover:text-white"
+          >
             ← Retour aux projets
           </Link>
 
@@ -83,22 +100,30 @@ export default async function ProjetDetailPage({
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
           <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
             <p className="text-sm text-zinc-500">Type</p>
-            <p className="mt-2 text-xl font-semibold">{projet.type || "Non renseigné"}</p>
+            <p className="mt-2 text-xl font-semibold">
+              {projet.type || "Non renseigné"}
+            </p>
           </div>
 
           <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
             <p className="text-sm text-zinc-500">Statut rollout</p>
-            <p className="mt-2 text-xl font-semibold">{projet.statut || "Non renseigné"}</p>
+            <p className="mt-2 text-xl font-semibold">
+              {projet.statut || "Non renseigné"}
+            </p>
           </div>
 
           <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
             <p className="text-sm text-zinc-500">Date de sortie</p>
-            <p className="mt-2 text-xl font-semibold">{projet.date_sortie || "Non renseignée"}</p>
+            <p className="mt-2 text-xl font-semibold">
+              {projet.date_sortie || "Non renseignée"}
+            </p>
           </div>
 
           <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
             <p className="text-sm text-zinc-500">Artiste</p>
-            <p className="mt-2 text-xl font-semibold">{projet.artistes?.nom || "Non lié"}</p>
+            <p className="mt-2 text-xl font-semibold">
+              {projet.artistes?.nom || "Non lié"}
+            </p>
           </div>
         </div>
 
@@ -106,12 +131,94 @@ export default async function ProjetDetailPage({
           <div className="space-y-6">
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
               <h2 className="text-3xl font-bold">Notes rollout</h2>
+
               <p className="mt-5 leading-relaxed text-zinc-300">
                 {projet.notes || "Aucune note renseignée pour ce projet."}
               </p>
             </div>
 
             <AssetUploader projetId={projet.id} initialAssets={assets || []} />
+
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-3xl font-bold">Tâches liées</h2>
+
+                <Link
+                  href="/taches/nouveau"
+                  className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+                >
+                  + Ajouter tâche
+                </Link>
+              </div>
+
+              {(!taches || taches.length === 0) && (
+                <p className="text-zinc-500">
+                  Aucune tâche liée à ce projet.
+                </p>
+              )}
+
+              <div className="space-y-4">
+                {taches?.map((tache) => (
+                  <Link
+                    key={tache.id}
+                    href={`/taches/${tache.id}`}
+                    className="block rounded-2xl border border-zinc-800 bg-black p-5 transition hover:border-zinc-600"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-xl font-semibold">
+                          {tache.titre}
+                        </h3>
+
+                        {tache.description && (
+                          <p className="mt-2 text-sm text-zinc-500">
+                            {tache.description}
+                          </p>
+                        )}
+
+                        <div className="mt-4 flex items-center gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-zinc-800 text-sm font-bold">
+                            {tache.profiles?.avatar_url ? (
+                              <img
+                                src={tache.profiles.avatar_url}
+                                alt={tache.profiles.nom || ""}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              tache.profiles?.nom
+                                ?.charAt(0)
+                                ?.toUpperCase() || "L"
+                            )}
+                          </div>
+
+                          <div>
+                            <p className="text-sm text-zinc-300">
+                              {tache.profiles?.nom || "Non assigné"}
+                            </p>
+
+                            <p className="text-xs text-zinc-500">
+                              {tache.deadline
+                                ? `Deadline : ${tache.deadline}`
+                                : "Deadline non renseignée"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
+                          {tache.statut || "À faire"}
+                        </span>
+
+                        <p className="mt-3 text-xs text-zinc-500">
+                          {tache.priorite || "Priorité"}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
 
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
               <div className="mb-6 flex items-center justify-between">
@@ -127,18 +234,25 @@ export default async function ProjetDetailPage({
 
               <div className="space-y-4">
                 {(!rolloutEvents || rolloutEvents.length === 0) && (
-                  <p className="text-zinc-500">Aucune action rollout liée à ce projet.</p>
+                  <p className="text-zinc-500">
+                    Aucune action rollout liée à ce projet.
+                  </p>
                 )}
 
                 {rolloutEvents?.map((event) => (
-                  <div key={event.id} className="rounded-2xl border border-zinc-800 bg-black p-5">
+                  <div
+                    key={event.id}
+                    className="rounded-2xl border border-zinc-800 bg-black p-5"
+                  >
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="text-sm text-zinc-500">
                           {event.date_event || "Date non renseignée"}
                         </p>
 
-                        <h3 className="mt-1 text-xl font-semibold">{event.titre}</h3>
+                        <h3 className="mt-1 text-xl font-semibold">
+                          {event.titre}
+                        </h3>
 
                         <p className="mt-2 text-zinc-400">
                           {event.type || "Action rollout"}
