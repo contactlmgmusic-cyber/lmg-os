@@ -3,15 +3,10 @@
 import { useState } from "react";
 import { supabaseBrowser } from "../lib/supabase-browser";
 
-type Section = {
-  title: string;
-  items: string[];
-};
-
 export default function AssistantGenerator() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
-  const [creatingTasks, setCreatingTasks] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   const [result, setResult] = useState<{
     strategy: string[];
@@ -19,6 +14,12 @@ export default function AssistantGenerator() {
     rollout: string[];
     tasks: string[];
   } | null>(null);
+
+  function addDays(days: number) {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split("T")[0];
+  }
 
   async function generate() {
     if (!prompt.trim()) return;
@@ -29,31 +30,31 @@ export default function AssistantGenerator() {
       setResult({
         strategy: [
           "Créer une identité visuelle cohérente autour du single",
-          "Accent TikTok/Reels avec snippets courts",
-          "Collaborer avec micro-influenceurs niche musique",
-          "Pré-save campagne 10 jours avant sortie",
+          "Construire une campagne TikTok/Reels autour du hook principal",
+          "Préparer une montée en pression progressive avant la sortie",
+          "Activer les relais proches : fans, micro-influenceurs, entourage",
         ],
         content: [
           "Teaser studio session",
-          "Snippet voiture / lifestyle",
-          "Trend TikTok avec hook principal",
+          "Snippet TikTok / Reels",
+          "Cover reveal",
           "Behind the scenes shooting",
           "Countdown stories Instagram",
         ],
         rollout: [
-          "J-14 : annonce cover",
-          "J-10 : lancement pré-save",
-          "J-7 : teaser vidéo",
-          "J-3 : extrait TikTok",
-          "Jour J : sortie + clip teaser",
-          "J+3 : repost réactions fans",
+          "Annonce cover",
+          "Lancement pré-save",
+          "Teaser vidéo",
+          "Extrait TikTok",
+          "Jour de sortie",
+          "Repost réactions fans",
         ],
         tasks: [
-          "Créer visuels promo",
-          "Programmer posts Instagram",
-          "Uploader DSP",
-          "Contacter influenceurs",
-          "Préparer campagne Meta Ads",
+          "Créer les visuels promo",
+          "Programmer les posts Instagram",
+          "Uploader le projet sur DSP",
+          "Contacter les influenceurs",
+          "Préparer la campagne Meta Ads",
         ],
       });
 
@@ -61,37 +62,64 @@ export default function AssistantGenerator() {
     }, 1200);
   }
 
-  async function createTasks() {
-    if (!result?.tasks?.length) return;
+  async function createTasksAndRollout() {
+    if (!result) return;
 
-    setCreatingTasks(true);
+    setCreating(true);
 
-    const { error } = await supabaseBrowser.from("taches").insert(
-      result.tasks.map((task) => ({
-        titre: task,
-        description: `Généré depuis l'assistant IA : ${prompt}`,
-        statut: "À faire",
-        priorite: "Moyenne",
-      }))
-    );
+    const taskRows = result.tasks.map((task) => ({
+      titre: task,
+      description: `Généré depuis l'assistant IA : ${prompt}`,
+      statut: "À faire",
+      priorite: "Moyenne",
+    }));
 
-    if (error) {
-      alert(error.message);
-      setCreatingTasks(false);
+    const rolloutRows = result.rollout.map((event, index) => ({
+      titre: event,
+      type: "IA Rollout",
+      statut: "À faire",
+      date_event: addDays(index * 3),
+      notes: `Généré depuis l'assistant IA : ${prompt}`,
+      generated_by_ai: true,
+    }));
+
+    const { error: tasksError } = await supabaseBrowser
+      .from("taches")
+      .insert(taskRows);
+
+    if (tasksError) {
+      alert(tasksError.message);
+      setCreating(false);
+      return;
+    }
+
+    const { error: rolloutError } = await supabaseBrowser
+      .from("rollout_events")
+      .insert(rolloutRows);
+
+    if (rolloutError) {
+      alert(rolloutError.message);
+      setCreating(false);
       return;
     }
 
     await supabaseBrowser.from("activity_logs").insert({
       type: "Assistant IA",
-      titre: "Tâches générées",
-      description: `${result.tasks.length} tâches ajoutées au Kanban`,
+      titre: "Rollout généré",
+      description: `${result.tasks.length} tâches et ${result.rollout.length} actions rollout créées`,
     });
 
-    setCreatingTasks(false);
-    alert("Tâches ajoutées au Kanban !");
+    setCreating(false);
+    alert("Tâches + rollout ajoutés avec succès !");
   }
 
-  function SectionBlock({ title, items }: Section) {
+  function SectionBlock({
+    title,
+    items,
+  }: {
+    title: string;
+    items: string[];
+  }) {
     return (
       <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
         <h2 className="text-2xl font-bold">{title}</h2>
@@ -139,13 +167,13 @@ export default function AssistantGenerator() {
           {result && (
             <button
               type="button"
-              onClick={createTasks}
-              disabled={creatingTasks}
+              onClick={createTasksAndRollout}
+              disabled={creating}
               className="rounded-2xl border border-zinc-700 px-6 py-4 font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
             >
-              {creatingTasks
+              {creating
                 ? "Création..."
-                : "Créer ces tâches dans le Kanban"}
+                : "Créer tâches + rollout"}
             </button>
           )}
         </div>
