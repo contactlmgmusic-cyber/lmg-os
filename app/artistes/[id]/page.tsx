@@ -45,6 +45,13 @@ export default async function ArtisteProfilPage({
           .order("created_at", { ascending: false })
       : { data: [] };
 
+      const { data: activities } = await supabase
+  .from("activity_logs")
+  .select("*")
+  .eq("artiste_id", id)
+  .order("created_at", { ascending: false })
+  .limit(15);
+
   const { data: assets } =
     projetIds.length > 0
       ? await supabase
@@ -323,6 +330,53 @@ export default async function ArtisteProfilPage({
               </div>
             </div>
           </div>
+
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div className="mb-6 flex items-center justify-between">
+    <h2 className="text-3xl font-bold">
+      Timeline activité
+    </h2>
+  </div>
+
+  {(!activities || activities.length === 0) && (
+    <p className="text-zinc-500">
+      Aucune activité liée à cet artiste.
+    </p>
+  )}
+
+  <div className="space-y-4">
+    {activities?.map((activity: any) => (
+      <div
+        key={activity.id}
+        className="rounded-2xl border border-zinc-800 bg-black p-5"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm text-zinc-500">
+              {activity.type || "Activité"}
+            </p>
+
+            <h3 className="mt-1 text-xl font-semibold">
+              {activity.titre}
+            </h3>
+
+            {activity.description && (
+              <p className="mt-2 text-sm text-zinc-400">
+                {activity.description}
+              </p>
+            )}
+          </div>
+
+          <p className="text-xs text-zinc-500">
+            {activity.created_at
+              ? new Date(activity.created_at).toLocaleDateString()
+              : ""}
+          </p>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
 
           <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
             <h2 className="text-3xl font-bold">Actions</h2>
