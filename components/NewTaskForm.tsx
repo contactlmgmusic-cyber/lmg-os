@@ -8,10 +8,17 @@ type Profile = {
   nom: string | null;
 };
 
+type Projet = {
+  id: string;
+  titre: string | null;
+};
+
 export default function NewTaskForm({
   profiles,
+  projets,
 }: {
   profiles: Profile[];
+  projets: Projet[];
 }) {
   const [titre, setTitre] = useState("");
   const [description, setDescription] = useState("");
@@ -19,33 +26,31 @@ export default function NewTaskForm({
   const [priorite, setPriorite] = useState("Moyenne");
   const [deadline, setDeadline] = useState("");
   const [responsableId, setResponsableId] = useState("");
+  const [projetId, setProjetId] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const { error } = await supabaseBrowser
-      .from("taches")
-      .insert({
-        titre,
-        description,
-        statut,
-        priorite,
-        deadline: deadline || null,
-        responsable_id: responsableId || null,
-      });
+    const { error } = await supabaseBrowser.from("taches").insert({
+      titre,
+      description,
+      statut,
+      priorite,
+      deadline: deadline || null,
+      responsable_id: responsableId || null,
+      projet_id: projetId || null,
+    });
 
     if (error) {
       alert(error.message);
       return;
     }
 
-    await supabaseBrowser
-      .from("activity_logs")
-      .insert({
-        type: "Tâche",
-        titre: "Nouvelle tâche créée",
-        description: titre,
-      });
+    await supabaseBrowser.from("activity_logs").insert({
+      type: "Tâche",
+      titre: "Nouvelle tâche créée",
+      description: titre,
+    });
 
     window.location.href = "/taches";
   }
@@ -107,11 +112,22 @@ export default function NewTaskForm({
         <option value="">Aucun responsable</option>
 
         {profiles.map((profile) => (
-          <option
-            key={profile.id}
-            value={profile.id}
-          >
+          <option key={profile.id} value={profile.id}>
             {profile.nom || "Membre LMG"}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={projetId}
+        onChange={(e) => setProjetId(e.target.value)}
+        className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
+      >
+        <option value="">Aucun projet lié</option>
+
+        {projets.map((projet) => (
+          <option key={projet.id} value={projet.id}>
+            {projet.titre || "Projet sans titre"}
           </option>
         ))}
       </select>
