@@ -16,10 +16,11 @@ export default function UploadCover({
 
     setUploading(true);
 
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${Date.now()}-${Math.random()
-      .toString(36)
-      .substring(2)}.${fileExt}`;
+    const fileExt = file.name.split(".").pop()?.toLowerCase() || "png";
+
+const fileName = `covers/${Date.now()}-${Math.random()
+  .toString(36)
+  .substring(2)}.${fileExt}`;
 
     const { error } = await supabaseBrowser.storage
       .from("lmg-assets")
