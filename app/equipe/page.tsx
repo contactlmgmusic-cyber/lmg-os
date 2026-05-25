@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import RoleBadge from "@/components/RoleBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -72,9 +73,7 @@ export default async function EquipePage() {
             </div>
 
             <div className="mt-6">
-              <span className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300">
-                {member.role || "member"}
-              </span>
+              <RoleBadge role={member.role} />
             </div>
 
             <div className="mt-6 flex gap-3">
