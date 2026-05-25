@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
+const signupLink = "https://TON_URL_VERCEL/signup";
+
 type Invitation = {
   id: string;
   email: string;
@@ -30,22 +32,24 @@ export default function InvitationsPage() {
     fetchInvitations();
   }, []);
 
+  async function copyLink() {
+    await navigator.clipboard.writeText(signupLink);
+    alert("Lien copié !");
+  }
+
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
-
     setLoading(true);
 
     const {
       data: { user },
     } = await supabaseBrowser.auth.getUser();
 
-    const { error } = await supabaseBrowser
-      .from("invitations")
-      .insert({
-        email,
-        role,
-        invited_by: user?.id || null,
-      });
+    const { error } = await supabaseBrowser.from("invitations").insert({
+      email,
+      role,
+      invited_by: user?.id || null,
+    });
 
     if (error) {
       alert(error.message);
@@ -55,18 +59,14 @@ export default function InvitationsPage() {
 
     await supabaseBrowser.from("activity_logs").insert({
       type: "Invitation",
-      titre: "Nouvelle invitation envoyée",
+      titre: "Nouvelle invitation créée",
       description: `${email} • ${role}`,
     });
 
     setEmail("");
     setRole("member");
-
     await fetchInvitations();
-
     setLoading(false);
-
-    alert("Invitation créée !");
   }
 
   return (
@@ -75,13 +75,9 @@ export default function InvitationsPage() {
         <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
           Invitations
         </p>
-
-        <h1 className="text-5xl font-bold">
-          Inviter un membre
-        </h1>
-
+        <h1 className="text-5xl font-bold">Inviter un membre</h1>
         <p className="mt-3 text-zinc-400">
-          Ajouter des utilisateurs et définir leurs rôles.
+          Crée une invitation, copie le lien, puis envoie-le à la personne.
         </p>
       </div>
 
@@ -115,20 +111,28 @@ export default function InvitationsPage() {
             disabled={loading}
             className="w-full rounded-2xl bg-white px-5 py-4 font-semibold text-black"
           >
-            {loading ? "Invitation..." : "Inviter"}
+            {loading ? "Création..." : "Créer l’invitation"}
           </button>
+
+          <button
+            type="button"
+            onClick={copyLink}
+            className="w-full rounded-2xl border border-zinc-700 px-5 py-4 font-semibold text-zinc-300 hover:bg-zinc-800"
+          >
+            Copier le lien d’inscription
+          </button>
+
+          <p className="text-sm text-zinc-500">
+            La personne doit s’inscrire avec le même email que celui invité.
+          </p>
         </form>
 
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-          <h2 className="text-3xl font-bold">
-            Invitations envoyées
-          </h2>
+          <h2 className="text-3xl font-bold">Invitations créées</h2>
 
           <div className="mt-6 space-y-4">
             {invitations.length === 0 && (
-              <p className="text-zinc-500">
-                Aucune invitation envoyée.
-              </p>
+              <p className="text-zinc-500">Aucune invitation créée.</p>
             )}
 
             {invitations.map((invitation) => (
@@ -141,7 +145,6 @@ export default function InvitationsPage() {
                     <h3 className="text-xl font-semibold">
                       {invitation.email}
                     </h3>
-
                     <p className="mt-2 text-sm text-zinc-500">
                       Rôle : {invitation.role}
                     </p>
