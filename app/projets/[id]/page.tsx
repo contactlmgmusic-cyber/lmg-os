@@ -2,6 +2,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import AssetUploader from "../../../components/AssetUploader";
 import PermissionGate from "@/components/PermissionGate";
+import ProjectComments from "@/components/ProjectComments";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,12 @@ const { data: currentProfile } = user
     `)
     .eq("projet_id", id)
     .order("created_at", { ascending: false });
+
+    const { data: comments } = await supabase
+  .from("commentaires_projets")
+  .select("*")
+  .eq("projet_id", id)
+  .order("created_at", { ascending: false });
 
   if (error || !projet) {
     return (
@@ -250,7 +257,10 @@ const { data: currentProfile } = user
                 ))}
               </div>
             </div>
-
+<ProjectComments
+  projetId={projet.id}
+  initialComments={comments || []}
+/>
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-3xl font-bold">Timeline rollout</h2>
