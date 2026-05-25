@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import LogoutButton from "./LogoutButton";
 
 const links = [
   {
@@ -100,6 +101,9 @@ export default function Sidebar() {
           Gestion artistes, projets, tâches, rollout et IA.
         </p>
       </div>
+      <div className="mt-6">
+  <LogoutButton />
+</div>
     </aside>
   );
 }
