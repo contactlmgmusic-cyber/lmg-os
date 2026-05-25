@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
-const signupLink = "https://TON_URL_VERCEL/signup";
+const signupLink = "https://lmg-os-tupf.vercel.app/signup";
 
 type Invitation = {
   id: string;
