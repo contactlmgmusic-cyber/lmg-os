@@ -13,10 +13,12 @@ type Asset = {
 export default function AssetUploader({
   tacheId,
   projetId,
+  artisteId,
   initialAssets = [],
 }: {
   tacheId?: string;
   projetId?: string;
+  artisteId?: string;
   initialAssets?: Asset[];
 }) {
   const [assets, setAssets] = useState(initialAssets);
@@ -52,6 +54,7 @@ export default function AssetUploader({
         type: file.type,
         tache_id: tacheId || null,
         projet_id: projetId || null,
+        artiste_id: artisteId || null,
       })
       .select()
       .single();
@@ -79,19 +82,13 @@ export default function AssetUploader({
         <label className="cursor-pointer rounded-xl bg-white px-5 py-3 font-semibold text-black hover:bg-zinc-200">
           {uploading ? "Upload..." : "+ Ajouter"}
 
-          <input
-            type="file"
-            onChange={handleUpload}
-            className="hidden"
-          />
+          <input type="file" onChange={handleUpload} className="hidden" />
         </label>
       </div>
 
       <div className="space-y-3">
         {assets.length === 0 && (
-          <p className="text-sm text-zinc-500">
-            Aucun asset ajouté.
-          </p>
+          <p className="text-sm text-zinc-500">Aucun asset ajouté.</p>
         )}
 
         {assets.map((asset) => (
