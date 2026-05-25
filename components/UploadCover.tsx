@@ -22,7 +22,7 @@ export default function UploadCover({
       .substring(2)}.${fileExt}`;
 
     const { error } = await supabaseBrowser.storage
-      .from("covers")
+      .from("lmg-assets")
       .upload(fileName, file);
 
     if (error) {
@@ -32,7 +32,7 @@ export default function UploadCover({
     }
 
     const { data } = supabaseBrowser.storage
-      .from("covers")
+      .from("lmg-assets")
       .getPublicUrl(fileName);
 
     onUpload(data.publicUrl);
