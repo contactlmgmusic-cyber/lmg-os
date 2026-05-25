@@ -1,0 +1,203 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+
+export const dynamic = "force-dynamic";
+
+export default async function MonEspaceArtistePage() {
+  const cookieStore = await cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll() {},
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, nom, role, artiste_id")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.artiste_id) {
+    return (
+      <main className="min-h-screen bg-black p-10 text-white">
+        <h1 className="text-5xl font-bold">Mon espace artiste</h1>
+        <p className="mt-4 text-zinc-400">
+          Aucun artiste n’est lié à ton compte pour le moment.
+        </p>
+      </main>
+    );
+  }
+
+  const { data: artiste } = await supabase
+    .from("artistes")
+    .select("*")
+    .eq("id", profile.artiste_id)
+    .single();
+
+  const { data: projets } = await supabase
+    .from("projets")
+    .select("*")
+    .eq("artiste_id", profile.artiste_id)
+    .order("created_at", { ascending: false });
+
+  const projetIds = projets?.map((projet) => projet.id) || [];
+
+  const { data: taches } =
+    projetIds.length > 0
+      ? await supabase
+          .from("taches")
+          .select("*")
+          .in("projet_id", projetIds)
+          .order("created_at", { ascending: false })
+      : { data: [] };
+
+  const { data: assets } =
+    projetIds.length > 0
+      ? await supabase
+          .from("assets")
+          .select("*")
+          .in("projet_id", projetIds)
+          .order("created_at", { ascending: false })
+      : { data: [] };
+
+  return (
+    <main className="min-h-screen bg-black text-white">
+      <div className="relative h-[420px] overflow-hidden">
+        {artiste?.photo_url ? (
+          <img
+            src={artiste.photo_url}
+            alt={artiste.nom}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-500">
+            Aucun visuel
+          </div>
+        )}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
+
+        <div className="absolute bottom-10 left-10">
+          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-400">
+            Portail artiste privé
+          </p>
+
+          <h1 className="text-6xl font-bold">
+            {artiste?.nom || "Artiste"}
+          </h1>
+
+          <p className="mt-3 text-xl text-zinc-300">
+            {artiste?.style || "Style non renseigné"}
+          </p>
+        </div>
+      </div>
+
+      <section className="p-10">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+            <p className="text-sm text-zinc-500">Projets</p>
+            <p className="mt-2 text-4xl font-bold">{projets?.length || 0}</p>
+          </div>
+
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+            <p className="text-sm text-zinc-500">Tâches</p>
+            <p className="mt-2 text-4xl font-bold">{taches?.length || 0}</p>
+          </div>
+
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+            <p className="text-sm text-zinc-500">Assets</p>
+            <p className="mt-2 text-4xl font-bold">{assets?.length || 0}</p>
+          </div>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+            <h2 className="mb-6 text-3xl font-bold">Mes projets</h2>
+
+            <div className="space-y-4">
+              {(!projets || projets.length === 0) && (
+                <p className="text-zinc-500">Aucun projet disponible.</p>
+              )}
+
+              {projets?.map((projet) => (
+                <Link
+                  key={projet.id}
+                  href={`/projets/${projet.id}`}
+                  className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+                >
+                  <h3 className="text-xl font-bold">{projet.titre}</h3>
+                  <p className="mt-2 text-sm text-zinc-500">
+                    Sortie : {projet.date_sortie || "Non renseignée"}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+            <h2 className="mb-6 text-3xl font-bold">Mes tâches</h2>
+
+            <div className="space-y-4">
+              {(!taches || taches.length === 0) && (
+                <p className="text-zinc-500">Aucune tâche liée.</p>
+              )}
+
+              {taches?.map((tache) => (
+                <Link
+                  key={tache.id}
+                  href={`/taches/${tache.id}`}
+                  className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+                >
+                  <h3 className="text-xl font-bold">{tache.titre}</h3>
+                  <p className="mt-2 text-sm text-zinc-500">
+                    {tache.statut || "À faire"} • {tache.deadline || "Sans deadline"}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+          <h2 className="mb-6 text-3xl font-bold">Mes assets</h2>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {(!assets || assets.length === 0) && (
+              <p className="text-zinc-500">Aucun asset disponible.</p>
+            )}
+
+            {assets?.map((asset) => (
+              <a
+                key={asset.id}
+                href={asset.url}
+                target="_blank"
+                className="rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+              >
+                <p className="text-sm text-zinc-500">{asset.type || "Asset"}</p>
+                <h3 className="mt-2 truncate text-xl font-bold">{asset.nom}</h3>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
