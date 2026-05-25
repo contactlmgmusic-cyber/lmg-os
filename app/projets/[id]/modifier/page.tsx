@@ -10,6 +10,8 @@ export default function ModifierProjetPage() {
   const id = params.id as string;
 
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+
   const [titre, setTitre] = useState("");
   const [type, setType] = useState("");
   const [statut, setStatut] = useState("");
@@ -41,6 +43,35 @@ export default function ModifierProjetPage() {
 
     fetchProjet();
   }, [id]);
+
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setUploading(true);
+
+    const filePath = `covers/${id}-${Date.now()}-${file.name}`;
+
+    const { error: uploadError } = await supabaseBrowser.storage
+      .from("lmg-assets")
+      .upload(filePath, file, {
+        upsert: true,
+      });
+
+    if (uploadError) {
+      alert(uploadError.message);
+      setUploading(false);
+      return;
+    }
+
+    const { data } = supabaseBrowser.storage
+      .from("lmg-assets")
+      .getPublicUrl(filePath);
+
+    setCoverUrl(data.publicUrl);
+    setUploading(false);
+  }
 
   async function handleUpdate(e: React.FormEvent) {
     e.preventDefault();
@@ -74,6 +105,7 @@ export default function ModifierProjetPage() {
     <main className="min-h-screen bg-black p-10 text-white">
       <div className="mb-10">
         <h1 className="text-5xl font-bold">Modifier projet</h1>
+
         <p className="mt-3 text-zinc-400">
           Mets à jour les informations du projet.
         </p>
@@ -83,6 +115,32 @@ export default function ModifierProjetPage() {
         onSubmit={handleUpdate}
         className="max-w-3xl space-y-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-8"
       >
+        {coverUrl && (
+          <img
+            src={coverUrl}
+            alt="Cover projet"
+            className="h-72 w-full rounded-3xl object-cover"
+          />
+        )}
+
+        <label className="block cursor-pointer rounded-2xl border border-dashed border-zinc-700 bg-black p-6 text-center text-zinc-400 hover:border-white hover:text-white">
+          {uploading ? "Upload de la cover..." : "Uploader une cover"}
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleCoverUpload}
+            className="hidden"
+          />
+        </label>
+
+        <input
+          value={coverUrl}
+          onChange={(e) => setCoverUrl(e.target.value)}
+          placeholder="URL cover"
+          className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
+        />
+
         <input
           value={titre}
           onChange={(e) => setTitre(e.target.value)}
@@ -114,13 +172,6 @@ export default function ModifierProjetPage() {
           type="date"
           value={dateSortie}
           onChange={(e) => setDateSortie(e.target.value)}
-          className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
-        />
-
-        <input
-          value={coverUrl}
-          onChange={(e) => setCoverUrl(e.target.value)}
-          placeholder="URL cover"
           className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
         />
 
