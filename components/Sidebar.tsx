@@ -33,6 +33,10 @@ const links = [
     label: "Assistant IA",
   },
   {
+  href: "/mon-espace-artiste",
+  label: "Mon espace artiste",
+},
+  {
     href: "/equipe",
     label: "Équipe",
   },
