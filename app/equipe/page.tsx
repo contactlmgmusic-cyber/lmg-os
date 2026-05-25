@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { redirect } from "next/navigation";
+import { canManageTeam } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +10,24 @@ export default async function EquipePage() {
     .from("profiles")
     .select("*")
     .order("created_at", { ascending: false });
+
+    const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+if (!user) {
+  redirect("/login");
+}
+
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("role")
+  .eq("id", user.id)
+  .single();
+
+if (!canManageTeam(profile?.role)) {
+  redirect("/");
+}
 
   if (error) {
     return (
