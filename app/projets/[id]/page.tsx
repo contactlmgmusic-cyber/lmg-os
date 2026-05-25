@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import AssetUploader from "../../../components/AssetUploader";
+import PermissionGate from "@/components/PermissionGate";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,18 @@ export default async function ProjetDetailPage({
     `)
     .eq("id", id)
     .single();
+
+    const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+const { data: currentProfile } = user
+  ? await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single()
+  : { data: null };
 
   const { data: rolloutEvents } = await supabase
     .from("rollout_events")
@@ -137,18 +150,36 @@ export default async function ProjetDetailPage({
               </p>
             </div>
 
-            <AssetUploader projetId={projet.id} initialAssets={assets || []} />
+            <PermissionGate
+  role={currentProfile?.role}
+  permission="assets"
+>
+  <AssetUploader
+    projetId={projet.id}
+    initialAssets={assets || []}
+  />
+</PermissionGate>
 
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-3xl font-bold">Tâches liées</h2>
 
-                <Link
-                  href="/taches/nouveau"
-                  className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
-                >
-                  + Ajouter tâche
-                </Link>
+                <PermissionGate
+  role={currentProfile?.role}
+  permission="tasks"
+>
+  <PermissionGate
+  role={currentProfile?.role}
+  permission="tasks"
+>
+  <Link
+    href="/taches/nouveau"
+    className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+  >
+    + Ajouter tâche
+  </Link>
+  </PermissionGate>
+  </PermissionGate>
               </div>
 
               {(!taches || taches.length === 0) && (
@@ -224,12 +255,17 @@ export default async function ProjetDetailPage({
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-3xl font-bold">Timeline rollout</h2>
 
-                <a
-                  href={`/rollout/nouveau?projet_id=${projet.id}`}
+               <PermissionGate
+  role={currentProfile?.role}
+  permission="projects"
+>
+  <a
+    href={`/rollout/nouveau?projet_id=${projet.id}`}
                   className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
                 >
                   + Ajouter
                 </a>
+                </PermissionGate>
               </div>
 
               <div className="space-y-4">
@@ -295,12 +331,17 @@ export default async function ProjetDetailPage({
                 Modifier projet
               </a>
 
-              <a
-                href={`/rollout/nouveau?projet_id=${projet.id}`}
-                className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
-              >
-                Ajouter action rollout
-              </a>
+              <PermissionGate
+  role={currentProfile?.role}
+  permission="projects"
+>
+  <a
+    href={`/rollout/nouveau?projet_id=${projet.id}`}
+    className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+  >
+    + Ajouter
+  </a>
+</PermissionGate>
             </div>
           </div>
         </div>
