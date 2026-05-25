@@ -97,6 +97,23 @@ export default function ModifierProjetPage() {
     router.refresh();
   }
 
+  async function handleDelete() {
+  if (!confirm("Tu es sûre de vouloir supprimer ce projet ?")) return;
+
+  const { error } = await supabaseBrowser
+    .from("projets")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  router.push("/projets");
+  router.refresh();
+}
+
   if (loading) {
     return <main className="p-10 text-white">Chargement...</main>;
   }
@@ -188,6 +205,13 @@ export default function ModifierProjetPage() {
         >
           Enregistrer
         </button>
+        <button
+  type="button"
+  onClick={handleDelete}
+  className="w-full rounded-2xl border border-red-500/40 bg-red-500/10 px-5 py-4 font-semibold text-red-400 hover:bg-red-500/20"
+>
+  Supprimer le projet
+</button>
       </form>
     </main>
   );
