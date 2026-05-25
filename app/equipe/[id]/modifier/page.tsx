@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabaseBrowser } from "../../../../lib/supabase-browser";
 
+type Artiste = {
+  id: string;
+  nom: string;
+};
+
 export default function ModifierMembrePage() {
   const router = useRouter();
   const params = useParams();
@@ -12,10 +17,12 @@ export default function ModifierMembrePage() {
   const [loading, setLoading] = useState(true);
   const [nom, setNom] = useState("");
   const [role, setRole] = useState("member");
+  const [artisteId, setArtisteId] = useState("");
+  const [artistes, setArtistes] = useState<Artiste[]>([]);
 
   useEffect(() => {
-    async function fetchProfile() {
-      const { data, error } = await supabaseBrowser
+    async function fetchData() {
+      const { data: profile, error } = await supabaseBrowser
         .from("profiles")
         .select("*")
         .eq("id", id)
@@ -26,12 +33,19 @@ export default function ModifierMembrePage() {
         return;
       }
 
-      setNom(data.nom || "");
-      setRole(data.role || "member");
+      const { data: artistesData } = await supabaseBrowser
+        .from("artistes")
+        .select("id, nom")
+        .order("nom", { ascending: true });
+
+      setNom(profile.nom || "");
+      setRole(profile.role || "member");
+      setArtisteId(profile.artiste_id || "");
+      setArtistes(artistesData || []);
       setLoading(false);
     }
 
-    fetchProfile();
+    fetchData();
   }, [id]);
 
   async function handleUpdate(e: React.FormEvent) {
@@ -42,6 +56,7 @@ export default function ModifierMembrePage() {
       .update({
         nom,
         role,
+        artiste_id: artisteId || null,
       })
       .eq("id", id);
 
@@ -62,8 +77,9 @@ export default function ModifierMembrePage() {
     <main className="min-h-screen bg-black p-10 text-white">
       <div className="mb-10">
         <h1 className="text-5xl font-bold">Modifier membre</h1>
+
         <p className="mt-3 text-zinc-400">
-          Modifier le nom et le rôle d’un membre LMG.
+          Modifier le nom, le rôle et l’artiste lié.
         </p>
       </div>
 
@@ -88,6 +104,20 @@ export default function ModifierMembrePage() {
           <option value="member">Member</option>
           <option value="artist">Artist</option>
           <option value="guest">Guest</option>
+        </select>
+
+        <select
+          value={artisteId}
+          onChange={(e) => setArtisteId(e.target.value)}
+          className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
+        >
+          <option value="">Aucun artiste lié</option>
+
+          {artistes.map((artiste) => (
+            <option key={artiste.id} value={artiste.id}>
+              {artiste.nom}
+            </option>
+          ))}
         </select>
 
         <button className="w-full rounded-2xl bg-white px-5 py-4 font-semibold text-black">
