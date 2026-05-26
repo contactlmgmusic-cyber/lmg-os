@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/supabase";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 
 export const dynamic = "force-dynamic";
 
@@ -53,20 +55,68 @@ function getAssetPreview(asset: any) {
 }
 
 export default async function DrivePage() {
-  const { data: assets, error } = await supabase
-    .from("assets")
-    .select(`
-      *,
-      projets (
+const cookieStore = await cookies();
+
+const supabaseAuth = createServerClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+  {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll() {},
+    },
+  }
+);
+
+const {
+  data: { user },
+} = await supabaseAuth.auth.getUser();
+
+const { data: currentProfile } = user
+  ? await supabase
+      .from("profiles")
+      .select("role, artiste_id")
+      .eq("id", user.id)
+      .single()
+  : { data: null };
+
+let assetsQuery = supabase
+  .from("assets")
+  .select(`
+    *,
+    projets (
+      id,
+      titre,
+      artiste_id,
+      artistes (
         id,
-        titre
-      ),
-      taches (
-        id,
-        titre
+        manager_id
       )
-    `)
-    .order("created_at", { ascending: false });
+    ),
+    taches (
+      id,
+      titre
+    )
+  `)
+  .order("created_at", { ascending: false });
+
+if (currentProfile?.role === "manager") {
+  assetsQuery = assetsQuery.eq(
+    "projets.artistes.manager_id",
+    user?.id
+  );
+}
+
+if (currentProfile?.role === "artist") {
+  assetsQuery = assetsQuery.eq(
+    "projets.artiste_id",
+    currentProfile.artiste_id
+  );
+}
+
+const { data: assets, error } = await assetsQuery;
 
   if (error) {
     return (
