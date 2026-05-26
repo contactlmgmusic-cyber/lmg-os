@@ -20,29 +20,58 @@ export default function ProjectComments({
   const [comments, setComments] = useState(initialComments);
   const [contenu, setContenu] = useState("");
 
-  async function addComment(e: React.FormEvent) {
-    e.preventDefault();
+async function addComment(e: React.FormEvent) {
+  e.preventDefault();
 
-    if (!contenu.trim()) return;
+  if (!contenu.trim()) return;
 
-    const { data, error } = await supabaseBrowser
-      .from("commentaires_projets")
-      .insert({
-        projet_id: projetId,
-        auteur: "LMG",
-        contenu,
-      })
-      .select()
-      .single();
+  const { data, error } = await supabaseBrowser
+    .from("commentaires_projets")
+    .insert({
+      projet_id: projetId,
+      auteur: "LMG",
+      contenu,
+    })
+    .select()
+    .single();
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    setComments([data, ...comments]);
-    setContenu("");
+  if (error) {
+    alert(error.message);
+    return;
   }
+
+  const { data: projet }: any = await supabaseBrowser
+    .from("projets")
+    .select(`
+      id,
+      titre,
+      artiste_id,
+      artistes (
+        id,
+        manager_id
+      )
+    `)
+    .eq("id", projetId)
+    .single();
+
+  const managerId =
+  Array.isArray(projet?.artistes)
+    ? projet.artistes[0]?.manager_id
+    : (projet?.artistes as any)?.manager_id;
+
+if (managerId) {
+  await supabaseBrowser.from("notifications").insert({
+    user_id: managerId,
+      type: "comment",
+      titre: "Nouveau commentaire projet",
+      description: projet.titre,
+      link: `/projets/${projet.id}`,
+    });
+  }
+
+  setComments([data, ...comments]);
+  setContenu("");
+}
 
   return (
     <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
