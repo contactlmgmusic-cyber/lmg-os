@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
-import AssetUploader from "../../../components/AssetUploader";
-import PermissionGate from "@/components/PermissionGate";
+import AssetUploader from "@/components/AssetUploader";
 import ProjectComments from "@/components/ProjectComments";
+import PermissionGate from "@/components/PermissionGate";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +14,33 @@ export default async function ProjetDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  const cookieStore = await cookies();
+
+  const supabaseAuth = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll() {},
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabaseAuth.auth.getUser();
+
+  const { data: currentProfile } = user
+    ? await supabase
+        .from("profiles")
+        .select("role, artiste_id")
+        .eq("id", user.id)
+        .single()
+    : { data: null };
 
   const { data: projet, error } = await supabase
     .from("projets")
@@ -27,17 +56,17 @@ export default async function ProjetDetailPage({
     .eq("id", id)
     .single();
 
-    const {
-  data: { user },
-} = await supabase.auth.getUser();
+  if (error || !projet) {
+    return (
+      <main className="p-10 text-white">
+        <p className="text-red-400">Projet introuvable.</p>
+      </main>
+    );
+  }
 
-const { data: currentProfile } = user
-  ? await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single()
-  : { data: null };
+  const isArtistUser = currentProfile?.role === "artist";
+  const isOwnProject = currentProfile?.artiste_id === projet.artiste_id;
+  const canViewInternalProjectData = !isArtistUser || isOwnProject;
 
   const { data: rolloutEvents } = await supabase
     .from("rollout_events")
@@ -65,19 +94,11 @@ const { data: currentProfile } = user
     .eq("projet_id", id)
     .order("created_at", { ascending: false });
 
-    const { data: comments } = await supabase
-  .from("commentaires_projets")
-  .select("*")
-  .eq("projet_id", id)
-  .order("created_at", { ascending: false });
-
-  if (error || !projet) {
-    return (
-      <main className="p-10 text-white">
-        <p className="text-red-400">Projet introuvable.</p>
-      </main>
-    );
-  }
+  const { data: comments } = await supabase
+    .from("commentaires_projets")
+    .select("*")
+    .eq("projet_id", id)
+    .order("created_at", { ascending: false });
 
   return (
     <main className="text-white">
@@ -126,7 +147,7 @@ const { data: currentProfile } = user
           </div>
 
           <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Statut rollout</p>
+            <p className="text-sm text-zinc-500">Statut</p>
             <p className="mt-2 text-xl font-semibold">
               {projet.statut || "Non renseigné"}
             </p>
@@ -149,211 +170,196 @@ const { data: currentProfile } = user
 
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="space-y-6">
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-              <h2 className="text-3xl font-bold">Notes rollout</h2>
-
-              <p className="mt-5 leading-relaxed text-zinc-300">
-                {projet.notes || "Aucune note renseignée pour ce projet."}
-              </p>
-            </div>
-
-            <PermissionGate
-  role={currentProfile?.role}
-  permission="assets"
->
-  <AssetUploader
-    projetId={projet.id}
-    initialAssets={assets || []}
-  />
-</PermissionGate>
-
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-3xl font-bold">Tâches liées</h2>
-
-                <PermissionGate
-  role={currentProfile?.role}
-  permission="tasks"
->
-  <PermissionGate
-  role={currentProfile?.role}
-  permission="tasks"
->
-  <Link
-    href="/taches/nouveau"
-    className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
-  >
-    + Ajouter tâche
-  </Link>
-  </PermissionGate>
-  </PermissionGate>
-              </div>
-
-              {(!taches || taches.length === 0) && (
-                <p className="text-zinc-500">
-                  Aucune tâche liée à ce projet.
+            {canViewInternalProjectData && (
+              <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+                <h2 className="text-3xl font-bold">Notes rollout</h2>
+                <p className="mt-5 leading-relaxed text-zinc-300">
+                  {projet.notes || "Aucune note renseignée pour ce projet."}
                 </p>
-              )}
-
-              <div className="space-y-4">
-                {taches?.map((tache) => (
-                  <Link
-                    key={tache.id}
-                    href={`/taches/${tache.id}`}
-                    className="block rounded-2xl border border-zinc-800 bg-black p-5 transition hover:border-zinc-600"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="text-xl font-semibold">
-                          {tache.titre}
-                        </h3>
-
-                        {tache.description && (
-                          <p className="mt-2 text-sm text-zinc-500">
-                            {tache.description}
-                          </p>
-                        )}
-
-                        <div className="mt-4 flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-zinc-800 text-sm font-bold">
-                            {tache.profiles?.avatar_url ? (
-                              <img
-                                src={tache.profiles.avatar_url}
-                                alt={tache.profiles.nom || ""}
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              tache.profiles?.nom
-                                ?.charAt(0)
-                                ?.toUpperCase() || "L"
-                            )}
-                          </div>
-
-                          <div>
-                            <p className="text-sm text-zinc-300">
-                              {tache.profiles?.nom || "Non assigné"}
-                            </p>
-
-                            <p className="text-xs text-zinc-500">
-                              {tache.deadline
-                                ? `Deadline : ${tache.deadline}`
-                                : "Deadline non renseignée"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
-                          {tache.statut || "À faire"}
-                        </span>
-
-                        <p className="mt-3 text-xs text-zinc-500">
-                          {tache.priorite || "Priorité"}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
               </div>
-            </div>
-<ProjectComments
-  projetId={projet.id}
-  initialComments={comments || []}
-/>
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-3xl font-bold">Timeline rollout</h2>
+            )}
 
-               <PermissionGate
-  role={currentProfile?.role}
-  permission="projects"
->
-  <a
-    href={`/rollout/nouveau?projet_id=${projet.id}`}
-                  className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
-                >
-                  + Ajouter
-                </a>
-                </PermissionGate>
-              </div>
+            {canViewInternalProjectData && !isArtistUser && (
+              <PermissionGate role={currentProfile?.role} permission="assets">
+                <AssetUploader projetId={projet.id} initialAssets={assets || []} />
+              </PermissionGate>
+            )}
 
-              <div className="space-y-4">
-                {(!rolloutEvents || rolloutEvents.length === 0) && (
-                  <p className="text-zinc-500">
-                    Aucune action rollout liée à ce projet.
-                  </p>
+            {canViewInternalProjectData && (
+              <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-3xl font-bold">Tâches liées</h2>
+
+                  {!isArtistUser && (
+                    <PermissionGate role={currentProfile?.role} permission="tasks">
+                      <Link
+                        href="/taches/nouveau"
+                        className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+                      >
+                        + Ajouter tâche
+                      </Link>
+                    </PermissionGate>
+                  )}
+                </div>
+
+                {(!taches || taches.length === 0) && (
+                  <p className="text-zinc-500">Aucune tâche liée à ce projet.</p>
                 )}
 
-                {rolloutEvents?.map((event) => (
-                  <div
-                    key={event.id}
-                    className="rounded-2xl border border-zinc-800 bg-black p-5"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-sm text-zinc-500">
-                          {event.date_event || "Date non renseignée"}
-                        </p>
+                <div className="space-y-4">
+                  {taches?.map((tache: any) => (
+                    <Link
+                      key={tache.id}
+                      href={`/taches/${tache.id}`}
+                      className="block rounded-2xl border border-zinc-800 bg-black p-5 transition hover:border-zinc-600"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h3 className="text-xl font-semibold">
+                            {tache.titre}
+                          </h3>
 
-                        <h3 className="mt-1 text-xl font-semibold">
-                          {event.titre}
-                        </h3>
+                          {tache.description && (
+                            <p className="mt-2 text-sm text-zinc-500">
+                              {tache.description}
+                            </p>
+                          )}
 
-                        <p className="mt-2 text-zinc-400">
-                          {event.type || "Action rollout"}
-                        </p>
+                          <div className="mt-4 flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-zinc-800 text-sm font-bold">
+                              {tache.profiles?.avatar_url ? (
+                                <img
+                                  src={tache.profiles.avatar_url}
+                                  alt={tache.profiles.nom || ""}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                tache.profiles?.nom?.charAt(0)?.toUpperCase() ||
+                                "L"
+                              )}
+                            </div>
 
-                        {event.notes && (
-                          <p className="mt-4 text-sm leading-relaxed text-zinc-500">
-                            {event.notes}
+                            <div>
+                              <p className="text-sm text-zinc-300">
+                                {tache.profiles?.nom || "Non assigné"}
+                              </p>
+
+                              <p className="text-xs text-zinc-500">
+                                {tache.deadline
+                                  ? `Deadline : ${tache.deadline}`
+                                  : "Deadline non renseignée"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
+                            {tache.statut || "À faire"}
+                          </span>
+
+                          <p className="mt-3 text-xs text-zinc-500">
+                            {tache.priorite || "Priorité"}
                           </p>
-                        )}
+                        </div>
                       </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
-                      <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
-                        {event.statut || "À faire"}
-                      </span>
+            {canViewInternalProjectData && (
+              <ProjectComments
+                projetId={projet.id}
+                initialComments={comments || []}
+              />
+            )}
+
+            {canViewInternalProjectData && (
+              <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-3xl font-bold">Timeline rollout</h2>
+
+                  {!isArtistUser && (
+                    <PermissionGate role={currentProfile?.role} permission="projects">
+                      <a
+                        href={`/rollout/nouveau?projet_id=${projet.id}`}
+                        className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+                      >
+                        + Ajouter
+                      </a>
+                    </PermissionGate>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  {(!rolloutEvents || rolloutEvents.length === 0) && (
+                    <p className="text-zinc-500">
+                      Aucune action rollout liée à ce projet.
+                    </p>
+                  )}
+
+                  {rolloutEvents?.map((event: any) => (
+                    <div
+                      key={event.id}
+                      className="rounded-2xl border border-zinc-800 bg-black p-5"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-sm text-zinc-500">
+                            {event.date_event || "Date non renseignée"}
+                          </p>
+
+                          <h3 className="mt-1 text-xl font-semibold">
+                            {event.titre}
+                          </h3>
+
+                          <p className="mt-2 text-zinc-400">
+                            {event.type || "Action rollout"}
+                          </p>
+
+                          {event.notes && (
+                            <p className="mt-4 text-sm leading-relaxed text-zinc-500">
+                              {event.notes}
+                            </p>
+                          )}
+                        </div>
+
+                        <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
+                          {event.statut || "À faire"}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {!isArtistUser && (
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+              <h2 className="text-3xl font-bold">Actions</h2>
+
+              <div className="mt-6 space-y-3">
+                {projet.artistes?.id && (
+                  <a
+                    href={`/artistes/${projet.artistes.id}`}
+                    className="block rounded-xl bg-white px-5 py-4 text-center font-medium text-black hover:opacity-90"
+                  >
+                    Voir artiste
+                  </a>
+                )}
+
+                <a
+                  href={`/rollout/nouveau?projet_id=${projet.id}`}
+                  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                >
+                  Ajouter action rollout
+                </a>
               </div>
             </div>
-          </div>
-
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-            <h2 className="text-3xl font-bold">Actions</h2>
-
-            <div className="mt-6 space-y-3">
-              {projet.artistes?.id && (
-                <a
-                  href={`/artistes/${projet.artistes.id}`}
-                  className="block rounded-xl bg-white px-5 py-4 text-center font-medium text-black hover:opacity-90"
-                >
-                  Voir artiste
-                </a>
-              )}
-
-              <a
-                href={`/projets/${projet.id}/modifier`}
-                className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
-              >
-                Modifier projet
-              </a>
-
-              <PermissionGate
-  role={currentProfile?.role}
-  permission="projects"
->
-  <a
-    href={`/rollout/nouveau?projet_id=${projet.id}`}
-    className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
-  >
-    + Ajouter
-  </a>
-</PermissionGate>
-            </div>
-          </div>
+          )}
         </div>
       </section>
     </main>
