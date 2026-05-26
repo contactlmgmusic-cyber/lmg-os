@@ -1,12 +1,48 @@
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
 export default async function ArtistesPage() {
-  const { data: artistes, error } = await supabase
+  const cookieStore = await cookies();
+
+  const supabaseAuth = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll() {},
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabaseAuth.auth.getUser();
+
+  const { data: currentProfile } = user
+    ? await supabase
+        .from("profiles")
+        .select("role, artiste_id")
+        .eq("id", user.id)
+        .single()
+    : { data: null };
+
+  let query = supabase
     .from("artistes")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (currentProfile?.role === "manager") {
+    query = query.eq("manager_id", user?.id);
+  }
+
+  const { data: artistes, error } = await query;
 
   if (error) {
     return (
@@ -16,35 +52,46 @@ export default async function ArtistesPage() {
     );
   }
 
+  const canCreateArtist =
+    currentProfile?.role === "admin" || currentProfile?.role === "manager";
+
   return (
     <main className="p-10 text-white">
       <div className="mb-10 flex items-center justify-between">
         <div>
           <h1 className="text-5xl font-bold">Artistes</h1>
-          <p className="mt-2 text-zinc-400">Gestion des artistes LMG</p>
+
+          <p className="mt-2 text-zinc-400">
+            {currentProfile?.role === "manager"
+              ? "Mes artistes assignés"
+              : "Gestion des artistes LMG"}
+          </p>
         </div>
 
-        <a
-          href="/artistes/nouveau"
-          className="rounded-xl bg-white px-5 py-3 font-medium text-black"
-        >
-          + Nouvel artiste
-        </a>
+        {canCreateArtist && (
+          <Link
+            href="/artistes/nouveau"
+            className="rounded-xl bg-white px-5 py-3 font-medium text-black"
+          >
+            + Nouvel artiste
+          </Link>
+        )}
       </div>
 
       {(!artistes || artistes.length === 0) && (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-10 text-center">
-          <p className="text-zinc-400">Aucun artiste pour le moment.</p>
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-10 text-center text-zinc-500">
+          Aucun artiste trouvé.
         </div>
       )}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {artistes?.map((artiste) => (
-          <div
+        {artistes?.map((artiste: any) => (
+          <Link
             key={artiste.id}
-            className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900"
+            href={`/artistes/${artiste.id}`}
+            className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900 transition hover:border-zinc-600"
           >
-            <div className="h-64 bg-zinc-800">
+            <div className="aspect-video bg-zinc-800">
               {artiste.photo_url ? (
                 <img
                   src={artiste.photo_url}
@@ -59,24 +106,17 @@ export default async function ArtistesPage() {
             </div>
 
             <div className="p-6">
-              <h2 className="text-2xl font-bold">{artiste.nom}</h2>
-
-              <p className="mt-2 text-zinc-400">
+              <p className="text-sm text-zinc-500">
                 {artiste.style || "Style non renseigné"}
               </p>
 
-              <p className="mt-3 text-sm text-zinc-500">
-                {artiste.instagram ? `@${artiste.instagram}` : "Aucun Instagram"}
-              </p>
+              <h2 className="mt-2 text-3xl font-bold">{artiste.nom}</h2>
 
-              <a
-                href={`/artistes/${artiste.id}`}
-                className="mt-6 block rounded-xl bg-white px-5 py-3 text-center font-medium text-black hover:bg-zinc-200"
-              >
-                Voir profil
-              </a>
+              <p className="mt-3 text-sm text-zinc-400">
+                {artiste.statut || "Statut non renseigné"}
+              </p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </main>
