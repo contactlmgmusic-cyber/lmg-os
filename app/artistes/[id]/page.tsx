@@ -49,7 +49,14 @@ const canViewInternalArtistData =
 
   const { data: artiste, error } = await supabase
     .from("artistes")
-    .select("*")
+    .select(`
+  *,
+  manager:profiles!artistes_manager_id_fkey (
+    id,
+    nom,
+    role
+  )
+`)
     .eq("id", id)
     .single();
 
@@ -178,7 +185,7 @@ const canViewInternalArtistData =
           <p className="text-sm text-zinc-500">Manager</p>
 
           <p className="mt-2 text-xl font-semibold">
-            {artiste.manager || "LMG"}
+            {artiste.manager?.nom || "LMG"}
           </p>
         </div>
 

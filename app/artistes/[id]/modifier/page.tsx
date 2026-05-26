@@ -20,6 +20,9 @@ export default function ModifierArtistePage() {
   const [bio, setBio] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
 
+  const [managerId, setManagerId] = useState("");
+const [managers, setManagers] = useState<any[]>([]);
+
   useEffect(() => {
     async function fetchArtiste() {
       const { data, error } = await supabaseBrowser
@@ -39,12 +42,26 @@ export default function ModifierArtistePage() {
       setStatut(data.statut || "");
       setBio(data.bio || data.notes || "");
       setPhotoUrl(data.photo_url || "");
+      setManagerId(data.manager_id || "");
 
       setLoading(false);
     }
 
     fetchArtiste();
   }, [id]);
+
+  async function fetchManagers() {
+  const { data } = await supabaseBrowser
+    .from("profiles")
+    .select("id, nom, role")
+    .in("role", ["admin", "manager"]);
+
+  if (data) {
+    setManagers(data);
+  }
+}
+
+fetchManagers();
 
   async function handleUpdate(e: React.FormEvent) {
     e.preventDefault();
@@ -58,6 +75,7 @@ export default function ModifierArtistePage() {
         statut,
         bio,
         photo_url: photoUrl,
+        manager_id: managerId || null,
       })
       .eq("id", id);
 
@@ -156,6 +174,26 @@ export default function ModifierArtistePage() {
             placeholder="Bio / notes artiste"
             className="min-h-40 w-full rounded-xl border border-zinc-800 bg-black p-4 text-white"
           />
+
+<div className="space-y-2">
+  <label className="text-sm text-zinc-400">
+    Manager
+  </label>
+
+  <select
+    value={managerId}
+    onChange={(e) => setManagerId(e.target.value)}
+    className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-white"
+  >
+    <option value="">Aucun manager</option>
+
+    {managers.map((manager) => (
+      <option key={manager.id} value={manager.id}>
+        {manager.nom} ({manager.role})
+      </option>
+    ))}
+  </select>
+</div>
 
           <button
             type="submit"
