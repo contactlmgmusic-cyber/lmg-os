@@ -351,6 +351,15 @@ export default async function ProjetDetailPage({
                   </a>
                 )}
 
+                <PermissionGate role={currentProfile?.role} permission="projects">
+  <a
+    href={`/projets/${projet.id}/modifier`}
+    className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
+  >
+    Modifier projet
+  </a>
+</PermissionGate>
+
                 <a
                   href={`/rollout/nouveau?projet_id=${projet.id}`}
                   className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
