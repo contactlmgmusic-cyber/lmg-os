@@ -31,21 +31,34 @@ export default function NewTaskForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const { error } = await supabaseBrowser.from("taches").insert({
-      titre,
-      description,
-      statut,
-      priorite,
-      deadline: deadline || null,
-      responsable_id: responsableId || null,
-      projet_id: projetId || null,
-    });
+   const { data: newTask, error } = await supabaseBrowser
+  .from("taches")
+  .insert({
+    titre,
+    description,
+    statut,
+    priorite,
+    deadline: deadline || null,
+    responsable_id: responsableId || null,
+    projet_id: projetId || null,
+  })
+  .select()
+  .single();
 
     if (error) {
       alert(error.message);
       return;
     }
 
+    if (responsableId) {
+  await supabaseBrowser.from("notifications").insert({
+    user_id: responsableId,
+    type: "task",
+    titre: "Nouvelle tâche assignée",
+    description: titre,
+    link: `/taches/${newTask.id}`,
+  });
+}
     await supabaseBrowser.from("activity_logs").insert({
       type: "Tâche",
       titre: "Nouvelle tâche créée",
