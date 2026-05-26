@@ -177,11 +177,6 @@ export default async function MonEspaceArtistePage() {
           </div>
         </div>
 
-<AssetUploader
-  artisteId={artiste.id}
-  initialAssets={assets || []}
-/>
-
         <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
           <h2 className="mb-6 text-3xl font-bold">Mes assets</h2>
 

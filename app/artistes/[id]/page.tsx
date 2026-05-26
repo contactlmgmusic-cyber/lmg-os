@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +11,35 @@ export default async function ArtisteProfilPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  const cookieStore = await cookies();
+
+  const supabaseAuth = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll() {},
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabaseAuth.auth.getUser();
+
+  const { data: currentProfile } = user
+    ? await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+    : { data: null };
+
+  const isArtistUser = currentProfile?.role === "artist";
 
   const { data: artiste, error } = await supabase
     .from("artistes")
@@ -45,13 +76,6 @@ export default async function ArtisteProfilPage({
           .order("created_at", { ascending: false })
       : { data: [] };
 
-      const { data: activities } = await supabase
-  .from("activity_logs")
-  .select("*")
-  .eq("artiste_id", id)
-  .order("created_at", { ascending: false })
-  .limit(15);
-
   const { data: assets } =
     projetIds.length > 0
       ? await supabase
@@ -66,6 +90,13 @@ export default async function ArtisteProfilPage({
           .in("projet_id", projetIds)
           .order("created_at", { ascending: false })
       : { data: [] };
+
+  const { data: activities } = await supabase
+    .from("activity_logs")
+    .select("*")
+    .eq("artiste_id", id)
+    .order("created_at", { ascending: false })
+    .limit(15);
 
   if (error || !artiste) {
     return (
@@ -156,12 +187,11 @@ export default async function ArtisteProfilPage({
             </p>
           </div>
         </div>
-                <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.6fr]">
+
+        <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.6fr]">
           <div className="space-y-6">
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-              <h2 className="text-3xl font-bold">
-                Bio / notes internes
-              </h2>
+              <h2 className="text-3xl font-bold">Bio / notes internes</h2>
 
               <p className="mt-5 leading-relaxed text-zinc-300">
                 {artiste.bio ||
@@ -171,9 +201,7 @@ export default async function ArtisteProfilPage({
             </div>
 
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-              <h2 className="mb-6 text-3xl font-bold">
-                Projets liés
-              </h2>
+              <h2 className="mb-6 text-3xl font-bold">Projets liés</h2>
 
               {(!projets || projets.length === 0) && (
                 <p className="text-zinc-500">
@@ -214,6 +242,10 @@ export default async function ArtisteProfilPage({
                       <p className="mt-2 text-sm text-zinc-400">
                         {projet.statut || "Statut non renseigné"}
                       </p>
+
+                      <p className="mt-1 text-sm text-zinc-500">
+                        Sortie : {projet.date_sortie || "Non renseignée"}
+                      </p>
                     </div>
                   </Link>
                 ))}
@@ -221,9 +253,7 @@ export default async function ArtisteProfilPage({
             </div>
 
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-              <h2 className="mb-6 text-3xl font-bold">
-                Assets artiste
-              </h2>
+              <h2 className="mb-6 text-3xl font-bold">Assets artiste</h2>
 
               {(!assets || assets.length === 0) && (
                 <p className="text-zinc-500">
@@ -243,7 +273,7 @@ export default async function ArtisteProfilPage({
                       {asset.type || "Asset"}
                     </p>
 
-                    <h3 className="mt-2 text-xl font-bold">
+                    <h3 className="mt-2 truncate text-xl font-bold">
                       {asset.nom}
                     </h3>
 
@@ -257,16 +287,16 @@ export default async function ArtisteProfilPage({
 
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
               <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-3xl font-bold">
-                  Tâches liées
-                </h2>
+                <h2 className="text-3xl font-bold">Tâches liées</h2>
 
-                <Link
-                  href="/taches/nouveau"
-                  className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
-                >
-                  + Ajouter tâche
-                </Link>
+                {!isArtistUser && (
+                  <Link
+                    href="/taches/nouveau"
+                    className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+                  >
+                    + Ajouter tâche
+                  </Link>
+                )}
               </div>
 
               {(!taches || taches.length === 0) && (
@@ -329,88 +359,91 @@ export default async function ArtisteProfilPage({
                 ))}
               </div>
             </div>
-          </div>
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-  <div className="mb-6 flex items-center justify-between">
-    <h2 className="text-3xl font-bold">
-      Timeline activité
-    </h2>
-  </div>
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+              <h2 className="mb-6 text-3xl font-bold">Timeline activité</h2>
 
-  {(!activities || activities.length === 0) && (
-    <p className="text-zinc-500">
-      Aucune activité liée à cet artiste.
-    </p>
-  )}
+              {(!activities || activities.length === 0) && (
+                <p className="text-zinc-500">
+                  Aucune activité liée à cet artiste.
+                </p>
+              )}
 
-  <div className="space-y-4">
-    {activities?.map((activity: any) => (
-      <div
-        key={activity.id}
-        className="rounded-2xl border border-zinc-800 bg-black p-5"
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-zinc-500">
-              {activity.type || "Activité"}
-            </p>
+              <div className="space-y-4">
+                {activities?.map((activity: any) => (
+                  <div
+                    key={activity.id}
+                    className="rounded-2xl border border-zinc-800 bg-black p-5"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-sm text-zinc-500">
+                          {activity.type || "Activité"}
+                        </p>
 
-            <h3 className="mt-1 text-xl font-semibold">
-              {activity.titre}
-            </h3>
+                        <h3 className="mt-1 text-xl font-semibold">
+                          {activity.titre}
+                        </h3>
 
-            {activity.description && (
-              <p className="mt-2 text-sm text-zinc-400">
-                {activity.description}
-              </p>
-            )}
-          </div>
+                        {activity.description && (
+                          <p className="mt-2 text-sm text-zinc-400">
+                            {activity.description}
+                          </p>
+                        )}
+                      </div>
 
-          <p className="text-xs text-zinc-500">
-            {activity.created_at
-              ? new Date(activity.created_at).toLocaleDateString()
-              : ""}
-          </p>
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
-
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-            <h2 className="text-3xl font-bold">Actions</h2>
-
-            <div className="mt-6 space-y-3">
-              <Link
-                href={`/artistes/${artiste.id}/modifier`}
-                className="block rounded-xl bg-white px-5 py-4 text-center font-medium text-black hover:opacity-90"
-              >
-                Modifier artiste
-              </Link>
-
-              <Link
-                href="/projets/nouveau"
-                className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
-              >
-                Ajouter projet
-              </Link>
-
-              <Link
-                href="/taches/nouveau"
-                className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
-              >
-                Ajouter tâche
-              </Link>
-
-              <Link
-                href="/drive"
-                className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
-              >
-                Ouvrir Drive
-              </Link>
+                      <p className="text-xs text-zinc-500">
+                        {activity.created_at
+                          ? new Date(activity.created_at).toLocaleDateString(
+                              "fr-FR"
+                            )
+                          : ""}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+
+          {!isArtistUser && (
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+              <h2 className="text-3xl font-bold">Actions</h2>
+
+              <div className="mt-6 space-y-3">
+                <Link
+                  href={`/artistes/${artiste.id}/modifier`}
+                  className="block rounded-xl bg-white px-5 py-4 text-center font-medium text-black hover:opacity-90"
+                >
+                  Modifier artiste
+                </Link>
+
+                <Link
+                  href="/taches/nouveau"
+                  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
+                >
+                  Ajouter tâche
+                </Link>
+
+                <Link
+                  href="/drive"
+                  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
+                >
+                  Ouvrir Drive
+                </Link>
+
+                {artiste.instagram && (
+                  <a
+                    href={`https://instagram.com/${artiste.instagram}`}
+                    target="_blank"
+                    className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
+                  >
+                    Ouvrir Instagram
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </main>
