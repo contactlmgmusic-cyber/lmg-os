@@ -1,16 +1,64 @@
 import { supabase } from "@/lib/supabase";
 import RolloutKanban from "@/components/RolloutKanban";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 
 export const dynamic = "force-dynamic";
 
 export default async function RolloutPage() {
+  const cookieStore = await cookies();
+
+  const supabaseServer = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+  getAll() {
+    return cookieStore.getAll();
+  },
+  setAll() {},
+},
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabaseServer.auth.getUser();
+
+  let profile = null;
+
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    profile = data;
+  }
+
+  const isArtistUser = profile?.role === "artiste";
+  const isManagerUser = profile?.role === "manager";
+
+  let artisteIds: string[] = [];
+
+  if (isManagerUser) {
+    const { data: managedArtists } = await supabase
+      .from("artistes")
+      .select("id")
+      .eq("manager_id", profile.id);
+
+    artisteIds = managedArtists?.map((a) => a.id) || [];
+  }
+
   const { data: events, error } = await supabase
     .from("rollout_events")
     .select(`
       *,
       projets (
         id,
-        titre
+        titre,
+        artiste_id
       )
     `)
     .order("date_event", { ascending: true });
@@ -18,8 +66,26 @@ export default async function RolloutPage() {
   if (error) {
     return (
       <main className="p-10 text-white">
-        <p className="text-red-400">Erreur : {error.message}</p>
+        <p className="text-red-400">
+          Erreur : {error.message}
+        </p>
       </main>
+    );
+  }
+
+  let filteredEvents = events || [];
+
+  if (isArtistUser) {
+    filteredEvents = filteredEvents.filter(
+      (event: any) =>
+        event.projets?.artiste_id === profile?.artiste_id
+    );
+  }
+
+  if (isManagerUser) {
+    filteredEvents = filteredEvents.filter(
+      (event: any) =>
+        artisteIds.includes(event.projets?.artiste_id)
     );
   }
 
@@ -31,22 +97,17 @@ export default async function RolloutPage() {
             LMG Rollout
           </p>
 
-          <h1 className="text-5xl font-bold">Kanban rollout</h1>
+          <h1 className="text-5xl font-bold">
+            Kanban rollout
+          </h1>
 
           <p className="mt-2 text-zinc-400">
             Suivi des actions promo, contenus, clips et sorties.
           </p>
         </div>
-
-        <a
-          href="/rollout/nouveau"
-          className="rounded-xl bg-white px-5 py-3 font-medium text-black"
-        >
-          + Ajouter action
-        </a>
       </div>
 
-      <RolloutKanban events={events || []} />
-    </main>
+<RolloutKanban events={filteredEvents} />
+   </main>
   );
 }

@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/supabase";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 
 export const dynamic = "force-dynamic";
 
@@ -35,30 +37,101 @@ export default async function CalendrierPage() {
     };
   });
 
-  const { data: projets } = await supabase
-    .from("projets")
-    .select("id, titre, date_sortie")
-    .not("date_sortie", "is", null);
+  const cookieStore = await cookies();
 
-  const { data: rolloutEvents } = await supabase
-    .from("rollout_events")
-    .select(`
+const supabaseAuth = createServerClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+  {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll() {},
+    },
+  }
+);
+
+const {
+  data: { user },
+} = await supabaseAuth.auth.getUser();
+
+const { data: currentProfile } = user
+  ? await supabase
+      .from("profiles")
+      .select("role, artiste_id")
+      .eq("id", user.id)
+      .single()
+  : { data: null };
+
+let projetsQuery = supabase
+  .from("projets")
+  .select(`
+    id,
+    titre,
+    date_sortie,
+    artiste_id,
+    artistes (
+      id,
+      manager_id
+    )
+  `)
+  .not("date_sortie", "is", null);
+
+let rolloutQuery = supabase
+  .from("rollout_events")
+  .select(`
+    id,
+    titre,
+    date_event,
+    type,
+    statut,
+    projets (
       id,
       titre,
-      date_event,
-      type,
-      statut,
-      projets (
+      artiste_id,
+      artistes (
         id,
-        titre
+        manager_id
       )
-    `)
-    .not("date_event", "is", null);
+    )
+  `)
+  .not("date_event", "is", null);
 
-  const { data: taches } = await supabase
-    .from("taches")
-    .select("id, titre, deadline, statut, priorite")
-    .not("deadline", "is", null);
+let tachesQuery = supabase
+  .from("taches")
+  .select(`
+    id,
+    titre,
+    deadline,
+    statut,
+    priorite,
+    projets (
+      id,
+      artiste_id,
+      artistes (
+        id,
+        manager_id
+      )
+    )
+  `)
+  .not("deadline", "is", null);
+
+if (currentProfile?.role === "manager") {
+  projetsQuery = projetsQuery.eq("artistes.manager_id", user?.id);
+  rolloutQuery = rolloutQuery.eq("projets.artistes.manager_id", user?.id);
+  tachesQuery = tachesQuery.eq("projets.artistes.manager_id", user?.id);
+}
+
+if (currentProfile?.role === "artist") {
+  projetsQuery = projetsQuery.eq("artiste_id", currentProfile.artiste_id);
+  rolloutQuery = rolloutQuery.eq("projets.artiste_id", currentProfile.artiste_id);
+  tachesQuery = tachesQuery.eq("projets.artiste_id", currentProfile.artiste_id);
+}
+
+const { data: projets } = await projetsQuery;
+const { data: rolloutEvents } = await rolloutQuery;
+const { data: taches } = await tachesQuery;
 
   const events = [
     ...(projets || []).map((projet: any) => ({
@@ -111,12 +184,14 @@ export default async function CalendrierPage() {
           </p>
         </div>
 
-        <a
-          href="/taches/nouveau"
-          className="rounded-2xl bg-white px-5 py-3 font-semibold text-black transition hover:bg-zinc-200"
-        >
-          + Nouvelle tâche
-        </a>
+        {currentProfile?.role !== "artist" && (
+  <a
+    href="/taches/nouveau"
+    className="rounded-2xl bg-white px-5 py-3 font-semibold text-black transition hover:bg-zinc-200"
+  >
+    + Nouvelle tâche
+  </a>
+)}
       </div>
 
       <div className="mb-4 grid grid-cols-7 gap-3 text-center text-sm text-zinc-500">
