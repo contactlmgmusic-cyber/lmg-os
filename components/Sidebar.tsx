@@ -9,6 +9,7 @@ import { supabaseBrowser } from "@/lib/supabase-browser";
 
 const allLinks = [
   { href: "/", label: "Dashboard" },
+  { href: "/manager", label: "Dashboard Manager" },
   { href: "/mes-taches", label: "Mes tâches" },
   { href: "/taches", label: "Tâches" },
   { href: "/calendrier", label: "Calendrier" },
