@@ -110,6 +110,11 @@ export default function Sidebar() {
       </div>
     </nav>
 
+{role !== "artist" && (
+  <div className="mb-4 shrink-0">
+    <NotificationsBell />
+  </div>
+)}
     <div className="mt-4 shrink-0">
       <LogoutButton />
     </div>
