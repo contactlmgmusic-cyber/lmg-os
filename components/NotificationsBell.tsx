@@ -18,25 +18,53 @@ export default function NotificationsBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
+  let channel: any;
+
+  async function init() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
+
+    if (!user) return;
+
     async function fetchNotifications() {
-      const {
-        data: { user },
-      } = await supabaseBrowser.auth.getUser();
-
-      if (!user) return;
-
       const { data } = await supabaseBrowser
         .from("notifications")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", user?.id)
         .order("created_at", { ascending: false })
         .limit(5);
 
       setNotifications(data || []);
     }
 
-    fetchNotifications();
-  }, []);
+    await fetchNotifications();
+
+    channel = supabaseBrowser
+      .channel("notifications-live")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user?.id}`,
+        },
+        async () => {
+          await fetchNotifications();
+        }
+      )
+      .subscribe();
+  }
+
+  init();
+
+  return () => {
+    if (channel) {
+      supabaseBrowser.removeChannel(channel);
+    }
+  };
+}, []);
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
