@@ -72,23 +72,25 @@ export default function Sidebar() {
       : allLinks;
 
   return (
-    <aside className="flex h-screen w-72 flex-col border-r border-zinc-900 bg-black p-6 text-white">
-      <Link href="/" className="mb-8">
-        <h1 className="text-5xl font-black tracking-tight">
-          LMG OS
-        </h1>
+  <aside className="flex h-screen w-72 flex-col border-r border-zinc-900 bg-black p-6 text-white">
+    <Link href="/" className="mb-8 shrink-0">
+      <h1 className="text-5xl font-black tracking-tight">LMG OS</h1>
 
-        <p className="mt-2 text-sm text-zinc-500">
-          Label Management System
-        </p>
-      </Link>
+      <p className="mt-2 text-sm text-zinc-500">
+        Label Management System
+      </p>
+    </Link>
 
-      <GlobalSearch />
+    {role !== "artist" && (
+      <div className="shrink-0">
+        <GlobalSearch />
+      </div>
+    )}
 
-      <nav className="mt-8 flex flex-1 flex-col gap-2">
+    <nav className="mt-8 flex-1 overflow-y-auto pr-1">
+      <div className="flex flex-col gap-2">
         {links.map((link) => {
-          const active =
-            pathname === link.href;
+          const active = pathname === link.href;
 
           return (
             <Link
@@ -104,13 +106,19 @@ export default function Sidebar() {
             </Link>
           );
         })}
-      </nav>
+      </div>
+    </nav>
 
-<div className="mb-4">
-  <NotificationsBell />
-</div>
+    {role !== "artist" && (
+      <div className="mt-4 shrink-0">
+        <NotificationsBell />
+      </div>
+    )}
 
+    <div className="mt-4 shrink-0">
       <LogoutButton />
-    </aside>
-  );
+    </div>
+  </aside>
+);
+
 }
