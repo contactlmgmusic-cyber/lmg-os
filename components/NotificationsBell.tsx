@@ -41,20 +41,28 @@ export default function NotificationsBell() {
     await fetchNotifications();
 
     channel = supabaseBrowser
-      .channel("notifications-live")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${user?.id}`,
-        },
-        async () => {
-          await fetchNotifications();
-        }
-      )
-      .subscribe();
+  .channel(`notifications-${user.id}`)
+  .on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "notifications",
+    },
+    async (payload) => {
+      const newNotification = payload.new as Notification & {
+        user_id: string;
+      };
+
+      if (newNotification.user_id === user.id) {
+        setNotifications((current) => [
+          newNotification,
+          ...current,
+        ]);
+      }
+    }
+  )
+  .subscribe();
   }
 
   init();
