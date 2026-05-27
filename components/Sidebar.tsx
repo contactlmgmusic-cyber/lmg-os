@@ -72,7 +72,7 @@ export default function Sidebar() {
       : allLinks;
 
   return (
-  <aside className="flex h-screen w-72 flex-col border-r border-zinc-900 bg-black p-6 text-white">
+  <aside className="fixed left-0 top-0 z-50 flex h-screen w-72 flex-col overflow-y-auto border-r border-zinc-900 bg-black p-6 text-white">
     <Link href="/" className="mb-8 shrink-0">
       <h1 className="text-5xl font-black tracking-tight">LMG OS</h1>
 
