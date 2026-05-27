@@ -37,6 +37,7 @@ export default function Sidebar() {
 
   const allLinks = [
     { href: "/", label: "Dashboard" },
+    { href: "/admin", label: "Dashboard Admin" },
 
     ...(role !== "artist"
       ? [
