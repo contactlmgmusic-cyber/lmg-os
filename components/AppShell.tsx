@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import LiveNotifications from "./LiveNotifications";
+import { useEffect, useState } from "react";
 
 export default function AppShell({
   children,
@@ -12,6 +12,10 @@ export default function AppShell({
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+  setMobileOpen(false);
+}, [pathname]);
 
   const hideSidebar =
     pathname === "/login" || pathname === "/signup";
