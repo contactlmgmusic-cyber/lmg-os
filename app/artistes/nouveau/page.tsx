@@ -1,113 +1,173 @@
-import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+"use client";
 
-export default async function ArtistesPage() {
-  const { data: artistes, error } = await supabase
-    .from("artistes")
-    .select("*")
-    .order("created_at", {
-      ascending: false,
-    });
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 
-  if (error) {
-    return (
-      <main className="p-10 text-white">
-        <p className="text-red-400">
-          Erreur : {error.message}
-        </p>
-      </main>
-    );
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
+
+export default function NouvelArtistePage() {
+  const router = useRouter();
+
+  const [nom, setNom] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [style, setStyle] = useState("");
+  const [statut, setStatut] = useState("Prospect");
+  const [bio, setBio] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!nom.trim()) {
+      alert("Le nom de l’artiste est obligatoire.");
+      return;
+    }
+
+    setLoading(true);
+
+    const { data: artiste, error } = await supabaseBrowser
+      .from("artistes")
+      .insert({
+        nom,
+        instagram,
+        style,
+        statut,
+        bio,
+        photo_url: photoUrl,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      alert(error.message);
+      setLoading(false);
+      return;
+    }
+
+    if (artiste) {
+      const slug = slugify(artiste.nom);
+
+      await supabaseBrowser.from("chat_channels").insert({
+        name: artiste.nom,
+        slug: `artiste-${slug}`,
+        type: "artiste",
+        artiste_id: artiste.id,
+      });
+
+      const { data: admins } = await supabaseBrowser
+        .from("profiles")
+        .select("id")
+        .in("role", ["admin", "manager"]);
+
+      if (admins && admins.length > 0) {
+        await supabaseBrowser.from("notifications").insert(
+          admins.map((admin) => ({
+            user_id: admin.id,
+            type: "artist",
+            titre: "Nouvel artiste créé",
+            description: artiste.nom,
+            link: `/artistes/${artiste.id}`,
+          }))
+        );
+      }
+    }
+
+    router.push("/artistes");
+    router.refresh();
   }
 
   return (
-    <main className="p-10 text-white">
-      <div className="mb-10 flex items-center justify-between">
-        <div>
-          <h1 className="text-5xl font-bold">
-            Artistes
-          </h1>
+    <main className="min-h-screen bg-black p-10 text-white">
+      <div className="mb-10">
+        <h1 className="text-5xl font-bold">Nouvel artiste</h1>
 
-          <p className="mt-2 text-zinc-400">
-            Gestion des artistes LMG
-          </p>
-        </div>
-
-        <Link
-          href="/artistes/nouveau"
-          className="rounded-xl bg-white px-5 py-3 font-medium text-black transition hover:opacity-90"
-        >
-          + Nouvel artiste
-        </Link>
+        <p className="mt-3 text-zinc-400">
+          Ajouter un artiste au roster LMG.
+        </p>
       </div>
 
-      {(!artistes || artistes.length === 0) && (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-10 text-center">
-          <p className="text-zinc-400">
-            Aucun artiste pour le moment.
-          </p>
-        </div>
-      )}
+      <form
+        onSubmit={handleSubmit}
+        className="grid max-w-6xl grid-cols-1 gap-8 xl:grid-cols-[1fr_420px]"
+      >
+        <div className="space-y-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+          <input
+            value={nom}
+            onChange={(e) => setNom(e.target.value)}
+            placeholder="Nom artiste"
+            className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+          />
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {artistes?.map((artiste) => (
-          <Link
-            key={artiste.id}
-            href={`/artistes/${artiste.id}`}
-            className="group block overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900 transition duration-300 hover:-translate-y-1 hover:border-zinc-600 hover:bg-zinc-950"
+          <input
+            value={instagram}
+            onChange={(e) => setInstagram(e.target.value)}
+            placeholder="Instagram"
+            className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+          />
+
+          <input
+            value={style}
+            onChange={(e) => setStyle(e.target.value)}
+            placeholder="Style musical"
+            className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+          />
+
+          <select
+            value={statut}
+            onChange={(e) => setStatut(e.target.value)}
+            className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
           >
-            <div className="relative h-64 overflow-hidden bg-zinc-800">
-              {artiste.photo_url ? (
-                <img
-                  src={artiste.photo_url}
-                  alt={artiste.nom}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-zinc-500">
-                  Aucun visuel
-                </div>
-              )}
+            <option value="Prospect">Prospect</option>
+            <option value="Signé">Signé</option>
+            <option value="Priorité LMG">Priorité LMG</option>
+            <option value="Développement">Développement</option>
+            <option value="Indépendant">Indépendant</option>
+          </select>
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Bio / notes artiste"
+            className="min-h-40 w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+          />
 
-              <div className="absolute bottom-4 left-4">
-                <span className="rounded-full border border-white/20 bg-black/40 px-3 py-1 text-xs text-white backdrop-blur-sm">
-                  {artiste.statut || "Indépendant"}
-                </span>
-              </div>
-            </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-xl bg-white px-5 py-4 font-medium text-black transition hover:bg-zinc-200 disabled:opacity-50"
+          >
+            {loading ? "Création..." : "Créer l’artiste"}
+          </button>
+        </div>
 
-            <div className="space-y-4 p-6">
-              <div>
-                <h2 className="text-2xl font-bold text-white">
-                  {artiste.nom}
-                </h2>
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+          <h2 className="mb-6 text-2xl font-bold">Photo artiste</h2>
 
-                <p className="mt-2 text-zinc-400">
-                  {artiste.style ||
-                    "Style non renseigné"}
-                </p>
-              </div>
+          {photoUrl && (
+            <img
+              src={photoUrl}
+              alt="Preview artiste"
+              className="mb-6 h-80 w-full rounded-2xl object-cover"
+            />
+          )}
 
-              <div className="flex items-center justify-between">
-                {artiste.instagram ? (
-                  <span className="text-sm text-zinc-500">
-                    @{artiste.instagram}
-                  </span>
-                ) : (
-                  <span className="text-sm text-zinc-600">
-                    Aucun Instagram
-                  </span>
-                )}
-
-                <div className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black transition group-hover:bg-zinc-200">
-                  Voir profil
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+          <input
+  value={photoUrl}
+  onChange={(e) => setPhotoUrl(e.target.value)}
+  placeholder="URL photo artiste"
+  className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+/>
+        </div>
+      </form>
     </main>
   );
 }
