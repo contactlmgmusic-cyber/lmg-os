@@ -55,6 +55,7 @@ export default function Sidebar() {
     { href: "/artistes", label: "Artistes" },
     { href: "/projets", label: "Projets" },
     { href: "/drive", label: "Drive" },
+    { href: "/contrats", label: "Contrats" },
     { href: "/assistant", label: "Assistant IA" },
     { href: "/chat", label: "Chat" },
     { href: "/mon-espace-artiste", label: "Mon espace artiste" },
