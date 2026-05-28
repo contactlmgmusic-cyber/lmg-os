@@ -73,6 +73,25 @@ export default function NouveauProjetPage() {
     });
 }
 
+if (projet) {
+  const { data: admins } = await supabaseBrowser
+    .from("profiles")
+    .select("id")
+    .in("role", ["admin", "manager"]);
+
+  if (admins && admins.length > 0) {
+    await supabaseBrowser.from("notifications").insert(
+      admins.map((admin) => ({
+        user_id: admin.id,
+        type: "project",
+        titre: "Nouveau projet créé",
+        description: projet.titre,
+        link: `/projets/${projet.id}`,
+      }))
+    );
+  }
+}
+
     router.push("/projets");
     router.refresh();
   }
