@@ -119,6 +119,12 @@ export default async function ArtisteProfilPage({
           .order("created_at", { ascending: false })
       : { data: [] };
 
+      const { data: contrats } = await supabase
+  .from("contrats")
+  .select("*")
+  .eq("artiste_id", id)
+  .order("created_at", { ascending: false });
+
   const { data: activities } = await supabase
     .from("activity_logs")
     .select("*")
@@ -367,6 +373,30 @@ export default async function ArtisteProfilPage({
                     ))}
                   </div>
                 </div>
+
+                <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="mb-6 text-3xl font-bold">Contrats liés</h2>
+
+  {(!contrats || contrats.length === 0) && (
+    <p className="text-zinc-500">Aucun contrat lié.</p>
+  )}
+
+  <div className="space-y-4">
+    {contrats?.map((contrat: any) => (
+      <Link
+        key={contrat.id}
+        href={`/contrats/${contrat.id}`}
+        className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <p className="text-sm text-zinc-500">{contrat.type}</p>
+        <h3 className="mt-1 text-xl font-semibold">{contrat.titre}</h3>
+        <p className="mt-2 text-sm text-zinc-500">
+          {contrat.statut || "Brouillon"}
+        </p>
+      </Link>
+    ))}
+  </div>
+</div>
 
                 <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
                   <h2 className="mb-6 text-3xl font-bold">
