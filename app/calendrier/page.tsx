@@ -133,6 +133,11 @@ const { data: projets } = await projetsQuery;
 const { data: rolloutEvents } = await rolloutQuery;
 const { data: taches } = await tachesQuery;
 
+const { data: bookings } = await supabase
+  .from("bookings")
+  .select("id, evenement, ville, date_event, statut")
+  .not("date_event", "is", null);
+
 const { data: contrats } = await supabase
   .from("contrats")
   .select("id, titre, statut, date_signature")
@@ -178,6 +183,15 @@ const { data: contrats } = await supabase
   type: `Contrat ${contrat.statut || ""}`,
   href: `/contrats/${contrat.id}`,
   color: "border-green-500/50 bg-green-500/10 text-green-200",
+})),
+
+...(bookings || []).map((booking: any) => ({
+  id: booking.id,
+  title: booking.evenement,
+  date: toDateKey(booking.date_event),
+  type: `Booking ${booking.statut || ""}`,
+  href: "/booking",
+  color: "border-pink-500/50 bg-pink-500/10 text-pink-200",
 })),
   ];
 
