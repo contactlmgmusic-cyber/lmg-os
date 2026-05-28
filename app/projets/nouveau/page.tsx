@@ -41,22 +41,37 @@ export default function NouveauProjetPage() {
   ) {
     e.preventDefault();
 
-    const { error } = await supabaseBrowser
-      .from("projets")
-      .insert({
-        titre,
-        type,
-        statut,
-        date_sortie: dateSortie || null,
-        notes,
-        cover_url: coverUrl,
-        artiste_id: artisteId || null,
-      });
+    const { data: projet, error } = await supabaseBrowser
+  .from("projets")
+  .insert({
+    titre,
+    type,
+    statut,
+    date_sortie: dateSortie || null,
+    notes,
+    cover_url: coverUrl,
+    artiste_id: artisteId || null,
+  })
+  .select()
+  .single();
 
     if (error) {
       alert(error.message);
       return;
     }
+
+    if (projet) {
+  await supabaseBrowser
+    .from("chat_channels")
+    .insert({
+      name: projet.titre,
+      slug: projet.titre
+        .toLowerCase()
+        .replace(/\s+/g, "-"),
+      type: "projet",
+      projet_id: projet.id,
+    });
+}
 
     router.push("/projets");
     router.refresh();
