@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
+type Channel = {
+  id: string;
+  name: string;
+  slug: string;
+  type: string | null;
+};
+
 type Message = {
   id: string;
   channel: string;
@@ -16,11 +23,21 @@ type Message = {
 };
 
 export default function ChatPage() {
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [activeChannel, setActiveChannel] = useState("general");
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState("");
-  const channel = "general";
 
-  async function fetchMessages() {
+  async function fetchChannels() {
+    const { data } = await supabaseBrowser
+      .from("chat_channels")
+      .select("*")
+      .order("created_at", { ascending: true });
+
+    setChannels(data || []);
+  }
+
+  async function fetchMessages(channelSlug = activeChannel) {
     const { data } = await supabaseBrowser
       .from("chat_messages")
       .select(`
@@ -30,17 +47,18 @@ export default function ChatPage() {
           role
         )
       `)
-      .eq("channel", channel)
+      .eq("channel", channelSlug)
       .order("created_at", { ascending: true });
 
     setMessages(data || []);
   }
 
   useEffect(() => {
-    fetchMessages();
+    fetchChannels();
+    fetchMessages("general");
 
     const realtimeChannel = supabaseBrowser
-      .channel("chat-general")
+      .channel("chat-live")
       .on(
         "postgres_changes",
         {
@@ -48,8 +66,12 @@ export default function ChatPage() {
           schema: "public",
           table: "chat_messages",
         },
-        async () => {
-          await fetchMessages();
+        async (payload) => {
+          const newMessage = payload.new as Message;
+
+          if (newMessage.channel === activeChannel) {
+            await fetchMessages(activeChannel);
+          }
         }
       )
       .subscribe();
@@ -57,7 +79,12 @@ export default function ChatPage() {
     return () => {
       supabaseBrowser.removeChannel(realtimeChannel);
     };
-  }, []);
+  }, [activeChannel]);
+
+  async function changeChannel(slug: string) {
+    setActiveChannel(slug);
+    await fetchMessages(slug);
+  }
 
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
@@ -69,13 +96,17 @@ export default function ChatPage() {
     } = await supabaseBrowser.auth.getUser();
 
     await supabaseBrowser.from("chat_messages").insert({
-      channel,
+      channel: activeChannel,
       user_id: user?.id || null,
       message,
     });
 
     setMessage("");
   }
+
+  const activeChannelData = channels.find(
+    (channel) => channel.slug === activeChannel
+  );
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -87,48 +118,89 @@ export default function ChatPage() {
         <h1 className="text-5xl font-bold">Chat interne</h1>
 
         <p className="mt-3 text-zinc-400">
-          Échanges rapides entre équipe, managers et artistes.
+          Channels équipe, rollout, artistes et projets.
         </p>
       </div>
 
-      <div className="flex h-[70vh] flex-col rounded-3xl border border-zinc-800 bg-zinc-900">
-        <div className="border-b border-zinc-800 p-5">
-          <p className="font-semibold">#general</p>
-        </div>
+      <div className="grid h-[72vh] grid-cols-1 gap-6 xl:grid-cols-[280px_1fr]">
+        <aside className="rounded-3xl border border-zinc-800 bg-zinc-900 p-5">
+          <h2 className="mb-4 text-xl font-bold">Channels</h2>
 
-        <div className="flex-1 space-y-4 overflow-y-auto p-5">
-          {messages.map((msg) => (
-            <div key={msg.id} className="rounded-2xl bg-black p-4">
-              <div className="mb-2 flex items-center justify-between gap-4">
-                <p className="font-semibold">
-                  {msg.profiles?.nom || "Utilisateur"}
-                </p>
+          <div className="space-y-2">
+            {channels.map((channel) => (
+              <button
+                key={channel.id}
+                type="button"
+                onClick={() => changeChannel(channel.slug)}
+                className={`w-full rounded-2xl px-4 py-3 text-left transition ${
+                  activeChannel === channel.slug
+                    ? "bg-white font-semibold text-black"
+                    : "bg-black text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                }`}
+              >
+                #{channel.name}
+              </button>
+            ))}
+          </div>
+        </aside>
 
-                <p className="text-xs text-zinc-500">
-                  {new Date(msg.created_at).toLocaleString("fr-FR")}
-                </p>
+        <section className="flex flex-col rounded-3xl border border-zinc-800 bg-zinc-900">
+          <div className="border-b border-zinc-800 p-5">
+            <p className="font-semibold">
+              #{activeChannelData?.name || activeChannel}
+            </p>
+
+            <p className="mt-1 text-sm text-zinc-500">
+              Channel {activeChannelData?.type || "general"}
+            </p>
+          </div>
+
+          <div className="flex-1 space-y-4 overflow-y-auto p-5">
+            {messages.length === 0 && (
+              <p className="text-zinc-500">
+                Aucun message pour le moment.
+              </p>
+            )}
+
+            {messages.map((msg) => (
+              <div key={msg.id} className="rounded-2xl bg-black p-4">
+                <div className="mb-2 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-semibold">
+                      {msg.profiles?.nom || "Utilisateur"}
+                    </p>
+
+                    <p className="text-xs text-zinc-500">
+                      {msg.profiles?.role || "member"}
+                    </p>
+                  </div>
+
+                  <p className="text-xs text-zinc-500">
+                    {new Date(msg.created_at).toLocaleString("fr-FR")}
+                  </p>
+                </div>
+
+                <p className="text-zinc-300">{msg.message}</p>
               </div>
+            ))}
+          </div>
 
-              <p className="text-zinc-300">{msg.message}</p>
-            </div>
-          ))}
-        </div>
+          <form
+            onSubmit={sendMessage}
+            className="flex gap-3 border-t border-zinc-800 p-5"
+          >
+            <input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={`Écrire dans #${activeChannelData?.name || activeChannel}...`}
+              className="flex-1 rounded-2xl border border-zinc-800 bg-black px-4 py-3 text-white"
+            />
 
-        <form
-          onSubmit={sendMessage}
-          className="flex gap-3 border-t border-zinc-800 p-5"
-        >
-          <input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Écrire un message..."
-            className="flex-1 rounded-2xl border border-zinc-800 bg-black px-4 py-3 text-white"
-          />
-
-          <button className="rounded-2xl bg-white px-6 py-3 font-semibold text-black">
-            Envoyer
-          </button>
-        </form>
+            <button className="rounded-2xl bg-white px-6 py-3 font-semibold text-black">
+              Envoyer
+            </button>
+          </form>
+        </section>
       </div>
     </main>
   );
