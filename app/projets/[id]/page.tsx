@@ -351,6 +351,15 @@ export default async function ProjetDetailPage({
                   </a>
                 )}
 
+                <a
+  href={`/chat?channel=${projet.titre
+    ?.toLowerCase()
+    .replace(/\s+/g, "-")}`}
+  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
+>
+  Ouvrir le channel projet
+</a>
+
                 <PermissionGate role={currentProfile?.role} permission="projects">
   <a
     href={`/projets/${projet.id}/modifier`}

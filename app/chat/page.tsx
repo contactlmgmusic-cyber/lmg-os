@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { useSearchParams } from "next/navigation";
 
 type Channel = {
   id: string;
@@ -24,7 +25,13 @@ type Message = {
 
 export default function ChatPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [activeChannel, setActiveChannel] = useState("general");
+  const searchParams = useSearchParams();
+
+const initialChannel =
+  searchParams.get("channel") || "general";
+
+const [activeChannel, setActiveChannel] =
+  useState(initialChannel);
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState("");
 
