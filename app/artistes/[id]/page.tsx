@@ -364,6 +364,18 @@ const canViewInternalArtistData =
                   >
                     Ouvrir Drive
                   </Link>
+
+                  <Link
+  href={`/chat?channel=artiste-${artiste.nom
+    ?.toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")}`}
+  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
+>
+  Ouvrir le channel artiste
+</Link>
                 </div>
               </div>
             )}
