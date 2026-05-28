@@ -133,6 +133,11 @@ const { data: projets } = await projetsQuery;
 const { data: rolloutEvents } = await rolloutQuery;
 const { data: taches } = await tachesQuery;
 
+const { data: contrats } = await supabase
+  .from("contrats")
+  .select("id, titre, statut, date_signature")
+  .not("date_signature", "is", null);
+
   const events = [
     ...(projets || []).map((projet: any) => ({
       id: projet.id,
@@ -165,6 +170,15 @@ const { data: taches } = await tachesQuery;
           ? "border-orange-500/50 bg-orange-500/10 text-orange-200"
           : "border-zinc-700 bg-zinc-800 text-zinc-300",
     })),
+
+    ...(contrats || []).map((contrat: any) => ({
+  id: contrat.id,
+  title: contrat.titre,
+  date: toDateKey(contrat.date_signature),
+  type: `Contrat ${contrat.statut || ""}`,
+  href: `/contrats/${contrat.id}`,
+  color: "border-green-500/50 bg-green-500/10 text-green-200",
+})),
   ];
 
   return (
