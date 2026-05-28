@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 type Channel = {
   id: string;
@@ -23,7 +24,7 @@ type Message = {
   } | null;
 };
 
-export default function ChatPage() {
+function ChatContent() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const searchParams = useSearchParams();
 
@@ -210,5 +211,12 @@ const [activeChannel, setActiveChannel] =
         </section>
       </div>
     </main>
+  );
+}
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-black p-10 text-white">Chargement du chat...</main>}>
+      <ChatContent />
+    </Suspense>
   );
 }
