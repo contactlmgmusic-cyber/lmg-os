@@ -21,6 +21,7 @@ export default function ModifierBookingPage() {
   const [contact, setContact] = useState("");
   const [notes, setNotes] = useState("");
   const [artisteId, setArtisteId] = useState("");
+  const [prochaineRelance, setProchaineRelance] = useState("");
 
   const [artistes, setArtistes] = useState<any[]>([]);
 
@@ -41,6 +42,7 @@ export default function ModifierBookingPage() {
         setStatut(booking.statut || "Prospect");
         setContact(booking.contact || "");
         setNotes(booking.notes || "");
+        setProchaineRelance(booking.prochaine_relance || "");
         setArtisteId(booking.artiste_id || "");
       }
 
@@ -72,6 +74,7 @@ export default function ModifierBookingPage() {
         contact,
         notes,
         artiste_id: artisteId || null,
+        prochaine_relance: prochaineRelance || null,
       })
       .eq("id", id);
 
@@ -132,6 +135,13 @@ export default function ModifierBookingPage() {
         </select>
 
         <textarea value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Contact" className="min-h-28 w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white" />
+
+<input
+  type="date"
+  value={prochaineRelance}
+  onChange={(e) => setProchaineRelance(e.target.value)}
+  className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+/>
 
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" className="min-h-40 w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white" />
 

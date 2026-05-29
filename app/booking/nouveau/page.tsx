@@ -17,6 +17,7 @@ export default function NouveauBookingPage() {
   const [notes, setNotes] = useState("");
   const [artisteId, setArtisteId] = useState("");
   const [artistes, setArtistes] = useState<any[]>([]);
+  const [prochaineRelance, setProchaineRelance] = useState("");
 
   useEffect(() => {
     async function fetchArtistes() {
@@ -44,6 +45,7 @@ export default function NouveauBookingPage() {
       contact: contact || null,
       notes: notes || null,
       artiste_id: artisteId || null,
+      prochaine_relance: prochaineRelance || null,
     });
 
     if (error) {
@@ -138,6 +140,13 @@ export default function NouveauBookingPage() {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
+
+<input
+  type="date"
+  value={prochaineRelance}
+  onChange={(e) => setProchaineRelance(e.target.value)}
+  className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+/>
 
         <button
           type="submit"

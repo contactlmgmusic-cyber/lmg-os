@@ -135,7 +135,7 @@ const { data: taches } = await tachesQuery;
 
 const { data: bookings } = await supabase
   .from("bookings")
-  .select("id, evenement, ville, date_event, statut")
+  .select("id, evenement, ville, date_event, statut, prochaine_relance")
   .not("date_event", "is", null);
 
 const { data: contrats } = await supabase
@@ -193,6 +193,17 @@ const { data: contrats } = await supabase
   href: "/booking",
   color: "border-pink-500/50 bg-pink-500/10 text-pink-200",
 })),
+
+...(bookings || [])
+  .filter((booking: any) => booking.prochaine_relance)
+  .map((booking: any) => ({
+    id: `${booking.id}-relance`,
+    title: `Relance : ${booking.evenement}`,
+    date: toDateKey(booking.prochaine_relance),
+    type: "Relance booking",
+    href: `/booking/${booking.id}`,
+    color: "border-yellow-500/50 bg-yellow-500/10 text-yellow-200",
+  })),
   ];
 
   return (
