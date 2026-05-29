@@ -125,6 +125,12 @@ export default async function ArtisteProfilPage({
   .eq("artiste_id", id)
   .order("created_at", { ascending: false });
 
+  const { data: bookings } = await supabase
+  .from("bookings")
+  .select("*")
+  .eq("artiste_id", id)
+  .order("date_event", { ascending: true });
+
   const { data: activities } = await supabase
     .from("activity_logs")
     .select("*")
@@ -459,6 +465,36 @@ export default async function ArtisteProfilPage({
     {(!contrats || contrats.length === 0) && (
       <p className="text-zinc-500">Aucun contrat lié.</p>
     )}
+
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="mb-6 text-3xl font-bold">Bookings liés</h2>
+
+  {(!bookings || bookings.length === 0) && (
+    <p className="text-zinc-500">Aucun booking lié.</p>
+  )}
+
+  <div className="space-y-4">
+    {bookings?.map((booking: any) => (
+      <Link
+        key={booking.id}
+        href={`/booking/${booking.id}`}
+        className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <p className="text-sm text-zinc-500">
+          {booking.ville || "Ville non renseignée"}
+        </p>
+
+        <h3 className="mt-1 text-xl font-semibold">
+          {booking.evenement}
+        </h3>
+
+        <p className="mt-2 text-sm text-zinc-500">
+          {booking.date_event || "Date non renseignée"} • {booking.statut || "Prospect"}
+        </p>
+      </Link>
+    ))}
+  </div>
+</div>
 
     <div className="space-y-4">
       {contrats?.map((contrat: any) => (
