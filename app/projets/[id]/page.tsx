@@ -374,76 +374,78 @@ export default async function ProjetDetailPage({
           </div>
 
           {!isArtistUser && (
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-              <h2 className="text-3xl font-bold">Actions</h2>
+  <>
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+      <h2 className="mb-6 text-3xl font-bold">Médias liés</h2>
 
-              <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-  <h2 className="mb-6 text-3xl font-bold">Médias liés</h2>
+      {(!medias || medias.length === 0) && (
+        <p className="text-zinc-500">Aucun média lié.</p>
+      )}
 
-  {(!medias || medias.length === 0) && (
-    <p className="text-zinc-500">Aucun média lié.</p>
-  )}
+      <div className="space-y-4">
+        {medias?.map((media: any) => (
+          <a
+            key={media.id}
+            href={`/medias/${media.id}`}
+            className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+          >
+            <p className="text-sm text-zinc-500">
+              {media.type || "Média"} • {media.plateforme || "Plateforme"}
+            </p>
 
-  <div className="space-y-4">
-    {medias?.map((media: any) => (
-      <Link
-        key={media.id}
-        href={`/medias/${media.id}`}
-        className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
-      >
-        <p className="text-sm text-zinc-500">
-          {media.type || "Média"} • {media.plateforme || "Plateforme"}
-        </p>
+            <h3 className="mt-1 text-xl font-semibold">
+              {media.nom}
+            </h3>
 
-        <h3 className="mt-1 text-xl font-semibold">
-          {media.nom}
-        </h3>
+            <p className="mt-2 text-sm text-zinc-500">
+              {media.statut || "À contacter"}
+            </p>
+          </a>
+        ))}
+      </div>
+    </div>
 
-        <p className="mt-2 text-sm text-zinc-500">
-          {media.statut || "À contacter"}
-        </p>
-      </Link>
-    ))}
-  </div>
-</div>
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+      <h2 className="text-3xl font-bold">Actions</h2>
 
-              <div className="mt-6 space-y-3">
-                {projet.artistes?.id && (
-                  <a
-                    href={`/artistes/${projet.artistes.id}`}
-                    className="block rounded-xl bg-white px-5 py-4 text-center font-medium text-black hover:opacity-90"
-                  >
-                    Voir artiste
-                  </a>
-                )}
+      <div className="mt-6 space-y-3">
+        {projet.artistes?.id && (
+          <a
+            href={`/artistes/${projet.artistes.id}`}
+            className="block rounded-xl bg-white px-5 py-4 text-center font-medium text-black hover:opacity-90"
+          >
+            Voir artiste
+          </a>
+        )}
 
-                <a
-  href={`/chat?channel=${projet.titre
-    ?.toLowerCase()
-    .replace(/\s+/g, "-")}`}
-  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
->
-  Ouvrir le channel projet
-</a>
+        <a
+          href={`/chat?channel=${projet.titre
+            ?.toLowerCase()
+            .replace(/\s+/g, "-")}`}
+          className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
+        >
+          Ouvrir le channel projet
+        </a>
 
-                <PermissionGate role={currentProfile?.role} permission="projects">
-  <a
-    href={`/projets/${projet.id}/modifier`}
-    className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
-  >
-    Modifier projet
-  </a>
-</PermissionGate>
+        <PermissionGate role={currentProfile?.role} permission="projects">
+          <a
+            href={`/projets/${projet.id}/modifier`}
+            className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
+          >
+            Modifier projet
+          </a>
+        </PermissionGate>
 
-                <a
-                  href={`/rollout/nouveau?projet_id=${projet.id}`}
-                  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
-                >
-                  Ajouter action rollout
-                </a>
-              </div>
-            </div>
-          )}
+        <a
+          href={`/rollout/nouveau?projet_id=${projet.id}`}
+          className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
+        >
+          Ajouter action rollout
+        </a>
+      </div>
+    </div>
+  </>
+)}
         </div>
       </section>
     </main>
