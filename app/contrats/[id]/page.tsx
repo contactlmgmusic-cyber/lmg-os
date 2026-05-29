@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import DeleteContractButton from "@/components/DeleteContractButton";
 
 export const dynamic = "force-dynamic";
 
@@ -95,6 +96,8 @@ export default async function ContratDetailPage({
           >
             Modifier contrat
           </Link>
+
+          <DeleteContractButton contratId={contrat.id} />
 
           <Link
             href={`/contrats/${contrat.id}/signer`}
