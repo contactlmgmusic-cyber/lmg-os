@@ -100,6 +100,12 @@ export default async function ProjetDetailPage({
     .eq("projet_id", id)
     .order("created_at", { ascending: false });
 
+    const { data: medias } = await supabase
+  .from("medias")
+  .select("*")
+  .eq("projet_id", id)
+  .order("created_at", { ascending: false });
+
   return (
     <main className="text-white">
       <div className="relative h-[460px] overflow-hidden">
@@ -325,6 +331,36 @@ export default async function ProjetDetailPage({
                             </p>
                           )}
                         </div>
+
+                        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="mb-6 text-3xl font-bold">Médias liés</h2>
+
+  {(!medias || medias.length === 0) && (
+    <p className="text-zinc-500">Aucun média lié.</p>
+  )}
+
+  <div className="space-y-4">
+    {medias?.map((media: any) => (
+      <Link
+        key={media.id}
+        href={`/medias/${media.id}`}
+        className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <p className="text-sm text-zinc-500">
+          {media.type || "Média"} • {media.plateforme || "Plateforme"}
+        </p>
+
+        <h3 className="mt-1 text-xl font-semibold">
+          {media.nom}
+        </h3>
+
+        <p className="mt-2 text-sm text-zinc-500">
+          {media.statut || "À contacter"}
+        </p>
+      </Link>
+    ))}
+  </div>
+</div>
 
                         <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
                           {event.statut || "À faire"}
