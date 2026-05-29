@@ -144,6 +144,13 @@ export default async function BookingDetailPage({
               >
                 Retour pipeline
               </Link>
+
+              <Link
+  href={`/booking/${booking.id}/modifier`}
+  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
+>
+  Modifier booking
+</Link>
             </div>
           </div>
         </aside>
