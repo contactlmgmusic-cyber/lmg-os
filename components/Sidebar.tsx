@@ -54,6 +54,7 @@ export default function Sidebar() {
     { href: "/rollout", label: "Rollout" },
     { href: "/artistes", label: "Artistes" },
     { href: "/projets", label: "Projets" },
+    { href: "/booking", label: "Booking" },
     { href: "/drive", label: "Drive" },
     { href: "/contrats", label: "Contrats" },
     { href: "/assistant", label: "Assistant IA" },
