@@ -1,16 +1,46 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
 export default async function ContratsPage() {
-  const { data: contrats, error } = await supabase
+  const cookieStore = await cookies();
+
+  const supabaseAuth = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll() {},
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabaseAuth.auth.getUser();
+
+  const { data: currentProfile } = user
+    ? await supabase
+        .from("profiles")
+        .select("role, artiste_id")
+        .eq("id", user.id)
+        .single()
+    : { data: null };
+
+  let query = supabase
     .from("contrats")
     .select(`
       *,
       artistes (
         id,
-        nom
+        nom,
+        manager_id
       ),
       projets (
         id,
@@ -19,6 +49,20 @@ export default async function ContratsPage() {
     `)
     .order("created_at", { ascending: false });
 
+  if (currentProfile?.role === "manager") {
+    query = query.eq("artistes.manager_id", user?.id);
+  }
+
+  if (currentProfile?.role === "artiste" && currentProfile?.artiste_id) {
+    query = query.eq("artiste_id", currentProfile.artiste_id);
+  }
+
+  if (currentProfile?.role === "prestataire") {
+    query = query.eq("id", "00000000-0000-0000-0000-000000000000");
+  }
+
+  const { data: contrats, error } = await query;
+
   if (error) {
     return (
       <main className="p-10 text-white">
@@ -26,6 +70,11 @@ export default async function ContratsPage() {
       </main>
     );
   }
+
+  const canCreateContract =
+    currentProfile?.role === "super_admin" ||
+    currentProfile?.role === "admin" ||
+    currentProfile?.role === "manager";
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -38,16 +87,22 @@ export default async function ContratsPage() {
           <h1 className="text-5xl font-bold">Contrats</h1>
 
           <p className="mt-3 text-zinc-400">
-            Contrats artistes, booking, prestations et split sheets.
+            {currentProfile?.role === "manager"
+              ? "Contrats de mes artistes"
+              : currentProfile?.role === "artiste"
+              ? "Mes contrats"
+              : "Contrats artistes, booking, prestations et split sheets."}
           </p>
         </div>
 
-        <Link
-          href="/contrats/nouveau"
-          className="rounded-xl bg-white px-5 py-3 font-medium text-black"
-        >
-          + Nouveau contrat
-        </Link>
+        {canCreateContract && (
+          <Link
+            href="/contrats/nouveau"
+            className="rounded-xl bg-white px-5 py-3 font-medium text-black"
+          >
+            + Nouveau contrat
+          </Link>
+        )}
       </div>
 
       {(!contrats || contrats.length === 0) && (
