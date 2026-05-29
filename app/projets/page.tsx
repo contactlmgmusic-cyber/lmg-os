@@ -45,15 +45,13 @@ export default async function ProjetsPage() {
     `)
     .order("created_at", { ascending: false });
 
-  if (currentProfile?.role === "manager") {
-    query = query.eq("artistes.manager_id", user?.id);
-  }
+if (currentProfile?.role === "manager") {
+  query = query.eq("artistes.manager_id", user?.id);
+}
 
-  if (currentProfile?.role === "artist") {
-    query = query.or(
-      `artiste_id.eq.${currentProfile.artiste_id},statut.eq.Sorti`
-    );
-  }
+if (currentProfile?.role === "artiste" && currentProfile?.artiste_id) {
+  query = query.eq("artiste_id", currentProfile.artiste_id);
+}
 
   const { data: projets, error } = await query;
 
@@ -66,8 +64,9 @@ export default async function ProjetsPage() {
   }
 
   const canCreateProject =
-    currentProfile?.role === "admin" ||
-    currentProfile?.role === "manager";
+  currentProfile?.role === "super_admin" ||
+  currentProfile?.role === "admin" ||
+  currentProfile?.role === "manager";
 
   return (
     <main className="p-10 text-white">
