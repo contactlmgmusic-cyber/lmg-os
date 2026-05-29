@@ -57,6 +57,7 @@ export default function Sidebar() {
     { href: "/booking", label: "Booking" },
     { href: "/drive", label: "Drive" },
     { href: "/contrats", label: "Contrats" },
+    { href: "/finances", label: "Finances" },
     { href: "/assistant", label: "Assistant IA" },
     { href: "/chat", label: "Chat" },
     { href: "/mon-espace-artiste", label: "Mon espace artiste" },
