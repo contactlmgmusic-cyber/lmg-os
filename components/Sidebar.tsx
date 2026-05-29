@@ -51,6 +51,7 @@ export default function Sidebar() {
 
     { href: "/mes-taches", label: "Mes tâches" },
     { href: "/taches", label: "Tâches" },
+    { href: "/medias", label: "CRM Médias" },
     { href: "/calendrier", label: "Calendrier" },
     { href: "/rollout", label: "Rollout" },
     { href: "/artistes", label: "Artistes" },
