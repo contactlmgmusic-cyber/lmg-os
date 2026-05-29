@@ -466,7 +466,29 @@ export default async function ArtisteProfilPage({
       <p className="text-zinc-500">Aucun contrat lié.</p>
     )}
 
-    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+    <div className="space-y-4">
+      {contrats?.map((contrat: any) => (
+        <Link
+          key={contrat.id}
+          href={`/contrats/${contrat.id}`}
+          className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+        >
+          <p className="text-sm text-zinc-500">{contrat.type}</p>
+
+          <h3 className="mt-1 text-xl font-semibold">
+            {contrat.titre}
+          </h3>
+
+          <p className="mt-2 text-sm text-zinc-500">
+            {contrat.statut || "Brouillon"}
+          </p>
+        </Link>
+      ))}
+    </div>
+  </div>
+)}
+
+   <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
   <h2 className="mb-6 text-3xl font-bold">Bookings liés</h2>
 
   {(!bookings || bookings.length === 0) && (
@@ -495,28 +517,6 @@ export default async function ArtisteProfilPage({
     ))}
   </div>
 </div>
-
-    <div className="space-y-4">
-      {contrats?.map((contrat: any) => (
-        <Link
-          key={contrat.id}
-          href={`/contrats/${contrat.id}`}
-          className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
-        >
-          <p className="text-sm text-zinc-500">{contrat.type}</p>
-
-          <h3 className="mt-1 text-xl font-semibold">
-            {contrat.titre}
-          </h3>
-
-          <p className="mt-2 text-sm text-zinc-500">
-            {contrat.statut || "Brouillon"}
-          </p>
-        </Link>
-      ))}
-    </div>
-  </div>
-)}
 
             {!isArtistUser && (
               <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
