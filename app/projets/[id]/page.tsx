@@ -343,7 +343,7 @@ export default async function ProjetDetailPage({
             </div>
 
           {!isArtistUser && (
-            <>
+            <aside className="space-y-6">
               <div className="mb-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
                 <h2 className="mb-6 text-3xl font-bold">Médias liés</h2>
 
@@ -413,7 +413,7 @@ export default async function ProjetDetailPage({
                 </a>
               </div>
             </div>
-            </>
+            </aside>
           )}
         </div>
       </section>
