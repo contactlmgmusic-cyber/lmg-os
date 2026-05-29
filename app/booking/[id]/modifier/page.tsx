@@ -82,6 +82,29 @@ export default function ModifierBookingPage() {
       alert(error.message);
       setSaving(false);
       return;
+
+      if (statut === "Payé" && cachet) {
+  const { data: existingFinance } = await supabaseBrowser
+    .from("finances")
+    .select("id")
+    .eq("booking_id", id)
+    .eq("type", "Revenu")
+    .maybeSingle();
+
+  if (!existingFinance) {
+    await supabaseBrowser.from("finances").insert({
+      titre: `Cachet booking - ${evenement}`,
+      type: "Revenu",
+      categorie: "Booking",
+      montant: Number(cachet),
+      statut: "Payé",
+      date_operation: dateEvent || new Date().toISOString().split("T")[0],
+      artiste_id: artisteId || null,
+      booking_id: id,
+      notes: `Revenu généré automatiquement depuis le booking ${evenement}`,
+    });
+  }
+}
     }
 
     router.push(`/booking/${id}`);
