@@ -41,6 +41,9 @@ export default async function ArtistesPage() {
   if (currentProfile?.role === "manager") {
     query = query.eq("manager_id", user?.id);
   }
+  if (currentProfile?.role === "artiste" && currentProfile?.artiste_id) {
+  query = query.eq("id", currentProfile.artiste_id);
+}
 
   const { data: artistes, error } = await query;
 
@@ -53,7 +56,8 @@ export default async function ArtistesPage() {
   }
 
   const canCreateArtist =
-    currentProfile?.role === "admin" || currentProfile?.role === "manager";
+  currentProfile?.role === "super_admin" ||
+  currentProfile?.role === "admin";
 
   return (
     <main className="p-10 text-white">
