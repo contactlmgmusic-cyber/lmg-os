@@ -31,6 +31,8 @@ export default function DashboardPage() {
   const [upcomingProjects, setUpcomingProjects] = useState<any[]>([]);
   const [urgentTasks, setUrgentTasks] = useState<any[]>([]);
   const [followUps, setFollowUps] = useState<any[]>([]);
+  const [topArtistes, setTopArtistes] = useState<any[]>([]);
+  const [topProjets, setTopProjets] = useState<any[]>([]);
 
   function monthStart() {
     const d = new Date();
@@ -71,9 +73,13 @@ export default function DashboardPage() {
       .eq("statut", "Relancé");
 
     const { data: finances } = await supabaseBrowser
-      .from("finances")
-      .select("*")
-      .gte("date_operation", start);
+  .from("finances")
+  .select(`
+    *,
+    artistes ( id, nom ),
+    projets ( id, titre )
+  `)
+  .gte("date_operation", start);
 
     const revenus =
       finances
@@ -84,6 +90,58 @@ export default function DashboardPage() {
       finances
         ?.filter((f: any) => f.type === "Dépense")
         .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
+
+const byArtist = new Map();
+
+finances?.forEach((f: any) => {
+  if (!f.artistes?.nom) return;
+
+  const current = byArtist.get(f.artistes.nom) || {
+    revenus: 0,
+    depenses: 0,
+  };
+
+  if (f.type === "Revenu") current.revenus += Number(f.montant || 0);
+  if (f.type === "Dépense") current.depenses += Number(f.montant || 0);
+
+  byArtist.set(f.artistes.nom, current);
+});
+
+const artistRanking = Array.from(byArtist.entries())
+  .map(([nom, values]: any) => ({
+    nom,
+    resultat: values.revenus - values.depenses,
+    revenus: values.revenus,
+    depenses: values.depenses,
+  }))
+  .sort((a, b) => b.resultat - a.resultat)
+  .slice(0, 5);
+
+const byProject = new Map();
+
+finances?.forEach((f: any) => {
+  if (!f.projets?.titre) return;
+
+  const current = byProject.get(f.projets.titre) || {
+    revenus: 0,
+    depenses: 0,
+  };
+
+  if (f.type === "Revenu") current.revenus += Number(f.montant || 0);
+  if (f.type === "Dépense") current.depenses += Number(f.montant || 0);
+
+  byProject.set(f.projets.titre, current);
+});
+
+const projectRanking = Array.from(byProject.entries())
+  .map(([titre, values]: any) => ({
+    titre,
+    resultat: values.revenus - values.depenses,
+    revenus: values.revenus,
+    depenses: values.depenses,
+  }))
+  .sort((a, b) => b.resultat - a.resultat)
+  .slice(0, 5);
 
     const { data: projects } = await supabaseBrowser
       .from("projets")
@@ -150,6 +208,8 @@ const royaltiesPayees =
     setUpcomingProjects(projects || []);
     setUrgentTasks(tasks || []);
     setFollowUps(relances || []);
+    setTopArtistes(artistRanking);
+    setTopProjets(projectRanking);
     setActivityLogs(logs || []);
   }
 
@@ -187,7 +247,25 @@ const royaltiesPayees =
       </div>
 
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+  <KpiCard
+    label="CA du mois"
+    value={`${stats.revenusMois.toFixed(2)} €`}
+    tone="green"
+  />
+
+  <KpiCard
+    label="Dépenses du mois"
+    value={`${stats.depensesMois.toFixed(2)} €`}
+    tone="red"
+  />
+
+  <KpiCard
+    label="Résultat du mois"
+    value={`${stats.resultatMois.toFixed(2)} €`}
+  />
+</div>
+
+<div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
   <KpiCard
     label="Royalties à payer"
     value={`${stats.royaltiesDues.toFixed(2)} €`}
@@ -200,10 +278,6 @@ const royaltiesPayees =
     tone="green"
   />
 </div>
-        <KpiCard label="CA du mois" value={`${stats.revenusMois.toFixed(2)} €`} tone="green" />
-        <KpiCard label="Dépenses du mois" value={`${stats.depensesMois.toFixed(2)} €`} tone="red" />
-        <KpiCard label="Résultat du mois" value={`${stats.resultatMois.toFixed(2)} €`} />
-      </div>
 
       <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
         <KpiCard label="Artistes" value={stats.artistes} />
@@ -272,6 +346,68 @@ const royaltiesPayees =
           ))}
         </Panel>
       </div>
+
+<div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+  <Panel title="Top artistes rentables" href="/finances">
+    {topArtistes.length === 0 && (
+      <p className="text-zinc-500">Aucune donnée artiste.</p>
+    )}
+
+    {topArtistes.map((artist) => (
+      <div
+        key={artist.nom}
+        className="rounded-2xl border border-zinc-800 bg-black p-5"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-semibold">{artist.nom}</h3>
+
+          <p
+            className={
+              artist.resultat >= 0 ? "text-green-400" : "text-red-400"
+            }
+          >
+            {artist.resultat.toFixed(2)} €
+          </p>
+        </div>
+
+        <p className="mt-2 text-sm text-zinc-500">
+          Revenus : {artist.revenus.toFixed(2)} € • Dépenses :{" "}
+          {artist.depenses.toFixed(2)} €
+        </p>
+      </div>
+    ))}
+  </Panel>
+
+  <Panel title="Top projets rentables" href="/finances">
+    {topProjets.length === 0 && (
+      <p className="text-zinc-500">Aucune donnée projet.</p>
+    )}
+
+    {topProjets.map((project) => (
+      <div
+        key={project.titre}
+        className="rounded-2xl border border-zinc-800 bg-black p-5"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-semibold">{project.titre}</h3>
+
+          <p
+            className={
+              project.resultat >= 0 ? "text-green-400" : "text-red-400"
+            }
+          >
+            {project.resultat.toFixed(2)} €
+          </p>
+        </div>
+
+        <p className="mt-2 text-sm text-zinc-500">
+          Revenus : {project.revenus.toFixed(2)} € • Dépenses :{" "}
+          {project.depenses.toFixed(2)} €
+        </p>
+      </div>
+    ))}
+  </Panel>
+</div>
 
       <section className="mt-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
         <h2 className="mb-6 text-3xl font-bold">Activité récente</h2>
