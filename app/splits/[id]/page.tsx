@@ -155,6 +155,13 @@ export default async function SplitDetailPage({
                   Voir artiste
                 </Link>
               )}
+
+              <Link
+  href={`/splits/${split.id}/supprimer`}
+  className="block rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-center text-red-300 hover:bg-red-500/20"
+>
+  Supprimer split sheet
+</Link>
             </div>
           </section>
         </aside>
