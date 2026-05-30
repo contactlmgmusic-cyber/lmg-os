@@ -79,6 +79,13 @@ export default async function AdminPage() {
           <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
             <h2 className="text-3xl font-bold">Actions admin</h2>
 
+<Link
+  href="/notifications/generer"
+  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
+>
+  Générer notifications
+</Link>
+
             <div className="mt-6 space-y-3">
               <Link
                 href="/invitations"
