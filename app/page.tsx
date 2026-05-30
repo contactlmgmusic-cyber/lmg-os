@@ -23,6 +23,8 @@ export default function DashboardPage() {
     revenusMois: 0,
     depensesMois: 0,
     resultatMois: 0,
+    royaltiesDues: 0,
+    royaltiesPayees: 0,
   });
 
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
@@ -111,6 +113,26 @@ export default function DashboardPage() {
       .order("created_at", { ascending: false })
       .limit(8);
 
+      const { data: royalties } = await supabaseBrowser
+      .from("royalties")
+      .select("*");
+
+const royaltiesDues =
+  royalties
+    ?.filter((r: any) => r.statut !== "Payé")
+    .reduce(
+      (acc: number, r: any) => acc + Number(r.montant_du || 0),
+      0
+    ) || 0;
+
+const royaltiesPayees =
+  royalties
+    ?.filter((r: any) => r.statut === "Payé")
+    .reduce(
+      (acc: number, r: any) => acc + Number(r.montant_du || 0),
+      0
+    ) || 0;
+
     setStats({
       artistes: artistesCount || 0,
       projets: projetsCount || 0,
@@ -121,6 +143,8 @@ export default function DashboardPage() {
       revenusMois: revenus,
       depensesMois: depenses,
       resultatMois: revenus - depenses,
+      royaltiesDues,
+      royaltiesPayees,
     });
 
     setUpcomingProjects(projects || []);
@@ -163,6 +187,19 @@ export default function DashboardPage() {
       </div>
 
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+  <KpiCard
+    label="Royalties à payer"
+    value={`${stats.royaltiesDues.toFixed(2)} €`}
+    tone="red"
+  />
+
+  <KpiCard
+    label="Royalties payées"
+    value={`${stats.royaltiesPayees.toFixed(2)} €`}
+    tone="green"
+  />
+</div>
         <KpiCard label="CA du mois" value={`${stats.revenusMois.toFixed(2)} €`} tone="green" />
         <KpiCard label="Dépenses du mois" value={`${stats.depensesMois.toFixed(2)} €`} tone="red" />
         <KpiCard label="Résultat du mois" value={`${stats.resultatMois.toFixed(2)} €`} />
