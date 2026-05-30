@@ -31,8 +31,7 @@ export default function Sidebar() {
 
   const superAdminLinks = [
     { href: "/", label: "Dashboard" },
-    { href: "/executive", label: "Executive" },
-    { href: "/admin", label: "Dashboard Admin" },
+    { href: "/admin", label: "Administration" },
     { href: "/manager", label: "Dashboard Manager" },
     { href: "/artistes", label: "Artistes" },
     { href: "/projets", label: "Projets" },
