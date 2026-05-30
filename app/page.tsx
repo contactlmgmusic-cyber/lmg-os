@@ -155,7 +155,7 @@ export default function DashboardPage() {
           Legacy Music Group
         </p>
 
-        <h1 className="text-6xl font-bold">Cockpit CEO</h1>
+        <h1 className="text-6xl font-bold">Executive P & DG</h1>
 
         <p className="mt-3 text-zinc-400">
           Vue globale du label : business, finance, sorties, contrats et opérations.
