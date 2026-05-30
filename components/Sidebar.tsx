@@ -38,6 +38,7 @@ export default function Sidebar() {
     { href: "/medias", label: "CRM Médias" },
     { href: "/contrats", label: "Contrats" },
     { href: "/splits", label: "Split Sheets" },
+    { href: "/royalties", label: "Royalties" },
     { href: "/finances", label: "Finances" },
     { href: "/taches", label: "Tâches" },
     { href: "/mes-taches", label: "Mes tâches" },
@@ -59,6 +60,7 @@ export default function Sidebar() {
     { href: "/medias", label: "CRM Médias" },
     { href: "/contrats", label: "Contrats" },
     { href: "/splits", label: "Split Sheets" },
+    { href: "/royalties", label: "Royalties" },
     { href: "/taches", label: "Tâches" },
     { href: "/mes-taches", label: "Mes tâches" },
     { href: "/calendrier", label: "Calendrier" },
@@ -70,6 +72,7 @@ export default function Sidebar() {
     { href: "/mon-espace-artiste", label: "Mon espace artiste" },
     { href: "/projets", label: "Mes projets" },
     { href: "/contrats", label: "Mes contrats" },
+    { href: "/royalties", label: "Mes royalties" },
     { href: "/calendrier", label: "Calendrier" },
     { href: "/chat", label: "Chat" },
   ];
