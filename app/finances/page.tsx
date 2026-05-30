@@ -255,11 +255,12 @@ export default async function FinancesPage() {
         )}
 
         <div className="space-y-4">
-          {finances?.map((finance: any) => (
-            <div
-              key={finance.id}
-              className="rounded-2xl border border-zinc-800 bg-black p-5"
-            >
+         {finances?.map((finance: any) => (
+  <Link
+    key={finance.id}
+    href={`/finances/${finance.id}`}
+    className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+  >
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <h3 className="text-xl font-semibold">{finance.titre}</h3>
@@ -288,7 +289,7 @@ export default async function FinancesPage() {
                   </p>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
