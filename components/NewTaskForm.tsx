@@ -53,7 +53,7 @@ export default function NewTaskForm({
     if (responsableId) {
   await supabaseBrowser.from("notifications").insert({
     user_id: responsableId,
-    type: "task",
+    type: "tache",
     titre: "Nouvelle tâche assignée",
     description: titre,
     link: `/taches/${newTask.id}`,
