@@ -83,12 +83,32 @@ if (projet) {
     await supabaseBrowser.from("notifications").insert(
       admins.map((admin) => ({
         user_id: admin.id,
-        type: "project",
+        type: "projet",
         titre: "Nouveau projet créé",
         description: projet.titre,
         link: `/projets/${projet.id}`,
       }))
     );
+  }
+}
+
+if (projet && artisteId) {
+  const { data: artisteProfile } = await supabaseBrowser
+    .from("profiles")
+    .select("id")
+    .eq("artiste_id", artisteId)
+    .single();
+
+  if (artisteProfile) {
+    await supabaseBrowser
+      .from("notifications")
+      .insert({
+        user_id: artisteProfile.id,
+        type: "projet",
+        titre: "Nouveau projet ajouté",
+        description: projet.titre,
+        link: `/projets/${projet.id}`,
+      });
   }
 }
 
