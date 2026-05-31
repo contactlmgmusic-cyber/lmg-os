@@ -106,6 +106,57 @@ export default async function ProjetDetailPage({
   .eq("projet_id", id)
   .order("created_at", { ascending: false });
 
+  
+
+const { data: finances } = await supabase
+  .from("finances")
+  .select("*")
+  .eq("projet_id", id);
+
+const { data: royalties } = await supabase
+  .from("royalties")
+  .select("*")
+  .eq("projet_id", id);
+
+const { data: splits } = await supabase
+  .from("splits")
+  .select("*")
+  .eq("projet_id", id);
+
+  const revenus =
+  finances
+    ?.filter((f: any) => f.type === "Revenu")
+    .reduce(
+      (acc: number, f: any) => acc + Number(f.montant || 0),
+      0
+    ) || 0;
+
+const depenses =
+  finances
+    ?.filter((f: any) => f.type === "Dépense")
+    .reduce(
+      (acc: number, f: any) => acc + Number(f.montant || 0),
+      0
+    ) || 0;
+
+const resultat = revenus - depenses;
+
+const royaltiesPayees =
+  royalties
+    ?.filter((r: any) => r.statut === "Payé")
+    .reduce(
+      (acc: number, r: any) => acc + Number(r.montant_du || 0),
+      0
+    ) || 0;
+
+const royaltiesAPayer =
+  royalties
+    ?.filter((r: any) => r.statut !== "Payé")
+    .reduce(
+      (acc: number, r: any) => acc + Number(r.montant_du || 0),
+      0
+    ) || 0;
+
   return (
     <main className="text-white">
       <div className="relative h-[460px] overflow-hidden">
@@ -144,35 +195,63 @@ export default async function ProjetDetailPage({
       </div>
 
       <section className="p-10">
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Type</p>
-            <p className="mt-2 text-xl font-semibold">
-              {projet.type || "Non renseigné"}
-            </p>
-          </div>
+       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+    <p className="text-sm text-zinc-500">Type</p>
+    <p className="mt-2 text-xl font-semibold">
+      {projet.type || "Non renseigné"}
+    </p>
+  </div>
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Statut</p>
-            <p className="mt-2 text-xl font-semibold">
-              {projet.statut || "Non renseigné"}
-            </p>
-          </div>
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+    <p className="text-sm text-zinc-500">Statut</p>
+    <p className="mt-2 text-xl font-semibold">
+      {projet.statut || "Non renseigné"}
+    </p>
+  </div>
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Date de sortie</p>
-            <p className="mt-2 text-xl font-semibold">
-              {projet.date_sortie || "Non renseignée"}
-            </p>
-          </div>
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+    <p className="text-sm text-zinc-500">Date de sortie</p>
+    <p className="mt-2 text-xl font-semibold">
+      {projet.date_sortie || "Non renseignée"}
+    </p>
+  </div>
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Artiste</p>
-            <p className="mt-2 text-xl font-semibold">
-              {projet.artistes?.nom || "Non lié"}
-            </p>
-          </div>
-        </div>
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+    <p className="text-sm text-zinc-500">Artiste</p>
+    <p className="mt-2 text-xl font-semibold">
+      {projet.artistes?.nom || "Non lié"}
+    </p>
+  </div>
+
+  <div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+    <p className="text-sm text-green-300">CA généré</p>
+    <p className="mt-2 text-xl font-semibold">
+      {revenus.toFixed(2)} €
+    </p>
+  </div>
+
+  <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-6">
+    <p className="text-sm text-red-300">Dépenses</p>
+    <p className="mt-2 text-xl font-semibold">
+      {depenses.toFixed(2)} €
+    </p>
+  </div>
+
+  <div className="rounded-3xl border border-zinc-700 bg-zinc-900 p-6">
+    <p className="text-sm text-zinc-400">Résultat net</p>
+    <p className="mt-2 text-xl font-semibold">
+      {resultat.toFixed(2)} €
+    </p>
+  </div>
+
+  <div className="rounded-3xl border border-yellow-500/30 bg-yellow-500/10 p-6">
+    <p className="text-sm text-yellow-300">Royalties à payer</p>
+    <p className="mt-2 text-xl font-semibold">
+      {royaltiesAPayer.toFixed(2)} €
+    </p>
+  </div>
+</div>
 
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="space-y-6">
@@ -373,6 +452,36 @@ export default async function ProjetDetailPage({
                   ))}
                 </div>
               </div>
+
+              <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="mb-6 text-3xl font-bold">
+    Split Sheet
+  </h2>
+
+  {(!splits || splits.length === 0) && (
+    <p className="text-zinc-500">
+      Aucun split lié.
+    </p>
+  )}
+
+  <div className="space-y-4">
+    {splits?.map((split: any) => (
+      <Link
+        key={split.id}
+        href={`/splits/${split.id}`}
+        className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <h3 className="text-xl font-semibold">
+          {split.nom}
+        </h3>
+
+        <p className="mt-2 text-sm text-zinc-500">
+          {split.role} • {split.pourcentage}%
+        </p>
+      </Link>
+    ))}
+  </div>
+</div>
 
               <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
               <h2 className="text-3xl font-bold">Actions</h2>
