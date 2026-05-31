@@ -1,9 +1,5 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 function fallbackResponse(prompt: string) {
   return {
     strategy: [
@@ -47,9 +43,15 @@ export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
 
-    if (!process.env.OPENAI_API_KEY) {
+    const apiKey = process.env.OPENAI_API_KEY;
+
+    if (!apiKey) {
       return Response.json(fallbackResponse(prompt));
     }
+
+    const openai = new OpenAI({
+      apiKey,
+    });
 
     try {
       const completion = await openai.chat.completions.create({
@@ -80,8 +82,7 @@ Réponds uniquement en JSON valide avec cette structure :
         ],
       });
 
-      const content =
-        completion.choices[0].message.content || "{}";
+      const content = completion.choices[0].message.content || "{}";
 
       return Response.json(JSON.parse(content));
     } catch (openAiError: any) {
