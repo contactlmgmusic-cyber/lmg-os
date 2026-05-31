@@ -223,6 +223,32 @@ const { data: contrats } = await supabase
           </p>
         </div>
 
+        <div className="mb-8 flex flex-wrap gap-3">
+  <span className="rounded-full border border-violet-500/50 bg-violet-500/10 px-3 py-1 text-sm text-violet-200">
+    Sorties
+  </span>
+
+  <span className="rounded-full border border-cyan-500/50 bg-cyan-500/10 px-3 py-1 text-sm text-cyan-200">
+    Rollout
+  </span>
+
+  <span className="rounded-full border border-green-500/50 bg-green-500/10 px-3 py-1 text-sm text-green-200">
+    Contrats
+  </span>
+
+  <span className="rounded-full border border-pink-500/50 bg-pink-500/10 px-3 py-1 text-sm text-pink-200">
+    Bookings
+  </span>
+
+  <span className="rounded-full border border-yellow-500/50 bg-yellow-500/10 px-3 py-1 text-sm text-yellow-200">
+    Relances
+  </span>
+
+  <span className="rounded-full border border-red-500/50 bg-red-500/10 px-3 py-1 text-sm text-red-200">
+    Urgences
+  </span>
+</div>
+
         {currentProfile?.role !== "artist" && (
   <a
     href="/taches/nouveau"
