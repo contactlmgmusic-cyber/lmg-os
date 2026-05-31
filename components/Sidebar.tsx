@@ -7,6 +7,8 @@ import GlobalSearch from "./GlobalSearch";
 import LogoutButton from "./LogoutButton";
 import NotificationsBell from "./NotificationsBell";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { ROLES } from "@/lib/roles";
+
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -100,16 +102,16 @@ export default function Sidebar() {
   ];
 
   const links =
-    role === "artiste"
+    role === ROLES.ARTISTE
       ? artisteLinks
-      : role === "manager"
+      : role === ROLES.MANAGER
       ? managerLinks
-      : role === "prestataire"
+      : role === ROLES.PRESTATAIRE
       ? prestataireLinks
       : superAdminLinks;
 
   const canUseGlobalTools =
-    role === "super_admin" || role === "admin" || role === "manager";
+    role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN || role === ROLES.MANAGER;
 
   return (
     <aside className="fixed left-0 top-0 z-50 flex h-screen w-72 flex-col overflow-y-auto border-r border-zinc-900 bg-black p-6 text-white">
