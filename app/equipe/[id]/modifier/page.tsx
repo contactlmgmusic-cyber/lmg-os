@@ -99,11 +99,11 @@ export default function ModifierMembrePage() {
           onChange={(e) => setRole(e.target.value)}
           className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
         >
-          <option value="admin">Admin</option>
-          <option value="manager">Manager</option>
-          <option value="member">Member</option>
-          <option value="artist">Artist</option>
-          <option value="guest">Guest</option>
+          <option value="artiste">Artiste</option>
+<option value="manager">Manager</option>
+<option value="prestataire">Prestataire</option>
+<option value="admin">Admin</option>
+<option value="super_admin">Super Admin</option>
         </select>
 
         <select
