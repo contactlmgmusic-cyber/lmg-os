@@ -79,6 +79,33 @@ export default async function MonEspaceArtistePage() {
           .order("created_at", { ascending: false })
       : { data: [] };
 
+      const { data: royalties } = await supabase
+  .from("royalties")
+  .select("*")
+  .eq("artiste_id", profile.artiste_id);
+
+  const { data: contrats } = await supabase
+  .from("contrats")
+  .select("*")
+  .eq("artiste_id", profile.artiste_id)
+  .order("created_at", { ascending: false });
+
+  const royaltiesAPayer =
+  royalties
+    ?.filter((r: any) => r.statut !== "Payé")
+    .reduce(
+      (acc: number, r: any) => acc + Number(r.montant_du || 0),
+      0
+    ) || 0;
+
+const royaltiesPayees =
+  royalties
+    ?.filter((r: any) => r.statut === "Payé")
+    .reduce(
+      (acc: number, r: any) => acc + Number(r.montant_du || 0),
+      0
+    ) || 0;
+
   return (
     <main className="min-h-screen bg-black text-white">
       <div className="relative h-[420px] overflow-hidden">
@@ -112,11 +139,19 @@ export default async function MonEspaceArtistePage() {
       </div>
 
       <section className="p-10">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-6">
           <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
             <p className="text-sm text-zinc-500">Projets</p>
             <p className="mt-2 text-4xl font-bold">{projets?.length || 0}</p>
           </div>
+
+          <div className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-6">
+  <p className="text-sm text-blue-300">Contrats</p>
+
+  <p className="mt-2 text-4xl font-bold">
+    {contrats?.length || 0}
+  </p>
+</div>
 
           <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
             <p className="text-sm text-zinc-500">Tâches</p>
@@ -127,6 +162,26 @@ export default async function MonEspaceArtistePage() {
             <p className="text-sm text-zinc-500">Assets</p>
             <p className="mt-2 text-4xl font-bold">{assets?.length || 0}</p>
           </div>
+
+          <div className="rounded-3xl border border-yellow-500/30 bg-yellow-500/10 p-6">
+  <p className="text-sm text-yellow-300">
+    Royalties à payer
+  </p>
+
+  <p className="mt-2 text-4xl font-bold">
+    {royaltiesAPayer.toFixed(0)} €
+  </p>
+</div>
+
+<div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+  <p className="text-sm text-green-300">
+    Royalties payées
+  </p>
+
+  <p className="mt-2 text-4xl font-bold">
+    {royaltiesPayees.toFixed(0)} €
+  </p>
+</div>
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -175,6 +230,36 @@ export default async function MonEspaceArtistePage() {
               ))}
             </div>
           </div>
+
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="mb-6 text-3xl font-bold">
+    Mes contrats
+  </h2>
+
+  {(!contrats || contrats.length === 0) && (
+    <p className="text-zinc-500">
+      Aucun contrat disponible.
+    </p>
+  )}
+
+  <div className="space-y-4">
+    {contrats?.map((contrat: any) => (
+      <Link
+        key={contrat.id}
+        href={`/contrats/${contrat.id}`}
+        className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <h3 className="text-xl font-bold">
+          {contrat.titre}
+        </h3>
+
+        <p className="mt-2 text-sm text-zinc-500">
+          {contrat.statut || "En attente"}
+        </p>
+      </Link>
+    ))}
+  </div>
+</div>
         </div>
 
         <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
