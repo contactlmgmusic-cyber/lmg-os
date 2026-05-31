@@ -11,27 +11,40 @@ import { supabaseBrowser } from "@/lib/supabase-browser";
 export default function Sidebar() {
   const pathname = usePathname();
   const [role, setRole] = useState<string | null>(null);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
-    async function fetchRole() {
-      const { data: { user } } = await supabaseBrowser.auth.getUser();
+    async function fetchUserData() {
+      const {
+        data: { user },
+      } = await supabaseBrowser.auth.getUser();
+
       if (!user) return;
 
-      const { data } = await supabaseBrowser
+      const { data: profile } = await supabaseBrowser
         .from("profiles")
         .select("role")
         .eq("id", user.id)
         .single();
 
-      setRole(data?.role || null);
+      setRole(profile?.role || null);
+
+      const { count } = await supabaseBrowser
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("is_read", false);
+
+      setUnreadNotifications(count || 0);
     }
 
-    fetchRole();
+    fetchUserData();
   }, []);
 
   const superAdminLinks = [
     { href: "/", label: "Dashboard" },
     { href: "/admin", label: "Administration" },
+    { href: "/notifications", label: "Notifications" },
     { href: "/artistes", label: "Artistes" },
     { href: "/projets", label: "Projets" },
     { href: "/booking", label: "Booking" },
@@ -53,6 +66,7 @@ export default function Sidebar() {
 
   const managerLinks = [
     { href: "/manager", label: "Dashboard Manager" },
+    { href: "/notifications", label: "Notifications" },
     { href: "/artistes", label: "Mes artistes" },
     { href: "/projets", label: "Projets" },
     { href: "/booking", label: "Booking" },
@@ -69,6 +83,7 @@ export default function Sidebar() {
 
   const artisteLinks = [
     { href: "/mon-espace-artiste", label: "Mon espace artiste" },
+    { href: "/notifications", label: "Notifications" },
     { href: "/projets", label: "Mes projets" },
     { href: "/contrats", label: "Mes contrats" },
     { href: "/royalties", label: "Mes royalties" },
@@ -77,6 +92,7 @@ export default function Sidebar() {
   ];
 
   const prestataireLinks = [
+    { href: "/notifications", label: "Notifications" },
     { href: "/mes-taches", label: "Mes tâches" },
     { href: "/drive", label: "Drive" },
     { href: "/calendrier", label: "Calendrier" },
@@ -112,18 +128,31 @@ export default function Sidebar() {
         <div className="flex flex-col gap-2">
           {links.map((link) => {
             const active = pathname === link.href;
+            const isNotifications = link.href === "/notifications";
 
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`rounded-2xl px-4 py-3 text-lg transition ${
+                className={`flex items-center justify-between rounded-2xl px-4 py-3 text-lg transition ${
                   active
                     ? "bg-white text-black"
                     : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
                 }`}
               >
-                {link.label}
+                <span>{link.label}</span>
+
+                {isNotifications && unreadNotifications > 0 && (
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-bold ${
+                      active
+                        ? "bg-black text-white"
+                        : "bg-red-500 text-white"
+                    }`}
+                  >
+                    {unreadNotifications}
+                  </span>
+                )}
               </Link>
             );
           })}
