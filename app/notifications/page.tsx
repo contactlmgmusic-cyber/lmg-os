@@ -14,9 +14,12 @@ type Notification = {
   created_at: string | null;
 };
 
+type Filter = "all" | "unread" | "read";
+
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<Filter>("all");
 
   async function loadNotifications() {
     setLoading(true);
@@ -65,28 +68,44 @@ export default function NotificationsPage() {
     await loadNotifications();
   }
 
+  async function deleteNotification(id: string) {
+    await supabaseBrowser
+      .from("notifications")
+      .delete()
+      .eq("id", id);
+
+    await loadNotifications();
+  }
+
   useEffect(() => {
     loadNotifications();
   }, []);
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
+  const readCount = notifications.filter((n) => n.is_read).length;
+
+  const filteredNotifications = notifications.filter((notification) => {
+    if (filter === "unread") return !notification.is_read;
+    if (filter === "read") return notification.is_read;
+    return true;
+  });
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
-      <div className="mb-10 flex items-center justify-between">
+      <div className="mb-10 flex items-start justify-between gap-6">
         <div>
           <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
             LMG Alerts
           </p>
 
-          <h1 className="text-5xl font-bold">Notifications</h1>
+          <h1 className="text-5xl font-bold">Centre notifications</h1>
 
           <p className="mt-3 text-zinc-400">
-            {unreadCount} notification(s) non lue(s).
+            {unreadCount} non lue(s), {readCount} lue(s).
           </p>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Link
             href="/notifications/generer"
             className="rounded-xl border border-zinc-700 px-5 py-3 text-zinc-300 hover:bg-zinc-800"
@@ -104,16 +123,45 @@ export default function NotificationsPage() {
         </div>
       </div>
 
+      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <StatCard label="Toutes" value={notifications.length} />
+        <StatCard label="Non lues" value={unreadCount} />
+        <StatCard label="Lues" value={readCount} />
+      </div>
+
+      <div className="mb-8 flex flex-wrap gap-3">
+        <FilterButton
+          active={filter === "all"}
+          onClick={() => setFilter("all")}
+        >
+          Toutes
+        </FilterButton>
+
+        <FilterButton
+          active={filter === "unread"}
+          onClick={() => setFilter("unread")}
+        >
+          Non lues
+        </FilterButton>
+
+        <FilterButton
+          active={filter === "read"}
+          onClick={() => setFilter("read")}
+        >
+          Lues
+        </FilterButton>
+      </div>
+
       {loading && <p className="text-zinc-500">Chargement...</p>}
 
-      {!loading && notifications.length === 0 && (
+      {!loading && filteredNotifications.length === 0 && (
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-10 text-center text-zinc-500">
-          Aucune notification.
+          Aucune notification dans ce filtre.
         </div>
       )}
 
       <div className="space-y-4">
-        {notifications.map((notification) => (
+        {filteredNotifications.map((notification) => (
           <div
             key={notification.id}
             className={`rounded-3xl border p-6 ${
@@ -123,12 +171,12 @@ export default function NotificationsPage() {
             }`}
           >
             <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm text-zinc-500">
+              <div className="min-w-0">
+                <span className={getTypeClass(notification.type)}>
                   {notification.type || "notification"}
-                </p>
+                </span>
 
-                <h2 className="mt-1 text-2xl font-bold">
+                <h2 className="mt-3 text-2xl font-bold">
                   {notification.titre || "Notification"}
                 </h2>
 
@@ -162,6 +210,14 @@ export default function NotificationsPage() {
                     Marquer lu
                   </button>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => deleteNotification(notification.id)}
+                  className="rounded-xl border border-red-500/40 px-4 py-2 text-sm text-red-300 hover:bg-red-500/10"
+                >
+                  Supprimer
+                </button>
               </div>
             </div>
           </div>
@@ -169,4 +225,63 @@ export default function NotificationsPage() {
       </div>
     </main>
   );
+}
+
+function StatCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+      <p className="text-sm text-zinc-500">{label}</p>
+      <h2 className="mt-2 text-4xl font-bold">{value}</h2>
+    </div>
+  );
+}
+
+function FilterButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-xl px-5 py-3 text-sm font-medium ${
+        active
+          ? "bg-white text-black"
+          : "border border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function getTypeClass(type: string | null) {
+  const base = "inline-block rounded-full px-3 py-1 text-xs";
+
+  if (type === "contract") {
+    return `${base} border border-green-500/40 bg-green-500/10 text-green-300`;
+  }
+
+  if (type === "booking") {
+    return `${base} border border-pink-500/40 bg-pink-500/10 text-pink-300`;
+  }
+
+  if (type === "project") {
+    return `${base} border border-violet-500/40 bg-violet-500/10 text-violet-300`;
+  }
+
+  if (type === "media") {
+    return `${base} border border-cyan-500/40 bg-cyan-500/10 text-cyan-300`;
+  }
+
+  if (type === "royalty") {
+    return `${base} border border-yellow-500/40 bg-yellow-500/10 text-yellow-300`;
+  }
+
+  return `${base} border border-zinc-700 bg-zinc-800 text-zinc-300`;
 }
