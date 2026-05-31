@@ -52,7 +52,6 @@ export default function Sidebar() {
   ];
 
   const managerLinks = [
-    { href: "/", label: "Dashboard" },
     { href: "/manager", label: "Dashboard Manager" },
     { href: "/artistes", label: "Mes artistes" },
     { href: "/projets", label: "Projets" },
