@@ -137,6 +137,16 @@ export default async function ArtisteProfilPage({
   .eq("artiste_id", id)
   .order("created_at", { ascending: false });
 
+  const { data: finances } = await supabase
+  .from("finances")
+  .select("*")
+  .eq("artiste_id", id);
+
+const { data: royalties } = await supabase
+  .from("royalties")
+  .select("*")
+  .eq("email", artiste.email || "");
+
   const { data: activities } = await supabase
     .from("activity_logs")
     .select("*")
@@ -163,6 +173,40 @@ export default async function ArtisteProfilPage({
 
   const lastRelease = releasedProjects[0];
   const nextRelease = upcomingProjects[0];
+
+  const revenus =
+  finances
+    ?.filter((f: any) => f.type === "Revenu")
+    .reduce(
+      (acc: number, f: any) => acc + Number(f.montant || 0),
+      0
+    ) || 0;
+
+const depenses =
+  finances
+    ?.filter((f: any) => f.type === "Dépense")
+    .reduce(
+      (acc: number, f: any) => acc + Number(f.montant || 0),
+      0
+    ) || 0;
+
+const resultat = revenus - depenses;
+
+const royaltiesPayees =
+  royalties
+    ?.filter((r: any) => r.statut === "Payé")
+    .reduce(
+      (acc: number, r: any) => acc + Number(r.montant_du || 0),
+      0
+    ) || 0;
+
+const royaltiesAPayer =
+  royalties
+    ?.filter((r: any) => r.statut !== "Payé")
+    .reduce(
+      (acc: number, r: any) => acc + Number(r.montant_du || 0),
+      0
+    ) || 0;
 
   const artistChannelSlug = `artiste-${slugify(artiste.nom || "artiste")}`;
 
@@ -274,6 +318,48 @@ export default async function ArtisteProfilPage({
             </p>
           </div>
         </div>
+
+<div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+  <p className="text-sm text-green-300">CA généré</p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {canViewInternalArtistData
+      ? `${revenus.toFixed(2)} €`
+      : "Privé"}
+  </p>
+</div>
+
+<div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-6">
+  <p className="text-sm text-red-300">Dépenses</p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {canViewInternalArtistData
+      ? `${depenses.toFixed(2)} €`
+      : "Privé"}
+  </p>
+</div>
+
+<div className="rounded-3xl border border-zinc-700 bg-zinc-900 p-6">
+  <p className="text-sm text-zinc-400">Résultat net</p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {canViewInternalArtistData
+      ? `${resultat.toFixed(2)} €`
+      : "Privé"}
+  </p>
+</div>
+
+<div className="rounded-3xl border border-yellow-500/30 bg-yellow-500/10 p-6">
+  <p className="text-sm text-yellow-300">
+    Royalties à payer
+  </p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {canViewInternalArtistData
+      ? `${royaltiesAPayer.toFixed(2)} €`
+      : "Privé"}
+  </p>
+</div>
 
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.6fr]">
           <div className="space-y-6">
