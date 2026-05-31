@@ -52,6 +52,21 @@ export default async function ManagerPage() {
       ? await supabase.from("medias").select("*").in("artiste_id", artisteIds)
       : { data: [] };
 
+const { data: finances } =
+  artisteIds.length > 0
+    ? await supabase.from("finances").select("*").in("artiste_id", artisteIds)
+    : { data: [] };
+
+const { data: royalties } =
+  artisteIds.length > 0
+    ? await supabase.from("royalties").select("*").in("artiste_id", artisteIds)
+    : { data: [] };
+
+const { data: taches } =
+  artisteIds.length > 0
+    ? await supabase.from("taches").select("*").in("artiste_id", artisteIds)
+    : { data: [] };
+
   const projetsActifs =
     projets?.filter((p: any) => p.statut !== "Sorti").length || 0;
 
@@ -70,6 +85,33 @@ export default async function ManagerPage() {
   const mediasAContacter =
     medias?.filter((m: any) => !m.statut || m.statut === "À contacter").length || 0;
 
+const chiffreAffaires =
+  finances
+    ?.filter((f: any) => f.type === "Revenu")
+    .reduce(
+      (acc: number, f: any) => acc + Number(f.montant || 0),
+      0
+    ) || 0;
+
+const royaltiesAPayer =
+  royalties
+    ?.filter((r: any) => r.statut !== "Payé")
+    .reduce(
+      (acc: number, r: any) => acc + Number(r.montant_du || 0),
+      0
+    ) || 0;
+
+const royaltiesPayees =
+  royalties
+    ?.filter((r: any) => r.statut === "Payé")
+    .reduce(
+      (acc: number, r: any) => acc + Number(r.montant_du || 0),
+      0
+    ) || 0;
+
+const tachesOuvertes =
+  taches?.filter((t: any) => t.statut !== "Terminé").length || 0;
+
   return (
     <main className="min-h-screen bg-black p-10 text-white">
       <div className="mb-10">
@@ -86,9 +128,13 @@ export default async function ManagerPage() {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <Card label="Mes artistes" value={artistes?.length || 0} />
-        <Card label="Projets actifs" value={projetsActifs} />
-        <Card label="Bookings confirmés" value={bookingsConfirmes} />
-        <Card label="Contrats à signer" value={contratsASigner} />
+<Card label="Projets actifs" value={projetsActifs} />
+<Card label="CA généré (€)" value={Math.round(chiffreAffaires)} />
+<Card label="Royalties à payer (€)" value={Math.round(royaltiesAPayer)} />
+<Card label="Bookings confirmés" value={bookingsConfirmes} />
+<Card label="Tâches ouvertes" value={tachesOuvertes} />
+<Card label="Contrats à signer" value={contratsASigner} />
+<Card label="Royalties payées (€)" value={Math.round(royaltiesPayees)} />
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
