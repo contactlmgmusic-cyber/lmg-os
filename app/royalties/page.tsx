@@ -2,6 +2,8 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
+import {canGenerateRoyalties,} from "@/lib/permissions";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -50,15 +52,15 @@ export default async function RoyaltiesPage() {
     `)
     .order("created_at", { ascending: false });
 
-  if (currentProfile?.role === "manager") {
+  if (currentProfile?.role === ROLES.MANAGER) {
     query = query.eq("projets.artistes.manager_id", user?.id);
   }
 
-  if (currentProfile?.role === "artiste" && currentProfile?.email) {
+  if (currentProfile?.role === ROLES.ARTISTE && currentProfile?.email) {
     query = query.eq("email", currentProfile.email);
   }
 
-  if (currentProfile?.role === "prestataire") {
+  if (currentProfile?.role === ROLES.PRESTATAIRE) {
     query = query.eq("id", "00000000-0000-0000-0000-000000000000");
   }
 
@@ -71,10 +73,6 @@ export default async function RoyaltiesPage() {
       </main>
     );
   }
-
-  const canGenerateRoyalties =
-    currentProfile?.role === "super_admin" ||
-    currentProfile?.role === "admin";
 
   const totalDu =
     royalties?.reduce(
@@ -94,6 +92,9 @@ export default async function RoyaltiesPage() {
       .reduce((acc: number, r: any) => acc + Number(r.montant_du || 0), 0) ||
     0;
 
+    const canGenerate =
+  canGenerateRoyalties(currentProfile?.role);
+
   return (
   <main className="min-h-screen bg-black p-10 text-white">
     <div className="mb-10 flex items-center justify-between">
@@ -103,19 +104,19 @@ export default async function RoyaltiesPage() {
         </p>
 
         <h1 className="text-5xl font-bold">
-          {currentProfile?.role === "artiste" ? "Mes royalties" : "Royalties"}
+          {currentProfile?.role === ROLES.ARTISTE ? "Mes royalties" : "Royalties"}
         </h1>
 
         <p className="mt-3 text-zinc-400">
-          {currentProfile?.role === "manager"
+          {currentProfile?.role === ROLES.MANAGER
             ? "Royalties liées à mes artistes."
-            : currentProfile?.role === "artiste"
+            : currentProfile?.role === ROLES.ARTISTE
             ? "Suivi de tes montants dus et payés."
             : "Répartition automatique des revenus issus des masters."}
         </p>
       </div>
 
-      {canGenerateRoyalties && (
+      {canGenerate && (
         <Link
           href="/royalties/generer"
           className="rounded-xl bg-white px-5 py-3 font-medium text-black"
