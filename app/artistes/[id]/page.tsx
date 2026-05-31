@@ -208,6 +208,30 @@ const royaltiesAPayer =
       0
     ) || 0;
 
+const revenusParProjet = projets
+  ?.map((projet: any) => {
+    const financesProjet =
+      finances?.filter((f: any) => f.projet_id === projet.id) || [];
+
+    const revenusProjet = financesProjet
+      .filter((f: any) => f.type === "Revenu")
+      .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0);
+
+    const depensesProjet = financesProjet
+      .filter((f: any) => f.type === "Dépense")
+      .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0);
+
+    return {
+      id: projet.id,
+      titre: projet.titre,
+      revenus: revenusProjet,
+      depenses: depensesProjet,
+      resultat: revenusProjet - depensesProjet,
+    };
+  })
+  .filter((p: any) => p.revenus > 0 || p.depenses > 0)
+  .sort((a: any, b: any) => b.resultat - a.resultat) || [];
+
   const artistChannelSlug = `artiste-${slugify(artiste.nom || "artiste")}`;
 
   const socials = [
@@ -418,6 +442,45 @@ const royaltiesAPayer =
                 ))}
               </div>
             </div>
+
+            {canViewInternalArtistData && (
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+    <h2 className="mb-6 text-3xl font-bold">Revenus par projet</h2>
+
+    {revenusParProjet.length === 0 && (
+      <p className="text-zinc-500">Aucune donnée financière par projet.</p>
+    )}
+
+    <div className="space-y-4">
+      {revenusParProjet.map((projet: any) => (
+        <Link
+          key={projet.id}
+          href={`/projets/${projet.id}`}
+          className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-semibold">{projet.titre}</h3>
+
+              <p className="mt-2 text-sm text-zinc-500">
+                Revenus : {projet.revenus.toFixed(2)} € • Dépenses :{" "}
+                {projet.depenses.toFixed(2)} €
+              </p>
+            </div>
+
+            <p
+              className={
+                projet.resultat >= 0 ? "text-green-400" : "text-red-400"
+              }
+            >
+              {projet.resultat.toFixed(2)} €
+            </p>
+          </div>
+        </Link>
+      ))}
+    </div>
+  </div>
+)}
 
             {canViewInternalArtistData && (
               <>
