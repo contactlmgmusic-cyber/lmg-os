@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabaseBrowser } from "../lib/supabase-browser";
+import RevenueChart from "@/components/RevenueChart";
 
 type ActivityLog = {
   id: string;
@@ -33,6 +34,7 @@ export default function DashboardPage() {
   const [followUps, setFollowUps] = useState<any[]>([]);
   const [topArtistes, setTopArtistes] = useState<any[]>([]);
   const [topProjets, setTopProjets] = useState<any[]>([]);
+  const [revenueChartData, setRevenueChartData] = useState<any[]>([]);
 
   function monthStart() {
     const d = new Date();
@@ -90,6 +92,34 @@ export default function DashboardPage() {
       finances
         ?.filter((f: any) => f.type === "Dépense")
         .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
+
+        const monthlyMap = new Map();
+
+finances?.forEach((f: any) => {
+  const date = f.date_operation ? new Date(f.date_operation) : null;
+  if (!date) return;
+
+  const mois = date.toLocaleDateString("fr-FR", {
+    month: "short",
+    year: "numeric",
+  });
+
+  const current = monthlyMap.get(mois) || {
+    mois,
+    revenus: 0,
+    depenses: 0,
+    resultat: 0,
+  };
+
+  if (f.type === "Revenu") current.revenus += Number(f.montant || 0);
+  if (f.type === "Dépense") current.depenses += Number(f.montant || 0);
+
+  current.resultat = current.revenus - current.depenses;
+
+  monthlyMap.set(mois, current);
+});
+
+const chartData = Array.from(monthlyMap.values()).slice(-6);
 
 const byArtist = new Map();
 
@@ -210,6 +240,7 @@ const royaltiesPayees =
     setFollowUps(relances || []);
     setTopArtistes(artistRanking);
     setTopProjets(projectRanking);
+    setRevenueChartData(chartData);
     setActivityLogs(logs || []);
   }
 
@@ -278,6 +309,8 @@ const royaltiesPayees =
     tone="green"
   />
 </div>
+
+<RevenueChart data={revenueChartData} />
 
       <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
         <KpiCard label="Artistes" value={stats.artistes} />
