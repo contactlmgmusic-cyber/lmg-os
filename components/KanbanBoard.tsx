@@ -24,7 +24,7 @@ type Tache = {
   priorite: string | null;
   deadline: string | null;
   responsable_id?: string | null;
-  profiles?: Profile | null;
+  responsable?: Profile | null;
 };
 
 const colonnes = ["À faire", "En cours", "Terminé"];
@@ -34,15 +34,29 @@ function normalizeStatut(statut: string | null) {
 
   const value = statut.trim().toLowerCase();
 
-  if (value === "à faire" || value === "a faire" || value === "todo") {
+  if (
+    value === "à faire" ||
+    value === "a faire" ||
+    value === "todo" ||
+    value === "a_faire"
+  ) {
     return "À faire";
   }
 
-  if (value === "en cours" || value === "encours") {
+  if (
+    value === "en cours" ||
+    value === "encours" ||
+    value === "en_cours"
+  ) {
     return "En cours";
   }
 
-  if (value === "terminé" || value === "termine" || value === "done") {
+  if (
+    value === "terminé" ||
+    value === "termine" ||
+    value === "done" ||
+    value === "terminee"
+  ) {
     return "Terminé";
   }
 
@@ -50,12 +64,16 @@ function normalizeStatut(statut: string | null) {
 }
 
 export default function KanbanBoard({ taches }: { taches: Tache[] }) {
-  const [items, setItems] = useState(
-    taches.map((tache) => ({
-      ...tache,
-      statut: normalizeStatut(tache.statut),
-    }))
-  );
+  const [items, setItems] = useState<Tache[]>([]);
+
+  useEffect(() => {
+    setItems(
+      taches.map((tache) => ({
+        ...tache,
+        statut: normalizeStatut(tache.statut),
+      }))
+    );
+  }, [taches]);
 
   useEffect(() => {
     const channel = supabaseBrowser
@@ -72,7 +90,7 @@ export default function KanbanBoard({ taches }: { taches: Tache[] }) {
             .from("taches")
             .select(`
               *,
-              profiles!taches_responsable_id_fkey (
+              responsable:profiles!taches_responsable_id_fkey (
                 id,
                 nom,
                 avatar_url,
@@ -139,7 +157,7 @@ export default function KanbanBoard({ taches }: { taches: Tache[] }) {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {colonnes.map((colonne) => {
           const tachesColonne = items.filter(
-            (tache) => tache.statut === colonne
+            (tache) => normalizeStatut(tache.statut) === colonne
           );
 
           return (
@@ -201,15 +219,7 @@ export default function KanbanBoard({ taches }: { taches: Tache[] }) {
                                     )}
                                   </div>
 
-                                  <span
-                                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                                      tache.priorite === "Haute"
-                                        ? "bg-red-500/20 text-red-300"
-                                        : tache.priorite === "Moyenne"
-                                        ? "bg-orange-500/20 text-orange-300"
-                                        : "bg-zinc-800 text-zinc-300"
-                                    }`}
-                                  >
+                                  <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs font-medium text-zinc-300">
                                     {tache.priorite || "Basse"}
                                   </span>
                                 </div>
@@ -218,14 +228,14 @@ export default function KanbanBoard({ taches }: { taches: Tache[] }) {
                               <div className="mt-5 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                   <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-zinc-800 text-sm font-bold">
-                                    {tache.profiles?.avatar_url ? (
+                                    {tache.responsable?.avatar_url ? (
                                       <img
-                                        src={tache.profiles.avatar_url}
-                                        alt={tache.profiles.nom || ""}
+                                        src={tache.responsable.avatar_url}
+                                        alt={tache.responsable.nom || ""}
                                         className="h-full w-full object-cover"
                                       />
                                     ) : (
-                                      tache.profiles?.nom
+                                      tache.responsable?.nom
                                         ?.charAt(0)
                                         ?.toUpperCase() || "L"
                                     )}
@@ -233,11 +243,11 @@ export default function KanbanBoard({ taches }: { taches: Tache[] }) {
 
                                   <div>
                                     <p className="text-sm font-medium">
-                                      {tache.profiles?.nom || "Non assigné"}
+                                      {tache.responsable?.nom || "Non assigné"}
                                     </p>
 
                                     <p className="text-xs text-zinc-500">
-                                      {tache.profiles?.role || "member"}
+                                      {tache.responsable?.role || "member"}
                                     </p>
                                   </div>
                                 </div>
