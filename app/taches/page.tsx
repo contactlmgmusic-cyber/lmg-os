@@ -30,46 +30,21 @@ export default async function TachesPage() {
         .from("profiles")
         .select("id, nom, role, artiste_id")
         .eq("id", user.id)
-        .single()
+        .maybeSingle()
     : { data: null };
 
-  let query = supabase
+  const { data: taches, error } = await supabase
     .from("taches")
-    .select(`
-      *,
-      responsable:profiles!taches_responsable_id_fkey (
-        id,
-        nom,
-        avatar_url,
-        role
-      ),
-      projets (
-        id,
-        titre,
-        artiste_id,
-        artistes (
-          id,
-          nom,
-          manager_id
-        )
-      )
-    `)
+    .select("*")
     .order("created_at", { ascending: false });
-
-  if (currentProfile?.role === "artiste" && currentProfile.artiste_id) {
-    query = query.eq("projet_id.artiste_id", currentProfile.artiste_id);
-  }
-
-  if (currentProfile?.role === "manager" && user?.id) {
-    query = query.eq("projets.artistes.manager_id", user.id);
-  }
-
-  const { data: taches, error } = await query;
 
   if (error) {
     return (
       <main className="min-h-screen bg-black p-10 text-white">
-        <p className="text-red-400">{error.message}</p>
+        <h1 className="text-4xl font-bold">Tâches</h1>
+        <div className="mt-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-5 text-red-300">
+          {error.message}
+        </div>
       </main>
     );
   }
@@ -81,34 +56,26 @@ export default async function TachesPage() {
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
-      <div className="mb-10 flex items-center justify-between">
+      <div className="mb-10 flex items-center justify-between gap-6">
         <div>
           <h1 className="text-5xl font-bold">Tâches</h1>
 
           <p className="mt-3 text-zinc-400">
-            {currentProfile?.role === "manager"
-              ? "Tâches liées à mes artistes"
-              : "Pilotage opérationnel des tâches LMG"}
+            Pilotage opérationnel des tâches LMG
           </p>
         </div>
 
         {canCreateTask && (
           <Link
             href="/taches/nouveau"
-            className="rounded-xl bg-white px-5 py-3 font-medium text-black"
+            className="rounded-xl bg-white px-5 py-3 font-medium text-black transition hover:bg-zinc-200"
           >
             + Nouvelle tâche
           </Link>
         )}
       </div>
 
-      {(!taches || taches.length === 0) && (
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 text-zinc-400">
-          Aucune tâche disponible pour le moment.
-        </div>
-      )}
-
-      {taches && taches.length > 0 && <KanbanBoard taches={taches} />}
+      <KanbanBoard taches={taches || []} />
     </main>
   );
 }
