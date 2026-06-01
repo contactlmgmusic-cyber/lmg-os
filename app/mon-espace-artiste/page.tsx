@@ -90,6 +90,12 @@ export default async function MonEspaceArtistePage() {
   .eq("artiste_id", profile.artiste_id)
   .order("created_at", { ascending: false });
 
+  const { data: bookings } = await supabase
+  .from("bookings")
+  .select("*")
+  .eq("artiste_id", profile.artiste_id)
+  .order("date_event", { ascending: true });
+
   const royaltiesAPayer =
   royalties
     ?.filter((r: any) => r.statut !== "Payé")
@@ -150,6 +156,14 @@ const royaltiesPayees =
 
   <p className="mt-2 text-4xl font-bold">
     {contrats?.length || 0}
+  </p>
+</div>
+
+<div className="rounded-3xl border border-purple-500/30 bg-purple-500/10 p-6">
+  <p className="text-sm text-purple-300">Bookings</p>
+
+  <p className="mt-2 text-4xl font-bold">
+    {bookings?.length || 0}
   </p>
 </div>
 
@@ -261,6 +275,40 @@ const royaltiesPayees =
   </div>
 </div>
         </div>
+
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="mb-6 text-3xl font-bold">
+    Mes prochaines dates
+  </h2>
+
+  {(!bookings || bookings.length === 0) && (
+    <p className="text-zinc-500">
+      Aucun booking confirmé.
+    </p>
+  )}
+
+  <div className="space-y-4">
+    {bookings?.slice(0, 10).map((booking: any) => (
+      <Link
+        key={booking.id}
+        href={`/booking/${booking.id}`}
+        className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <h3 className="text-xl font-bold">
+          {booking.evenement}
+        </h3>
+
+        <p className="mt-2 text-sm text-zinc-500">
+          {booking.ville || "Ville"} • {booking.date_event || "Date"}
+        </p>
+
+        <p className="mt-2 text-sm text-zinc-400">
+          {booking.statut || "Prospect"}
+        </p>
+      </Link>
+    ))}
+  </div>
+</div>
 
         <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
           <h2 className="mb-6 text-3xl font-bold">Mes assets</h2>
