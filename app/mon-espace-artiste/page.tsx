@@ -96,6 +96,20 @@ export default async function MonEspaceArtistePage() {
   .eq("artiste_id", profile.artiste_id)
   .order("date_event", { ascending: true });
 
+  const prochainesSorties =
+  projets
+    ?.filter(
+      (projet: any) =>
+        projet.date_sortie &&
+        new Date(projet.date_sortie) >= new Date()
+    )
+    .sort(
+      (a: any, b: any) =>
+        new Date(a.date_sortie).getTime() -
+        new Date(b.date_sortie).getTime()
+    )
+    .slice(0, 5) || [];
+
   const royaltiesAPayer =
   royalties
     ?.filter((r: any) => r.statut !== "Payé")
@@ -304,6 +318,40 @@ const royaltiesPayees =
 
         <p className="mt-2 text-sm text-zinc-400">
           {booking.statut || "Prospect"}
+        </p>
+      </Link>
+    ))}
+  </div>
+</div>
+
+<div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="mb-6 text-3xl font-bold">
+    Mes prochaines sorties
+  </h2>
+
+  {prochainesSorties.length === 0 && (
+    <p className="text-zinc-500">
+      Aucune sortie programmée.
+    </p>
+  )}
+
+  <div className="space-y-4">
+    {prochainesSorties.map((projet: any) => (
+      <Link
+        key={projet.id}
+        href={`/projets/${projet.id}`}
+        className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <h3 className="text-xl font-bold">
+          {projet.titre}
+        </h3>
+
+        <p className="mt-2 text-sm text-zinc-500">
+          Sortie prévue : {projet.date_sortie}
+        </p>
+
+        <p className="mt-2 text-sm text-zinc-400">
+          {projet.statut || "En préparation"}
         </p>
       </Link>
     ))}
