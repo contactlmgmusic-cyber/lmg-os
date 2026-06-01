@@ -274,11 +274,9 @@ const royaltiesPayees =
     ))}
   </div>
 </div>
-        
+        </div>
 
-       </div>
-
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+        <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
   <h2 className="mb-6 text-3xl font-bold">
     Mes prochaines dates
   </h2>

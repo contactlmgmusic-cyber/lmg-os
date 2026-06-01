@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "../lib/supabase-browser";
 import RevenueChart from "@/components/RevenueChart";
 
@@ -27,6 +28,9 @@ export default function DashboardPage() {
     royaltiesDues: 0,
     royaltiesPayees: 0,
   });
+
+  const router = useRouter();
+const [checkingAccess, setCheckingAccess] = useState(true);
 
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [upcomingProjects, setUpcomingProjects] = useState<any[]>([]);
@@ -244,6 +248,44 @@ const royaltiesPayees =
     setActivityLogs(logs || []);
   }
 
+useEffect(() => {
+  async function checkAccess() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role === "manager") {
+      router.push("/manager");
+      return;
+    }
+
+    if (profile?.role === "artiste") {
+      router.push("/mon-espace-artiste");
+      return;
+    }
+
+    if (profile?.role === "prestataire") {
+      router.push("/mes-taches");
+      return;
+    }
+
+    setCheckingAccess(false);
+  }
+
+  checkAccess();
+}, [router]);
+
   useEffect(() => {
     loadDashboard();
 
@@ -262,6 +304,14 @@ const royaltiesPayees =
       supabaseBrowser.removeChannel(channel);
     };
   }, []);
+
+if (checkingAccess) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      Chargement...
+    </main>
+  );
+}
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
