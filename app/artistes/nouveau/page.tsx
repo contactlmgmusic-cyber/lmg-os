@@ -72,7 +72,7 @@ export default function NouvelArtistePage() {
         await supabaseBrowser.from("notifications").insert(
           admins.map((admin) => ({
             user_id: admin.id,
-            type: "artist",
+            type: "artiste",
             titre: "Nouvel artiste créé",
             description: artiste.nom,
             link: `/artistes/${artiste.id}`,
