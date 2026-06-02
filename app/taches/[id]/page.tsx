@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import ChecklistEditor from "@/components/ChecklistEditor";
 
 export const dynamic = "force-dynamic";
 
