@@ -12,6 +12,15 @@ type CalendarEvent = {
   category: string;
 };
 
+const categoryStyles: Record<string, string> = {
+  Sortie: "border-violet-500/50 bg-violet-500/10 text-violet-200",
+  Rollout: "border-cyan-500/50 bg-cyan-500/10 text-cyan-200",
+  Contrat: "border-green-500/50 bg-green-500/10 text-green-200",
+  Booking: "border-pink-500/50 bg-pink-500/10 text-pink-200",
+  Relance: "border-yellow-500/50 bg-yellow-500/10 text-yellow-200",
+  Tâche: "border-red-500/50 bg-red-500/10 text-red-200",
+};
+
 export default function CalendarFilterView({
   days,
   events,
@@ -37,19 +46,24 @@ export default function CalendarFilterView({
   return (
     <>
       <div className="mb-8 flex flex-wrap gap-3">
-        {categories.map((category) => (
-          <button
-            key={category}
-            onClick={() => toggleCategory(category)}
-            className={`rounded-full border px-3 py-1 text-sm transition ${
-              activeCategories.includes(category)
-                ? "border-white bg-white text-black"
-                : "border-zinc-700 bg-black text-zinc-400"
-            }`}
-          >
-            {category}
-          </button>
-        ))}
+        {categories.map((category) => {
+          const isActive = activeCategories.includes(category);
+
+          return (
+            <button
+              key={category}
+              type="button"
+              onClick={() => toggleCategory(category)}
+              className={`rounded-full border px-3 py-1 text-sm transition ${
+                isActive
+                  ? categoryStyles[category]
+                  : "border-zinc-800 bg-black text-zinc-500"
+              }`}
+            >
+              {category}
+            </button>
+          );
+        })}
       </div>
 
       <div className="mb-4 grid grid-cols-7 gap-3 text-center text-sm text-zinc-500">
