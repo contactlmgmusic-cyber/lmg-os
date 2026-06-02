@@ -123,9 +123,13 @@ export default async function TacheDetailPage({
             </div>
           </div>
 
-          <div className="mt-8 rounded-2xl bg-red-500 p-6">
-  TEST CHECKLIST
-</div>
+          <ChecklistEditor
+  tacheId={tache.id}
+  initialChecklist={checklist.map((item) => ({
+    texte: item.texte || "",
+    done: Boolean(item.done),
+  }))}
+/>
         </section>
 
         <aside className="space-y-6">
