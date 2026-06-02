@@ -34,9 +34,17 @@ export default async function TachesPage() {
     : { data: null };
 
   const { data: taches, error } = await supabase
-    .from("taches")
-    .select("*")
-    .order("created_at", { ascending: false });
+  .from("taches")
+  .select(`
+    *,
+    responsable:profiles!taches_responsable_id_fkey (
+      id,
+      nom,
+      avatar_url,
+      role
+    )
+  `)
+  .order("created_at", { ascending: false });
 
   if (error) {
     return (

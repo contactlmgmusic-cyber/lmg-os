@@ -9,6 +9,13 @@ import {
 } from "@hello-pangea/dnd";
 import { supabaseBrowser } from "../lib/supabase-browser";
 
+type Profile = {
+  id: string;
+  nom: string | null;
+  avatar_url: string | null;
+  role: string | null;
+};
+
 type Tache = {
   id: string;
   titre: string;
@@ -17,6 +24,7 @@ type Tache = {
   priorite: string | null;
   deadline: string | null;
   responsable_id?: string | null;
+  responsable?: Profile | null;
 };
 
 const colonnes = ["À faire", "En cours", "Terminé"];
@@ -80,7 +88,15 @@ export default function KanbanBoard({ taches }: { taches: Tache[] }) {
         async () => {
           const { data, error } = await supabaseBrowser
             .from("taches")
-            .select("*")
+            .select(`
+  *,
+  responsable:profiles!taches_responsable_id_fkey (
+    id,
+    nom,
+    avatar_url,
+    role
+  )
+`)
             .order("created_at", { ascending: false });
 
           if (error) {
@@ -206,32 +222,29 @@ export default function KanbanBoard({ taches }: { taches: Tache[] }) {
                                 </div>
                               </a>
 
-                              <div className="mt-5 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-sm font-bold">
-                                    L
-                                  </div>
+                              <div className="flex items-center gap-3">
+  <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-zinc-800 text-sm font-bold">
+    {tache.responsable?.avatar_url ? (
+      <img
+        src={tache.responsable.avatar_url}
+        alt={tache.responsable.nom || ""}
+        className="h-full w-full object-cover"
+      />
+    ) : (
+      tache.responsable?.nom?.charAt(0)?.toUpperCase() || "L"
+    )}
+  </div>
 
-                                  <div>
-                                    <p className="text-sm font-medium">
-                                      Non assigné
-                                    </p>
+  <div>
+    <p className="text-sm font-medium">
+      {tache.responsable?.nom || "Non assigné"}
+    </p>
 
-                                    <p className="text-xs text-zinc-500">
-                                      member
-                                    </p>
-                                  </div>
-                                </div>
-
-                                {tache.deadline && (
-                                  <div className="text-right">
-                                    <p className="text-xs text-zinc-500">
-                                      Deadline
-                                    </p>
-                                    <p className="text-sm">{tache.deadline}</p>
-                                  </div>
-                                )}
-                              </div>
+    <p className="text-xs text-zinc-500">
+      {tache.responsable?.role || "member"}
+    </p>
+  </div>
+</div>
                             </div>
                           </div>
                         )}
