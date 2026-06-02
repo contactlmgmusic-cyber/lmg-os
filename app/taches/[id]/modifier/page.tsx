@@ -1,51 +1,76 @@
-"use client";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { createServerClient } from "@supabase/ssr";
+import Link from "next/link";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { supabaseBrowser } from "../../../../lib/supabase-browser";
+export const dynamic = "force-dynamic";
 
-export default function ModifierTachePage() {
-  const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
+export default async function ModifierTachePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const cookieStore = await cookies();
 
-  const [loading, setLoading] = useState(true);
-  const [titre, setTitre] = useState("");
-  const [description, setDescription] = useState("");
-  const [statut, setStatut] = useState("");
-  const [priorite, setPriorite] = useState("");
-  const [deadline, setDeadline] = useState("");
-  const [responsable, setResponsable] = useState("");
-
-  useEffect(() => {
-    async function fetchTache() {
-      const { data, error } = await supabaseBrowser
-        .from("taches")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) {
-        alert(error.message);
-        return;
-      }
-
-      setTitre(data.titre || "");
-      setDescription(data.description || "");
-      setStatut(data.statut || "");
-      setPriorite(data.priorite || "");
-      setDeadline(data.deadline || "");
-      setResponsable(data.responsable || "");
-      setLoading(false);
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll() {},
+      },
     }
+  );
 
-    fetchTache();
-  }, [id]);
+  const { data: tache } = await supabase
+    .from("taches")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-  async function handleUpdate(e: React.FormEvent) {
-    e.preventDefault();
+  const { data: profils } = await supabase
+    .from("profiles")
+    .select("id, nom, role")
+    .order("nom", { ascending: true });
 
-    const { error } = await supabaseBrowser
+  if (!tache) {
+    return (
+      <main className="min-h-screen bg-black p-10 text-white">
+        <p className="text-red-400">Tâche introuvable.</p>
+      </main>
+    );
+  }
+
+  async function updateTache(formData: FormData) {
+    "use server";
+
+    const cookieStore = await cookies();
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll() {},
+        },
+      }
+    );
+
+    const titre = formData.get("titre") as string;
+    const description = formData.get("description") as string;
+    const statut = formData.get("statut") as string;
+    const priorite = formData.get("priorite") as string;
+    const deadline = formData.get("deadline") as string;
+    const responsableId = formData.get("responsable_id") as string;
+
+    await supabase
       .from("taches")
       .update({
         titre,
@@ -53,69 +78,121 @@ export default function ModifierTachePage() {
         statut,
         priorite,
         deadline: deadline || null,
-        responsable: responsable || null,
+        responsable_id: responsableId || null,
       })
       .eq("id", id);
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    router.push(`/taches/${id}`);
-    router.refresh();
+    redirect(`/taches/${id}`);
   }
-
-  async function handleDelete() {
-    if (!confirm("Tu es sûre de vouloir supprimer cette tâche ?")) return;
-
-    const { error } = await supabaseBrowser.from("taches").delete().eq("id", id);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    router.push("/taches");
-    router.refresh();
-  }
-
-  if (loading) return <main className="p-10 text-white">Chargement...</main>;
 
   return (
-    <main className="p-10 text-white">
-      <h1 className="mb-8 text-5xl font-bold">Modifier tâche</h1>
+    <main className="min-h-screen bg-black p-10 text-white">
+      <div className="mb-10">
+        <Link href={`/taches/${id}`} className="text-zinc-400 hover:text-white">
+          ← Retour à la tâche
+        </Link>
 
-      <form onSubmit={handleUpdate} className="max-w-2xl space-y-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-        <input value={titre} onChange={(e) => setTitre(e.target.value)} placeholder="Titre" required className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white" />
+        <h1 className="mt-6 text-5xl font-bold">Modifier la tâche</h1>
+      </div>
 
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="min-h-40 w-full rounded-xl border border-zinc-800 bg-black p-4 text-white" />
+      <form
+        action={updateTache}
+        className="max-w-3xl space-y-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-8"
+      >
+        <div>
+          <label className="mb-2 block text-sm text-zinc-400">Titre</label>
+          <input
+            name="titre"
+            defaultValue={tache.titre || ""}
+            required
+            className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
+          />
+        </div>
 
-        <input value={responsable} onChange={(e) => setResponsable(e.target.value)} placeholder="Responsable" className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white" />
+        <div>
+          <label className="mb-2 block text-sm text-zinc-400">
+            Description
+          </label>
+          <textarea
+            name="description"
+            defaultValue={tache.description || ""}
+            rows={5}
+            className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
+          />
+        </div>
 
-        <select value={statut} onChange={(e) => setStatut(e.target.value)} className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white">
-          <option value="">Statut</option>
-          <option value="À faire">À faire</option>
-          <option value="En cours">En cours</option>
-          <option value="Terminé">Terminé</option>
-        </select>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label className="mb-2 block text-sm text-zinc-400">Statut</label>
+            <select
+              name="statut"
+              defaultValue={tache.statut || "À faire"}
+              className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
+            >
+              <option value="À faire">À faire</option>
+              <option value="En cours">En cours</option>
+              <option value="Terminé">Terminé</option>
+            </select>
+          </div>
 
-        <select value={priorite} onChange={(e) => setPriorite(e.target.value)} className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white">
-          <option value="">Priorité</option>
-          <option value="Haute">Haute</option>
-          <option value="Moyenne">Moyenne</option>
-          <option value="Basse">Basse</option>
-        </select>
+          <div>
+            <label className="mb-2 block text-sm text-zinc-400">Priorité</label>
+            <select
+              name="priorite"
+              defaultValue={tache.priorite || "Basse"}
+              className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
+            >
+              <option value="Basse">Basse</option>
+              <option value="Moyenne">Moyenne</option>
+              <option value="Haute">Haute</option>
+            </select>
+          </div>
+        </div>
 
-        <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="w-full rounded-xl border border-zinc-800 bg-black p-4 text-white" />
+        <div>
+          <label className="mb-2 block text-sm text-zinc-400">Deadline</label>
+          <input
+            type="date"
+            name="deadline"
+            defaultValue={tache.deadline || ""}
+            className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
+          />
+        </div>
 
-        <button className="w-full rounded-xl bg-white px-5 py-4 font-medium text-black">
-          Enregistrer
-        </button>
+        <div>
+          <label className="mb-2 block text-sm text-zinc-400">
+            Responsable
+          </label>
+          <select
+            name="responsable_id"
+            defaultValue={tache.responsable_id || ""}
+            className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
+          >
+            <option value="">Non assigné</option>
 
-        <button type="button" onClick={handleDelete} className="w-full rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 font-medium text-red-400">
-          Supprimer la tâche
-        </button>
+            {profils?.map((profil) => (
+              <option key={profil.id} value={profil.id}>
+                {profil.nom || "Utilisateur"} — {profil.role || "member"}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center justify-end gap-4 pt-4">
+          <Link
+            href={`/taches/${id}`}
+            className="rounded-xl border border-zinc-700 px-5 py-3 text-zinc-300 hover:bg-zinc-800"
+          >
+            Annuler
+          </Link>
+
+          <button
+            type="submit"
+            className="rounded-xl bg-white px-5 py-3 font-medium text-black hover:bg-zinc-200"
+          >
+            Enregistrer
+          </button>
+        </div>
       </form>
     </main>
   );
