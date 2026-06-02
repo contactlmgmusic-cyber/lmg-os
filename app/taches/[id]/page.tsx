@@ -123,40 +123,9 @@ export default async function TacheDetailPage({
             </div>
           </div>
 
-          <div className="mt-8 rounded-2xl bg-black p-6">
-            <h2 className="mb-4 text-2xl font-bold">Checklist</h2>
-
-            {checklist.length === 0 && (
-              <p className="text-sm text-zinc-500">
-                Aucune checklist pour cette tâche.
-              </p>
-            )}
-
-            <div className="space-y-3">
-              {checklist.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950 p-4"
-                >
-                  <div
-                    className={`h-4 w-4 rounded-full border ${
-                      item.done
-                        ? "border-green-400 bg-green-400"
-                        : "border-zinc-600"
-                    }`}
-                  />
-
-                  <p
-                    className={`text-sm ${
-                      item.done ? "text-zinc-500 line-through" : "text-white"
-                    }`}
-                  >
-                    {item.texte || "Élément sans titre"}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <div className="mt-8 rounded-2xl bg-red-500 p-6">
+  TEST CHECKLIST
+</div>
         </section>
 
         <aside className="space-y-6">
