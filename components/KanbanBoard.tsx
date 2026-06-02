@@ -29,6 +29,37 @@ type Tache = {
 
 const colonnes = ["À faire", "En cours", "Terminé"];
 
+function getDeadlineInfo(deadline: string | null) {
+  if (!deadline) return null;
+
+  const today = new Date();
+  const date = new Date(deadline);
+
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+
+  const diff = Math.ceil((date.getTime() - today.getTime()) / 86400000);
+
+  if (diff < 0) {
+    return {
+      label: `En retard de ${Math.abs(diff)}j`,
+      className: "text-red-400",
+    };
+  }
+
+  if (diff <= 7) {
+    return {
+      label: `J-${diff}`,
+      className: "text-orange-400",
+    };
+  }
+
+  return {
+    label: `J-${diff}`,
+    className: "text-green-400",
+  };
+}
+
 function normalizeStatut(statut: string | null) {
   if (!statut) return "À faire";
 
@@ -89,14 +120,14 @@ export default function KanbanBoard({ taches }: { taches: Tache[] }) {
           const { data, error } = await supabaseBrowser
             .from("taches")
             .select(`
-  *,
-  responsable:profiles!taches_responsable_id_fkey (
-    id,
-    nom,
-    avatar_url,
-    role
-  )
-`)
+              *,
+              responsable:profiles!taches_responsable_id_fkey (
+                id,
+                nom,
+                avatar_url,
+                role
+              )
+            `)
             .order("created_at", { ascending: false });
 
           if (error) {
@@ -179,77 +210,105 @@ export default function KanbanBoard({ taches }: { taches: Tache[] }) {
 
                   <div className="min-h-[400px] space-y-4">
                     {tachesColonne.length === 0 && (
-                      <p className="text-sm text-zinc-500">Aucune tâche ici.</p>
+                      <p className="text-sm text-zinc-500">
+                        Aucune tâche ici.
+                      </p>
                     )}
 
-                    {tachesColonne.map((tache, index) => (
-                      <Draggable
-                        key={tache.id}
-                        draggableId={tache.id}
-                        index={index}
-                      >
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            className={`rounded-3xl border border-zinc-800 bg-black p-5 transition ${
-                              snapshot.isDragging
-                                ? "scale-[1.02] border-white shadow-2xl"
-                                : ""
-                            }`}
-                          >
-                            <div
-                              {...provided.dragHandleProps}
-                              className="cursor-grab active:cursor-grabbing"
-                            >
-                              <a href={`/taches/${tache.id}`} className="block">
-                                <div className="flex items-start justify-between gap-4">
-                                  <div>
-                                    <h3 className="text-lg font-bold">
-                                      {tache.titre}
-                                    </h3>
+                    {tachesColonne.map((tache, index) => {
+                      const deadlineInfo = getDeadlineInfo(tache.deadline);
 
-                                    {tache.description && (
-                                      <p className="mt-2 text-sm text-zinc-400">
-                                        {tache.description}
+                      return (
+                        <Draggable
+                          key={tache.id}
+                          draggableId={tache.id}
+                          index={index}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`rounded-3xl border border-zinc-800 bg-black p-5 transition ${
+                                snapshot.isDragging
+                                  ? "scale-[1.02] border-white shadow-2xl"
+                                  : ""
+                              }`}
+                            >
+                              <div
+                                {...provided.dragHandleProps}
+                                className="cursor-grab active:cursor-grabbing"
+                              >
+                                <a
+                                  href={`/taches/${tache.id}`}
+                                  className="block"
+                                >
+                                  <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                      <h3 className="text-lg font-bold">
+                                        {tache.titre}
+                                      </h3>
+
+                                      {tache.description && (
+                                        <p className="mt-2 text-sm text-zinc-400">
+                                          {tache.description}
+                                        </p>
+                                      )}
+                                    </div>
+
+                                    <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs font-medium text-zinc-300">
+                                      {tache.priorite || "Basse"}
+                                    </span>
+                                  </div>
+                                </a>
+
+                                <div className="mt-5 flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-zinc-800 text-sm font-bold">
+                                      {tache.responsable?.avatar_url ? (
+                                        <img
+                                          src={tache.responsable.avatar_url}
+                                          alt={tache.responsable.nom || ""}
+                                          className="h-full w-full object-cover"
+                                        />
+                                      ) : (
+                                        tache.responsable?.nom
+                                          ?.charAt(0)
+                                          ?.toUpperCase() || "L"
+                                      )}
+                                    </div>
+
+                                    <div>
+                                      <p className="text-sm font-medium">
+                                        {tache.responsable?.nom ||
+                                          "Non assigné"}
                                       </p>
-                                    )}
+
+                                      <p className="text-xs text-zinc-500">
+                                        {tache.responsable?.role || "member"}
+                                      </p>
+                                    </div>
                                   </div>
 
-                                  <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs font-medium text-zinc-300">
-                                    {tache.priorite || "Basse"}
-                                  </span>
+                                  {deadlineInfo && (
+                                    <div className="text-right">
+                                      <p className="text-xs text-zinc-500">
+                                        Deadline
+                                      </p>
+
+                                      <p
+                                        className={`text-sm font-medium ${deadlineInfo.className}`}
+                                      >
+                                        {deadlineInfo.label}
+                                      </p>
+                                    </div>
+                                  )}
                                 </div>
-                              </a>
-
-                              <div className="flex items-center gap-3">
-  <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-zinc-800 text-sm font-bold">
-    {tache.responsable?.avatar_url ? (
-      <img
-        src={tache.responsable.avatar_url}
-        alt={tache.responsable.nom || ""}
-        className="h-full w-full object-cover"
-      />
-    ) : (
-      tache.responsable?.nom?.charAt(0)?.toUpperCase() || "L"
-    )}
-  </div>
-
-  <div>
-    <p className="text-sm font-medium">
-      {tache.responsable?.nom || "Non assigné"}
-    </p>
-
-    <p className="text-xs text-zinc-500">
-      {tache.responsable?.role || "member"}
-    </p>
-  </div>
-</div>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
+                          )}
+                        </Draggable>
+                      );
+                    })}
 
                     {provided.placeholder}
                   </div>
