@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import CalendarFilterView from "@/components/CalendarFilterView";
 
 export const dynamic = "force-dynamic";
 
@@ -123,7 +124,7 @@ if (currentProfile?.role === "manager") {
   tachesQuery = tachesQuery.eq("projets.artistes.manager_id", user?.id);
 }
 
-if (currentProfile?.role === "artist") {
+if (currentProfile?.role === "artiste") {
   projetsQuery = projetsQuery.eq("artiste_id", currentProfile.artiste_id);
   rolloutQuery = rolloutQuery.eq("projets.artiste_id", currentProfile.artiste_id);
   tachesQuery = tachesQuery.eq("projets.artiste_id", currentProfile.artiste_id);
@@ -149,6 +150,7 @@ const { data: contrats } = await supabase
       title: projet.titre,
       date: toDateKey(projet.date_sortie),
       type: "Sortie",
+      category: "Sortie",
       href: `/projets/${projet.id}`,
       color: "border-violet-500/50 bg-violet-500/10 text-violet-200",
     })),
@@ -158,6 +160,7 @@ const { data: contrats } = await supabase
       title: event.titre,
       date: toDateKey(event.date_event),
       type: event.type || "Rollout",
+      category: "Rollout",
       href: event.projets?.id ? `/projets/${event.projets.id}` : "/rollout",
       color: "border-cyan-500/50 bg-cyan-500/10 text-cyan-200",
     })),
@@ -167,6 +170,7 @@ const { data: contrats } = await supabase
       title: tache.titre,
       date: toDateKey(tache.deadline),
       type: "Tâche",
+      category: "Tâche",
       href: `/taches/${tache.id}`,
       color:
         tache.priorite === "Haute"
@@ -181,6 +185,7 @@ const { data: contrats } = await supabase
   title: contrat.titre,
   date: toDateKey(contrat.date_signature),
   type: `Contrat ${contrat.statut || ""}`,
+  category: "Contrat",
   href: `/contrats/${contrat.id}`,
   color: "border-green-500/50 bg-green-500/10 text-green-200",
 })),
@@ -190,6 +195,7 @@ const { data: contrats } = await supabase
   title: booking.evenement,
   date: toDateKey(booking.date_event),
   type: `Booking ${booking.statut || ""}`,
+  category: "Booking",
   href: "/booking",
   color: "border-pink-500/50 bg-pink-500/10 text-pink-200",
 })),
@@ -201,6 +207,7 @@ const { data: contrats } = await supabase
     title: `Relance : ${booking.evenement}`,
     date: toDateKey(booking.prochaine_relance),
     type: "Relance booking",
+    category: "Relance",
     href: `/booking/${booking.id}`,
     color: "border-yellow-500/50 bg-yellow-500/10 text-yellow-200",
   })),
@@ -249,7 +256,7 @@ const { data: contrats } = await supabase
   </span>
 </div>
 
-        {currentProfile?.role !== "artist" && (
+        {currentProfile?.role !== "artiste" && (
   <a
     href="/taches/nouveau"
     className="rounded-2xl bg-white px-5 py-3 font-semibold text-black transition hover:bg-zinc-200"
@@ -259,61 +266,21 @@ const { data: contrats } = await supabase
 )}
       </div>
 
-      <div className="mb-4 grid grid-cols-7 gap-3 text-center text-sm text-zinc-500">
-        {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
-          <div key={day}>{day}</div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-7 gap-3">
-        {Array.from({ length: (firstDay.getDay() + 6) % 7 }).map((_, index) => (
-          <div
-            key={`empty-${index}`}
-            className="min-h-40 rounded-3xl border border-zinc-900 bg-zinc-950"
-          />
-        ))}
-
-        {days.map((day) => {
-          const dayEvents = events.filter((event) => event.date === day.key);
-          const isToday = day.key === toDateKey(new Date().toISOString());
-
-          return (
-            <div
-              key={day.key}
-              className={`min-h-40 rounded-3xl border p-4 ${
-                isToday
-                  ? "border-white bg-zinc-900"
-                  : "border-zinc-800 bg-zinc-900"
-              }`}
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-lg font-bold">
-                  {formatDay(day.date)}
-                </span>
-
-                {dayEvents.length > 0 && (
-                  <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-black">
-                    {dayEvents.length}
-                  </span>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                {dayEvents.map((event) => (
-                  <a
-                    key={`${event.type}-${event.id}`}
-                    href={event.href}
-                    className={`block rounded-xl border px-3 py-2 text-xs transition hover:scale-[1.02] ${event.color}`}
-                  >
-                    <p className="font-semibold">{event.title}</p>
-                    <p className="mt-1 opacity-70">{event.type}</p>
-                  </a>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <CalendarFilterView
+  days={[
+    ...Array.from({ length: (firstDay.getDay() + 6) % 7 }).map((_, index) => ({
+      key: `empty-${index}`,
+      day: "",
+      isToday: false,
+    })),
+    ...days.map((day) => ({
+      key: day.key,
+      day: formatDay(day.date),
+      isToday: day.key === toDateKey(new Date().toISOString()),
+    })),
+  ]}
+  events={events}
+/>
     </main>
   );
 }
