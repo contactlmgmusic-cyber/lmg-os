@@ -37,6 +37,7 @@ const [checkingAccess, setCheckingAccess] = useState(true);
   const [upcomingProjects, setUpcomingProjects] = useState<any[]>([]);
   const [urgentTasks, setUrgentTasks] = useState<any[]>([]);
   const [followUps, setFollowUps] = useState<any[]>([]);
+  const [mediaFollowUps, setMediaFollowUps] = useState<any[]>([]);
   const [topArtistes, setTopArtistes] = useState<any[]>([]);
   const [topProjets, setTopProjets] = useState<any[]>([]);
   const [revenueChartData, setRevenueChartData] = useState<any[]>([]);
@@ -207,6 +208,13 @@ const projectRanking = Array.from(byProject.entries())
       .order("prochaine_relance", { ascending: true })
       .limit(5);
 
+      const { data: mediaRelances } = await supabaseBrowser
+  .from("medias")
+  .select("id, nom, contact_nom, prochaine_relance, statut, priorite")
+  .not("prochaine_relance", "is", null)
+  .order("prochaine_relance", { ascending: true })
+  .limit(5);
+
     const { data: logs } = await supabaseBrowser
       .from("activity_logs")
       .select("*")
@@ -251,6 +259,7 @@ const royaltiesPayees =
     setUpcomingProjects(projects || []);
     setUrgentTasks(tasks || []);
     setFollowUps(relances || []);
+    setMediaFollowUps(mediaRelances || []);
     setTopArtistes(artistRanking);
     setTopProjets(projectRanking);
     setRevenueChartData(chartData);
@@ -381,7 +390,7 @@ if (checkingAccess) {
         <KpiCard label="Relances médias du jour" value={stats.mediasRelanceAujourdhui} />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
         <Panel title="Sorties à venir" href="/projets">
           {upcomingProjects.length === 0 && (
             <p className="text-zinc-500">Aucune sortie planifiée.</p>
@@ -438,6 +447,32 @@ if (checkingAccess) {
             </Link>
           ))}
         </Panel>
+
+        <Panel title="Relances médias" href="/medias/dashboard">
+  {mediaFollowUps.length === 0 && (
+    <p className="text-zinc-500">Aucune relance média.</p>
+  )}
+
+  {mediaFollowUps.map((media) => (
+    <Link
+      key={media.id}
+      href={`/medias/${media.id}`}
+      className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+    >
+      <h3 className="text-lg font-semibold">{media.nom}</h3>
+
+      <p className="mt-2 text-sm text-zinc-500">
+        {media.prochaine_relance || "Date non renseignée"} •{" "}
+        {media.statut || "Statut"}
+      </p>
+
+      <p className="mt-1 text-xs text-zinc-600">
+        {media.contact_nom || "Contact non renseigné"} •{" "}
+        {media.priorite || "Priorité normale"}
+      </p>
+    </Link>
+  ))}
+</Panel>
       </div>
 
 <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
