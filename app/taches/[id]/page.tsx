@@ -4,6 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import ChecklistEditor from "@/components/ChecklistEditor";
 import TaskComments from "@/components/TaskComments";
 import TaskFiles from "@/components/TaskFiles";
+import TaskActivity from "@/components/TaskActivity";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +72,22 @@ export default async function TacheDetailPage({
   const { data: files } = await supabase
   .from("task_files")
   .select("id, filename, file_url, file_path, created_at")
+  .eq("task_id", tache.id)
+  .order("created_at", { ascending: false });
+
+  const { data: activityLogs } = await supabase
+  .from("task_activity_logs")
+  .select(`
+    id,
+    type,
+    message,
+    created_at,
+    profiles (
+      nom,
+      full_name,
+      avatar_url
+    )
+  `)
   .eq("task_id", tache.id)
   .order("created_at", { ascending: false });
 
@@ -163,6 +180,9 @@ export default async function TacheDetailPage({
   taskId={tache.id}
   initialFiles={(files || []) as any}
 />
+
+<TaskActivity logs={(activityLogs || []) as any} />
+
         </section>
 
         <aside className="space-y-6">
