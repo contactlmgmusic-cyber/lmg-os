@@ -18,6 +18,12 @@ export default function ModifierProjetPage() {
   const [dateSortie, setDateSortie] = useState("");
   const [coverUrl, setCoverUrl] = useState("");
   const [notes, setNotes] = useState("");
+  const [budgetClip, setBudgetClip] = useState(0);
+const [budgetCover, setBudgetCover] = useState(0);
+const [budgetPromo, setBudgetPromo] = useState(0);
+const [budgetStudio, setBudgetStudio] = useState(0);
+const [budgetInfluence, setBudgetInfluence] = useState(0);
+const [budgetRp, setBudgetRp] = useState(0);
 
   useEffect(() => {
     async function fetchProjet() {
@@ -38,6 +44,12 @@ export default function ModifierProjetPage() {
       setDateSortie(data.date_sortie || "");
       setCoverUrl(data.cover_url || "");
       setNotes(data.notes || "");
+      setBudgetClip(Number(data.budget_clip || 0));
+setBudgetCover(Number(data.budget_cover || 0));
+setBudgetPromo(Number(data.budget_promo || 0));
+setBudgetStudio(Number(data.budget_studio || 0));
+setBudgetInfluence(Number(data.budget_influence || 0));
+setBudgetRp(Number(data.budget_rp || 0));
       setLoading(false);
     }
 
@@ -85,6 +97,13 @@ export default function ModifierProjetPage() {
         date_sortie: dateSortie || null,
         cover_url: coverUrl || null,
         notes,
+
+        budget_clip: budgetClip,
+budget_cover: budgetCover,
+budget_promo: budgetPromo,
+budget_studio: budgetStudio,
+budget_influence: budgetInfluence,
+budget_rp: budgetRp,
       })
       .eq("id", id);
 
@@ -198,6 +217,56 @@ export default function ModifierProjetPage() {
           placeholder="Notes rollout / stratégie"
           className="min-h-40 w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
         />
+
+<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+  <input
+    type="number"
+    value={budgetClip}
+    onChange={(e) => setBudgetClip(Number(e.target.value))}
+    placeholder="Budget clip"
+    className="rounded-2xl border border-zinc-800 bg-black p-4 text-white"
+  />
+
+  <input
+    type="number"
+    value={budgetCover}
+    onChange={(e) => setBudgetCover(Number(e.target.value))}
+    placeholder="Budget cover"
+    className="rounded-2xl border border-zinc-800 bg-black p-4 text-white"
+  />
+
+  <input
+    type="number"
+    value={budgetPromo}
+    onChange={(e) => setBudgetPromo(Number(e.target.value))}
+    placeholder="Budget promo"
+    className="rounded-2xl border border-zinc-800 bg-black p-4 text-white"
+  />
+
+  <input
+    type="number"
+    value={budgetStudio}
+    onChange={(e) => setBudgetStudio(Number(e.target.value))}
+    placeholder="Budget studio"
+    className="rounded-2xl border border-zinc-800 bg-black p-4 text-white"
+  />
+
+  <input
+    type="number"
+    value={budgetInfluence}
+    onChange={(e) => setBudgetInfluence(Number(e.target.value))}
+    placeholder="Budget influence"
+    className="rounded-2xl border border-zinc-800 bg-black p-4 text-white"
+  />
+
+  <input
+    type="number"
+    value={budgetRp}
+    onChange={(e) => setBudgetRp(Number(e.target.value))}
+    placeholder="Budget RP"
+    className="rounded-2xl border border-zinc-800 bg-black p-4 text-white"
+  />
+</div>
 
         <button
           type="submit"
