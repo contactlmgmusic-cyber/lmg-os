@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import ChecklistEditor from "@/components/ChecklistEditor";
 import TaskComments from "@/components/TaskComments";
+import TaskFiles from "@/components/TaskFiles";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,12 @@ export default async function TacheDetailPage({
       avatar_url
     )
   `)
+  .eq("task_id", tache.id)
+  .order("created_at", { ascending: false });
+
+  const { data: files } = await supabase
+  .from("task_files")
+  .select("id, filename, file_url, file_path, created_at")
   .eq("task_id", tache.id)
   .order("created_at", { ascending: false });
 
@@ -150,6 +157,11 @@ export default async function TacheDetailPage({
 <TaskComments
   taskId={tache.id}
   initialComments={(comments || []) as any}
+/>
+
+<TaskFiles
+  taskId={tache.id}
+  initialFiles={(files || []) as any}
 />
         </section>
 
