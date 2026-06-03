@@ -68,7 +68,15 @@ export default function TaskFiles({
     }
 
     setFiles((current) => [data as TaskFile, ...current]);
-  }
+
+  await supabaseBrowser.from("task_activity_logs").insert({
+  task_id: taskId,
+  user_id: user?.id || null,
+  type: "fichier",
+  message: `A ajouté le fichier ${file.name}`,
+});
+
+}
 
   async function deleteFile(file: TaskFile) {
     const confirmed = confirm(`Supprimer ${file.filename} ?`);
@@ -95,8 +103,14 @@ export default function TaskFiles({
     }
 
     setFiles((current) => current.filter((item) => item.id !== file.id));
-  }
+  
+  await supabaseBrowser.from("task_activity_logs").insert({
+  task_id: taskId,
+  type: "fichier",
+  message: `A supprimé le fichier ${file.filename}`,
+});
 
+}
   return (
     <div className="mt-8 rounded-2xl bg-black p-6">
       <div className="mb-4 flex items-center justify-between">

@@ -1,13 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { supabaseBrowser } from "../lib/supabase-browser";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 
-type Commentaire = {
+type Comment = {
   id: string;
-  auteur: string | null;
-  contenu: string | null;
+  contenu: string;
   created_at: string;
+  profiles?: {
+    nom: string | null;
+    full_name?: string | null;
+    avatar_url: string | null;
+  } | null;
 };
 
 export default function TaskComments({
@@ -15,78 +19,99 @@ export default function TaskComments({
   initialComments,
 }: {
   taskId: string;
-  initialComments: Commentaire[];
+  initialComments: Comment[];
 }) {
-  const [comments, setComments] = useState(initialComments || []);
+  const [comments, setComments] = useState<Comment[]>(initialComments || []);
   const [content, setContent] = useState("");
+  const [saving, setSaving] = useState(false);
 
   async function addComment() {
     if (!content.trim()) return;
 
+    setSaving(true);
+
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
+
     const { data, error } = await supabaseBrowser
-      .from("commentaires_taches")
+      .from("task_comments")
       .insert({
-        tache_id: taskId,
-        auteur: "Yli",
-        contenu: content,
+        task_id: taskId,
+        user_id: user?.id || null,
+        contenu: content.trim(),
       })
-      .select()
+      .select(`
+        id,
+        contenu,
+        created_at,
+        profiles (
+          nom,
+          full_name,
+          avatar_url
+        )
+      `)
       .single();
+
+    setSaving(false);
 
     if (error) {
       alert(error.message);
       return;
     }
 
-    setComments([data, ...comments]);
+    setComments((current) => [data as any, ...current]);
     setContent("");
-  }
+  
+  await supabaseBrowser.from("task_activity_logs").insert({
+  task_id: taskId,
+  user_id: user?.id || null,
+  type: "commentaire",
+  message: "A ajouté un commentaire",
+});
+
+}
 
   return (
-    <div className="mt-8 rounded-2xl border border-zinc-800 bg-black p-6">
-      <h2 className="text-2xl font-bold">Commentaires</h2>
+    <div className="mt-8 rounded-2xl bg-black p-6">
+      <h2 className="mb-4 text-2xl font-bold">Commentaires</h2>
 
-      <div className="mt-5 flex gap-3">
-        <input
+      <div className="mb-6 space-y-3">
+        <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Ajouter un commentaire..."
-          className="flex-1 rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-white"
+          rows={3}
+          className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-white"
         />
 
         <button
           type="button"
           onClick={addComment}
-          className="rounded-xl bg-white px-5 py-3 font-medium text-black"
+          disabled={saving}
+          className="rounded-xl bg-white px-5 py-3 text-sm font-medium text-black hover:bg-zinc-200 disabled:opacity-50"
         >
-          Publier
+          {saving ? "Publication..." : "Publier"}
         </button>
       </div>
 
-      <div className="mt-6 space-y-4">
+      <div className="space-y-4">
         {comments.length === 0 && (
-          <p className="text-sm text-zinc-500">
-            Aucun commentaire pour le moment.
-          </p>
+          <p className="text-sm text-zinc-500">Aucun commentaire.</p>
         )}
 
         {comments.map((comment) => (
           <div
             key={comment.id}
-            className="rounded-xl border border-zinc-800 bg-zinc-900 p-4"
+            className="rounded-xl border border-zinc-800 bg-zinc-950 p-4"
           >
-            <div className="mb-2 flex items-center justify-between">
-              <p className="font-medium">
-                {comment.auteur || "LMG"}
-              </p>
+            <p className="text-sm text-white">{comment.contenu}</p>
 
-              <p className="text-xs text-zinc-500">
-                {new Date(comment.created_at).toLocaleDateString("fr-FR")}
-              </p>
-            </div>
-
-            <p className="text-zinc-300">
-              {comment.contenu}
+            <p className="mt-3 text-xs text-zinc-500">
+              {comment.profiles?.nom ||
+                comment.profiles?.full_name ||
+                "Utilisateur"}{" "}
+              · {new Date(comment.created_at).toLocaleString("fr-FR")}
             </p>
           </div>
         ))}
