@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import MediaRelances from "@/components/MediaRelances";
+import DeleteMediaButton from "@/components/DeleteMediaButton";
 
 export const dynamic = "force-dynamic";
 
@@ -266,6 +267,15 @@ export default async function MediaDetailPage({
                   Ouvrir Instagram
                 </a>
               )}
+
+<Link
+  href={`/medias/${media.id}/modifier`}
+  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
+>
+  Modifier le contact
+</Link>
+
+<DeleteMediaButton mediaId={media.id} />
 
               <Link
                 href="/medias"
