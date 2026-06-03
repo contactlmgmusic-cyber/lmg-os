@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import MediaRelances from "@/components/MediaRelances";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,12 @@ export default async function MediaDetailPage({
       </main>
     );
   }
+
+  const { data: relances } = await supabase
+  .from("media_relances")
+  .select("id, type, contenu, date_relance, created_at")
+  .eq("media_id", media.id)
+  .order("date_relance", { ascending: false });
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -141,6 +148,12 @@ export default async function MediaDetailPage({
               {media.notes || "Aucune note renseignée."}
             </p>
           </div>
+
+<MediaRelances
+  mediaId={media.id}
+  initialRelances={(relances || []) as any}
+/>
+
         </section>
 
         <aside className="space-y-6">

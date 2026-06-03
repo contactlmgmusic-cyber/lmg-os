@@ -17,7 +17,8 @@ export default function AppShell({
     setMobileOpen(false);
   }, [pathname]);
 
-  const hideSidebar = pathname === "/login" || pathname === "/signup";
+  const hideSidebar =
+    pathname === "/login" || pathname === "/signup";
 
   if (hideSidebar) {
     return <>{children}</>;
@@ -60,7 +61,9 @@ export default function AppShell({
 
       <LiveNotifications />
 
-      <main className="min-h-screen lg:ml-72">{children}</main>
+      <main className="min-h-screen lg:ml-72">
+        {children}
+      </main>
     </div>
   );
 }
