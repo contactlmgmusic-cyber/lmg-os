@@ -55,6 +55,7 @@ export default function Sidebar() {
     { href: "/splits", label: "Split Sheets" },
     { href: "/royalties", label: "Royalties" },
     { href: "/finances", label: "Finances" },
+    { href: "/finances/dashboard", label: "Dashboard Finance" },
     { href: "/taches", label: "Tâches" },
     { href: "/mes-taches", label: "Mes tâches" },
     { href: "/calendrier", label: "Calendrier" },
