@@ -84,6 +84,54 @@ export default async function MediaDetailPage({
                 {media.instagram || "Non renseigné"}
               </p>
             </div>
+
+            <div className="rounded-2xl border border-zinc-800 bg-black p-5">
+  <p className="text-sm text-zinc-500">Téléphone</p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {media.telephone || "Non renseigné"}
+  </p>
+</div>
+
+<div className="rounded-2xl border border-zinc-800 bg-black p-5">
+  <p className="text-sm text-zinc-500">Ville</p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {media.ville || "Non renseignée"}
+  </p>
+</div>
+
+<div className="rounded-2xl border border-zinc-800 bg-black p-5">
+  <p className="text-sm text-zinc-500">Pays</p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {media.pays || "Non renseigné"}
+  </p>
+</div>
+
+<div className="rounded-2xl border border-zinc-800 bg-black p-5">
+  <p className="text-sm text-zinc-500">Audience</p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {media.audience?.toLocaleString() || "Non renseignée"}
+  </p>
+</div>
+
+<div className="rounded-2xl border border-zinc-800 bg-black p-5">
+  <p className="text-sm text-zinc-500">Priorité</p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {media.priorite || "Normale"}
+  </p>
+</div>
+
+<div className="rounded-2xl border border-zinc-800 bg-black p-5">
+  <p className="text-sm text-zinc-500">Prochaine relance</p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {media.prochaine_relance || "Non planifiée"}
+  </p>
+</div>
           </div>
 
           <div className="mt-8 rounded-2xl border border-zinc-800 bg-black p-6">
@@ -155,6 +203,33 @@ export default async function MediaDetailPage({
               <p className="mt-5 text-zinc-500">Aucun projet lié.</p>
             )}
           </div>
+
+<div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="text-3xl font-bold">
+    Score CRM
+  </h2>
+
+  <div className="mt-6 space-y-4">
+
+    <div className="flex items-center justify-between">
+      <span className="text-zinc-400">Statut</span>
+      <span>{media.statut || "À contacter"}</span>
+    </div>
+
+    <div className="flex items-center justify-between">
+      <span className="text-zinc-400">Priorité</span>
+      <span>{media.priorite || "Normale"}</span>
+    </div>
+
+    <div className="flex items-center justify-between">
+      <span className="text-zinc-400">Audience</span>
+      <span>
+        {media.audience?.toLocaleString() || "-"}
+      </span>
+    </div>
+
+  </div>
+</div>
 
           <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
             <h2 className="text-3xl font-bold">Actions</h2>
