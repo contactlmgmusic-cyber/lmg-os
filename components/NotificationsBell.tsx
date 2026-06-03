@@ -27,27 +27,27 @@ export default function NotificationsBell() {
   }
 
   useEffect(() => {
-    loadNotifications();
+  loadNotifications();
 
-    const channel = supabaseBrowser
-      .channel("realtime-notifications")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "notifications",
-        },
-        () => {
-          loadNotifications();
-        }
-      )
-      .subscribe();
+  const channel = supabaseBrowser
+    .channel("realtime-notifications")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "notifications",
+      },
+      () => {
+        loadNotifications();
+      }
+    )
+    .subscribe();
 
-    return () => {
-      supabaseBrowser.removeChannel(channel);
-    };
-  }, []);
+  return () => {
+    supabaseBrowser.removeChannel(channel);
+  };
+}, []);
 
   const unreadCount = notifications.filter((notif) => !notif.is_read).length;
 
