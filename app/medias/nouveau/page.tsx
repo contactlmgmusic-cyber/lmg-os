@@ -13,6 +13,13 @@ export default function NouveauMediaPage() {
   const [contactNom, setContactNom] = useState("");
   const [email, setEmail] = useState("");
   const [instagram, setInstagram] = useState("");
+  const [telephone, setTelephone] = useState("");
+const [ville, setVille] = useState("");
+const [pays, setPays] = useState("");
+const [url, setUrl] = useState("");
+const [audience, setAudience] = useState("");
+const [priorite, setPriorite] = useState("Normale");
+const [prochaineRelance, setProchaineRelance] = useState("");
   const [statut, setStatut] = useState("À contacter");
   const [artisteId, setArtisteId] = useState("");
   const [projetId, setProjetId] = useState("");
@@ -64,6 +71,14 @@ export default function NouveauMediaPage() {
         artiste_id: artisteId || null,
         projet_id: projetId || null,
         notes,
+
+        telephone,
+ville,
+pays,
+url,
+audience: audience ? Number(audience) : null,
+priorite,
+prochaine_relance: prochaineRelance || null,
       });
 
     if (error) {
@@ -140,6 +155,60 @@ export default function NouveauMediaPage() {
           placeholder="Instagram"
           className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
         />
+
+        <input
+  value={telephone}
+  onChange={(e) => setTelephone(e.target.value)}
+  placeholder="Téléphone"
+  className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+/>
+
+<input
+  value={ville}
+  onChange={(e) => setVille(e.target.value)}
+  placeholder="Ville"
+  className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+/>
+
+<input
+  value={pays}
+  onChange={(e) => setPays(e.target.value)}
+  placeholder="Pays"
+  className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+/>
+
+<input
+  value={url}
+  onChange={(e) => setUrl(e.target.value)}
+  placeholder="URL du média"
+  className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+/>
+
+<input
+  type="number"
+  value={audience}
+  onChange={(e) => setAudience(e.target.value)}
+  placeholder="Audience estimée"
+  className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+/>
+
+<select
+  value={priorite}
+  onChange={(e) => setPriorite(e.target.value)}
+  className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+>
+  <option>Faible</option>
+  <option>Normale</option>
+  <option>Haute</option>
+  <option>Critique</option>
+</select>
+
+<input
+  type="date"
+  value={prochaineRelance}
+  onChange={(e) => setProchaineRelance(e.target.value)}
+  className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+/>
 
         <select
           value={statut}
