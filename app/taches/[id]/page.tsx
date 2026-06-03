@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import ChecklistEditor from "@/components/ChecklistEditor";
+import TaskComments from "@/components/TaskComments";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,21 @@ export default async function TacheDetailPage({
       </main>
     );
   }
+
+  const { data: comments } = await supabase
+  .from("task_comments")
+  .select(`
+    id,
+    contenu,
+    created_at,
+    profiles (
+      nom,
+      full_name,
+      avatar_url
+    )
+  `)
+  .eq("task_id", tache.id)
+  .order("created_at", { ascending: false });
 
   const { data: responsable } = tache.responsable_id
     ? await supabase
@@ -129,6 +145,11 @@ export default async function TacheDetailPage({
     texte: item.texte || "",
     done: Boolean(item.done),
   }))}
+/>
+
+<TaskComments
+  taskId={tache.id}
+  initialComments={(comments || []) as any}
 />
         </section>
 
