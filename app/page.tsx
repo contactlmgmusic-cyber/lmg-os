@@ -27,6 +27,7 @@ export default function DashboardPage() {
     resultatMois: 0,
     royaltiesDues: 0,
     royaltiesPayees: 0,
+    mediasRelanceAujourdhui: 0,
   });
 
   const router = useRouter();
@@ -77,6 +78,13 @@ const [checkingAccess, setCheckingAccess] = useState(true);
       .from("medias")
       .select("*", { count: "exact", head: true })
       .eq("statut", "Relancé");
+
+      const today = new Date().toISOString().split("T")[0];
+
+const { count: mediasRelanceAujourdhui } = await supabaseBrowser
+  .from("medias")
+  .select("*", { count: "exact", head: true })
+  .eq("prochaine_relance", today);
 
     const { data: finances } = await supabaseBrowser
   .from("finances")
@@ -232,6 +240,7 @@ const royaltiesPayees =
       contratsASigner: contratsCount || 0,
       bookingsConfirmes: bookingsConfirmesCount || 0,
       mediasRelance: mediasRelanceCount || 0,
+      mediasRelanceAujourdhui: mediasRelanceAujourdhui || 0,
       revenusMois: revenus,
       depensesMois: depenses,
       resultatMois: revenus - depenses,
@@ -362,13 +371,14 @@ if (checkingAccess) {
 
 <RevenueChart data={revenueChartData} />
 
-      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
+      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-7">
         <KpiCard label="Artistes" value={stats.artistes} />
         <KpiCard label="Projets" value={stats.projets} />
         <KpiCard label="Tâches ouvertes" value={stats.taches} />
         <KpiCard label="Contrats à signer" value={stats.contratsASigner} />
         <KpiCard label="Bookings confirmés" value={stats.bookingsConfirmes} />
         <KpiCard label="Médias relancés" value={stats.mediasRelance} />
+        <KpiCard label="Relances médias du jour" value={stats.mediasRelanceAujourdhui} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
