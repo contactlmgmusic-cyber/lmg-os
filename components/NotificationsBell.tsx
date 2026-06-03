@@ -27,11 +27,11 @@ export default function NotificationsBell() {
   }
 
   useEffect(() => {
-  loadNotifications();
+    loadNotifications();
 
-  const channel = supabaseBrowser
-    .channel("realtime-notifications")
-    .on(
+    const channel = supabaseBrowser.channel("realtime-notifications");
+
+    channel.on(
       "postgres_changes",
       {
         event: "*",
@@ -41,13 +41,14 @@ export default function NotificationsBell() {
       () => {
         loadNotifications();
       }
-    )
-    .subscribe();
+    );
 
-  return () => {
-    supabaseBrowser.removeChannel(channel);
-  };
-}, []);
+    channel.subscribe();
+
+    return () => {
+      supabaseBrowser.removeChannel(channel);
+    };
+  }, []);
 
   const unreadCount = notifications.filter((notif) => !notif.is_read).length;
 
@@ -79,14 +80,11 @@ export default function NotificationsBell() {
             {notifications.map((notification) => (
               <a
                 key={notification.id}
-                href={
-                  notification.task_id
-                    ? `/taches/${notification.task_id}`
-                    : "#"
-                }
+                href={notification.task_id ? `/taches/${notification.task_id}` : "#"}
                 className="block rounded-xl border border-zinc-800 bg-black p-3 text-sm text-white hover:border-zinc-600"
               >
                 <p>{notification.message}</p>
+
                 <p className="mt-1 text-xs text-zinc-500">
                   {new Date(notification.created_at).toLocaleString("fr-FR")}
                 </p>
