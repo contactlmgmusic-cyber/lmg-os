@@ -64,7 +64,7 @@ export default async function ProjetDetailPage({
     );
   }
 
-  const isArtistUser = currentProfile?.role === "artist";
+  const isArtistUser = currentProfile?.role === "artiste";
   const isOwnProject = currentProfile?.artiste_id === projet.artiste_id;
   const canViewInternalProjectData = !isArtistUser || isOwnProject;
 
@@ -157,6 +157,21 @@ const royaltiesAPayer =
       0
     ) || 0;
 
+    const totalTaches = taches?.length || 0;
+
+const tachesTerminees =
+  taches?.filter(
+    (t: any) =>
+      t.statut === "Terminé" ||
+      t.statut === "Terminée" ||
+      t.statut === "Done"
+  ).length || 0;
+
+const avancement =
+  totalTaches > 0
+    ? Math.round((tachesTerminees / totalTaches) * 100)
+    : 0;
+
   return (
     <main className="text-white">
       <div className="relative h-[460px] overflow-hidden">
@@ -201,7 +216,36 @@ const royaltiesAPayer =
     <p className="mt-2 text-xl font-semibold">
       {projet.type || "Non renseigné"}
     </p>
-  </div>
+      </div>
+
+    <div className="rounded-3xl border border-cyan-500/30 bg-cyan-500/10 p-6">
+  <p className="text-sm text-cyan-300">Avancement projet</p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {avancement}%
+  </p>
+</div>
+
+<div className="rounded-3xl border border-zinc-700 bg-zinc-900 p-6">
+  <p className="text-sm text-zinc-400">
+    Tâches liées
+  </p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {totalTaches}
+  </p>
+</div>
+
+<div className="rounded-3xl border border-purple-500/30 bg-purple-500/10 p-6">
+  <p className="text-sm text-purple-300">
+    Assets projet
+  </p>
+
+  <p className="mt-2 text-xl font-semibold">
+    {assets?.length || 0}
+  </p>
+</div>
+  
 
   <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
     <p className="text-sm text-zinc-500">Statut</p>
