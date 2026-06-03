@@ -92,14 +92,23 @@ export default async function MediasPage() {
           </p>
         </div>
 
-        {canCreateMedia && (
-          <Link
-            href="/medias/nouveau"
-            className="rounded-xl bg-white px-5 py-3 font-semibold text-black"
-          >
-            + Nouveau contact
-          </Link>
-        )}
+        <div className="flex items-center gap-3">
+  <Link
+    href="/medias/dashboard"
+    className="rounded-xl border border-zinc-700 px-5 py-3 text-zinc-300 hover:bg-zinc-800"
+  >
+    Dashboard
+  </Link>
+
+  {canCreateMedia && (
+    <Link
+      href="/medias/nouveau"
+      className="rounded-xl bg-white px-5 py-3 font-semibold text-black"
+    >
+      + Nouveau contact
+    </Link>
+  )}
+</div>
       </div>
 
       <MediaKanban medias={medias || []} />

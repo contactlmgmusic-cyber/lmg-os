@@ -51,6 +51,7 @@ export default function Sidebar() {
     { href: "/projets", label: "Projets" },
     { href: "/booking", label: "Booking" },
     { href: "/medias", label: "CRM Médias" },
+    { href: "/medias/dashboard", label: "Dashboard Médias" },
     { href: "/contrats", label: "Contrats" },
     { href: "/splits", label: "Split Sheets" },
     { href: "/royalties", label: "Royalties" },
