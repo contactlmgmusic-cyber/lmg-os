@@ -157,6 +157,21 @@ const royaltiesAPayer =
       0
     ) || 0;
 
+const budgetTotal =
+  Number(projet.budget_clip || 0) +
+  Number(projet.budget_cover || 0) +
+  Number(projet.budget_promo || 0) +
+  Number(projet.budget_studio || 0) +
+  Number(projet.budget_influence || 0) +
+  Number(projet.budget_rp || 0);
+
+const resteBudget = budgetTotal - depenses;
+
+const rentabilite =
+  budgetTotal > 0
+    ? Math.round((resultat / budgetTotal) * 100)
+    : 0;
+
     const totalTaches = taches?.length || 0;
 
 const tachesTerminees =
@@ -467,6 +482,69 @@ const avancement =
 
           {!isArtistUser && (
             <aside className="space-y-6">
+
+<div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="mb-6 text-3xl font-bold">
+    Budget projet
+  </h2>
+
+  <div className="space-y-4">
+
+    <div className="flex items-center justify-between">
+      <span className="text-zinc-400">Clip</span>
+      <span>{Number(projet.budget_clip || 0).toFixed(2)} €</span>
+    </div>
+
+    <div className="flex items-center justify-between">
+      <span className="text-zinc-400">Cover</span>
+      <span>{Number(projet.budget_cover || 0).toFixed(2)} €</span>
+    </div>
+
+    <div className="flex items-center justify-between">
+      <span className="text-zinc-400">Promo</span>
+      <span>{Number(projet.budget_promo || 0).toFixed(2)} €</span>
+    </div>
+
+    <div className="flex items-center justify-between">
+      <span className="text-zinc-400">Studio</span>
+      <span>{Number(projet.budget_studio || 0).toFixed(2)} €</span>
+    </div>
+
+    <div className="flex items-center justify-between">
+      <span className="text-zinc-400">Influence</span>
+      <span>{Number(projet.budget_influence || 0).toFixed(2)} €</span>
+    </div>
+
+    <div className="flex items-center justify-between">
+      <span className="text-zinc-400">RP</span>
+      <span>{Number(projet.budget_rp || 0).toFixed(2)} €</span>
+    </div>
+
+    <div className="my-4 border-t border-zinc-800" />
+
+    <div className="flex items-center justify-between font-semibold">
+      <span>Budget total</span>
+      <span>{budgetTotal.toFixed(2)} €</span>
+    </div>
+
+    <div className="flex items-center justify-between text-red-300">
+      <span>Dépenses réelles</span>
+      <span>{depenses.toFixed(2)} €</span>
+    </div>
+
+    <div className="flex items-center justify-between text-green-300">
+      <span>Reste disponible</span>
+      <span>{resteBudget.toFixed(2)} €</span>
+    </div>
+
+    <div className="flex items-center justify-between text-cyan-300">
+      <span>Rentabilité</span>
+      <span>{rentabilite}%</span>
+    </div>
+
+  </div>
+</div>
+
               <div className="mb-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
                 <h2 className="mb-6 text-3xl font-bold">Médias liés</h2>
 
