@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import LiveNotifications from "./LiveNotifications";
 import { useEffect, useState } from "react";
-import NotificationsBell from "./NotificationsBell";
 
 export default function AppShell({
   children,
@@ -18,8 +17,7 @@ export default function AppShell({
     setMobileOpen(false);
   }, [pathname]);
 
-  const hideSidebar =
-    pathname === "/login" || pathname === "/signup";
+  const hideSidebar = pathname === "/login" || pathname === "/signup";
 
   if (hideSidebar) {
     return <>{children}</>;
@@ -51,28 +49,18 @@ export default function AppShell({
           <p className="text-xs text-zinc-500">Label Management</p>
         </div>
 
-        <div className="flex items-center gap-3">
-  <NotificationsBell />
-
-  <button
-    type="button"
-    onClick={() => setMobileOpen(true)}
-    className="rounded-xl bg-white px-4 py-2 font-semibold text-black"
-  >
-    Menu
-  </button>
-</div>
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="rounded-xl bg-white px-4 py-2 font-semibold text-black"
+        >
+          Menu
+        </button>
       </header>
-
-<div className="fixed right-6 top-5 z-50 hidden lg:block">
-  <NotificationsBell />
-</div>
 
       <LiveNotifications />
 
-      <main className="min-h-screen lg:ml-72">
-        {children}
-      </main>
+      <main className="min-h-screen lg:ml-72">{children}</main>
     </div>
   );
 }
