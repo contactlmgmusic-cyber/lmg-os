@@ -538,7 +538,16 @@ if (checkingAccess) {
 </div>
 
       <section className="mt-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-        <h2 className="mb-6 text-3xl font-bold">Activité récente</h2>
+        <div className="mb-6 flex items-center justify-between">
+  <h2 className="text-3xl font-bold">Activité récente</h2>
+
+  <Link
+    href="/activity"
+    className="text-sm text-zinc-400 hover:text-white"
+  >
+    Voir tout →
+  </Link>
+</div>
 
         <div className="space-y-4">
           {activityLogs.length === 0 && (
