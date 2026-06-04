@@ -8,6 +8,8 @@ import LogoutButton from "./LogoutButton";
 import NotificationsBell from "./NotificationsBell";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { ROLES } from "@/lib/roles";
+import Image from "next/image";
+
 
 
 export default function Sidebar() {
@@ -117,10 +119,24 @@ export default function Sidebar() {
 
   return (
     <aside className="fixed left-0 top-0 z-50 flex h-screen w-72 flex-col overflow-y-auto border-r border-zinc-900 bg-black p-6 text-white">
-      <Link href="/" className="mb-8 shrink-0">
-        <h1 className="text-5xl font-black tracking-tight">LMG OS</h1>
-        <p className="mt-2 text-sm text-zinc-500">Label Management System</p>
-      </Link>
+      <div className="mb-8 flex flex-col items-center">
+  <Image
+    src="/logo-lmg.png"
+    alt="Legacy Music Group"
+    width={120}
+    height={120}
+    priority
+    className="mb-4"
+  />
+
+  <h1 className="text-center text-2xl font-bold text-white">
+    Legacy Music Group
+  </h1>
+
+  <p className="mt-1 text-center text-xs uppercase tracking-[0.3em] text-zinc-500">
+    Operating System
+  </p>
+</div>
 
       {canUseGlobalTools && (
         <div className="shrink-0">

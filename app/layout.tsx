@@ -3,7 +3,7 @@ import "./globals.css";
 import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
-  title: "LMG OS",
+  title: "Legacy Music Group",
   description: "Legacy Music Group Operating System",
 };
 
