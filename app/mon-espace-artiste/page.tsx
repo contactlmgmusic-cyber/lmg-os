@@ -61,6 +61,15 @@ export default async function MonEspaceArtistePage() {
 
   const projetIds = projets?.map((projet) => projet.id) || [];
 
+  const { data: rolloutEvents } =
+  projetIds.length > 0
+    ? await supabase
+        .from("rollout_events")
+        .select("*")
+        .in("projet_id", projetIds)
+        .order("date_event", { ascending: true })
+    : { data: [] };
+
   const { data: taches } =
     projetIds.length > 0
       ? await supabase
@@ -417,6 +426,93 @@ const progressionObjectifs =
         </p>
       </Link>
     ))}
+  </div>
+</div>
+
+<div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="mb-6 text-3xl font-bold">
+    Progression rollout
+  </h2>
+
+  {(!projets || projets.length === 0) && (
+    <p className="text-zinc-500">
+      Aucun projet disponible.
+    </p>
+  )}
+
+  <div className="space-y-6">
+    {projets?.map((projet: any) => {
+      const events =
+        rolloutEvents?.filter(
+          (event: any) => event.projet_id === projet.id
+        ) || [];
+
+      const total = events.length;
+
+      const done = events.filter(
+        (event: any) =>
+          event.statut === "Terminé" ||
+          event.statut === "Fait" ||
+          event.statut === "Validé"
+      ).length;
+
+      const percent =
+        total > 0 ? Math.round((done / total) * 100) : 0;
+
+      return (
+        <Link
+          key={projet.id}
+          href={`/projets/${projet.id}`}
+          className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+        >
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-bold">
+                {projet.titre}
+              </h3>
+
+              <p className="mt-1 text-sm text-zinc-500">
+                {done} / {total} actions terminées
+              </p>
+            </div>
+
+            <p className="text-2xl font-bold">
+              {percent}%
+            </p>
+          </div>
+
+          <div className="h-3 overflow-hidden rounded-full bg-zinc-900">
+            <div
+              className="h-full rounded-full bg-green-400"
+              style={{ width: `${percent}%` }}
+            />
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {events.slice(0, 6).map((event: any) => (
+              <span
+                key={event.id}
+                className={`rounded-full border px-3 py-1 text-xs ${
+                  event.statut === "Terminé" ||
+                  event.statut === "Fait" ||
+                  event.statut === "Validé"
+                    ? "border-green-500/40 bg-green-500/10 text-green-300"
+                    : "border-zinc-700 bg-zinc-900 text-zinc-400"
+                }`}
+              >
+                {event.titre}
+              </span>
+            ))}
+
+            {events.length > 6 && (
+              <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-500">
+                +{events.length - 6}
+              </span>
+            )}
+          </div>
+        </Link>
+      );
+    })}
   </div>
 </div>
 
