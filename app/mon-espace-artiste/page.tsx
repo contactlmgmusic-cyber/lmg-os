@@ -96,6 +96,12 @@ export default async function MonEspaceArtistePage() {
   .eq("artiste_id", profile.artiste_id)
   .order("date_event", { ascending: true });
 
+  const { data: equipe } = await supabase
+  .from("equipe_artiste")
+  .select("*")
+  .eq("artiste_id", profile.artiste_id)
+  .order("ordre", { ascending: true });
+
   const prochainesSorties =
   projets
     ?.filter(
@@ -354,6 +360,63 @@ const royaltiesPayees =
           {projet.statut || "En préparation"}
         </p>
       </Link>
+    ))}
+  </div>
+</div>
+
+<div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="mb-6 text-3xl font-bold">
+    Mon équipe
+  </h2>
+
+  {(!equipe || equipe.length === 0) && (
+    <p className="text-zinc-500">
+      Aucun membre renseigné.
+    </p>
+  )}
+
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+    {equipe?.map((membre: any) => (
+      <div
+        key={membre.id}
+        className="rounded-2xl border border-zinc-800 bg-black p-5"
+      >
+        <div className="flex items-center gap-4">
+          {membre.photo_url ? (
+            <img
+              src={membre.photo_url}
+              alt={membre.nom}
+              className="h-16 w-16 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800">
+              👤
+            </div>
+          )}
+
+          <div>
+            <h3 className="font-bold">
+              {membre.nom}
+            </h3>
+
+            <p className="text-sm text-zinc-400">
+              {membre.role}
+            </p>
+          </div>
+        </div>
+
+        {membre.email && (
+          <p className="mt-4 text-sm text-zinc-500">
+            {membre.email}
+          </p>
+        )}
+
+        {membre.telephone && (
+          <p className="mt-1 text-sm text-zinc-500">
+            {membre.telephone}
+          </p>
+        )}
+      </div>
     ))}
   </div>
 </div>
