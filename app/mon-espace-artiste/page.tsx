@@ -96,6 +96,12 @@ export default async function MonEspaceArtistePage() {
   .eq("artiste_id", profile.artiste_id)
   .order("date_event", { ascending: true });
 
+  const { data: objectifs } = await supabase
+  .from("objectifs_artiste")
+  .select("*")
+  .eq("artiste_id", profile.artiste_id)
+  .order("created_at", { ascending: false });
+
   const { data: equipe } = await supabase
   .from("equipe_artiste")
   .select("*")
@@ -131,6 +137,21 @@ const royaltiesPayees =
       (acc: number, r: any) => acc + Number(r.montant_du || 0),
       0
     ) || 0;
+
+    const totalObjectifs = objectifs?.length || 0;
+
+const objectifsAtteints =
+  objectifs?.filter((objectif: any) => {
+    const target = Number(objectif.objectif || 0);
+    const current = Number(objectif.actuel || 0);
+
+    return target > 0 && current >= target;
+  }).length || 0;
+
+const progressionObjectifs =
+  totalObjectifs > 0
+    ? Math.round((objectifsAtteints / totalObjectifs) * 100)
+    : 0;
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -292,6 +313,75 @@ const royaltiesPayees =
         </p>
       </Link>
     ))}
+  </div>
+</div>
+
+<div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div className="mb-6 flex items-center justify-between">
+    <div>
+      <h2 className="text-3xl font-bold">Mes objectifs</h2>
+
+      <p className="mt-2 text-zinc-500">
+        {objectifsAtteints} / {totalObjectifs} atteints · {progressionObjectifs}%
+      </p>
+    </div>
+
+    <div className="text-right">
+      <p className="text-sm text-zinc-500">Progression</p>
+      <p className="text-3xl font-bold">{progressionObjectifs}%</p>
+    </div>
+  </div>
+
+  <div className="mb-6 h-3 overflow-hidden rounded-full bg-black">
+    <div
+      className="h-full rounded-full bg-white"
+      style={{ width: `${progressionObjectifs}%` }}
+    />
+  </div>
+
+  {(!objectifs || objectifs.length === 0) && (
+    <p className="text-zinc-500">Aucun objectif renseigné.</p>
+  )}
+
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    {objectifs?.map((objectif: any) => {
+      const target = Number(objectif.objectif || 0);
+      const current = Number(objectif.actuel || 0);
+      const percent =
+        target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
+
+      return (
+        <div
+          key={objectif.id}
+          className="rounded-2xl border border-zinc-800 bg-black p-5"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-bold">{objectif.titre}</h3>
+
+              <p className="mt-2 text-sm text-zinc-500">
+                {current} / {target} {objectif.unite || ""}
+              </p>
+            </div>
+
+            <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
+              {objectif.statut || "En cours"}
+            </span>
+          </div>
+
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-zinc-900">
+            <div
+              className="h-full rounded-full bg-green-400"
+              style={{ width: `${percent}%` }}
+            />
+          </div>
+
+          <p className="mt-2 text-xs text-zinc-500">
+            Progression : {percent}%
+          </p>
+        </div>
+      );
+    })}
   </div>
 </div>
         </div>
