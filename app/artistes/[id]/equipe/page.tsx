@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import ImageCropUploader from "@/components/ImageCropUploader";
 
 type MembreEquipe = {
   id: string;
@@ -200,16 +201,10 @@ export default function EquipeArtistePage() {
     />
   )}
 
-  <label className="block cursor-pointer rounded-xl border border-dashed border-zinc-700 bg-black px-4 py-6 text-center text-zinc-400 hover:border-white hover:text-white">
-    {uploading ? "Upload de la photo..." : "Importer une photo"}
-
-    <input
-      type="file"
-      accept="image/*"
-      onChange={handlePhotoUpload}
-      className="hidden"
-    />
-  </label>
+  <ImageCropUploader
+    folder={`equipe-artiste/${artisteId}`}
+    onUploaded={(url) => setPhotoUrl(url)}
+  />
 </div>
 
             <input
