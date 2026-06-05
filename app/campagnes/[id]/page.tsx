@@ -266,6 +266,13 @@ export default async function CampagneDetailPage({
                 Ajouter influenceur
               </Link>
 
+<Link
+  href={`/campagnes/${campagne.id}/supprimer`}
+  className="block rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-center font-medium text-red-400 hover:bg-red-500/20"
+>
+  Supprimer campagne
+</Link>
+
               <Link
                 href="/campagnes"
                 className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
