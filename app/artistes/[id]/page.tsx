@@ -775,6 +775,13 @@ const revenusParProjet = projets
   Gérer l'équipe
 </Link>
 
+<Link
+  href={`/artistes/${artiste.id}/objectifs`}
+  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
+>
+  Gérer les objectifs
+</Link>
+
                   <Link
                     href={`/chat?channel=${artistChannelSlug}`}
                     className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
