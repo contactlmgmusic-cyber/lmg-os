@@ -48,7 +48,7 @@ export default async function ArtisteProfilPage({
         .single()
     : { data: null };
 
-  const isArtistUser = currentProfile?.role === "artist";
+  const isArtistUser = currentProfile?.role === "artiste";
   const isOwnArtistProfile =
     isArtistUser && currentProfile?.artiste_id === id;
 
@@ -136,6 +136,12 @@ export default async function ArtisteProfilPage({
   .select("*")
   .eq("artiste_id", id)
   .order("created_at", { ascending: false });
+
+  const { data: equipe } = await supabase
+  .from("equipe_artiste")
+  .select("*")
+  .eq("artiste_id", id)
+  .order("ordre", { ascending: true });
 
   const { data: finances } = await supabase
   .from("finances")
@@ -293,6 +299,8 @@ const revenusParProjet = projets
               >
                 Modifier artiste
               </Link>
+
+              
             )}
           </div>
         </div>
@@ -703,6 +711,51 @@ const revenusParProjet = projets
   </div>
 </div>
 
+<div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="mb-6 text-3xl font-bold">
+    Équipe
+  </h2>
+
+  {(!equipe || equipe.length === 0) && (
+    <p className="text-zinc-500">
+      Aucun membre renseigné.
+    </p>
+  )}
+
+  <div className="space-y-4">
+    {equipe?.map((membre: any) => (
+      <div
+        key={membre.id}
+        className="rounded-2xl border border-zinc-800 bg-black p-5"
+      >
+        <div className="flex items-center gap-4">
+          {membre.photo_url ? (
+            <img
+              src={membre.photo_url}
+              alt={membre.nom}
+              className="h-14 w-14 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-zinc-800">
+              👤
+            </div>
+          )}
+
+          <div>
+            <h3 className="font-semibold">
+              {membre.nom}
+            </h3>
+
+            <p className="text-sm text-zinc-500">
+              {membre.role}
+            </p>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
             {!isArtistUser && (
               <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
                 <h2 className="text-3xl font-bold">Actions</h2>
@@ -714,6 +767,13 @@ const revenusParProjet = projets
                   >
                     Modifier artiste
                   </Link>
+
+                  <Link
+  href={`/artistes/${artiste.id}/equipe`}
+  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
+>
+  Gérer l'équipe
+</Link>
 
                   <Link
                     href={`/chat?channel=${artistChannelSlug}`}
