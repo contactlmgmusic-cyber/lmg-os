@@ -22,6 +22,7 @@ export default function EquipeArtistePage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const [artiste, setArtiste] = useState<any>(null);
   const [membres, setMembres] = useState<MembreEquipe[]>([]);
@@ -56,6 +57,35 @@ export default function EquipeArtistePage() {
       loadData();
     }
   }, [artisteId]);
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  const file = e.target.files?.[0];
+
+  if (!file) return;
+
+  setUploading(true);
+
+  const filePath = `equipe-artiste/${artisteId}/${Date.now()}-${file.name}`;
+
+  const { error: uploadError } = await supabaseBrowser.storage
+    .from("lmg-assets")
+    .upload(filePath, file, {
+      upsert: true,
+    });
+
+  if (uploadError) {
+    alert(uploadError.message);
+    setUploading(false);
+    return;
+  }
+
+  const { data } = supabaseBrowser.storage
+    .from("lmg-assets")
+    .getPublicUrl(filePath);
+
+  setPhotoUrl(data.publicUrl);
+  setUploading(false);
+}
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -161,12 +191,26 @@ export default function EquipeArtistePage() {
               className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
             />
 
-            <input
-              value={photoUrl}
-              onChange={(e) => setPhotoUrl(e.target.value)}
-              placeholder="URL photo"
-              className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
-            />
+            <div>
+  {photoUrl && (
+    <img
+      src={photoUrl}
+      alt="Photo membre"
+      className="mb-4 h-24 w-24 rounded-full object-cover"
+    />
+  )}
+
+  <label className="block cursor-pointer rounded-xl border border-dashed border-zinc-700 bg-black px-4 py-6 text-center text-zinc-400 hover:border-white hover:text-white">
+    {uploading ? "Upload de la photo..." : "Importer une photo"}
+
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handlePhotoUpload}
+      className="hidden"
+    />
+  </label>
+</div>
 
             <input
               value={email}
