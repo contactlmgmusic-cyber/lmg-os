@@ -222,6 +222,14 @@ export default async function InfluenceurDetailPage({
               >
                 Retour pipeline
               </Link>
+
+<Link
+  href={`/influenceurs/${influenceur.id}/supprimer`}
+  className="block rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-center font-medium text-red-400 hover:bg-red-500/20"
+>
+  Supprimer influenceur
+</Link>
+
             </div>
           </div>
         </aside>

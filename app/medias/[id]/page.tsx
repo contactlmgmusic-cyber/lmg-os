@@ -275,14 +275,20 @@ export default async function MediaDetailPage({
   Modifier le contact
 </Link>
 
-<DeleteMediaButton mediaId={media.id} />
-
               <Link
                 href="/medias"
                 className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
               >
                 Retour pipeline
               </Link>
+
+<Link
+  href={`/medias/${media.id}/supprimer`}
+  className="block rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-center font-medium text-red-400 hover:bg-red-500/20"
+>
+  Supprimer contact
+</Link>
+
             </div>
           </div>
         </aside>

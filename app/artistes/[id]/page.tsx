@@ -802,6 +802,14 @@ const revenusParProjet = projets
                   >
                     Ouvrir Drive
                   </Link>
+
+<Link
+  href={`/artistes/${artiste.id}/supprimer`}
+  className="block rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-center font-medium text-red-400 hover:bg-red-500/20"
+>
+  Supprimer artiste
+</Link>
+
                 </div>
               </div>
             )}
