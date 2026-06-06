@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabaseBrowser } from "../../../../lib/supabase-browser";
 import UploadArtisteImage from "../../../../components/UploadArtisteImage";
+import ImageCropUploader from "@/components/ImageCropUploader";
 
 export default function ModifierArtistePage() {
   const router = useRouter();
@@ -211,25 +212,24 @@ fetchManagers();
           </button>
         </div>
 
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-          <h2 className="mb-4 text-xl font-semibold">
-            Photo artiste
-          </h2>
+        <div>
+  <label className="mb-3 block text-sm text-zinc-400">
+    Photo artiste
+  </label>
 
-          {photoUrl ? (
-            <img
-              src={photoUrl}
-              alt="Preview artiste"
-              className="mb-5 h-72 w-full rounded-2xl object-cover"
-            />
-          ) : (
-            <div className="mb-5 flex h-72 items-center justify-center rounded-2xl bg-zinc-800 text-zinc-500">
-              Preview image
-            </div>
-          )}
+  {photoUrl && (
+    <img
+      src={photoUrl}
+      alt="Artiste"
+      className="mb-4 h-32 w-32 rounded-full object-cover"
+    />
+  )}
 
-          <UploadArtisteImage onUpload={setPhotoUrl} />
-        </div>
+  <ImageCropUploader
+    folder={`artistes/${id}`}
+    onUploaded={(url) => setPhotoUrl(url)}
+  />
+</div>
       </form>
     </main>
   );
