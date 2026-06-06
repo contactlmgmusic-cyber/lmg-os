@@ -11,6 +11,9 @@ type Candidature = {
   lien_musique: string | null;
   message: string | null;
   statut: string | null;
+  priorite: string | null;
+  assigned_to: string | null;
+  note_interne: string | null;
   created_at: string;
 };
 
@@ -24,18 +27,23 @@ export default function CandidaturesPage() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (!error) {
-      setCandidatures(data || []);
-    }
-
+    if (!error) setCandidatures(data || []);
     setLoading(false);
   }
 
-  async function updateStatut(id: string, statut: string) {
-    await supabaseBrowser
+  async function updateCandidature(
+    id: string,
+    updates: Partial<Candidature>
+  ) {
+    const { error } = await supabaseBrowser
       .from("candidatures")
-      .update({ statut })
+      .update(updates)
       .eq("id", id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
 
     loadCandidatures();
   }
@@ -54,7 +62,7 @@ export default function CandidaturesPage() {
         <h1 className="text-5xl font-black">Candidatures artistes</h1>
 
         <p className="mt-3 text-zinc-400">
-          Toutes les candidatures reçues depuis le site public LMG.
+          Suivi des candidatures reçues depuis le site public LMG.
         </p>
       </div>
 
@@ -70,7 +78,7 @@ export default function CandidaturesPage() {
             key={candidature.id}
             className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6"
           >
-            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+            <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
               <div>
                 <p className="text-sm uppercase tracking-[0.3em] text-yellow-500">
                   {candidature.statut || "nouvelle"}
@@ -97,33 +105,88 @@ export default function CandidaturesPage() {
                     Écouter le lien musique →
                   </a>
                 )}
+
+                {candidature.message && (
+                  <p className="mt-6 rounded-2xl border border-zinc-800 bg-black p-5 leading-7 text-zinc-300">
+                    {candidature.message}
+                  </p>
+                )}
+
+                <p className="mt-4 text-xs text-zinc-600">
+                  Reçue le{" "}
+                  {new Date(candidature.created_at).toLocaleString("fr-FR")}
+                </p>
               </div>
 
-              <select
-                value={candidature.statut || "nouvelle"}
-                onChange={(e) =>
-                  updateStatut(candidature.id, e.target.value)
-                }
-                className="rounded-full border border-zinc-700 bg-black px-5 py-3 text-white outline-none"
-              >
-                <option value="nouvelle">Nouvelle</option>
-                <option value="en étude">En étude</option>
-                <option value="entretien">Entretien</option>
-                <option value="acceptée">Acceptée</option>
-                <option value="refusée">Refusée</option>
-              </select>
+              <div className="rounded-2xl border border-zinc-800 bg-black p-5">
+                <div className="grid gap-4">
+                  <label className="text-sm text-zinc-400">
+                    Statut
+                    <select
+                      value={candidature.statut || "nouvelle"}
+                      onChange={(e) =>
+                        updateCandidature(candidature.id, {
+                          statut: e.target.value,
+                        })
+                      }
+                      className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none"
+                    >
+                      <option value="nouvelle">Nouvelle</option>
+                      <option value="en étude">En étude</option>
+                      <option value="entretien">Entretien</option>
+                      <option value="acceptée">Acceptée</option>
+                      <option value="refusée">Refusée</option>
+                    </select>
+                  </label>
+
+                  <label className="text-sm text-zinc-400">
+                    Priorité
+                    <select
+                      value={candidature.priorite || "moyenne"}
+                      onChange={(e) =>
+                        updateCandidature(candidature.id, {
+                          priorite: e.target.value,
+                        })
+                      }
+                      className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none"
+                    >
+                      <option value="haute">Haute</option>
+                      <option value="moyenne">Moyenne</option>
+                      <option value="faible">Faible</option>
+                    </select>
+                  </label>
+
+                  <label className="text-sm text-zinc-400">
+                    Assigné à
+                    <input
+                      defaultValue={candidature.assigned_to || ""}
+                      placeholder="Yliana / Joseph / Manager..."
+                      onBlur={(e) =>
+                        updateCandidature(candidature.id, {
+                          assigned_to: e.target.value,
+                        })
+                      }
+                      className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none"
+                    />
+                  </label>
+
+                  <label className="text-sm text-zinc-400">
+                    Note interne
+                    <textarea
+                      defaultValue={candidature.note_interne || ""}
+                      placeholder="Potentiel, points forts, actions à faire..."
+                      rows={5}
+                      onBlur={(e) =>
+                        updateCandidature(candidature.id, {
+                          note_interne: e.target.value,
+                        })
+                      }
+                      className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none"
+                    />
+                  </label>
+                </div>
+              </div>
             </div>
-
-            {candidature.message && (
-              <p className="mt-6 rounded-2xl border border-zinc-800 bg-black p-5 leading-7 text-zinc-300">
-                {candidature.message}
-              </p>
-            )}
-
-            <p className="mt-4 text-xs text-zinc-600">
-              Reçue le{" "}
-              {new Date(candidature.created_at).toLocaleString("fr-FR")}
-            </p>
           </div>
         ))}
       </div>
