@@ -11,7 +11,19 @@ export default function SitePage() {
     <main className="min-h-screen bg-black text-white">
         <Navbar />
       <section className="relative flex min-h-screen items-center justify-center px-6 text-center">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#3a2a00_0%,#050505_45%,#000_100%)]" />
+        <>
+  <video
+    autoPlay
+    muted
+    loop
+    playsInline
+    className="absolute inset-0 h-full w-full object-cover"
+  >
+    <source src="/videos.mp4" type="video/mp4" />
+  </video>
+
+  <div className="absolute inset-0 bg-black/70" />
+</>
 
         <div className="relative z-10 max-w-5xl">
           <p className="mb-4 text-sm uppercase tracking-[0.4em] text-yellow-500">
