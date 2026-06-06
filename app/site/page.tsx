@@ -26,11 +26,11 @@ export default function SitePage() {
 </>
 
         <div className="relative z-10 max-w-5xl">
-          <p className="mb-4 text-sm uppercase tracking-[0.4em] text-yellow-500">
-            Legacy Music Group
-          </p>
+          <p className="mb-4 hidden text-sm uppercase tracking-[0.4em] text-yellow-500 md:block">
+  Legacy Music Group
+</p>
 
-          <h1 className="text-6xl font-black uppercase leading-tight md:text-9xl">
+          <h1 className="text-5xl font-black uppercase leading-tight md:text-9xl">
   Build Your <br />
   Legacy
 </h1>
