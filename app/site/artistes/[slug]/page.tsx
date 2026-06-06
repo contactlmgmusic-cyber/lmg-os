@@ -25,19 +25,19 @@ if (!artiste) {
 
   return (
     <main className="min-h-screen bg-black text-white">
-      <section className="mx-auto max-w-6xl px-6 py-28">
-        <Link href="/site" className="text-sm text-zinc-400 hover:text-white">
-          ← Retour au site
+      <section className="mx-auto max-w-7xl px-6 py-28">
+        <Link href="/site#artists" className="text-sm text-zinc-400 hover:text-white">
+          ← Retour aux artistes
         </Link>
 
-        <div className="mt-12 grid gap-12 lg:grid-cols-2">
-          <div className="relative h-[600px] overflow-hidden rounded-3xl bg-zinc-950">
+        <div className="mt-12 grid gap-12 lg:grid-cols-[45%_55%]">
+          <div className="relative h-[600px] overflow-hidden rounded-3xl bg-zinc-900">
             {artiste.photo_url ? (
               <Image
                 src={artiste.photo_url}
                 alt={artiste.nom || "Artiste LMG"}
                 fill
-                className="object-contain p-4"
+                className="object-cover"
               />
             ) : (
               <div className="flex h-full items-center justify-center text-zinc-500">
@@ -47,17 +47,27 @@ if (!artiste) {
           </div>
 
           <div>
+
+  <div className="relative z-10">
             <p className="text-sm uppercase tracking-[0.3em] text-yellow-500">
               {artiste.style || "Artist"}
             </p>
 
-            <h1 className="mt-4 text-6xl font-black">{artiste.nom}</h1>
+            <h1 className="mt-4 text-7xl font-black">
+  {artiste.nom}
+</h1>
+</div>
+<div className="mt-6 h-[2px] w-24 bg-yellow-500" />
 
             <p className="mt-4 text-zinc-500">
               {artiste.ville || "Legacy Music Group"}
             </p>
 
-            <p className="mt-8 whitespace-pre-line text-lg leading-8 text-zinc-300">
+            <p className="mt-2 text-sm uppercase tracking-[0.2em] text-yellow-500">
+  Artiste accompagné par LMG
+</p>
+
+            <p className="mt-8 whitespace-pre-line text-xl leading-9 text-zinc-300">
               {artiste.bio || "Artiste accompagné par Legacy Music Group."}
             </p>
 
@@ -67,6 +77,13 @@ if (!artiste) {
                   Instagram
                 </a>
               )}
+
+              <Link
+  href="/site#contact"
+  className="rounded-full bg-yellow-500 px-5 py-3 font-bold text-black hover:bg-yellow-400"
+>
+  Contacter LMG
+</Link>
 
               {artiste.spotify && (
                 <a href={artiste.spotify} target="_blank" className="rounded-full border border-zinc-700 px-5 py-3 hover:border-yellow-500">

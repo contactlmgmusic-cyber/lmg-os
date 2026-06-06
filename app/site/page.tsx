@@ -2,6 +2,9 @@ import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Image from "next/image";
 import FeaturedArtists from "@/components/site/FeaturedArtists";
+import FeaturedReleases from "@/components/site/FeaturedReleases";
+import Footer from "@/components/site/Footer";
+import ApplicationForm from "@/components/site/ApplicationForm";
 
 export default function SitePage() {
   return (
@@ -44,6 +47,7 @@ export default function SitePage() {
       </section>
 
       <FeaturedArtists />
+      <FeaturedReleases />
 
       <section id="services" className="bg-zinc-950 px-6 py-28">
         <div className="mx-auto max-w-6xl">
@@ -120,26 +124,8 @@ export default function SitePage() {
         </div>
       </section>
 
-      <section id="contact" className="px-6 py-28 text-center">
-        <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
-          Contact
-        </p>
-
-        <h2 className="text-4xl font-black md:text-6xl">
-          Ready to build your legacy?
-        </h2>
-
-        <Link
-          href="mailto:contact@legacymusicgroup.fr"
-          className="mt-10 inline-block rounded-full bg-yellow-500 px-8 py-4 font-bold text-black hover:bg-yellow-400"
-        >
-          Nous contacter
-        </Link>
-      </section>
-
-      <footer className="border-t border-zinc-900 px-6 py-8 text-center text-sm text-zinc-500">
-        © 2026 Legacy Music Group. Tous droits réservés.
-      </footer>
+      <ApplicationForm />
+      <Footer />
     </main>
   );
 }
