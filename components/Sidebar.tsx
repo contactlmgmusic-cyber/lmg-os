@@ -46,14 +46,17 @@ export default function Sidebar() {
   }, []);
 
   const superAdminLinks = [
-    { href: "/", label: "Dashboard" },
+    { href: "/dashboard", label: "Dashboard" },
     { href: "/admin", label: "Administration" },
+    { href: "/dashboard/candidatures", label: "Candidatures" },
     { href: "/notifications", label: "Notifications" },
     { href: "/artistes", label: "Artistes" },
     { href: "/projets", label: "Projets" },
     { href: "/booking", label: "Booking" },
+    { href: "/influenceurs", label: "CRM Influenceurs" },
     { href: "/medias", label: "CRM Médias" },
     { href: "/medias/dashboard", label: "Dashboard Médias" },
+    { href: "/campagnes", label: "Campagnes" },
     { href: "/contrats", label: "Contrats" },
     { href: "/splits", label: "Split Sheets" },
     { href: "/royalties", label: "Royalties" },
@@ -76,7 +79,9 @@ export default function Sidebar() {
     { href: "/artistes", label: "Mes artistes" },
     { href: "/projets", label: "Projets" },
     { href: "/booking", label: "Booking" },
+    { href: "/influenceurs", label: "CRM Influenceurs" },
     { href: "/medias", label: "CRM Médias" },
+    { href: "/campagnes", label: "Campagnes" },
     { href: "/contrats", label: "Contrats" },
     { href: "/splits", label: "Split Sheets" },
     { href: "/royalties", label: "Royalties" },
