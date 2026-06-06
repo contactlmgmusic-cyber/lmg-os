@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { supabaseBrowser } from "../../../../lib/supabase-browser";
+import { supabaseBrowser } from "../../../../../lib/supabase-browser";
 
 type Artiste = {
   id: string;

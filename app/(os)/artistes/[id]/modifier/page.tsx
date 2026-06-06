@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { supabaseBrowser } from "../../../../lib/supabase-browser";
-import UploadArtisteImage from "../../../../components/UploadArtisteImage";
+import { supabaseBrowser } from "../../../../../lib/supabase-browser";
+import UploadArtisteImage from "../../../../../components/UploadArtisteImage";
 import ImageCropUploader from "@/components/ImageCropUploader";
 
 export default function ModifierArtistePage() {

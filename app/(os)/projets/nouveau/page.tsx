@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabaseBrowser } from "../../../lib/supabase-browser";
-import UploadCover from "../../../components/UploadCover";
+import { supabaseBrowser } from "../../../../lib/supabase-browser";
+import UploadCover from "../../../../components/UploadCover";
 
 type Artiste = {
   id: string;
