@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import Link from "next/link";
 
 export default function FeaturedReleases() {
   const [projets, setProjets] = useState<any[]>([]);
@@ -49,8 +50,9 @@ export default function FeaturedReleases() {
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {projets.map((projet) => (
-            <article
+            <Link
               key={projet.id}
+              href={`/site/projets/${projet.slug || projet.id}`}
               className="group overflow-hidden rounded-[2rem] border border-zinc-800 bg-black transition hover:border-yellow-500"
             >
               <div className="relative aspect-square bg-zinc-900">
@@ -91,7 +93,7 @@ export default function FeaturedReleases() {
                   </span>
                 </div>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
 
