@@ -62,7 +62,7 @@ const mainListenUrl =
             ← Retour aux releases
           </Link>
 
-          <div className="mt-12 grid gap-12 lg:grid-cols-[50%_50%]">
+          <div className="mt-12 grid gap-12 lg:grid-cols-[55%_45%]">
             <div className="relative aspect-square overflow-hidden rounded-[2rem] border border-zinc-800 bg-zinc-900">
               {projet.cover_url ? (
                 <Image
@@ -217,14 +217,14 @@ async function OtherReleases({
   if (!releases || releases.length === 0) return null;
 
   return (
-    <section className="mt-24">
+    <section className="mt-8">
       <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
         Other Releases
       </p>
 
       <h2 className="text-4xl font-black">Découvrez aussi</h2>
 
-      <div className="mt-10 grid gap-6 md:grid-cols-3">
+      <div className="mt-10 grid gap-6 md:grid-cols-2">
         {releases.map((release) => (
           <Link
             key={release.id}
