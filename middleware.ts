@@ -33,17 +33,22 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
-  const publicRoutes = ["/login", "/signup"];
+  const isPublicRoute =
+    path === "/" ||
+    path === "/site" ||
+    path.startsWith("/site/") ||
+    path === "/login" ||
+    path === "/signup";
 
-  if (!user && !publicRoutes.includes(path)) {
+  if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  if (user && publicRoutes.includes(path)) {
+  if (user && (path === "/login" || path === "/signup")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 
@@ -54,11 +59,17 @@ export async function middleware(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (profile?.role === "artist") {
+    if (profile?.role === "artiste") {
       const allowedArtistRoutes = [
         "/mon-espace-artiste",
         "/artistes",
         "/projets",
+        "/notifications",
+        "/contrats",
+        "/royalties",
+        "/calendrier",
+        "/chat",
+        "/site",
       ];
 
       const isAllowed = allowedArtistRoutes.some(
