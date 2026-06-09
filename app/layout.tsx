@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     siteName: "Legacy Music Group",
     images: [
       {
-        url: "/logo-lmg.png",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "Legacy Music Group",
