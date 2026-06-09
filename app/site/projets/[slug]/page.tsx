@@ -2,6 +2,49 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+
+  const { data } = await supabase
+    .from("projets")
+    .select("titre, description, cover_url")
+    .eq("slug", slug)
+    .limit(1);
+
+  const projet = data?.[0];
+
+  if (!projet) {
+    return {
+      title: "Projet",
+    };
+  }
+
+  return {
+    title: projet.titre,
+    description:
+      projet.description?.slice(0, 160) ||
+      `Découvrez ${projet.titre} sur Legacy Music Group.`,
+    openGraph: {
+      title: projet.titre,
+      description:
+        projet.description?.slice(0, 160) ||
+        `Découvrez ${projet.titre} sur Legacy Music Group.`,
+      images: projet.cover_url
+        ? [
+            {
+              url: projet.cover_url,
+            },
+          ]
+        : [],
+    },
+  };
+}
 
 export default async function ProjectPage({
   params,

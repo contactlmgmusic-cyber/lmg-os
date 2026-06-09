@@ -2,6 +2,49 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+
+  const { data } = await supabase
+    .from("artistes")
+    .select("nom, bio, photo_url")
+    .eq("slug", slug)
+    .limit(1);
+
+  const artiste = data?.[0];
+
+  if (!artiste) {
+    return {
+      title: "Artiste",
+    };
+  }
+
+  return {
+    title: artiste.nom,
+    description:
+      artiste.bio?.slice(0, 160) ||
+      `Découvrez ${artiste.nom} accompagné par Legacy Music Group.`,
+    openGraph: {
+      title: artiste.nom,
+      description:
+        artiste.bio?.slice(0, 160) ||
+        `Découvrez ${artiste.nom} accompagné par Legacy Music Group.`,
+      images: artiste.photo_url
+        ? [
+            {
+              url: artiste.photo_url,
+            },
+          ]
+        : [],
+    },
+  };
+}
 
 export default async function ArtistPage({
   params,
