@@ -20,15 +20,46 @@ export default function Footer() {
           </h4>
 
           <div className="space-y-2 text-zinc-400">
-            <p>Accueil</p>
-            <p>Services</p>
-            <p>Artistes</p>
-            <p>Contact</p>
+            <Link href="/site" className="block hover:text-white">
+              Accueil
+            </Link>
+
+            <Link href="/site/services" className="block hover:text-white">
+              Services
+            </Link>
+
+            <Link href="/site/team" className="block hover:text-white">
+              Team
+            </Link>
+
+            <Link href="/site/rejoindre" className="block hover:text-white">
+              Rejoindre LMG
+            </Link>
           </div>
         </div>
 
         <div>
           <h4 className="mb-4 font-semibold text-white">
+            Légal
+          </h4>
+
+          <div className="space-y-2 text-zinc-400">
+            <Link
+              href="/site/mentions-legales"
+              className="block hover:text-white"
+            >
+              Mentions légales
+            </Link>
+
+            <Link
+              href="/site/confidentialite"
+              className="block hover:text-white"
+            >
+              Politique de confidentialité
+            </Link>
+          </div>
+
+          <h4 className="mb-4 mt-8 font-semibold text-white">
             Réseaux
           </h4>
 
@@ -52,8 +83,10 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto mt-12 max-w-7xl border-t border-zinc-900 pt-8 text-sm text-zinc-500">
-        © 2026 Legacy Music Group. Tous droits réservés.
+      <div className="mx-auto mt-12 flex max-w-7xl flex-col justify-between gap-4 border-t border-zinc-900 pt-8 text-sm text-zinc-500 md:flex-row">
+        <p>© 2026 Legacy Music Group. Tous droits réservés.</p>
+
+        <p>Build Your Legacy.</p>
       </div>
     </footer>
   );
