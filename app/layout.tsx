@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     title: "Legacy Music Group",
     description:
       "Management, marketing, booking et développement artistique pour les talents de demain.",
-    url: "https://lmg-os-tupf.vercel.app/site",
+    url: "https://legacymusicgroup.fr",
     siteName: "Legacy Music Group",
     images: [
       {
