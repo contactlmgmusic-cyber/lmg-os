@@ -60,12 +60,12 @@ export default function Navbar() {
             Connexion
           </Link>
 
-          <a
-            href="#contact"
-            className="rounded-full bg-yellow-500 px-5 py-2 text-sm font-semibold text-black hover:bg-yellow-400"
-          >
-            Rejoindre LMG
-          </a>
+          <Link
+  href="/site/rejoindre"
+  className="rounded-full bg-yellow-500 px-5 py-2 text-sm font-semibold text-black hover:bg-yellow-400"
+>
+  Rejoindre LMG
+</Link>
         </div>
 
         <button
@@ -113,13 +113,13 @@ export default function Navbar() {
             </Link>
           </nav>
 
-          <a
-            onClick={() => setMobileOpen(false)}
-            href="#contact"
-            className="mt-12 inline-block rounded-full bg-yellow-500 px-8 py-4 font-bold text-black"
-          >
-            Rejoindre LMG
-          </a>
+          <Link
+  onClick={() => setMobileOpen(false)}
+  href="/site/rejoindre"
+  className="mt-12 inline-block rounded-full bg-yellow-500 px-8 py-4 font-bold text-black"
+>
+  Rejoindre LMG
+</Link>
         </div>
       )}
     </header>
