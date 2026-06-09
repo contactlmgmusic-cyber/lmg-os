@@ -25,10 +25,11 @@ export default function RejoindrePage() {
     setSuccess(false);
 
     const { error } = await supabaseBrowser.from("candidatures").insert({
-      ...form,
-      statut: "nouvelle",
-      priorite: "moyenne",
-    });
+  ...form,
+  statut: "nouvelle",
+  priorite: "moyenne",
+  source: "site_web",
+});
 
     setLoading(false);
 
