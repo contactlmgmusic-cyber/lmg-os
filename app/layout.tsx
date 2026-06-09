@@ -18,9 +18,11 @@ export const metadata: Metadata = {
     "développement artistique",
     "Paris",
   ],
+
   verification: {
   google: "SNckPjUVJwb5yHuLC0C45-DKhiUOUKrkQQfiYU1MWHU",
 },
+
   openGraph: {
     title: "Legacy Music Group",
     description:
@@ -54,7 +56,25 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body>{children}</body>
+      <body>
+  <script
+    async
+    src="https://www.googletagmanager.com/gtag/js?id=G-WX2YGFMR7B"
+  />
+
+  <script
+    dangerouslySetInnerHTML={{
+      __html: `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-WX2YGFMR7B');
+      `,
+    }}
+  />
+
+  {children}
+</body>
     </html>
   );
 }
