@@ -42,11 +42,11 @@ export default function SitePage() {
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              href="#contact"
-              className="rounded-full bg-yellow-500 px-8 py-4 font-bold text-black hover:bg-yellow-400"
-            >
-              Rejoindre LMG
-            </Link>
+  href="/site/rejoindre"
+  className="rounded-full bg-yellow-500 px-8 py-4 font-bold text-black hover:bg-yellow-400"
+>
+  Rejoindre LMG
+</Link>
 
             <Link
               href="#services"

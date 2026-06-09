@@ -102,6 +102,9 @@ export default function Navbar() {
             <a onClick={() => setMobileOpen(false)} href="#artists">
               Artistes
             </a>
+            <Link href="/site/rejoindre">
+  Rejoindre LMG
+</Link>
             <a onClick={() => setMobileOpen(false)} href="#contact">
               Contact
             </a>
