@@ -168,7 +168,7 @@ async function OtherReleases({
         {releases.map((release) => (
           <Link
             key={release.id}
-            href={`/site/projets/${release.slug}`}
+            href={release.slug ? `/site/projets/${release.slug}` : "#"}
             className="group overflow-hidden rounded-[2rem] border border-zinc-800 bg-black transition hover:border-yellow-500"
           >
             <div className="relative aspect-square bg-zinc-900">
