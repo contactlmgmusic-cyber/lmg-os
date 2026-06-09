@@ -22,6 +22,7 @@ export default function DashboardPage() {
     contratsASigner: 0,
     bookingsConfirmes: 0,
     mediasRelance: 0,
+    nouvellesCandidatures: 0,
     revenusMois: 0,
     depensesMois: 0,
     resultatMois: 0,
@@ -81,6 +82,11 @@ const [checkingAccess, setCheckingAccess] = useState(true);
       .eq("statut", "Relancé");
 
       const today = new Date().toISOString().split("T")[0];
+
+      const { count: candidaturesCount } = await supabaseBrowser
+  .from("candidatures")
+  .select("*", { count: "exact", head: true })
+  .eq("statut", "nouvelle");
 
 const { count: mediasRelanceAujourdhui } = await supabaseBrowser
   .from("medias")
@@ -249,6 +255,7 @@ const royaltiesPayees =
       bookingsConfirmes: bookingsConfirmesCount || 0,
       mediasRelance: mediasRelanceCount || 0,
       mediasRelanceAujourdhui: mediasRelanceAujourdhui || 0,
+      nouvellesCandidatures: candidaturesCount || 0,
       revenusMois: revenus,
       depensesMois: depenses,
       resultatMois: revenus - depenses,
@@ -383,6 +390,7 @@ if (checkingAccess) {
       <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-7">
         <KpiCard label="Artistes" value={stats.artistes} />
         <KpiCard label="Projets" value={stats.projets} />
+        <KpiCard label="Nouvelles candidatures" value={stats.nouvellesCandidatures} />
         <KpiCard label="Tâches ouvertes" value={stats.taches} />
         <KpiCard label="Contrats à signer" value={stats.contratsASigner} />
         <KpiCard label="Bookings confirmés" value={stats.bookingsConfirmes} />
