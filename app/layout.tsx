@@ -16,8 +16,11 @@ export const metadata: Metadata = {
     "marketing musical",
     "booking artiste",
     "développement artistique",
-    "Lille",
+    "Paris",
   ],
+  verification: {
+  google: "SNckPjUVJwb5yHuLC0C45-DKhiUOUKrkQQfiYU1MWHU",
+},
   openGraph: {
     title: "Legacy Music Group",
     description:
