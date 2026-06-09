@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     title: "Legacy Music Group",
     description:
       "Management, marketing, booking et développement artistique pour les talents de demain.",
-    images: ["/logo-lmg.png"],
+    images: ["/og-image.png"],
   },
 };
 
