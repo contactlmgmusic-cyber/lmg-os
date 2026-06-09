@@ -224,7 +224,7 @@ async function OtherReleases({
 
       <h2 className="text-4xl font-black">Découvrez aussi</h2>
 
-      <div className="mt-10 grid gap-6 md:grid-cols-2">
+      <div className="mt-10 grid gap-6 md:grid-cols-3">
         {releases.map((release) => (
           <Link
             key={release.id}
