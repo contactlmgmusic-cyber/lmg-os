@@ -32,6 +32,13 @@ export default async function ProjectPage({
     ? new Date(projet.date_sortie).toLocaleDateString("fr-FR")
     : "Date non renseignée";
 
+const isReleased = projet.date_sortie
+  ? new Date(projet.date_sortie) <= new Date()
+  : false;
+
+const mainListenUrl =
+  projet.spotify_url || projet.youtube_url || projet.apple_music_url;
+
   return (
     <main className="min-h-screen bg-black text-white">
       <section className="relative overflow-hidden px-6 py-28">
@@ -90,6 +97,10 @@ export default async function ProjectPage({
 
                 <p className="text-zinc-500">Sortie : {releaseDate}</p>
 
+                <p className="mt-3 inline-block rounded-full border border-yellow-500 px-4 py-2 text-sm font-bold uppercase tracking-[0.2em] text-yellow-500">
+  {isReleased ? "Out Now" : "Coming Soon"}
+</p>
+
                 {projet.statut && (
                   <p className="inline-block rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-400">
                     Statut : {projet.statut}
@@ -103,12 +114,22 @@ export default async function ProjectPage({
                   "Projet développé et accompagné par Legacy Music Group."}
               </p>
 
+{mainListenUrl && (
+  <a
+    href={mainListenUrl}
+    target="_blank"
+    className="rounded-full bg-yellow-500 px-6 py-3 font-bold text-black hover:bg-yellow-400"
+  >
+    Écouter maintenant
+  </a>
+)}
+
               <div className="mt-10 flex flex-wrap gap-4">
                 {projet.spotify_url && (
                   <a
                     href={projet.spotify_url}
                     target="_blank"
-                    className="rounded-full bg-yellow-500 px-6 py-3 font-bold text-black hover:bg-yellow-400"
+                    className="rounded-full border border-zinc-700 px-6 py-3 hover:border-yellow-500"
                   >
                     Spotify
                   </a>
@@ -200,7 +221,7 @@ async function OtherReleases({
         Other Releases
       </p>
 
-      <h2 className="text-4xl font-black">Autres sorties</h2>
+      <h2 className="text-4xl font-black">Découvrez aussi</h2>
 
       <div className="mt-10 grid gap-6 md:grid-cols-3">
         {releases.map((release) => (
