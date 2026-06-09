@@ -92,6 +92,35 @@ export default function TeamPage() {
             Rejoindre LMG
           </Link>
         </div>
+
+        <section className="border-t border-zinc-900 bg-zinc-950 px-6 py-28">
+  <div className="mx-auto max-w-6xl">
+    <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+      Nos valeurs
+    </p>
+
+    <h2 className="text-4xl font-black md:text-6xl">
+      Ce qui guide Legacy Music Group
+    </h2>
+
+    <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {[
+        ["Vision long terme", "Construire des carrières solides, pas des coups d’un soir."],
+        ["Transparence", "Avancer avec des objectifs clairs et une relation saine avec les artistes."],
+        ["Exigence", "Chaque projet mérite une vraie stratégie, une vraie image et une vraie exécution."],
+        ["Croissance", "Développer les artistes, leur audience, leur catalogue et leur valeur."],
+      ].map(([title, text]) => (
+        <div
+          key={title}
+          className="rounded-3xl border border-zinc-800 bg-black p-6"
+        >
+          <h3 className="text-xl font-bold text-white">{title}</h3>
+          <p className="mt-4 text-sm leading-6 text-zinc-400">{text}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
       </section>
     </main>
   );
