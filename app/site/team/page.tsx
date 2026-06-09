@@ -1,0 +1,98 @@
+import Image from "next/image";
+import Link from "next/link";
+
+export default function TeamPage() {
+  return (
+    <main className="min-h-screen bg-black text-white">
+      <section className="relative overflow-hidden px-6 py-28">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#3a2a00_0%,#050505_45%,#000_100%)]" />
+
+        <div className="relative z-10 mx-auto max-w-6xl">
+          <p className="mb-4 text-sm uppercase tracking-[0.4em] text-yellow-500">
+            Legacy Music Group
+          </p>
+
+          <h1 className="text-5xl font-black uppercase md:text-8xl">
+            Notre Équipe
+          </h1>
+
+          <p className="mt-8 max-w-3xl text-lg leading-8 text-zinc-400">
+            Legacy Music Group accompagne les artistes dans leur développement
+            grâce à une approche moderne, humaine et orientée résultats.
+          </p>
+        </div>
+      </section>
+
+      <section className="px-6 pb-28">
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-2">
+
+          <div className="rounded-[2rem] border border-zinc-800 bg-zinc-950 p-8">
+            <div className="mb-6 h-32 w-32 overflow-hidden rounded-full bg-zinc-900">
+              <Image src="/images/joseph.jpg" alt="Joseph" width={128} height={128} />
+            </div>
+
+            <p className="text-sm uppercase tracking-[0.3em] text-yellow-500">
+              CEO
+            </p>
+
+            <h2 className="mt-3 text-4xl font-black">
+              Joseph
+            </h2>
+
+            <p className="mt-6 leading-8 text-zinc-400">
+              Joseph pilote la vision stratégique de Legacy Music Group.
+              Il supervise le développement des artistes, les partenariats,
+              les opportunités business et la croissance de la structure.
+            </p>
+          </div>
+
+          <div className="rounded-[2rem] border border-zinc-800 bg-zinc-950 p-8">
+            <div className="mb-6 h-32 w-32 overflow-hidden rounded-full bg-zinc-900">
+              <Image src="/images/yliana.jpg" alt="Yliana" width={128} height={128} />
+            </div>
+
+            <p className="text-sm uppercase tracking-[0.3em] text-yellow-500">
+              Artist Development & Operations
+            </p>
+
+            <h2 className="mt-3 text-4xl font-black">
+              Yliana Faidherbe
+            </h2>
+
+            <p className="mt-6 leading-8 text-zinc-400">
+              Yliana coordonne les opérations, le développement artistique,
+              le marketing, les relations partenaires et l'expérience
+              des artistes au sein de Legacy Music Group.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      <section className="border-t border-zinc-900 px-6 py-28">
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+            Notre Mission
+          </p>
+
+          <h2 className="text-4xl font-black md:text-6xl">
+            Construire des carrières durables
+          </h2>
+
+          <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-zinc-400">
+            Nous aidons les artistes à développer leur image, leur audience,
+            leur catalogue et leur activité grâce à un accompagnement
+            stratégique sur le long terme.
+          </p>
+
+          <Link
+            href="/site/rejoindre"
+            className="mt-12 inline-block rounded-full bg-yellow-500 px-8 py-4 font-bold text-black hover:bg-yellow-400"
+          >
+            Rejoindre LMG
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
+}

@@ -50,6 +50,9 @@ export default function Navbar() {
           <a href="#contact" className="text-zinc-300 hover:text-white">
             Contact
           </a>
+          <Link href="/site/team" className="text-zinc-300 hover:text-white">
+  Team
+</Link>
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
