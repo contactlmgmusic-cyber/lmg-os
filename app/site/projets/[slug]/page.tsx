@@ -28,6 +28,10 @@ export default async function ProjectPage({
 
   if (!projet) notFound();
 
+  const releaseDate = projet.date_sortie
+    ? new Date(projet.date_sortie).toLocaleDateString("fr-FR")
+    : "Date non renseignée";
+
   return (
     <main className="min-h-screen bg-black text-white">
       <section className="relative overflow-hidden px-6 py-28">
@@ -36,14 +40,18 @@ export default async function ProjectPage({
             src={projet.cover_url}
             alt={projet.titre || "Projet LMG"}
             fill
+            priority
             className="absolute inset-0 object-cover opacity-20 blur-2xl"
           />
         )}
 
-        <div className="absolute inset-0 bg-black/80" />
+        <div className="absolute inset-0 bg-black/85" />
 
         <div className="relative z-10 mx-auto max-w-7xl">
-          <Link href="/site#releases" className="text-sm text-zinc-400 hover:text-white">
+          <Link
+            href="/site#releases"
+            className="text-sm text-zinc-400 hover:text-white"
+          >
             ← Retour aux releases
           </Link>
 
@@ -54,6 +62,7 @@ export default async function ProjectPage({
                   src={projet.cover_url}
                   alt={projet.titre || "Projet LMG"}
                   fill
+                  priority
                   className="object-cover"
                 />
               ) : (
@@ -74,16 +83,19 @@ export default async function ProjectPage({
 
               <div className="mt-6 h-[2px] w-24 bg-yellow-500" />
 
-              <p className="mt-6 text-xl text-zinc-300">
-                {projet.artistes?.nom || "Legacy Music Group"}
-              </p>
+              <div className="mt-6 space-y-2">
+                <p className="text-xl text-zinc-300">
+                  {projet.artistes?.nom || "Legacy Music Group"}
+                </p>
 
-              <p className="mt-3 text-zinc-500">
-                Sortie :{" "}
-                {projet.date_sortie
-                  ? new Date(projet.date_sortie).toLocaleDateString("fr-FR")
-                  : "Non renseignée"}
-              </p>
+                <p className="text-zinc-500">Sortie : {releaseDate}</p>
+
+                {projet.statut && (
+                  <p className="inline-block rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-400">
+                    Statut : {projet.statut}
+                  </p>
+                )}
+              </div>
 
               <p className="mt-8 max-w-3xl whitespace-pre-line text-lg leading-8 text-zinc-300">
                 {projet.description ||
@@ -93,34 +105,68 @@ export default async function ProjectPage({
 
               <div className="mt-10 flex flex-wrap gap-4">
                 {projet.spotify_url && (
-                  <a href={projet.spotify_url} target="_blank" className="rounded-full bg-yellow-500 px-6 py-3 font-bold text-black hover:bg-yellow-400">
+                  <a
+                    href={projet.spotify_url}
+                    target="_blank"
+                    className="rounded-full bg-yellow-500 px-6 py-3 font-bold text-black hover:bg-yellow-400"
+                  >
                     Spotify
                   </a>
                 )}
 
                 {projet.youtube_url && (
-                  <a href={projet.youtube_url} target="_blank" className="rounded-full border border-zinc-700 px-6 py-3 hover:border-yellow-500">
+                  <a
+                    href={projet.youtube_url}
+                    target="_blank"
+                    className="rounded-full border border-zinc-700 px-6 py-3 hover:border-yellow-500"
+                  >
                     YouTube
                   </a>
                 )}
 
                 {projet.apple_music_url && (
-                  <a href={projet.apple_music_url} target="_blank" className="rounded-full border border-zinc-700 px-6 py-3 hover:border-yellow-500">
+                  <a
+                    href={projet.apple_music_url}
+                    target="_blank"
+                    className="rounded-full border border-zinc-700 px-6 py-3 hover:border-yellow-500"
+                  >
                     Apple Music
                   </a>
                 )}
 
                 {projet.artistes?.slug && (
-                  <Link href={`/site/artistes/${projet.artistes.slug}`} className="rounded-full border border-zinc-700 px-6 py-3 hover:border-yellow-500">
+                  <Link
+                    href={`/site/artistes/${projet.artistes.slug}`}
+                    className="rounded-full border border-zinc-700 px-6 py-3 hover:border-yellow-500"
+                  >
                     Voir l’artiste
                   </Link>
                 )}
+
+                <Link
+                  href="/site#contact"
+                  className="rounded-full border border-zinc-700 px-6 py-3 hover:border-yellow-500"
+                >
+                  Contacter LMG
+                </Link>
               </div>
             </div>
           </div>
 
+          <section className="mt-24 rounded-[2rem] border border-zinc-800 bg-black/70 p-8">
+            <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+              À propos du projet
+            </p>
+
+            <p className="whitespace-pre-line text-lg leading-8 text-zinc-300">
+              {projet.description ||
+                projet.notes ||
+                "Plus d’informations seront bientôt disponibles."}
+            </p>
+          </section>
+
           {projet.credits && (
-            <section className="mt-24 rounded-[2rem] border border-zinc-800 bg-black/70 p-8">
+            <section className="mt-8 rounded-[2rem] border border-zinc-800 bg-black/70 p-8">
               <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
                 Credits
               </p>
@@ -131,13 +177,16 @@ export default async function ProjectPage({
             </section>
           )}
 
-          <OtherReleases currentProjectId={projet.id} artistId={projet.artiste_id} />
-
+          <OtherReleases
+            currentProjectId={projet.id}
+            artistId={projet.artiste_id}
+          />
         </div>
       </section>
     </main>
   );
 }
+
 async function OtherReleases({
   currentProjectId,
   artistId,
@@ -152,6 +201,7 @@ async function OtherReleases({
     .select("id, titre, slug, cover_url, date_sortie, type")
     .eq("artiste_id", artistId)
     .neq("id", currentProjectId)
+    .not("slug", "is", null)
     .limit(3);
 
   if (!releases || releases.length === 0) return null;
@@ -168,14 +218,14 @@ async function OtherReleases({
         {releases.map((release) => (
           <Link
             key={release.id}
-            href={release.slug ? `/site/projets/${release.slug}` : "#"}
+            href={`/site/projets/${release.slug}`}
             className="group overflow-hidden rounded-[2rem] border border-zinc-800 bg-black transition hover:border-yellow-500"
           >
             <div className="relative aspect-square bg-zinc-900">
               {release.cover_url ? (
                 <Image
                   src={release.cover_url}
-                  alt={release.titre || "Release LMG"}
+                  alt={release.titre || "Release"}
                   fill
                   className="object-cover transition duration-500 group-hover:scale-105"
                 />
@@ -194,7 +244,9 @@ async function OtherReleases({
               <h3 className="mt-3 text-2xl font-black">{release.titre}</h3>
 
               <p className="mt-2 text-sm text-zinc-500">
-                {release.date_sortie || "Date à venir"}
+                {release.date_sortie
+                  ? new Date(release.date_sortie).toLocaleDateString("fr-FR")
+                  : "Date à venir"}
               </p>
             </div>
           </Link>
