@@ -41,9 +41,9 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          <a href="#services" className="text-zinc-300 hover:text-white">
-            Services
-          </a>
+          <Link href="/site/services" className="text-zinc-300 hover:text-white">
+  Services
+</Link>
           <a href="#artists" className="text-zinc-300 hover:text-white">
             Artistes
           </a>
@@ -99,9 +99,9 @@ export default function Navbar() {
           </div>
 
           <nav className="mt-16 flex flex-col gap-8 text-3xl font-black">
-            <a onClick={() => setMobileOpen(false)} href="#services">
-              Services
-            </a>
+            <Link onClick={() => setMobileOpen(false)} href="/site/services">
+  Services
+</Link>
             <a onClick={() => setMobileOpen(false)} href="#artists">
               Artistes
             </a>
