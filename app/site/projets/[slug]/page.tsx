@@ -153,18 +153,6 @@ export default async function ProjectPage({
             </div>
           </div>
 
-          <section className="mt-24 rounded-[2rem] border border-zinc-800 bg-black/70 p-8">
-            <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
-              À propos du projet
-            </p>
-
-            <p className="whitespace-pre-line text-lg leading-8 text-zinc-300">
-              {projet.description ||
-                projet.notes ||
-                "Plus d’informations seront bientôt disponibles."}
-            </p>
-          </section>
-
           {projet.credits && (
             <section className="mt-8 rounded-[2rem] border border-zinc-800 bg-black/70 p-8">
               <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
