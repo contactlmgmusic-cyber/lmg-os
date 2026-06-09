@@ -2,6 +2,19 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+
+  const isPublicRoute =
+    path === "/" ||
+    path === "/site" ||
+    path.startsWith("/site/") ||
+    path === "/login" ||
+    path === "/signup";
+
+  if (isPublicRoute && path !== "/login" && path !== "/signup") {
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -31,15 +44,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
-
-  const isPublicRoute =
-    path === "/" ||
-    path === "/site" ||
-    path.startsWith("/site/") ||
-    path === "/login" ||
-    path === "/signup";
-
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -50,38 +54,6 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
-  }
-
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role === "artiste") {
-      const allowedArtistRoutes = [
-        "/mon-espace-artiste",
-        "/artistes",
-        "/projets",
-        "/notifications",
-        "/contrats",
-        "/royalties",
-        "/calendrier",
-        "/chat",
-        "/site",
-      ];
-
-      const isAllowed = allowedArtistRoutes.some(
-        (route) => path === route || path.startsWith(`${route}/`)
-      );
-
-      if (!isAllowed) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/mon-espace-artiste";
-        return NextResponse.redirect(url);
-      }
-    }
   }
 
   return response;
