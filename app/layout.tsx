@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     siteName: "Legacy Music Group",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Legacy Music Group",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     title: "Legacy Music Group",
     description:
       "Management, marketing, booking et développement artistique pour les talents de demain.",
-    images: ["/og-image.png"],
+    images: ["/og-image.jpg"],
   },
 };
 
