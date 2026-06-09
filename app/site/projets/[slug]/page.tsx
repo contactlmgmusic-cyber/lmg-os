@@ -130,8 +130,76 @@ export default async function ProjectPage({
               </p>
             </section>
           )}
+
+          <OtherReleases currentProjectId={projet.id} artistId={projet.artiste_id} />
+
         </div>
       </section>
     </main>
+  );
+}
+async function OtherReleases({
+  currentProjectId,
+  artistId,
+}: {
+  currentProjectId: string;
+  artistId: string | null;
+}) {
+  if (!artistId) return null;
+
+  const { data: releases } = await supabase
+    .from("projets")
+    .select("id, titre, slug, cover_url, date_sortie, type")
+    .eq("artiste_id", artistId)
+    .neq("id", currentProjectId)
+    .limit(3);
+
+  if (!releases || releases.length === 0) return null;
+
+  return (
+    <section className="mt-24">
+      <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+        Other Releases
+      </p>
+
+      <h2 className="text-4xl font-black">Autres sorties</h2>
+
+      <div className="mt-10 grid gap-6 md:grid-cols-3">
+        {releases.map((release) => (
+          <Link
+            key={release.id}
+            href={`/site/projets/${release.slug}`}
+            className="group overflow-hidden rounded-[2rem] border border-zinc-800 bg-black transition hover:border-yellow-500"
+          >
+            <div className="relative aspect-square bg-zinc-900">
+              {release.cover_url ? (
+                <Image
+                  src={release.cover_url}
+                  alt={release.titre || "Release LMG"}
+                  fill
+                  className="object-cover transition duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-zinc-600">
+                  No Cover
+                </div>
+              )}
+            </div>
+
+            <div className="p-5">
+              <p className="text-xs uppercase tracking-[0.3em] text-yellow-500">
+                {release.type || "Release"}
+              </p>
+
+              <h3 className="mt-3 text-2xl font-black">{release.titre}</h3>
+
+              <p className="mt-2 text-sm text-zinc-500">
+                {release.date_sortie || "Date à venir"}
+              </p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
