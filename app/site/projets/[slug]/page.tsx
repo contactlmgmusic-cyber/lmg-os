@@ -8,9 +8,9 @@ export default async function ProjectPage({
   const { slug } = await params;
 
   const { data, error } = await supabase
-    .from("projets")
-    .select("id, titre, slug")
-    .or(`slug.eq.${slug},id.eq.${slug}`);
+  .from("projets")
+  .select("id, titre, slug")
+  .eq("slug", slug);
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
