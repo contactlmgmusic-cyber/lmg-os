@@ -62,7 +62,7 @@ const mainListenUrl =
             ← Retour aux releases
           </Link>
 
-          <div className="mt-12 grid gap-12 lg:grid-cols-[42%_58%]">
+          <div className="mt-12 grid gap-12 lg:grid-cols-[50%_50%]">
             <div className="relative aspect-square overflow-hidden rounded-[2rem] border border-zinc-800 bg-zinc-900">
               {projet.cover_url ? (
                 <Image
@@ -70,7 +70,7 @@ const mainListenUrl =
                   alt={projet.titre || "Projet LMG"}
                   fill
                   priority
-                  className="object-cover"
+                  className="object-cover transition duration-700 hover:scale-105"
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-zinc-600">
@@ -171,20 +171,21 @@ const mainListenUrl =
                   Contacter LMG
                 </Link>
               </div>
+
+            {projet.credits && (
+  <div className="mt-10 rounded-2xl border border-zinc-800 bg-black/50 p-5">
+    <p className="mb-3 text-xs uppercase tracking-[0.3em] text-yellow-500">
+      Credits
+    </p>
+
+    <p className="whitespace-pre-line text-sm leading-6 text-zinc-400">
+      {projet.credits}
+    </p>
+  </div>
+)}
+
             </div>
           </div>
-
-          {projet.credits && (
-            <section className="mt-8 rounded-[2rem] border border-zinc-800 bg-black/70 p-8">
-              <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
-                Credits
-              </p>
-
-              <p className="whitespace-pre-line text-lg leading-8 text-zinc-300">
-                {projet.credits}
-              </p>
-            </section>
-          )}
 
           <OtherReleases
             currentProjectId={projet.id}
