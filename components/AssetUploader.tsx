@@ -23,6 +23,7 @@ export default function AssetUploader({
 }) {
   const [assets, setAssets] = useState(initialAssets);
   const [uploading, setUploading] = useState(false);
+  const [categorie, setCategorie] = useState("Autre");
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -52,6 +53,7 @@ export default function AssetUploader({
         nom: file.name,
         url: data.publicUrl,
         type: file.type,
+        categorie: categorie,
         tache_id: tacheId || null,
         projet_id: projetId || null,
         artiste_id: artisteId || null,
@@ -78,6 +80,20 @@ export default function AssetUploader({
             Covers, contrats, vidéos, fichiers promo.
           </p>
         </div>
+
+<select
+  value={categorie}
+  onChange={(e) => setCategorie(e.target.value)}
+  className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-white"
+>
+  <option value="Cover">Cover</option>
+  <option value="Master">Master</option>
+  <option value="Clip">Clip</option>
+  <option value="Contrat">Contrat</option>
+  <option value="Press Kit">Press Kit</option>
+  <option value="Promo">Promo</option>
+  <option value="Autre">Autre</option>
+</select>
 
         <label className="cursor-pointer rounded-xl bg-white px-5 py-3 font-semibold text-black hover:bg-zinc-200">
           {uploading ? "Upload..." : "+ Ajouter"}

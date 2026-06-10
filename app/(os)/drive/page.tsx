@@ -5,19 +5,7 @@ import { createServerClient } from "@supabase/ssr";
 export const dynamic = "force-dynamic";
 
 function getAssetCategory(asset: any) {
-  const nom = (asset.nom || "").toLowerCase();
-  const type = asset.type || "";
-
-  if (type.startsWith("audio/")) return "Masters";
-  if (type.startsWith("video/")) return "Clips";
-  if (type.startsWith("image/")) return "Visuels";
-  if (type === "application/pdf") return "Documents";
-
-  if (nom.includes("press")) return "Press Kit";
-  if (nom.includes("cover")) return "Covers";
-  if (nom.includes("contrat")) return "Contrats";
-
-  return "Autres";
+  return asset.categorie || "Autre";
 }
 
 function getAssetPreview(asset: any) {
@@ -147,15 +135,14 @@ export default async function DrivePage() {
     }, {}) || {};
 
   const categories = [
-    "Masters",
-    "Clips",
-    "Visuels",
-    "Covers",
-    "Press Kit",
-    "Contrats",
-    "Documents",
-    "Autres",
-  ];
+  "Cover",
+  "Master",
+  "Clip",
+  "Contrat",
+  "Press Kit",
+  "Promo",
+  "Autre",
+];
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
