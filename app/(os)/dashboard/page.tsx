@@ -598,12 +598,12 @@ const healthTone =
     <AlertCard
       label="Candidatures"
       value={stats.nouvellesCandidatures}
-      href="/candidatures"
+      href="/dashboard/candidatures"
       danger={stats.nouvellesCandidatures > 0}
     />
   </div>
 
-  <Panel title="Pipeline artistes" href="/candidatures">
+  <Panel title="Pipeline artistes" href="/dashboard/candidatures">
     <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
       <MiniStat
         label="Nouvelles"
@@ -630,7 +630,7 @@ const healthTone =
     {latestCandidatures.map((candidature: any) => (
       <Link
         key={candidature.id}
-        href="/candidatures"
+        href="/dashboard/candidatures"
         className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
       >
         <h3 className="text-xl font-semibold">
@@ -732,7 +732,7 @@ const healthTone =
     <AlertCard
       label="Candidatures à traiter"
       value={stats.nouvellesCandidatures}
-      href="/candidatures"
+      href="/dashboard/candidatures"
       danger={stats.nouvellesCandidatures > 0}
     />
   </div>

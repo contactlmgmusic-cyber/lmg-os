@@ -27,7 +27,7 @@ export default async function CandidatureDetailPage({
   return (
     <main className="min-h-screen bg-black p-10 text-white">
       <Link
-        href="/candidatures"
+        href="/dashboard/candidatures"
         className="text-sm text-zinc-400 hover:text-white"
       >
         ← Retour aux candidatures
@@ -107,7 +107,7 @@ export default async function CandidatureDetailPage({
           </Link>
 
           <Link
-            href="/candidatures"
+            href="/dashboard/candidatures"
             className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
           >
             Retour CRM
