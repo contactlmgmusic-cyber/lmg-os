@@ -33,7 +33,7 @@ export default function TeamPage() {
   alt="Joseph"
   width={128}
   height={128}
-  className="h-full w-full object-cover scale-100 object-top"
+  className="h-full w-full object-cover scale-1 object-top"
 />
             </div>
 
@@ -97,15 +97,7 @@ export default function TeamPage() {
             stratégique sur le long terme.
           </p>
 
-          <Link
-            href="/site/rejoindre"
-            className="mt-12 inline-block rounded-full bg-yellow-500 px-8 py-4 font-bold text-black hover:bg-yellow-400"
-          >
-            Rejoindre LMG
-          </Link>
-        </div>
-
-        <section className="bg-black px-6 py-28">
+          <section className="bg-black px-6 py-28">
   <div className="mx-auto max-w-4xl text-center">
     <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
       Notre Vision
@@ -129,6 +121,14 @@ export default function TeamPage() {
     </p>
   </div>
 </section>
+
+          <Link
+            href="/site/rejoindre"
+            className="mt-12 inline-block rounded-full bg-yellow-500 px-8 py-4 font-bold text-black hover:bg-yellow-400"
+          >
+            Rejoindre LMG
+          </Link>
+        </div>
 
         <section className="border-t border-zinc-900 bg-zinc-950 px-6 py-28">
   <div className="mx-auto max-w-6xl">
