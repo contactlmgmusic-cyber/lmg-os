@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { ROLES } from "@/lib/roles";
 
 const signupLink = "https://lmg-os-tupf.vercel.app/signup";
 
@@ -15,9 +16,41 @@ type Invitation = {
 
 export default function InvitationsPage() {
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("member");
+  const [role, setRole] = useState<string>(ROLES.ARTISTE);
   const [loading, setLoading] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
+
+  async function checkAccess() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
+
+    if (!user) {
+      setAccessDenied(true);
+      setCheckingAccess(false);
+      return;
+    }
+
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (
+      profile?.role !== ROLES.SUPER_ADMIN &&
+      profile?.role !== ROLES.ADMIN
+    ) {
+      setAccessDenied(true);
+      setCheckingAccess(false);
+      return;
+    }
+
+    setCheckingAccess(false);
+    await fetchInvitations();
+  }
 
   async function fetchInvitations() {
     const { data } = await supabaseBrowser
@@ -29,7 +62,7 @@ export default function InvitationsPage() {
   }
 
   useEffect(() => {
-    fetchInvitations();
+    checkAccess();
   }, []);
 
   async function copyLink() {
@@ -64,9 +97,31 @@ export default function InvitationsPage() {
     });
 
     setEmail("");
-    setRole("member");
+    setRole(ROLES.ARTISTE);
     await fetchInvitations();
     setLoading(false);
+  }
+
+  if (checkingAccess) {
+    return (
+      <main className="min-h-screen bg-black p-10 text-white">
+        Chargement...
+      </main>
+    );
+  }
+
+  if (accessDenied) {
+    return (
+      <main className="min-h-screen bg-black p-10 text-white">
+        <h1 className="text-3xl font-bold text-red-400">
+          Accès refusé
+        </h1>
+
+        <p className="mt-3 text-zinc-500">
+          Vous n'avez pas accès aux invitations.
+        </p>
+      </main>
+    );
   }
 
   return (
@@ -75,7 +130,9 @@ export default function InvitationsPage() {
         <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
           Invitations
         </p>
+
         <h1 className="text-5xl font-bold">Inviter un membre</h1>
+
         <p className="mt-3 text-zinc-400">
           Crée une invitation, copie le lien, puis envoie-le à la personne.
         </p>
@@ -100,11 +157,10 @@ export default function InvitationsPage() {
             onChange={(e) => setRole(e.target.value)}
             className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
           >
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
-            <option value="member">Member</option>
-            <option value="artist">Artist</option>
-            <option value="guest">Guest</option>
+            <option value={ROLES.ADMIN}>Admin</option>
+            <option value={ROLES.MANAGER}>Manager</option>
+            <option value={ROLES.ARTISTE}>Artiste</option>
+            <option value={ROLES.PRESTATAIRE}>Prestataire</option>
           </select>
 
           <button
@@ -132,7 +188,9 @@ export default function InvitationsPage() {
 
           <div className="mt-6 space-y-4">
             {invitations.length === 0 && (
-              <p className="text-zinc-500">Aucune invitation créée.</p>
+              <p className="text-zinc-500">
+                Aucune invitation créée.
+              </p>
             )}
 
             {invitations.map((invitation) => (
@@ -145,6 +203,7 @@ export default function InvitationsPage() {
                     <h3 className="text-xl font-semibold">
                       {invitation.email}
                     </h3>
+
                     <p className="mt-2 text-sm text-zinc-500">
                       Rôle : {invitation.role}
                     </p>
