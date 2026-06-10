@@ -64,10 +64,38 @@ export default function Footer() {
           </h4>
 
           <div className="space-y-2 text-zinc-400">
-            <p>Instagram</p>
-            <p>TikTok</p>
-            <p>YouTube</p>
-            <p>Spotify</p>
+            <a
+  href="https://www.instagram.com/legacymusic.off/"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="block hover:text-white"
+>
+  Instagram
+</a>
+            <a
+  href="https://www.tiktok.com/@legacymusic.off/"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="block hover:text-white"
+>
+  TikTok
+</a>
+            <a
+  href="https://www.youtube.com/@legacy.musicgroup/"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="block hover:text-white"
+>
+  YouTube
+</a>
+            <a
+  href="https://spotify.com/TON_COMPTE"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="block hover:text-white"
+>
+  Spotify
+</a>
           </div>
         </div>
 
@@ -77,8 +105,13 @@ export default function Footer() {
           </h4>
 
           <div className="space-y-2 text-zinc-400">
-            <p>contact@legacymusicgroup.fr</p>
-            <p>Lille, France</p>
+            <a
+  href="mailto:contact@legacymusicgroup.fr"
+  className="hover:text-white"
+>
+  contact@legacymusicgroup.fr
+</a>
+            <p>Paris, France</p>
           </div>
         </div>
       </div>
