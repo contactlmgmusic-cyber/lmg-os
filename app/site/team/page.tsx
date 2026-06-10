@@ -1,5 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Team | Legacy Music Group",
+  description:
+    "Découvrez l'équipe derrière Legacy Music Group et notre vision du développement artistique.",
+};
 
 export default function TeamPage() {
   return (

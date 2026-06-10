@@ -1,4 +1,11 @@
 import Link from "next/link";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Services | Legacy Music Group",
+  description:
+    "Management, marketing, booking et développement artistique pour les artistes accompagnés par Legacy Music Group.",
+};
 
 const services = [
   {
