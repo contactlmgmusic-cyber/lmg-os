@@ -105,6 +105,31 @@ export default function TeamPage() {
           </Link>
         </div>
 
+        <section className="bg-black px-6 py-28">
+  <div className="mx-auto max-w-4xl text-center">
+    <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+      Notre Vision
+    </p>
+
+    <h2 className="text-4xl font-black md:text-6xl">
+      Construire des héritages, pas des tendances
+    </h2>
+
+    <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-zinc-400">
+      Legacy Music Group accompagne les artistes dans la construction
+      d’une carrière durable. Nous croyons qu’un projet solide repose
+      sur une identité forte, une stratégie cohérente et une vision
+      long terme.
+    </p>
+
+    <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-zinc-400">
+      Notre objectif n’est pas seulement de développer des sorties,
+      mais de bâtir des marques artistiques capables de durer,
+      d’évoluer et de laisser une empreinte.
+    </p>
+  </div>
+</section>
+
         <section className="border-t border-zinc-900 bg-zinc-950 px-6 py-28">
   <div className="mx-auto max-w-6xl">
     <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
