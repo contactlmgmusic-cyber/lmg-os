@@ -221,10 +221,10 @@ export default function CandidaturesPage() {
                                     </h3>
 
                                     <Link
-  href={`/candidatures/${candidature.id}`}
-  className="mt-2 inline-block text-sm text-yellow-500 hover:text-yellow-400"
+  href="/dashboard"
+  className="mt-2 inline-block text-sm text-red-500"
 >
-  Ouvrir la fiche →
+  TEST DASHBOARD
 </Link>
 
                                     <p className="mt-1 text-sm text-zinc-500">
