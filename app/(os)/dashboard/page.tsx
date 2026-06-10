@@ -353,6 +353,48 @@ if (checkingAccess) {
         </p>
       </div>
 
+      <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div className="mb-6">
+    <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+      Aujourd'hui chez LMG
+    </p>
+
+    <h2 className="text-3xl font-bold">
+      Priorités du jour
+    </h2>
+  </div>
+
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <AlertCard
+      label="Relances médias"
+      value={stats.mediasRelanceAujourdhui}
+      href="/medias/dashboard"
+      danger={stats.mediasRelanceAujourdhui > 0}
+    />
+
+    <AlertCard
+      label="Tâches urgentes"
+      value={urgentTasks.length}
+      href="/taches"
+      danger={urgentTasks.length > 0}
+    />
+
+    <AlertCard
+      label="Relances booking"
+      value={followUps.length}
+      href="/booking"
+      danger={followUps.length > 0}
+    />
+
+    <AlertCard
+      label="Candidatures"
+      value={stats.nouvellesCandidatures}
+      href="/candidatures"
+      danger={stats.nouvellesCandidatures > 0}
+    />
+  </div>
+</section>
+
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
   <KpiCard
     label="CA du mois"
