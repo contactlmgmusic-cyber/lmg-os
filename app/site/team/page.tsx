@@ -33,7 +33,7 @@ export default function TeamPage() {
   alt="Joseph"
   width={128}
   height={128}
-  className="h-full w-full object-cover object-[center_40%]"
+  className="h-full w-full object-cover object-[center_10%]"
 />
             </div>
 
