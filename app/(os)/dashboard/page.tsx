@@ -44,6 +44,7 @@ const [checkingAccess, setCheckingAccess] = useState(true);
   const [topProjets, setTopProjets] = useState<any[]>([]);
   const [revenueChartData, setRevenueChartData] = useState<any[]>([]);
   const [latestCandidatures, setLatestCandidatures] = useState<any[]>([]);
+  const [next30Projects, setNext30Projects] = useState<any[]>([]);
 
   function monthStart() {
     const d = new Date();
@@ -84,6 +85,10 @@ const [checkingAccess, setCheckingAccess] = useState(true);
       .eq("statut", "Relancé");
 
       const today = new Date().toISOString().split("T")[0];
+
+      const in30Days = new Date();
+in30Days.setDate(in30Days.getDate() + 30);
+const in30DaysString = in30Days.toISOString().split("T")[0];
 
       const { count: candidaturesCount } = await supabaseBrowser
   .from("candidatures")
@@ -207,6 +212,13 @@ const projectRanking = Array.from(byProject.entries())
       .order("date_sortie", { ascending: true })
       .limit(5);
 
+      const { data: next30 } = await supabaseBrowser
+  .from("projets")
+  .select("id, titre, date_sortie, statut")
+  .gte("date_sortie", today)
+  .lte("date_sortie", in30DaysString)
+  .order("date_sortie", { ascending: true });
+
     const { data: tasks } = await supabaseBrowser
       .from("taches")
       .select("id, titre, deadline, priorite, statut")
@@ -280,6 +292,7 @@ const royaltiesPayees =
     setRevenueChartData(chartData);
     setActivityLogs(logs || []);
     setLatestCandidatures(candidatures || []);
+    setNext30Projects(next30 || []);
   }
 
 useEffect(() => {
@@ -366,6 +379,64 @@ if (checkingAccess) {
     <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
       Aujourd'hui chez LMG
     </p>
+
+    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div className="mb-6 flex items-center justify-between">
+    <div>
+      <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+        Releases
+      </p>
+
+      <h2 className="text-3xl font-bold">
+        Sorties des 30 prochains jours
+      </h2>
+    </div>
+
+    <Link href="/projets" className="text-sm text-zinc-400 hover:text-white">
+      Voir tout →
+    </Link>
+  </div>
+
+  {next30Projects.length === 0 && (
+    <p className="text-zinc-500">
+      Aucune sortie prévue dans les 30 prochains jours.
+    </p>
+  )}
+
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+    {next30Projects.map((project: any) => {
+      const releaseDate = new Date(project.date_sortie);
+      const now = new Date();
+      const diffTime = releaseDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const isUrgent = diffDays <= 7;
+
+      return (
+        <Link
+          key={project.id}
+          href={`/projets/${project.id}`}
+          className={`block rounded-2xl border p-5 transition hover:border-zinc-500 ${
+            isUrgent
+              ? "border-yellow-500/40 bg-yellow-500/10"
+              : "border-zinc-800 bg-black"
+          }`}
+        >
+          <p className={isUrgent ? "text-yellow-300" : "text-zinc-500"}>
+            {diffDays <= 0 ? "Sortie imminente" : `J-${diffDays}`}
+          </p>
+
+          <h3 className="mt-2 text-xl font-semibold">
+            {project.titre}
+          </h3>
+
+          <p className="mt-2 text-sm text-zinc-500">
+            {project.date_sortie} • {project.statut || "Statut"}
+          </p>
+        </Link>
+      );
+    })}
+  </div>
+</section>
 
     <h2 className="text-3xl font-bold">
       Priorités du jour
