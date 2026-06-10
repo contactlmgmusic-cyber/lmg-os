@@ -23,26 +23,73 @@ export default function NouveauProjetPage() {
 
   const [artistes, setArtistes] = useState<Artiste[]>([]);
 
-  useEffect(() => {
-    async function fetchArtistes() {
-      const { data } = await supabaseBrowser
-        .from("artistes")
-        .select("id, nom")
-        .order("nom");
+useEffect(() => {
+  async function fetchArtistes() {
+    const { data } = await supabaseBrowser
+      .from("artistes")
+      .select("id, nom")
+      .order("nom");
 
-      setArtistes(data || []);
-    }
+    setArtistes(data || []);
+  }
 
-    fetchArtistes();
-  }, []);
+  fetchArtistes();
+}, []);
 
-  function addDays(baseDate: string, days: number) {
+function addDays(baseDate: string, days: number) {
   if (!baseDate) return null;
 
   const date = new Date(baseDate);
   date.setDate(date.getDate() + days);
 
   return date.toISOString().split("T")[0];
+}
+
+function getRolloutEvents(projectTitle: string, releaseDate: string) {
+  return [
+    {
+      titre: `Annonce officielle - ${projectTitle}`,
+      type: "Annonce",
+      statut: "À faire",
+      date_event: addDays(releaseDate, -14),
+      notes: "Annonce du projet sur Instagram, TikTok et stories.",
+    },
+    {
+      titre: `Pré-save - ${projectTitle}`,
+      type: "Distribution",
+      statut: "À faire",
+      date_event: addDays(releaseDate, -10),
+      notes: "Mettre en avant le lien de pré-save.",
+    },
+    {
+      titre: `Teaser vidéo J-7 - ${projectTitle}`,
+      type: "Contenu",
+      statut: "À faire",
+      date_event: addDays(releaseDate, -7),
+      notes: "Publier un teaser court pour créer l'attente.",
+    },
+    {
+      titre: `Countdown stories - ${projectTitle}`,
+      type: "Social Media",
+      statut: "À faire",
+      date_event: addDays(releaseDate, -3),
+      notes: "Stories compte à rebours avant la sortie.",
+    },
+    {
+      titre: `Sortie officielle - ${projectTitle}`,
+      type: "Release",
+      statut: "Programmé",
+      date_event: releaseDate || null,
+      notes: "Publication officielle du projet.",
+    },
+    {
+      titre: `Relance médias - ${projectTitle}`,
+      type: "Promo",
+      statut: "À faire",
+      date_event: addDays(releaseDate, 2),
+      notes: "Relancer médias, playlists, radios et influenceurs.",
+    },
+  ];
 }
 
 function getRolloutTasks(projectTitle: string, releaseDate: string) {
@@ -98,43 +145,37 @@ function getRolloutTasks(projectTitle: string, releaseDate: string) {
   ];
 }
 
-  async function handleSubmit(
-    e: React.FormEvent
-  ) {
-    e.preventDefault();
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
 
-    const { data: projet, error } = await supabaseBrowser
-  .from("projets")
-  .insert({
-    titre,
-    type,
-    statut,
-    date_sortie: dateSortie || null,
-    notes,
-    cover_url: coverUrl,
-    artiste_id: artisteId || null,
-  })
-  .select()
-  .single();
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    if (projet) {
-  await supabaseBrowser
-    .from("chat_channels")
+  const { data: projet, error } = await supabaseBrowser
+    .from("projets")
     .insert({
-      name: projet.titre,
-      slug: projet.titre
-        .toLowerCase()
-        .replace(/\s+/g, "-"),
-      type: "projet",
-      projet_id: projet.id,
-    });
+      titre,
+      type,
+      statut,
+      date_sortie: dateSortie || null,
+      notes,
+      cover_url: coverUrl,
+      artiste_id: artisteId || null,
+    })
+    .select()
+    .single();
 
-    if (projet) {
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  if (!projet) return;
+
+  await supabaseBrowser.from("chat_channels").insert({
+    name: projet.titre,
+    slug: projet.titre.toLowerCase().replace(/\s+/g, "-"),
+    type: "projet",
+    projet_id: projet.id,
+  });
+
   const rolloutTasks = getRolloutTasks(projet.titre, dateSortie);
 
   await supabaseBrowser.from("taches").insert(
@@ -147,10 +188,20 @@ function getRolloutTasks(projectTitle: string, releaseDate: string) {
       projet_id: projet.id,
     }))
   );
-}
-}
 
-if (projet) {
+  const rolloutEvents = getRolloutEvents(projet.titre, dateSortie);
+
+  await supabaseBrowser.from("rollout_events").insert(
+    rolloutEvents.map((event) => ({
+      titre: event.titre,
+      type: event.type,
+      statut: event.statut,
+      date_event: event.date_event,
+      notes: event.notes,
+      projet_id: projet.id,
+    }))
+  );
+
   const { data: admins } = await supabaseBrowser
     .from("profiles")
     .select("id")
@@ -167,31 +218,28 @@ if (projet) {
       }))
     );
   }
-}
 
-if (projet && artisteId) {
-  const { data: artisteProfile } = await supabaseBrowser
-    .from("profiles")
-    .select("id")
-    .eq("artiste_id", artisteId)
-    .single();
+  if (artisteId) {
+    const { data: artisteProfile } = await supabaseBrowser
+      .from("profiles")
+      .select("id")
+      .eq("artiste_id", artisteId)
+      .single();
 
-  if (artisteProfile) {
-    await supabaseBrowser
-      .from("notifications")
-      .insert({
+    if (artisteProfile) {
+      await supabaseBrowser.from("notifications").insert({
         user_id: artisteProfile.id,
         type: "projet",
         titre: "Nouveau projet ajouté",
         description: projet.titre,
         link: `/projets/${projet.id}`,
       });
+    }
   }
-}
 
-    router.push("/projets");
-    router.refresh();
-  }
+  router.push("/projets");
+  router.refresh();
+}
 
   return (
     <main className="p-10 text-white">
