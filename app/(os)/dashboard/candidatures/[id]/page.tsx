@@ -21,6 +21,10 @@ export default async function CandidatureDetailPage({
     .eq("id", id)
     .single();
 
+    console.log("DETAIL ID =", id);
+console.log("DETAIL ERROR =", error);
+console.log("DETAIL DATA =", candidature);
+
   if (error || !candidature) {
     return (
       <main className="min-h-screen bg-black p-10 text-white">
