@@ -1,9 +1,56 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+const cookieStore = await cookies();
+
+const supabaseAuth = createServerClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+  {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll() {},
+    },
+  }
+);
+
+const {
+  data: { user },
+} = await supabaseAuth.auth.getUser();
+
+const { data: currentProfile } = user
+  ? await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single()
+  : { data: null };
+
+if (
+  currentProfile?.role !== ROLES.SUPER_ADMIN &&
+  currentProfile?.role !== ROLES.ADMIN
+) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <h1 className="text-3xl font-bold text-red-400">
+        Accès refusé
+      </h1>
+
+      <p className="mt-3 text-zinc-500">
+        Vous n'avez pas accès à l'administration.
+      </p>
+    </main>
+  );
+}
+
   const { data: profiles } = await supabase
     .from("profiles")
     .select("id, email, nom, role")
@@ -16,9 +63,9 @@ export default async function AdminPage() {
     .limit(6);
 
   const usersCount = profiles?.length || 0;
-  const superAdmins = profiles?.filter((p: any) => p.role === "super_admin").length || 0;
-  const managers = profiles?.filter((p: any) => p.role === "manager").length || 0;
-  const artistes = profiles?.filter((p: any) => p.role === "artiste").length || 0;
+  const superAdmins = profiles?.filter((p: any) => p.role === ROLES.SUPER_ADMIN).length || 0;
+  const managers = profiles?.filter((p: any) => p.role === ROLES.MANAGER).length || 0;
+  const artistes = profiles?.filter((p: any) => p.role === ROLES.ARTISTE).length || 0;
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
