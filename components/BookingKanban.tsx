@@ -6,9 +6,8 @@ import {
   Droppable,
   Draggable,
 } from "@hello-pangea/dnd";
-
-import { supabaseBrowser } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 
 const statuses = [
   "Prospect",
@@ -21,14 +20,15 @@ const statuses = [
   "Annulé",
 ];
 
+function formatMoney(value: number) {
+  return `${new Intl.NumberFormat("fr-FR").format(value)} €`;
+}
+
 function normalizeStatus(status?: string | null) {
   if (!status) return "Prospect";
-
-  if (status === "Relance") return "Contacté";
-  if (status === "Relancé") return "Contacté";
+  if (status === "Relance" || status === "Relancé") return "Contacté";
   if (status === "En négociation") return "Négociation";
   if (status === "Refusé") return "Annulé";
-
   return status;
 }
 
@@ -38,23 +38,16 @@ function getColumnTone(status: string) {
   if (status === "Payé") return "border-emerald-500/30 bg-emerald-500/10";
   if (status === "Annulé") return "border-red-500/30 bg-red-500/10";
   if (status === "Option") return "border-yellow-500/30 bg-yellow-500/10";
-
   return "border-zinc-800 bg-zinc-900";
 }
 
-export default function BookingKanban({
-  bookings,
-}: {
-  bookings: any[];
-}) {
+export default function BookingKanban({ bookings }: { bookings: any[] }) {
   const router = useRouter();
 
   const colonnes = Object.fromEntries(
     statuses.map((status) => [
       status,
-      bookings.filter(
-        (booking) => normalizeStatus(booking.statut) === status
-      ),
+      bookings.filter((booking) => normalizeStatus(booking.statut) === status),
     ])
   );
 
@@ -87,14 +80,11 @@ export default function BookingKanban({
     if (!booking) return;
 
     const oldStatus = normalizeStatus(booking.statut);
-
     if (oldStatus === newStatus) return;
 
     const { error } = await supabaseBrowser
       .from("bookings")
-      .update({
-        statut: newStatus,
-      })
+      .update({ statut: newStatus })
       .eq("id", bookingId);
 
     if (error) {
@@ -111,13 +101,12 @@ export default function BookingKanban({
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-8">
+      <div className="flex gap-6 overflow-x-auto pb-4">
         {Object.entries(colonnes).map(([colonne, items]: any) => {
           const totalCachet =
             items.reduce(
               (acc: number, booking: any) =>
-                acc +
-                Number(booking.montant_cachet || booking.cachet || 0),
+                acc + Number(booking.montant_cachet || booking.cachet || 0),
               0
             ) || 0;
 
@@ -126,14 +115,8 @@ export default function BookingKanban({
               const cachet = Number(
                 booking.montant_cachet || booking.cachet || 0
               );
-
-              const commissionRate = Number(
-                booking.commission_lmg || 0
-              );
-
-              const commission = Number(
-                booking.montant_commission || 0
-              );
+              const commissionRate = Number(booking.commission_lmg || 0);
+              const commission = Number(booking.montant_commission || 0);
 
               return acc + (commission || (cachet * commissionRate) / 100);
             }, 0) || 0;
@@ -144,7 +127,7 @@ export default function BookingKanban({
                 <section
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  className={`min-h-[600px] rounded-2xl border p-5 ${getColumnTone(
+                  className={`min-h-[500px] min-w-[320px] rounded-2xl border p-5 ${getColumnTone(
                     colonne
                   )}`}
                 >
@@ -158,11 +141,11 @@ export default function BookingKanban({
                     </div>
 
                     <p className="mt-2 text-xs text-zinc-500">
-                      Cachet : {totalCachet.toFixed(2)} €
+                      Cachet : {formatMoney(totalCachet)}
                     </p>
 
                     <p className="mt-1 text-xs text-zinc-500">
-                      Commission : {totalCommission.toFixed(2)} €
+                      Commission : {formatMoney(totalCommission)}
                     </p>
                   </div>
 
@@ -171,15 +154,10 @@ export default function BookingKanban({
                       const cachet = Number(
                         booking.montant_cachet || booking.cachet || 0
                       );
-
-                      const commissionRate = Number(
-                        booking.commission_lmg || 0
-                      );
-
+                      const commissionRate = Number(booking.commission_lmg || 0);
                       const commission = Number(
                         booking.montant_commission || 0
                       );
-
                       const calculatedCommission =
                         commission || (cachet * commissionRate) / 100;
 
@@ -203,51 +181,33 @@ export default function BookingKanban({
                                 </h3>
 
                                 {cachet > 0 && (
-                                  <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-black">
-                                    {cachet.toFixed(0)} €
+                                  <span className="shrink-0 rounded-full bg-white px-2 py-1 text-xs font-bold text-black">
+                                    {formatMoney(cachet)}
                                   </span>
                                 )}
                               </div>
 
                               <div className="space-y-2 text-sm text-zinc-400">
-                                <p>
-                                  {booking.artistes?.nom ||
-                                    "Artiste non lié"}
-                                </p>
-
-                                <p>
-                                  {booking.organisateur ||
-                                    "Organisateur non renseigné"}
-                                </p>
-
-                                <p>
-                                  {booking.ville ||
-                                    "Ville non renseignée"}
-                                </p>
-
-                                <p>
-                                  {booking.date_event ||
-                                    "Date non renseignée"}
-                                </p>
+                                <p>{booking.artistes?.nom || "Artiste non lié"}</p>
+                                <p>{booking.organisateur || "Organisateur non renseigné"}</p>
+                                <p>{booking.ville || "Ville non renseignée"}</p>
+                                <p>{booking.date_event || "Date non renseignée"}</p>
 
                                 {cachet > 0 && (
                                   <p className="text-green-300">
-                                    Commission LMG :{" "}
-                                    {calculatedCommission.toFixed(2)} €
+                                    Commission : {formatMoney(calculatedCommission)}
                                   </p>
                                 )}
 
-                                {booking.acompte > 0 && (
+                                {Number(booking.acompte || 0) > 0 && (
                                   <p className="text-blue-300">
-                                    Acompte :{" "}
-                                    {Number(booking.acompte).toFixed(2)} €
+                                    Acompte : {formatMoney(Number(booking.acompte))}
                                   </p>
                                 )}
 
-                                {booking.solde > 0 && (
+                                {Number(booking.solde || 0) > 0 && (
                                   <p className="text-purple-300">
-                                    Solde :{" "}
-                                    {Number(booking.solde).toFixed(2)} €
+                                    Solde : {formatMoney(Number(booking.solde))}
                                   </p>
                                 )}
 
