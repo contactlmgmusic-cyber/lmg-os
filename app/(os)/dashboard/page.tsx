@@ -388,7 +388,7 @@ if (checkingAccess) {
 
 <RevenueChart data={revenueChartData} />
 
-      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-7">
+      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <KpiCard label="Artistes" value={stats.artistes} />
         <KpiCard label="Projets" value={stats.projets} />
         <KpiCard label="Nouvelles candidatures" value={stats.nouvellesCandidatures} />
