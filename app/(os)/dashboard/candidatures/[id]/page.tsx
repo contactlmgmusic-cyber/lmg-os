@@ -1,7 +1,12 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.SUPABASE_SERVICE_ROLE_KEY as string
+);
 
 export default async function CandidatureDetailPage({
   params,
@@ -10,7 +15,7 @@ export default async function CandidatureDetailPage({
 }) {
   const { id } = await params;
 
-  const { data: candidature, error } = await supabase
+  const { data: candidature, error } = await supabaseAdmin
     .from("candidatures")
     .select("*")
     .eq("id", id)
