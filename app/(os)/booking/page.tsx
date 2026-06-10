@@ -80,6 +80,40 @@ if (currentProfile?.role === ROLES.PRESTATAIRE) {
     );
   }
 
+  const totalCachet =
+  bookings?.reduce(
+    (acc: number, booking: any) =>
+      acc + Number(booking.montant_cachet || booking.cachet || 0),
+    0
+  ) || 0;
+
+const totalCommission =
+  bookings?.reduce((acc: number, booking: any) => {
+    const cachet = Number(booking.montant_cachet || booking.cachet || 0);
+    const commissionRate = Number(booking.commission_lmg || 0);
+    const commission = Number(booking.montant_commission || 0);
+
+    return acc + (commission || (cachet * commissionRate) / 100);
+  }, 0) || 0;
+
+const totalAcompte =
+  bookings?.reduce(
+    (acc: number, booking: any) => acc + Number(booking.acompte || 0),
+    0
+  ) || 0;
+
+const totalSolde =
+  bookings?.reduce(
+    (acc: number, booking: any) => acc + Number(booking.solde || 0),
+    0
+  ) || 0;
+
+const bookingsPayes =
+  bookings?.filter((booking: any) => booking.statut === "Payé").length || 0;
+
+const bookingsFactures =
+  bookings?.filter((booking: any) => booking.statut === "Facturé").length || 0;
+
   const canCreateBooking =
     currentProfile?.role === ROLES.SUPER_ADMIN ||
     currentProfile?.role === ROLES.ADMIN ||
@@ -110,7 +144,54 @@ if (currentProfile?.role === ROLES.PRESTATAIRE) {
         )}
       </div>
 
+<div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+  <BookingKpi
+    label="CA Booking"
+    value={`${totalCachet.toFixed(2)} €`}
+  />
+
+  <BookingKpi
+    label="Commission LMG"
+    value={`${totalCommission.toFixed(2)} €`}
+  />
+
+  <BookingKpi
+    label="Acomptes"
+    value={`${totalAcompte.toFixed(2)} €`}
+  />
+
+  <BookingKpi
+    label="Soldes"
+    value={`${totalSolde.toFixed(2)} €`}
+  />
+
+  <BookingKpi
+    label="Facturés"
+    value={bookingsFactures}
+  />
+
+  <BookingKpi
+    label="Payés"
+    value={bookingsPayes}
+  />
+</div>
+
       <BookingKanban bookings={bookings || []} />
     </main>
+  );
+}
+
+function BookingKpi({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+      <p className="text-sm text-zinc-500">{label}</p>
+      <p className="mt-3 text-3xl font-bold">{value}</p>
+    </div>
   );
 }
