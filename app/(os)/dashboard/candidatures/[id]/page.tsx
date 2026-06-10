@@ -100,7 +100,7 @@ export default async function CandidatureDetailPage({
           )}
 
           <Link
-            href={`/candidatures/${candidature.id}/convertir`}
+            href={`/dashboard/candidatures/${candidature.id}/convertir`}
             className="block rounded-xl border border-green-500/40 bg-green-500/10 px-5 py-4 text-center text-green-300 hover:bg-green-500/20"
           >
             Convertir en artiste
