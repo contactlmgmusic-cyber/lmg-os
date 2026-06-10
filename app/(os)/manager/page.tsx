@@ -112,6 +112,46 @@ const royaltiesPayees =
 const tachesOuvertes =
   taches?.filter((t: any) => t.statut !== "Terminé").length || 0;
 
+  const today = new Date();
+
+const sortiesAVenir =
+  projets
+    ?.filter(
+      (p: any) =>
+        p.date_sortie &&
+        new Date(p.date_sortie) >= today
+    )
+    .sort(
+      (a: any, b: any) =>
+        new Date(a.date_sortie).getTime() -
+        new Date(b.date_sortie).getTime()
+    )
+    .slice(0, 5) || [];
+
+const tachesEnRetard =
+  taches
+    ?.filter(
+      (t: any) =>
+        t.deadline &&
+        new Date(t.deadline) < today &&
+        t.statut !== "Terminé"
+    )
+    .sort(
+      (a: any, b: any) =>
+        new Date(a.deadline).getTime() -
+        new Date(b.deadline).getTime()
+    )
+    .slice(0, 5) || [];
+
+const bookingsEnNegociation =
+  bookings
+    ?.filter(
+      (b: any) =>
+        b.statut === "Négociation" ||
+        b.statut === "En négociation"
+    )
+    .slice(0, 5) || [];
+
   return (
     <main className="min-h-screen bg-black p-10 text-white">
       <div className="mb-10">
@@ -192,6 +232,79 @@ const tachesOuvertes =
               </Link>
             ))}
         </Panel>
+
+        <Panel title="Sorties à venir" href="/projets">
+  {sortiesAVenir.length === 0 && (
+    <p className="text-zinc-500">
+      Aucune sortie à venir.
+    </p>
+  )}
+
+  {sortiesAVenir.map((projet: any) => (
+    <Link
+      key={projet.id}
+      href={`/projets/${projet.id}`}
+      className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+    >
+      <h3 className="text-xl font-semibold">
+        {projet.titre}
+      </h3>
+
+      <p className="mt-2 text-sm text-zinc-500">
+        Sortie : {projet.date_sortie}
+      </p>
+    </Link>
+  ))}
+</Panel>
+
+<Panel title="Tâches en retard" href="/taches">
+  {tachesEnRetard.length === 0 && (
+    <p className="text-zinc-500">
+      Aucune tâche en retard.
+    </p>
+  )}
+
+  {tachesEnRetard.map((tache: any) => (
+    <Link
+      key={tache.id}
+      href={`/taches/${tache.id}`}
+      className="block rounded-2xl border border-red-500/30 bg-red-500/5 p-5 hover:border-red-500/60"
+    >
+      <h3 className="text-xl font-semibold">
+        {tache.titre}
+      </h3>
+
+      <p className="mt-2 text-sm text-red-300">
+        Deadline dépassée : {tache.deadline}
+      </p>
+    </Link>
+  ))}
+</Panel>
+
+<Panel title="Bookings en négociation" href="/booking">
+  {bookingsEnNegociation.length === 0 && (
+    <p className="text-zinc-500">
+      Aucun booking en négociation.
+    </p>
+  )}
+
+  {bookingsEnNegociation.map((booking: any) => (
+    <Link
+      key={booking.id}
+      href={`/booking/${booking.id}`}
+      className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+    >
+      <h3 className="text-xl font-semibold">
+        {booking.evenement}
+      </h3>
+
+      <p className="mt-2 text-sm text-zinc-500">
+        {booking.ville || "Ville non renseignée"} •{" "}
+        {booking.date_event || "Date non renseignée"}
+      </p>
+    </Link>
+  ))}
+</Panel>
       </div>
     </main>
   );
