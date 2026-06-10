@@ -45,6 +45,8 @@ const [checkingAccess, setCheckingAccess] = useState(true);
   const [revenueChartData, setRevenueChartData] = useState<any[]>([]);
   const [latestCandidatures, setLatestCandidatures] = useState<any[]>([]);
   const [next30Projects, setNext30Projects] = useState<any[]>([]);
+  const [lateTasks, setLateTasks] = useState<any[]>([]);
+  const [urgentReleases, setUrgentReleases] = useState<any[]>([]);
 
   function monthStart() {
     const d = new Date();
@@ -89,6 +91,10 @@ const [checkingAccess, setCheckingAccess] = useState(true);
       const in30Days = new Date();
 in30Days.setDate(in30Days.getDate() + 30);
 const in30DaysString = in30Days.toISOString().split("T")[0];
+
+const in7Days = new Date();
+in7Days.setDate(in7Days.getDate() + 7);
+const in7DaysString = in7Days.toISOString().split("T")[0];
 
       const { count: candidaturesCount } = await supabaseBrowser
   .from("candidatures")
@@ -227,6 +233,22 @@ const projectRanking = Array.from(byProject.entries())
       .order("deadline", { ascending: true })
       .limit(5);
 
+      const { data: lateTasksData } = await supabaseBrowser
+  .from("taches")
+  .select("id, titre, deadline, priorite, statut")
+  .lt("deadline", today)
+  .neq("statut", "Terminé")
+  .order("deadline", { ascending: true })
+  .limit(5);
+
+const { data: urgentReleasesData } = await supabaseBrowser
+  .from("projets")
+  .select("id, titre, date_sortie, statut")
+  .gte("date_sortie", today)
+  .lte("date_sortie", in7DaysString)
+  .order("date_sortie", { ascending: true })
+  .limit(5);
+
     const { data: relances } = await supabaseBrowser
       .from("bookings")
       .select("id, evenement, prochaine_relance, statut")
@@ -293,6 +315,8 @@ const royaltiesPayees =
     setActivityLogs(logs || []);
     setLatestCandidatures(candidatures || []);
     setNext30Projects(next30 || []);
+    setLateTasks(lateTasksData || []);
+    setUrgentReleases(urgentReleasesData || []);
   }
 
 useEffect(() => {
@@ -391,6 +415,55 @@ if (checkingAccess) {
         Sorties des 30 prochains jours
       </h2>
     </div>
+
+    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div className="mb-6">
+    <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+      LMG Radar
+    </p>
+
+    <h2 className="text-3xl font-bold">
+      Alertes critiques
+    </h2>
+  </div>
+
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+    <AlertCard
+      label="Tâches en retard"
+      value={lateTasks.length}
+      href="/taches"
+      danger={lateTasks.length > 0}
+    />
+
+    <AlertCard
+      label="Contrats à signer"
+      value={stats.contratsASigner}
+      href="/contrats"
+      danger={stats.contratsASigner > 0}
+    />
+
+    <AlertCard
+      label="Sorties J-7"
+      value={urgentReleases.length}
+      href="/projets"
+      danger={urgentReleases.length > 0}
+    />
+
+    <AlertCard
+      label="Royalties à payer"
+      value={Math.round(stats.royaltiesDues)}
+      href="/royalties"
+      danger={stats.royaltiesDues > 0}
+    />
+
+    <AlertCard
+      label="Relances médias"
+      value={stats.mediasRelanceAujourdhui}
+      href="/medias/dashboard"
+      danger={stats.mediasRelanceAujourdhui > 0}
+    />
+  </div>
+</section>
 
     <Link href="/projets" className="text-sm text-zinc-400 hover:text-white">
       Voir tout →
