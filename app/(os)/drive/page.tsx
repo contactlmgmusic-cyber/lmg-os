@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -104,13 +105,28 @@ export default async function DrivePage() {
     `)
     .order("created_at", { ascending: false });
 
-  if (currentProfile?.role === "manager") {
-    assetsQuery = assetsQuery.eq("projets.artistes.manager_id", user?.id);
-  }
+  if (currentProfile?.role === ROLES.MANAGER && user?.id) {
+  const { data: managedArtists } = await supabase
+    .from("artistes")
+    .select("id")
+    .eq("manager_id", user.id);
 
-  if (currentProfile?.role === "artiste") {
-    assetsQuery = assetsQuery.eq("projets.artiste_id", currentProfile.artiste_id);
+  const managedArtistIds = managedArtists?.map((a: any) => a.id) || [];
+
+  if (managedArtistIds.length === 0) {
+    assetsQuery = assetsQuery.eq("id", "00000000-0000-0000-0000-000000000000");
+  } else {
+    assetsQuery = assetsQuery.in("artiste_id", managedArtistIds);
   }
+}
+
+if (currentProfile?.role === ROLES.ARTISTE && currentProfile.artiste_id) {
+  assetsQuery = assetsQuery.eq("artiste_id", currentProfile.artiste_id);
+}
+
+if (currentProfile?.role === ROLES.PRESTATAIRE) {
+  assetsQuery = assetsQuery.eq("id", "00000000-0000-0000-0000-000000000000");
+}
 
   const { data: assets, error } = await assetsQuery;
 

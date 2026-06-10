@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
 import BookingKanban from "@/components/BookingKanban";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -46,17 +47,28 @@ export default async function BookingPage() {
     `)
     .order("created_at", { ascending: false });
 
-  if (currentProfile?.role === "manager") {
-    query = query.eq("artistes.manager_id", user?.id);
-  }
+  if (currentProfile?.role === ROLES.MANAGER && user?.id) {
+  const { data: managedArtists } = await supabase
+    .from("artistes")
+    .select("id")
+    .eq("manager_id", user.id);
 
-  if (currentProfile?.role === "artiste" && currentProfile?.artiste_id) {
-    query = query.eq("artiste_id", currentProfile.artiste_id);
-  }
+  const managedArtistIds = managedArtists?.map((a: any) => a.id) || [];
 
-  if (currentProfile?.role === "prestataire") {
+  if (managedArtistIds.length === 0) {
     query = query.eq("id", "00000000-0000-0000-0000-000000000000");
+  } else {
+    query = query.in("artiste_id", managedArtistIds);
   }
+}
+
+if (currentProfile?.role === ROLES.ARTISTE && currentProfile.artiste_id) {
+  query = query.eq("artiste_id", currentProfile.artiste_id);
+}
+
+if (currentProfile?.role === ROLES.PRESTATAIRE) {
+  query = query.eq("id", "00000000-0000-0000-0000-000000000000");
+}
 
   const { data: bookings, error } = await query;
 
@@ -69,9 +81,9 @@ export default async function BookingPage() {
   }
 
   const canCreateBooking =
-    currentProfile?.role === "super_admin" ||
-    currentProfile?.role === "admin" ||
-    currentProfile?.role === "manager";
+    currentProfile?.role === ROLES.SUPER_ADMIN ||
+    currentProfile?.role === ROLES.ADMIN ||
+    currentProfile?.role === ROLES.MANAGER;
 
   return (
     <main className="p-10 text-white">
@@ -80,9 +92,9 @@ export default async function BookingPage() {
           <h1 className="text-4xl font-bold">Booking CRM</h1>
 
           <p className="mt-2 text-zinc-400">
-            {currentProfile?.role === "manager"
+            {currentProfile?.role === ROLES.MANAGER
               ? "Bookings de mes artistes"
-              : currentProfile?.role === "artiste"
+              : currentProfile?.role === ROLES.ARTISTE
               ? "Mes opportunités booking"
               : "Pipeline événements & festivals LMG"}
           </p>
