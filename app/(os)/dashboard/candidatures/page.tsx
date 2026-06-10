@@ -220,11 +220,15 @@ export default function CandidaturesPage() {
                                         "Artiste non renseigné"}
                                     </h3>
 
+                                    <p className="text-red-500">
+  DEBUG : /dashboard/candidatures/{candidature.id}
+</p>
+
                                     <Link
-  href="/dashboard"
-  className="mt-2 inline-block text-sm text-red-500"
+  href={`/dashboard/candidatures/${candidature.id}`}
+  className="mt-2 inline-block text-sm text-yellow-500 hover:text-yellow-400"
 >
-  TEST DASHBOARD
+  Ouvrir la fiche →
 </Link>
 
                                     <p className="mt-1 text-sm text-zinc-500">
