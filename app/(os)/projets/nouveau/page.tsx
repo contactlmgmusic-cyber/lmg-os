@@ -36,6 +36,68 @@ export default function NouveauProjetPage() {
     fetchArtistes();
   }, []);
 
+  function addDays(baseDate: string, days: number) {
+  if (!baseDate) return null;
+
+  const date = new Date(baseDate);
+  date.setDate(date.getDate() + days);
+
+  return date.toISOString().split("T")[0];
+}
+
+function getRolloutTasks(projectTitle: string, releaseDate: string) {
+  return [
+    {
+      titre: `Valider la cover - ${projectTitle}`,
+      description: "Préparer et valider la cover officielle du projet.",
+      priorite: "Haute",
+      deadline: addDays(releaseDate, -21),
+    },
+    {
+      titre: `Uploader distribution DSP - ${projectTitle}`,
+      description: "Uploader le projet sur le distributeur musical.",
+      priorite: "Haute",
+      deadline: addDays(releaseDate, -14),
+    },
+    {
+      titre: `Créer teaser J-14 - ${projectTitle}`,
+      description: "Préparer un teaser court pour Instagram, TikTok et Reels.",
+      priorite: "Moyenne",
+      deadline: addDays(releaseDate, -14),
+    },
+    {
+      titre: `Préparer pré-save - ${projectTitle}`,
+      description: "Créer ou récupérer le lien de pré-save.",
+      priorite: "Moyenne",
+      deadline: addDays(releaseDate, -10),
+    },
+    {
+      titre: `Créer teaser J-7 - ${projectTitle}`,
+      description: "Préparer un extrait court à publier 7 jours avant la sortie.",
+      priorite: "Moyenne",
+      deadline: addDays(releaseDate, -7),
+    },
+    {
+      titre: `Préparer stories countdown - ${projectTitle}`,
+      description: "Préparer les stories de compte à rebours.",
+      priorite: "Basse",
+      deadline: addDays(releaseDate, -3),
+    },
+    {
+      titre: `Publication sortie - ${projectTitle}`,
+      description: "Publier les contenus le jour de la sortie.",
+      priorite: "Haute",
+      deadline: releaseDate || null,
+    },
+    {
+      titre: `Relance médias - ${projectTitle}`,
+      description: "Relancer médias, playlists, radios et influenceurs.",
+      priorite: "Moyenne",
+      deadline: addDays(releaseDate, 2),
+    },
+  ];
+}
+
   async function handleSubmit(
     e: React.FormEvent
   ) {
@@ -71,6 +133,21 @@ export default function NouveauProjetPage() {
       type: "projet",
       projet_id: projet.id,
     });
+
+    if (projet) {
+  const rolloutTasks = getRolloutTasks(projet.titre, dateSortie);
+
+  await supabaseBrowser.from("taches").insert(
+    rolloutTasks.map((task) => ({
+      titre: task.titre,
+      description: task.description,
+      statut: "À faire",
+      priorite: task.priorite,
+      deadline: task.deadline,
+      projet_id: projet.id,
+    }))
+  );
+}
 }
 
 if (projet) {
