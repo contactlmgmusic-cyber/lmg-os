@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import RevenueChart from "@/components/RevenueChart";
+import { ROLES } from "@/lib/roles";
 
 type ActivityLog = {
   id: string;
@@ -290,17 +291,17 @@ useEffect(() => {
       .eq("id", user.id)
       .single();
 
-    if (profile?.role === "manager") {
+    if (profile?.role === ROLES.MANAGER) {
       router.push("/manager");
       return;
     }
 
-    if (profile?.role === "artiste") {
+    if (profile?.role === ROLES.ARTISTE) {
       router.push("/mon-espace-artiste");
       return;
     }
 
-    if (profile?.role === "prestataire") {
+    if (profile?.role === ROLES.PRESTATAIRE) {
       router.push("/mes-taches");
       return;
     }
@@ -397,6 +398,48 @@ if (checkingAccess) {
         <KpiCard label="Médias relancés" value={stats.mediasRelance} />
         <KpiCard label="Relances médias du jour" value={stats.mediasRelanceAujourdhui} />
       </div>
+
+<section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div className="mb-6">
+    <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+      Alertes CEO
+    </p>
+
+    <h2 className="text-3xl font-bold">
+      Points à surveiller
+    </h2>
+  </div>
+
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <AlertCard
+      label="Contrats à signer"
+      value={stats.contratsASigner}
+      href="/contrats"
+      danger={stats.contratsASigner > 0}
+    />
+
+    <AlertCard
+      label="Tâches ouvertes"
+      value={stats.taches}
+      href="/taches"
+      danger={stats.taches > 10}
+    />
+
+    <AlertCard
+      label="Relances médias aujourd'hui"
+      value={stats.mediasRelanceAujourdhui}
+      href="/medias/dashboard"
+      danger={stats.mediasRelanceAujourdhui > 0}
+    />
+
+    <AlertCard
+      label="Candidatures à traiter"
+      value={stats.nouvellesCandidatures}
+      href="/candidatures"
+      danger={stats.nouvellesCandidatures > 0}
+    />
+  </div>
+</section>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
         <Panel title="Sorties à venir" href="/projets">
@@ -629,5 +672,40 @@ function Panel({
 
       <div className="space-y-4">{children}</div>
     </section>
+  );
+}
+
+function AlertCard({
+  label,
+  value,
+  href,
+  danger,
+}: {
+  label: string;
+  value: number;
+  href: string;
+  danger?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`block rounded-2xl border p-5 transition hover:border-zinc-500 ${
+        danger
+          ? "border-red-500/30 bg-red-500/10"
+          : "border-zinc-800 bg-black"
+      }`}
+    >
+      <p className={danger ? "text-red-300" : "text-zinc-500"}>
+        {label}
+      </p>
+
+      <p className="mt-3 text-4xl font-bold">
+        {value}
+      </p>
+
+      <p className="mt-3 text-xs text-zinc-500">
+        Ouvrir →
+      </p>
+    </Link>
   );
 }
