@@ -15,6 +15,12 @@ export default function TeamPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#3a2a00_0%,#050505_45%,#000_100%)]" />
 
         <div className="relative z-10 mx-auto max-w-6xl">
+          <Link
+  href="/site"
+  className="text-sm text-zinc-400 hover:text-white"
+>
+  ← Retour au site
+</Link>
           <p className="mb-4 text-sm uppercase tracking-[0.4em] text-yellow-500">
             Legacy Music Group
           </p>

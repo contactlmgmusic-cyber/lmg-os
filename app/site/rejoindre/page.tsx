@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import Link from "next/link";
 
 export default function RejoindrePage() {
   const [loading, setLoading] = useState(false);
@@ -55,6 +56,13 @@ export default function RejoindrePage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <section className="mx-auto max-w-5xl px-6 py-28">
+        <Link
+  href="/site"
+  className="text-sm text-zinc-400 hover:text-white"
+>
+  ← Retour au site
+</Link>
+
         <p className="mb-4 text-sm uppercase tracking-[0.4em] text-yellow-500">
           Rejoindre LMG
         </p>
