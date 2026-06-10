@@ -4,7 +4,8 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
-  const maintenanceMode = true;
+  const maintenanceMode =
+  process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
 
 const isMaintenanceAllowed =
   path === "/maintenance" ||

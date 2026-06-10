@@ -131,6 +131,42 @@ export default async function MonEspaceArtistePage() {
     )
     .slice(0, 5) || [];
 
+    const artisteTimeline = [
+  ...(prochainesSorties || []).map((projet: any) => ({
+    id: projet.id,
+    type: "Sortie",
+    titre: projet.titre,
+    date: projet.date_sortie,
+    href: `/projets/${projet.id}`,
+  })),
+
+  ...(taches || [])
+    .filter((tache: any) => tache.deadline)
+    .map((tache: any) => ({
+      id: tache.id,
+      type: "Tâche",
+      titre: tache.titre,
+      date: tache.deadline,
+      href: `/taches/${tache.id}`,
+    })),
+
+  ...(bookings || [])
+    .filter((booking: any) => booking.date_event)
+    .map((booking: any) => ({
+      id: booking.id,
+      type: "Booking",
+      titre: booking.evenement,
+      date: booking.date_event,
+      href: `/booking/${booking.id}`,
+    })),
+]
+  .filter((event: any) => event.date)
+  .sort(
+    (a: any, b: any) =>
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+  )
+  .slice(0, 10);
+
   const royaltiesAPayer =
   royalties
     ?.filter((r: any) => r.statut !== "Payé")
@@ -257,18 +293,51 @@ const progressionObjectifs =
                 <p className="text-zinc-500">Aucun projet disponible.</p>
               )}
 
-              {projets?.map((projet) => (
-                <Link
-                  key={projet.id}
-                  href={`/projets/${projet.id}`}
-                  className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
-                >
-                  <h3 className="text-xl font-bold">{projet.titre}</h3>
-                  <p className="mt-2 text-sm text-zinc-500">
-                    Sortie : {projet.date_sortie || "Non renseignée"}
-                  </p>
-                </Link>
-              ))}
+              
+                {projets?.map((projet: any) => {
+  let progression = 0;
+
+  if (projet.titre) progression += 10;
+  if (projet.type) progression += 10;
+  if (projet.date_sortie) progression += 15;
+  if (projet.cover_url) progression += 15;
+  if (projet.statut) progression += 10;
+  if (projet.spotify_url) progression += 15;
+  if (projet.youtube_url) progression += 15;
+  if (projet.notes) progression += 10;
+
+  return (
+    <Link
+      key={projet.id}
+      href={`/projets/${projet.id}`}
+      className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+    >
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-bold">
+          {projet.titre}
+        </h3>
+
+        <span className="text-sm font-medium text-zinc-400">
+          {progression}%
+        </span>
+      </div>
+
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-800">
+        <div
+          className="h-full rounded-full bg-white"
+          style={{
+            width: `${progression}%`,
+          }}
+        />
+      </div>
+
+      <p className="mt-3 text-sm text-zinc-500">
+        Sortie : {projet.date_sortie || "Non renseignée"}
+      </p>
+    </Link>
+  );
+})}
+              
             </div>
           </div>
 
@@ -603,6 +672,44 @@ const progressionObjectifs =
           </p>
         )}
       </div>
+    ))}
+  </div>
+</div>
+
+<div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="mb-6 text-3xl font-bold">
+    Mon calendrier
+  </h2>
+
+  {artisteTimeline.length === 0 && (
+    <p className="text-zinc-500">
+      Aucun événement à venir.
+    </p>
+  )}
+
+  <div className="space-y-4">
+    {artisteTimeline.map((event: any) => (
+      <Link
+        key={`${event.type}-${event.id}`}
+        href={event.href}
+        className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm text-zinc-500">
+              {event.type}
+            </p>
+
+            <h3 className="mt-1 text-xl font-bold">
+              {event.titre}
+            </h3>
+          </div>
+
+          <p className="text-sm text-zinc-400">
+            {event.date}
+          </p>
+        </div>
+      </Link>
     ))}
   </div>
 </div>
