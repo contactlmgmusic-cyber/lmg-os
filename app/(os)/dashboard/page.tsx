@@ -384,6 +384,29 @@ if (checkingAccess) {
   );
 }
 
+const healthPenalty =
+  lateTasks.length * 5 +
+  stats.contratsASigner * 3 +
+  Math.min(Math.round(stats.royaltiesDues / 100), 20) +
+  urgentReleases.length * 2 +
+  stats.mediasRelanceAujourdhui;
+
+const healthScore = Math.max(0, 100 - healthPenalty);
+
+const healthLabel =
+  healthScore >= 80
+    ? "Excellent"
+    : healthScore >= 60
+    ? "À surveiller"
+    : "Critique";
+
+const healthTone =
+  healthScore >= 80
+    ? "border-green-500/30 bg-green-500/10 text-green-300"
+    : healthScore >= 60
+    ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-300"
+    : "border-red-500/30 bg-red-500/10 text-red-300";
+
   return (
     <main className="min-h-screen bg-black p-10 text-white">
       <div className="mb-10">
@@ -397,6 +420,40 @@ if (checkingAccess) {
           Vue globale du label : business, finance, sorties, contrats et opérations.
         </p>
       </div>
+
+      <section className={`mb-10 rounded-3xl border p-8 ${healthTone}`}>
+  <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p className="mb-2 text-sm uppercase tracking-[0.3em] opacity-70">
+        LMG Health Score
+      </p>
+
+      <h2 className="text-5xl font-bold">
+        {healthScore} / 100
+      </h2>
+
+      <p className="mt-3 text-xl font-semibold">
+        {healthLabel}
+      </p>
+    </div>
+
+    <div className="w-full md:w-80">
+      <div className="h-4 overflow-hidden rounded-full bg-black/40">
+        <div
+          className="h-full rounded-full bg-current transition-all"
+          style={{
+            width: `${healthScore}%`,
+          }}
+        />
+      </div>
+
+      <p className="mt-3 text-sm opacity-80">
+        Score calculé selon les tâches en retard, contrats à signer,
+        royalties dues, sorties urgentes et relances médias.
+      </p>
+    </div>
+  </div>
+</section>
 
       <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
   <div className="mb-6">
