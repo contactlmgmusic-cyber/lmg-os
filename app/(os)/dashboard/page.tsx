@@ -43,6 +43,7 @@ const [checkingAccess, setCheckingAccess] = useState(true);
   const [topArtistes, setTopArtistes] = useState<any[]>([]);
   const [topProjets, setTopProjets] = useState<any[]>([]);
   const [revenueChartData, setRevenueChartData] = useState<any[]>([]);
+  const [latestCandidatures, setLatestCandidatures] = useState<any[]>([]);
 
   function monthStart() {
     const d = new Date();
@@ -88,6 +89,12 @@ const [checkingAccess, setCheckingAccess] = useState(true);
   .from("candidatures")
   .select("*", { count: "exact", head: true })
   .eq("statut", "nouvelle");
+
+  const { data: candidatures } = await supabaseBrowser
+  .from("candidatures")
+  .select("id, nom_artiste, email, ville, statut, created_at")
+  .order("created_at", { ascending: false })
+  .limit(5);
 
 const { count: mediasRelanceAujourdhui } = await supabaseBrowser
   .from("medias")
@@ -272,6 +279,7 @@ const royaltiesPayees =
     setTopProjets(projectRanking);
     setRevenueChartData(chartData);
     setActivityLogs(logs || []);
+    setLatestCandidatures(candidatures || []);
   }
 
 useEffect(() => {
@@ -358,6 +366,39 @@ if (checkingAccess) {
     <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
       Aujourd'hui chez LMG
     </p>
+
+    <Panel title="Pipeline artistes" href="/candidatures">
+  <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+    <MiniStat label="Nouvelles" value={stats.nouvellesCandidatures} />
+    <MiniStat label="En étude" value={0} />
+    <MiniStat label="Signées" value={0} />
+  </div>
+
+  {latestCandidatures.length === 0 && (
+    <p className="text-zinc-500">Aucune candidature récente.</p>
+  )}
+
+  {latestCandidatures.map((candidature: any) => (
+    <Link
+      key={candidature.id}
+      href="/candidatures"
+      className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+    >
+      <h3 className="text-xl font-semibold">
+        {candidature.nom_artiste || "Artiste"}
+      </h3>
+
+      <p className="mt-2 text-sm text-zinc-500">
+        {candidature.ville || "Ville non renseignée"} •{" "}
+        {candidature.email || "Email non renseigné"}
+      </p>
+
+      <p className="mt-2 text-xs text-zinc-600">
+        Statut : {candidature.statut || "nouvelle"}
+      </p>
+    </Link>
+  ))}
+</Panel>
 
     <h2 className="text-3xl font-bold">
       Priorités du jour
@@ -749,5 +790,25 @@ function AlertCard({
         Ouvrir →
       </p>
     </Link>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+}: {
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="rounded-2xl border border-zinc-800 bg-black p-5">
+      <p className="text-sm text-zinc-500">
+        {label}
+      </p>
+
+      <h3 className="mt-2 text-3xl font-bold">
+        {value}
+      </h3>
+    </div>
   );
 }
