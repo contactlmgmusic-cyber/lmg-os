@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +49,7 @@ export default async function ArtisteProfilPage({
         .single()
     : { data: null };
 
-  const isArtistUser = currentProfile?.role === "artiste";
+  const isArtistUser = currentProfile?.role === ROLES.ARTISTE;
   const isOwnArtistProfile =
     isArtistUser && currentProfile?.artiste_id === id;
 

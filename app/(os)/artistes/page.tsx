@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -38,10 +39,10 @@ export default async function ArtistesPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (currentProfile?.role === "manager") {
+  if (currentProfile?.role === ROLES.MANAGER) {
     query = query.eq("manager_id", user?.id);
   }
-  if (currentProfile?.role === "artiste" && currentProfile?.artiste_id) {
+  if (currentProfile?.role === ROLES.ARTISTE && currentProfile?.artiste_id) {
   query = query.eq("id", currentProfile.artiste_id);
 }
 
@@ -56,8 +57,8 @@ export default async function ArtistesPage() {
   }
 
   const canCreateArtist =
-  currentProfile?.role === "super_admin" ||
-  currentProfile?.role === "admin";
+  currentProfile?.role === ROLES.SUPER_ADMIN ||
+  currentProfile?.role === ROLES.ADMIN;
 
   return (
     <main className="p-10 text-white">
@@ -66,7 +67,7 @@ export default async function ArtistesPage() {
           <h1 className="text-5xl font-bold">Artistes</h1>
 
           <p className="mt-2 text-zinc-400">
-            {currentProfile?.role === "manager"
+            {currentProfile?.role === ROLES.MANAGER
               ? "Mes artistes assignés"
               : "Gestion des artistes LMG"}
           </p>

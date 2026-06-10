@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -34,8 +35,8 @@ export default async function ManagerDashboardPage() {
     : { data: null };
 
   if (
-    currentProfile?.role !== "manager" &&
-    currentProfile?.role !== "admin"
+    currentProfile?.role !== ROLES.MANAGER &&
+    currentProfile?.role !== ROLES.ADMIN
   ) {
     return (
       <main className="p-10 text-white">
@@ -51,7 +52,7 @@ export default async function ManagerDashboardPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (currentProfile?.role === "manager") {
+  if (currentProfile?.role === ROLES.MANAGER) {
     artistesQuery = artistesQuery.eq(
       "manager_id",
       user?.id

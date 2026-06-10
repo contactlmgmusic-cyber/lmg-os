@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -49,15 +50,15 @@ export default async function ContratsPage() {
     `)
     .order("created_at", { ascending: false });
 
-  if (currentProfile?.role === "manager") {
+  if (currentProfile?.role === ROLES.MANAGER) {
     query = query.eq("artistes.manager_id", user?.id);
   }
 
-  if (currentProfile?.role === "artiste" && currentProfile?.artiste_id) {
+  if (currentProfile?.role === ROLES.ARTISTE && currentProfile?.artiste_id) {
     query = query.eq("artiste_id", currentProfile.artiste_id);
   }
 
-  if (currentProfile?.role === "prestataire") {
+  if (currentProfile?.role === ROLES.PRESTATAIRE) {
     query = query.eq("id", "00000000-0000-0000-0000-000000000000");
   }
 
@@ -72,9 +73,9 @@ export default async function ContratsPage() {
   }
 
   const canCreateContract =
-    currentProfile?.role === "super_admin" ||
-    currentProfile?.role === "admin" ||
-    currentProfile?.role === "manager";
+    currentProfile?.role === ROLES.SUPER_ADMIN ||
+    currentProfile?.role === ROLES.ADMIN ||
+    currentProfile?.role === ROLES.MANAGER;
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -87,9 +88,9 @@ export default async function ContratsPage() {
           <h1 className="text-5xl font-bold">Contrats</h1>
 
           <p className="mt-3 text-zinc-400">
-            {currentProfile?.role === "manager"
+            {currentProfile?.role === ROLES.MANAGER
               ? "Contrats de mes artistes"
-              : currentProfile?.role === "artiste"
+              : currentProfile?.role === ROLES.ARTISTE
               ? "Mes contrats"
               : "Contrats artistes, booking, prestations et split sheets."}
           </p>
