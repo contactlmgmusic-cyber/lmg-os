@@ -28,7 +28,7 @@ export default function TeamPage() {
 
           <div className="rounded-[2rem] border border-zinc-800 bg-zinc-950 p-8">
             <div className="mb-6 h-32 w-32 overflow-hidden rounded-full bg-zinc-900">
-              <Image src="/images/joseph.jpg" alt="Joseph" width={128} height={128} />
+              <Image src="/team/joseph.jpg" alt="Joseph" width={128} height={128} className="h-full w-full object-cover" />
             </div>
 
             <p className="text-sm uppercase tracking-[0.3em] text-yellow-500">
@@ -48,7 +48,7 @@ export default function TeamPage() {
 
           <div className="rounded-[2rem] border border-zinc-800 bg-zinc-950 p-8">
             <div className="mb-6 h-32 w-32 overflow-hidden rounded-full bg-zinc-900">
-              <Image src="/images/yliana.jpg" alt="Yliana" width={128} height={128} />
+              <Image src="/team/yliana.jpg" alt="Yliana Faidherbe" width={128} height={128} className="h-full w-full object-cover" />
             </div>
 
             <p className="text-sm uppercase tracking-[0.3em] text-yellow-500">
