@@ -367,45 +367,12 @@ if (checkingAccess) {
       Aujourd'hui chez LMG
     </p>
 
-    <Panel title="Pipeline artistes" href="/candidatures">
-  <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-    <MiniStat label="Nouvelles" value={stats.nouvellesCandidatures} />
-    <MiniStat label="En étude" value={0} />
-    <MiniStat label="Signées" value={0} />
-  </div>
-
-  {latestCandidatures.length === 0 && (
-    <p className="text-zinc-500">Aucune candidature récente.</p>
-  )}
-
-  {latestCandidatures.map((candidature: any) => (
-    <Link
-      key={candidature.id}
-      href="/candidatures"
-      className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
-    >
-      <h3 className="text-xl font-semibold">
-        {candidature.nom_artiste || "Artiste"}
-      </h3>
-
-      <p className="mt-2 text-sm text-zinc-500">
-        {candidature.ville || "Ville non renseignée"} •{" "}
-        {candidature.email || "Email non renseigné"}
-      </p>
-
-      <p className="mt-2 text-xs text-zinc-600">
-        Statut : {candidature.statut || "nouvelle"}
-      </p>
-    </Link>
-  ))}
-</Panel>
-
     <h2 className="text-3xl font-bold">
       Priorités du jour
     </h2>
   </div>
 
-  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+  <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
     <AlertCard
       label="Relances médias"
       value={stats.mediasRelanceAujourdhui}
@@ -434,6 +401,52 @@ if (checkingAccess) {
       danger={stats.nouvellesCandidatures > 0}
     />
   </div>
+
+  <Panel title="Pipeline artistes" href="/candidatures">
+    <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+      <MiniStat
+        label="Nouvelles"
+        value={stats.nouvellesCandidatures}
+      />
+
+      <MiniStat
+        label="En étude"
+        value={0}
+      />
+
+      <MiniStat
+        label="Signées"
+        value={0}
+      />
+    </div>
+
+    {latestCandidatures.length === 0 && (
+      <p className="text-zinc-500">
+        Aucune candidature récente.
+      </p>
+    )}
+
+    {latestCandidatures.map((candidature: any) => (
+      <Link
+        key={candidature.id}
+        href="/candidatures"
+        className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <h3 className="text-xl font-semibold">
+          {candidature.nom_artiste || "Artiste"}
+        </h3>
+
+        <p className="mt-2 text-sm text-zinc-500">
+          {candidature.ville || "Ville non renseignée"} •{" "}
+          {candidature.email || "Email non renseigné"}
+        </p>
+
+        <p className="mt-2 text-xs text-zinc-600">
+          Statut : {candidature.statut || "nouvelle"}
+        </p>
+      </Link>
+    ))}
+  </Panel>
 </section>
 
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
