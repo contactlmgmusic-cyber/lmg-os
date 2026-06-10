@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import AssetUploader from "@/components/AssetUploader";
 import ProjectComments from "@/components/ProjectComments";
 import PermissionGate from "@/components/PermissionGate";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +65,7 @@ export default async function ProjetDetailPage({
     );
   }
 
-  const isArtistUser = currentProfile?.role === "artiste";
+  const isArtistUser = currentProfile?.role === ROLES.ARTISTE;
   const isOwnProject = currentProfile?.artiste_id === projet.artiste_id;
   const canViewInternalProjectData = !isArtistUser || isOwnProject;
 
@@ -234,10 +235,25 @@ const avancement =
       </div>
 
     <div className="rounded-3xl border border-cyan-500/30 bg-cyan-500/10 p-6">
-  <p className="text-sm text-cyan-300">Avancement projet</p>
+  <p className="text-sm text-cyan-300">
+    Avancement projet
+  </p>
 
   <p className="mt-2 text-xl font-semibold">
     {avancement}%
+  </p>
+
+  <div className="mt-4 h-3 overflow-hidden rounded-full bg-black">
+    <div
+      className="h-full rounded-full bg-cyan-300 transition-all"
+      style={{
+        width: `${avancement}%`,
+      }}
+    />
+  </div>
+
+  <p className="mt-3 text-xs text-cyan-200">
+    {tachesTerminees} / {totalTaches} tâches terminées
   </p>
 </div>
 
@@ -248,6 +264,10 @@ const avancement =
 
   <p className="mt-2 text-xl font-semibold">
     {totalTaches}
+  </p>
+
+  <p className="mt-3 text-xs text-zinc-500">
+    Rollout + production + promo
   </p>
 </div>
 
