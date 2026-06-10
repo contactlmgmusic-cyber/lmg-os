@@ -1,10 +1,57 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
+import { ROLES } from "@/lib/roles";
 import RoleBadge from "@/components/RoleBadge";
 
 export const dynamic = "force-dynamic";
 
 export default async function EquipePage() {
+const cookieStore = await cookies();
+
+const supabaseAuth = createServerClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+  {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll() {},
+    },
+  }
+);
+
+const {
+  data: { user },
+} = await supabaseAuth.auth.getUser();
+
+const { data: currentProfile } = user
+  ? await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single()
+  : { data: null };
+
+if (
+  currentProfile?.role !== ROLES.SUPER_ADMIN &&
+  currentProfile?.role !== ROLES.ADMIN
+) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <h1 className="text-3xl font-bold text-red-400">
+        Accès refusé
+      </h1>
+
+      <p className="mt-3 text-zinc-500">
+        Vous n'avez pas accès à la gestion de l'équipe.
+      </p>
+    </main>
+  );
+}
+
   const { data: members, error } = await supabase
     .from("profiles")
     .select("*")
