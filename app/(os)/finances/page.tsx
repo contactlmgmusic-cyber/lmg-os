@@ -70,6 +70,14 @@ if (
     `)
     .order("date_operation", { ascending: false });
 
+    const { data: bookings } = await supabase
+  .from("bookings")
+  .select("*");
+
+const { data: royalties } = await supabase
+  .from("royalties")
+  .select("*");
+
   const revenus =
     finances
       ?.filter((f: any) => f.type === "Revenu")
@@ -81,6 +89,56 @@ if (
       .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
 
   const resultat = revenus - depenses;
+
+  const caEncaisse =
+  finances
+    ?.filter((f: any) => f.type === "Revenu" && f.statut === "Payé")
+    .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
+
+const caPrevisionnel =
+  finances
+    ?.filter((f: any) => f.type === "Revenu" && f.statut !== "Payé")
+    .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
+
+const royaltiesAPayer =
+  royalties
+    ?.filter((r: any) => r.statut !== "Payé")
+    .reduce((acc: number, r: any) => acc + Number(r.montant_du || 0), 0) || 0;
+
+const royaltiesPayees =
+  royalties
+    ?.filter((r: any) => r.statut === "Payé")
+    .reduce((acc: number, r: any) => acc + Number(r.montant_du || 0), 0) || 0;
+
+const cachetsConfirmes =
+  bookings
+    ?.filter((b: any) => b.statut === "Confirmé")
+    .reduce(
+      (acc: number, b: any) =>
+        acc + Number(b.montant_cachet || b.cachet || 0),
+      0
+    ) || 0;
+
+const cachetsFactures =
+  bookings
+    ?.filter((b: any) => b.statut === "Facturé")
+    .reduce(
+      (acc: number, b: any) =>
+        acc + Number(b.montant_cachet || b.cachet || 0),
+      0
+    ) || 0;
+
+const cachetsPayes =
+  bookings
+    ?.filter((b: any) => b.statut === "Payé")
+    .reduce(
+      (acc: number, b: any) =>
+        acc + Number(b.montant_cachet || b.cachet || 0),
+      0
+    ) || 0;
+
+const margeNette =
+  revenus > 0 ? Math.round((resultat / revenus) * 100) : 0;
 
   const revenusBooking =
     finances
@@ -203,6 +261,65 @@ if (
           <h2 className="mt-2 text-4xl font-bold">{resultat.toFixed(2)} €</h2>
         </div>
       </div>
+
+      <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div className="mb-6">
+    <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+      Cockpit financier
+    </p>
+
+    <h2 className="text-3xl font-bold">
+      Vision business LMG
+    </h2>
+  </div>
+
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <FinanceKpi
+      label="CA encaissé"
+      value={`${caEncaisse.toFixed(2)} €`}
+      tone="green"
+    />
+
+    <FinanceKpi
+      label="CA prévisionnel"
+      value={`${caPrevisionnel.toFixed(2)} €`}
+    />
+
+    <FinanceKpi
+      label="Marge nette"
+      value={`${margeNette}%`}
+      tone={margeNette >= 0 ? "green" : "red"}
+    />
+
+    <FinanceKpi
+      label="Royalties à payer"
+      value={`${royaltiesAPayer.toFixed(2)} €`}
+      tone="red"
+    />
+
+    <FinanceKpi
+      label="Royalties payées"
+      value={`${royaltiesPayees.toFixed(2)} €`}
+      tone="green"
+    />
+
+    <FinanceKpi
+      label="Cachets confirmés"
+      value={`${cachetsConfirmes.toFixed(2)} €`}
+    />
+
+    <FinanceKpi
+      label="Cachets facturés"
+      value={`${cachetsFactures.toFixed(2)} €`}
+    />
+
+    <FinanceKpi
+      label="Cachets payés"
+      value={`${cachetsPayes.toFixed(2)} €`}
+      tone="green"
+    />
+  </div>
+</section>
 
       <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-4">
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
@@ -341,5 +458,29 @@ if (
         </div>
       </section>
     </main>
+  );
+}
+
+function FinanceKpi({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string | number;
+  tone?: "green" | "red";
+}) {
+  const toneClass =
+    tone === "green"
+      ? "border-green-500/30 bg-green-500/10"
+      : tone === "red"
+      ? "border-red-500/30 bg-red-500/10"
+      : "border-zinc-800 bg-black";
+
+  return (
+    <div className={`rounded-3xl border p-6 ${toneClass}`}>
+      <p className="text-sm text-zinc-500">{label}</p>
+      <h3 className="mt-3 text-3xl font-bold">{value}</h3>
+    </div>
   );
 }
