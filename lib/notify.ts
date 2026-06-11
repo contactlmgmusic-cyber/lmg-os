@@ -23,14 +23,15 @@ export async function notifyRoles({
   }
 
   await supabaseBrowser.from("notifications").insert(
-    users.map((user) => ({
-      user_id: user.id,
-      type,
-      titre,
-      description: description || null,
-      link: link || null,
-    }))
-  );
+  users.map((user) => ({
+    user_id: user.id,
+    type,
+    titre,
+    description: description || null,
+    link: link || null,
+    read: false,
+  }))
+);
 }
 
 export async function notifyUser({
@@ -47,10 +48,11 @@ export async function notifyUser({
   link?: string;
 }) {
   await supabaseBrowser.from("notifications").insert({
-    user_id: userId,
-    type,
-    titre,
-    description: description || null,
-    link: link || null,
-  });
+  user_id: userId,
+  type,
+  titre,
+  description: description || null,
+  link: link || null,
+  read: false,
+});
 }
