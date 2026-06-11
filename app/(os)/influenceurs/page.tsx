@@ -54,10 +54,6 @@ const { data: influenceurs, error } = await supabase
         </Link>
       </div>
 
-      <div className="mb-6 rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-red-300">
-  DEBUG influenceurs : {influenceurs?.length || 0}
-</div>
-
       <InfluenceurKanban influenceurs={influenceurs || []} />
     </main>
   );
