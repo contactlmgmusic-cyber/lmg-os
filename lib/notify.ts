@@ -22,16 +22,21 @@ export async function notifyRoles({
     return;
   }
 
-  await supabaseBrowser.from("notifications").insert(
+  const { error: insertError } = await supabaseBrowser.from("notifications").insert(
   users.map((user) => ({
     user_id: user.id,
     type,
     titre,
     description: description || null,
-    link: link || null,
-    read: false,
+    lien: link || null,
+    lu: false,
   }))
 );
+
+if (insertError) {
+  console.error("NOTIFICATION INSERT ERROR =", insertError);
+  alert(insertError.message);
+}
 }
 
 export async function notifyUser({
@@ -53,6 +58,6 @@ export async function notifyUser({
   titre,
   description: description || null,
   link: link || null,
-  read: false,
+  lu: false,
 });
 }
