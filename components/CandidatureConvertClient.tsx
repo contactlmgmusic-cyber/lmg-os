@@ -129,6 +129,18 @@ if (existingArtist) {
       );
     }
 
+const { data: onboardingProject } = await supabaseBrowser
+  .from("projets")
+  .insert({
+    titre: `Onboarding - ${artiste.nom}`,
+    type: "Onboarding",
+    statut: "En préparation",
+    artiste_id: artiste.id,
+    notes: "Projet automatique créé lors de la conversion de candidature en artiste.",
+  })
+  .select()
+  .single();
+
 await supabaseBrowser.from("taches").insert([
   {
     titre: `Call découverte - ${artiste.nom}`,
@@ -136,6 +148,7 @@ await supabaseBrowser.from("taches").insert([
     statut: "À faire",
     priorite: "Haute",
     artiste_id: artiste.id,
+    projet_id: onboardingProject?.id || null,
   },
   {
     titre: `Contrat management - ${artiste.nom}`,
@@ -143,6 +156,7 @@ await supabaseBrowser.from("taches").insert([
     statut: "À faire",
     priorite: "Haute",
     artiste_id: artiste.id,
+    projet_id: onboardingProject?.id || null,
   },
   {
     titre: `Audit catalogue - ${artiste.nom}`,
@@ -150,6 +164,7 @@ await supabaseBrowser.from("taches").insert([
     statut: "À faire",
     priorite: "Moyenne",
     artiste_id: artiste.id,
+    projet_id: onboardingProject?.id || null,
   },
   {
     titre: `Audit réseaux sociaux - ${artiste.nom}`,
@@ -157,6 +172,7 @@ await supabaseBrowser.from("taches").insert([
     statut: "À faire",
     priorite: "Moyenne",
     artiste_id: artiste.id,
+    projet_id: onboardingProject?.id || null,
   },
   {
     titre: `Shooting / contenus - ${artiste.nom}`,
@@ -164,6 +180,7 @@ await supabaseBrowser.from("taches").insert([
     statut: "À faire",
     priorite: "Moyenne",
     artiste_id: artiste.id,
+    projet_id: onboardingProject?.id || null,
   },
   {
     titre: `Stratégie 90 jours - ${artiste.nom}`,
@@ -171,6 +188,7 @@ await supabaseBrowser.from("taches").insert([
     statut: "À faire",
     priorite: "Haute",
     artiste_id: artiste.id,
+    projet_id: onboardingProject?.id || null,
   },
   {
     titre: `Préparer première sortie - ${artiste.nom}`,
@@ -178,6 +196,7 @@ await supabaseBrowser.from("taches").insert([
     statut: "À faire",
     priorite: "Haute",
     artiste_id: artiste.id,
+    projet_id: onboardingProject?.id || null,
   },
 ]);
 
