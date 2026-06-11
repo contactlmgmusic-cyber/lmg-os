@@ -48,30 +48,55 @@ export default function RoyaltyDetailPage() {
   }, []);
 
   async function markAsPaid(e: React.FormEvent) {
-    e.preventDefault();
-    setSaving(true);
+  e.preventDefault();
 
-    const { error } = await supabaseBrowser
-      .from("royalties")
-      .update({
-        statut: "Payé",
-        date_paiement: datePaiement || new Date().toISOString().split("T")[0],
-        methode_paiement: methodePaiement || null,
-        reference_paiement: referencePaiement || null,
-        notes_paiement: notesPaiement || null,
-      })
-      .eq("id", id);
-
-    if (error) {
-      alert(error.message);
-      setSaving(false);
-      return;
-    }
-
-    router.refresh();
-    await loadRoyalty();
-    setSaving(false);
+  if (royalty?.statut === "Payé") {
+    alert("Cette royalty est déjà marquée comme payée.");
+    return;
   }
+
+  const confirmed = window.confirm(
+    `Confirmer le paiement de ${Number(royalty.montant_du || 0).toFixed(
+      2
+    )} € à ${royalty.nom} ?`
+  );
+
+  if (!confirmed) return;
+
+  setSaving(true);
+
+  const finalDatePaiement =
+    datePaiement || new Date().toISOString().split("T")[0];
+
+  const { error } = await supabaseBrowser
+    .from("royalties")
+    .update({
+      statut: "Payé",
+      date_paiement: finalDatePaiement,
+      methode_paiement: methodePaiement || null,
+      reference_paiement: referencePaiement || null,
+      notes_paiement: notesPaiement || null,
+    })
+    .eq("id", id);
+
+  if (error) {
+    alert(error.message);
+    setSaving(false);
+    return;
+  }
+
+  await supabaseBrowser.from("activity_logs").insert({
+    type: "Royalties",
+    titre: "Royalty payée",
+    description: `${royalty.nom} • ${Number(royalty.montant_du || 0).toFixed(
+      2
+    )} €`,
+  });
+
+  await loadRoyalty();
+  setSaving(false);
+  router.refresh();
+}
 
   if (loading) {
     return <main className="p-10 text-white">Chargement...</main>;
@@ -143,8 +168,8 @@ export default function RoyaltyDetailPage() {
         </section>
 
         <aside className="space-y-6">
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-            <h2 className="text-3xl font-bold">Marquer comme payé</h2>
+  <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+    <h2 className="text-3xl font-bold">Marquer comme payé</h2>
 
             <form onSubmit={markAsPaid} className="mt-6 space-y-4">
               <input
