@@ -57,14 +57,16 @@ const { data: finances } =
     ? await supabase.from("finances").select("*").in("artiste_id", artisteIds)
     : { data: [] };
 
+const projetIds = projets?.map((p: any) => p.id) || [];
+
 const { data: royalties } =
-  artisteIds.length > 0
-    ? await supabase.from("royalties").select("*").in("artiste_id", artisteIds)
+  projetIds.length > 0
+    ? await supabase.from("royalties").select("*").in("projet_id", projetIds)
     : { data: [] };
 
 const { data: taches } =
-  artisteIds.length > 0
-    ? await supabase.from("taches").select("*").in("artiste_id", artisteIds)
+  projetIds.length > 0
+    ? await supabase.from("taches").select("*").in("projet_id", projetIds)
     : { data: [] };
 
   const projetsActifs =
