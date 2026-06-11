@@ -86,7 +86,11 @@ export default function InfluenceurKanban({
   statuses.map((status) => [
     status,
     influenceurs.filter((item) => {
-      const itemStatus = item.statut || "À contacter";
+      const itemStatus = item.statut?.trim() || "À contacter";
+
+      if (status === "À contacter") {
+        return !statuses.includes(itemStatus) || itemStatus === "À contacter";
+      }
 
       return itemStatus === status;
     }),
