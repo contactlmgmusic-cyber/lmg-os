@@ -103,47 +103,31 @@ if (existingArtist) {
     const slug = slugify(artiste.nom);
 
     await supabaseBrowser.from("chat_channels").insert({
-      name: artiste.nom,
-      slug: `artiste-${slug}`,
-      type: "artiste",
+  name: artiste.nom,
+  slug: `artiste-${slug}`,
+  type: "artiste",
+  artiste_id: artiste.id,
+});
+
+const { data: onboardingProject, error: onboardingProjectError } =
+  await supabaseBrowser
+    .from("projets")
+    .insert({
+      titre: `Onboarding - ${artiste.nom}`,
+      type: "Onboarding",
+      statut: "En préparation",
       artiste_id: artiste.id,
-    });
+      notes:
+        "Projet automatique créé lors de la conversion de candidature en artiste.",
+    })
+    .select()
+    .single();
 
-    await supabaseBrowser
-      .from("candidatures")
-      .update({
-        statut: "Signé",
-      })
-      .eq("id", candidature.id);
-
-    const { data: admins } = await supabaseBrowser
-      .from("profiles")
-      .select("id")
-      .in("role", ["super_admin", "admin", "manager"]);
-
-    if (admins && admins.length > 0) {
-      await supabaseBrowser.from("notifications").insert(
-        admins.map((admin) => ({
-          user_id: admin.id,
-          type: "artiste",
-          titre: "Candidature convertie en artiste",
-          description: artiste.nom,
-          link: `/artistes/${artiste.id}`,
-        }))
-      );
-    }
-
-const { data: onboardingProject } = await supabaseBrowser
-  .from("projets")
-  .insert({
-    titre: `Onboarding - ${artiste.nom}`,
-    type: "Onboarding",
-    statut: "En préparation",
-    artiste_id: artiste.id,
-    notes: "Projet automatique créé lors de la conversion de candidature en artiste.",
-  })
-  .select()
-  .single();
+if (onboardingProjectError) {
+  alert(`Erreur création projet onboarding : ${onboardingProjectError.message}`);
+  setConverting(false);
+  return;
+}
 
 const { error: onboardingTasksError } = await supabaseBrowser
   .from("taches")
@@ -153,9 +137,9 @@ const { error: onboardingTasksError } = await supabaseBrowser
       description: "Organiser un premier échange stratégique avec l’artiste.",
       statut: "À faire",
       priorite: "Haute",
-      artiste_id: artiste.id,
       projet_id: onboardingProject?.id || null,
       responsable_id: user?.id || null,
+      assigned_to: user?.id || null,
     },
   ]);
 
