@@ -54,6 +54,24 @@ export default function NotificationsBell() {
   const unreadCount = notifications.filter((notification) => !notification.lu)
     .length;
 
+async function markAsRead(id: string) {
+  await supabaseBrowser
+    .from("notifications")
+    .update({ lu: true })
+    .eq("id", id);
+
+  loadNotifications();
+}
+
+async function markAllAsRead() {
+  await supabaseBrowser
+    .from("notifications")
+    .update({ lu: true })
+    .eq("lu", false);
+
+  loadNotifications();
+}
+
   return (
     <div className="relative">
       <button
@@ -73,6 +91,16 @@ export default function NotificationsBell() {
       {open && (
         <div className="fixed left-80 top-24 z-[9999] max-h-[75vh] w-[420px] overflow-y-auto rounded-3xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl">
           <h3 className="mb-4 text-lg font-bold text-white">Notifications</h3>
+
+          {unreadCount > 0 && (
+  <button
+    type="button"
+    onClick={markAllAsRead}
+    className="mb-4 w-full rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+  >
+    Tout marquer comme lu
+  </button>
+)}
 
           <div className="space-y-3">
             {notifications.length === 0 && (
