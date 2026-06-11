@@ -83,15 +83,15 @@ export default function InfluenceurKanban({
   const router = useRouter();
 
   const colonnes = Object.fromEntries(
-    statuses.map((status) => [
-      status,
-      influenceurs.filter((item) =>
-        status === "À contacter"
-          ? !item.statut || item.statut === "À contacter"
-          : item.statut === status
-      ),
-    ])
-  );
+  statuses.map((status) => [
+    status,
+    influenceurs.filter((item) => {
+      const itemStatus = item.statut || "À contacter";
+
+      return itemStatus === status;
+    }),
+  ])
+);
 
   async function onDragEnd(result: DropResult) {
     if (!result.destination) return;
