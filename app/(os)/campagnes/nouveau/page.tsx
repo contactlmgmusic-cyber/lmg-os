@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { notifyRoles } from "@/lib/notify";
 
 export default function NouvelleCampagnePage() {
   const router = useRouter();
@@ -50,17 +51,21 @@ export default function NouvelleCampagnePage() {
 
     setLoading(true);
 
-    const { error } = await supabaseBrowser.from("campagnes").insert({
-      titre,
-      artiste_id: artisteId || null,
-      projet_id: projetId || null,
-      budget: budget ? Number(budget) : 0,
-      statut,
-      objectif,
-      notes,
-      date_debut: dateDebut || null,
-      date_fin: dateFin || null,
-    });
+    const { data, error } = await supabaseBrowser
+  .from("campagnes")
+  .insert({
+    titre,
+    artiste_id: artisteId || null,
+    projet_id: projetId || null,
+    budget: budget ? Number(budget) : 0,
+    statut,
+    objectif,
+    notes,
+    date_debut: dateDebut || null,
+    date_fin: dateFin || null,
+  })
+  .select("id")
+  .single();
 
     setLoading(false);
 
@@ -68,6 +73,21 @@ export default function NouvelleCampagnePage() {
       alert(error.message);
       return;
     }
+
+    await supabaseBrowser.from("activity_logs").insert({
+  type: "Campagne",
+  titre: "Nouvelle campagne créée",
+  description: titre,
+});
+
+await notifyRoles({
+  roles: ["super_admin", "manager"],
+  type: "Campagne",
+  titre: "Nouvelle campagne créée",
+  description: titre,
+  link: `/campagnes/${data.id}`,
+});
+  
 
     router.push("/campagnes");
     router.refresh();
