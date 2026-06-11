@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import AssetUploader from "@/components/AssetUploader";
 
 export const dynamic = "force-dynamic";
 
@@ -91,7 +90,7 @@ export default async function MonEspaceArtistePage() {
       const { data: royalties } = await supabase
   .from("royalties")
   .select("*")
-  .eq("artiste_id", profile.artiste_id);
+  .eq("email", user.email);
 
   const { data: contrats } = await supabase
   .from("contrats")
