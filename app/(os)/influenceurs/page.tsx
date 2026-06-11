@@ -1,12 +1,28 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import InfluenceurKanban from "@/components/InfluenceurKanban";
 
 
 export const dynamic = "force-dynamic";
 
 export default async function InfluenceursPage() {
-  const { data: influenceurs, error } = await supabase
+  const cookieStore = await cookies();
+
+const supabase = createServerClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+  {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll() {},
+    },
+  }
+);
+
+const { data: influenceurs, error } = await supabase
   .from("influenceurs")
   .select("*")
   .order("created_at", { ascending: false });
