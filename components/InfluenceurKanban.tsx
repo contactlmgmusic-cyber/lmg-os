@@ -98,43 +98,49 @@ export default function InfluenceurKanban({
 );
 
   async function onDragEnd(result: DropResult) {
-    if (!result.destination) return;
+  if (!result.destination) return;
 
-    const influenceurId = result.draggableId;
-    const newStatus = result.destination.droppableId;
+  const influenceurId = result.draggableId;
+  const newStatus = result.destination.droppableId;
 
-    const { error } = await supabaseBrowser
-      .from("influenceurs")
-      .update({
-        statut: newStatus,
-        prochaine_relance:
-          newStatus === "Relancé" ? new Date().toISOString().split("T")[0] : undefined,
-      })
-      .eq("id", influenceurId);
+  const influenceur = influenceurs.find(
+    (item) => item.id === influenceurId
+  );
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
+  const { error } = await supabaseBrowser
+    .from("influenceurs")
+    .update({
+      statut: newStatus,
+      prochaine_relance:
+        newStatus === "Relancé"
+          ? new Date().toISOString().split("T")[0]
+          : null,
+    })
+    .eq("id", influenceurId);
 
-    if (newStatus === "Publié") {
-  await supabaseBrowser.from("activity_logs").insert({
-    type: "Influenceur",
-    titre: "Publication influenceur obtenue",
-    description: "Un influenceur est passé en statut Publié",
-  });
-
-  await notifyRoles({
-    roles: ["super_admin", "manager"],
-    type: "Influenceur",
-    titre: "Publication influenceur obtenue",
-    description: "Un influenceur est passé en statut Publié",
-    link: `/influenceurs/${influenceurId}`,
-  });
-}
-
-    router.refresh();
+  if (error) {
+    alert(error.message);
+    return;
   }
+
+  if (newStatus === "Publié") {
+    await supabaseBrowser.from("activity_logs").insert({
+      type: "Influenceur",
+      titre: "Publication influenceur obtenue",
+      description: `${influenceur?.nom || "Un influenceur"} est passé en statut Publié`,
+    });
+
+    await notifyRoles({
+      roles: ["super_admin", "manager"],
+      type: "Influenceur",
+      titre: "Publication influenceur obtenue",
+      description: `${influenceur?.nom || "Un influenceur"} est passé en statut Publié`,
+      link: `/influenceurs/${influenceurId}`,
+    });
+  }
+
+  router.refresh();
+}
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
