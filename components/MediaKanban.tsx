@@ -96,8 +96,10 @@ export default function MediaKanban({ medias }: { medias: any[] }) {
     .from("medias")
     .update({
       statut: newStatus,
-      derniere_relance:
-        newStatus === "Relancé" ? new Date().toISOString() : null,
+      prochaine_relance:
+  newStatus === "Relancé"
+    ? new Date().toISOString().split("T")[0]
+    : null,
     })
     .eq("id", mediaId);
 
