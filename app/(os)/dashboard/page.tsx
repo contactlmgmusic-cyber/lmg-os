@@ -422,513 +422,306 @@ const healthTone =
     : "border-red-500/30 bg-red-500/10 text-red-300";
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <div className="mb-10">
-        <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-          Legacy Music Group
-        </p>
-
-        <h1 className="text-6xl font-bold">Executive P & DG</h1>
-
-        <p className="mt-3 text-zinc-400">
-          Vue globale du label : business, finance, sorties, contrats et opérations.
-        </p>
-      </div>
-
-      <section className={`mb-10 rounded-3xl border p-8 ${healthTone}`}>
-  <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-    <div>
-      <p className="mb-2 text-sm uppercase tracking-[0.3em] opacity-70">
-        LMG Health Score
-      </p>
-
-      <h2 className="text-5xl font-bold">
-        {healthScore} / 100
-      </h2>
-
-      <p className="mt-3 text-xl font-semibold">
-        {healthLabel}
-      </p>
-    </div>
-
-    <div className="w-full md:w-80">
-      <div className="h-4 overflow-hidden rounded-full bg-black/40">
-        <div
-          className="h-full rounded-full bg-current transition-all"
-          style={{
-            width: `${healthScore}%`,
-          }}
-        />
-      </div>
-
-      <p className="mt-3 text-sm opacity-80">
-        Score calculé selon les tâches en retard, contrats à signer,
-        royalties dues, sorties urgentes et relances médias.
-      </p>
-    </div>
-  </div>
-</section>
-
-      <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-  <div className="mb-6">
-    <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-      Aujourd'hui chez LMG
-    </p>
-
-    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-  <div className="mb-6 flex items-center justify-between">
-    <div>
+  <main className="min-h-screen bg-black p-10 text-white">
+    <div className="mb-10">
       <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-        Releases
+        Legacy Music Group
       </p>
 
-      <h2 className="text-3xl font-bold">
-        Sorties des 30 prochains jours
-      </h2>
+      <h1 className="text-6xl font-bold">Executive P & DG</h1>
+
+      <p className="mt-3 text-zinc-400">
+        Vue globale du label : business, finance, sorties, contrats et opérations.
+      </p>
     </div>
+
+    <section className={`mb-10 rounded-3xl border p-8 ${healthTone}`}>
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="mb-2 text-sm uppercase tracking-[0.3em] opacity-70">
+            LMG Health Score
+          </p>
+
+          <h2 className="text-5xl font-bold">{healthScore} / 100</h2>
+
+          <p className="mt-3 text-xl font-semibold">{healthLabel}</p>
+        </div>
+
+        <div className="w-full md:w-80">
+          <div className="h-4 overflow-hidden rounded-full bg-black/40">
+            <div
+              className="h-full rounded-full bg-current transition-all"
+              style={{ width: `${healthScore}%` }}
+            />
+          </div>
+
+          <p className="mt-3 text-sm opacity-80">
+            Score calculé selon les tâches en retard, contrats à signer,
+            royalties dues, sorties urgentes et relances médias.
+          </p>
+        </div>
+      </div>
+    </section>
 
     <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-  <div className="mb-6">
-    <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-      LMG Radar
-    </p>
-
-    <h2 className="text-3xl font-bold">
-      Alertes critiques
-    </h2>
-  </div>
-
-  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
-    <AlertCard
-      label="Tâches en retard"
-      value={lateTasks.length}
-      href="/taches"
-      danger={lateTasks.length > 0}
-    />
-
-    <AlertCard
-      label="Contrats à signer"
-      value={stats.contratsASigner}
-      href="/contrats"
-      danger={stats.contratsASigner > 0}
-    />
-
-    <AlertCard
-      label="Sorties J-7"
-      value={urgentReleases.length}
-      href="/projets"
-      danger={urgentReleases.length > 0}
-    />
-
-    <AlertCard
-      label="Royalties à payer"
-      value={Math.round(stats.royaltiesDues)}
-      href="/royalties"
-      danger={stats.royaltiesDues > 0}
-    />
-
-    <AlertCard
-      label="Relances médias"
-      value={stats.mediasRelanceAujourdhui}
-      href="/medias/dashboard"
-      danger={stats.mediasRelanceAujourdhui > 0}
-    />
-  </div>
-</section>
-
-    <Link href="/projets" className="text-sm text-zinc-400 hover:text-white">
-      Voir tout →
-    </Link>
-  </div>
-
-  {next30Projects.length === 0 && (
-    <p className="text-zinc-500">
-      Aucune sortie prévue dans les 30 prochains jours.
-    </p>
-  )}
-
-  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-    {next30Projects.map((project: any) => {
-      const releaseDate = new Date(project.date_sortie);
-      const now = new Date();
-      const diffTime = releaseDate.getTime() - now.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      const isUrgent = diffDays <= 7;
-
-      return (
-        <Link
-          key={project.id}
-          href={`/projets/${project.id}`}
-          className={`block rounded-2xl border p-5 transition hover:border-zinc-500 ${
-            isUrgent
-              ? "border-yellow-500/40 bg-yellow-500/10"
-              : "border-zinc-800 bg-black"
-          }`}
-        >
-          <p className={isUrgent ? "text-yellow-300" : "text-zinc-500"}>
-            {diffDays <= 0 ? "Sortie imminente" : `J-${diffDays}`}
-          </p>
-
-          <h3 className="mt-2 text-xl font-semibold">
-            {project.titre}
-          </h3>
-
-          <p className="mt-2 text-sm text-zinc-500">
-            {project.date_sortie} • {project.statut || "Statut"}
-          </p>
-        </Link>
-      );
-    })}
-  </div>
-</section>
-
-    <h2 className="text-3xl font-bold">
-      Priorités du jour
-    </h2>
-  </div>
-
-  <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-    <AlertCard
-      label="Relances médias"
-      value={stats.mediasRelanceAujourdhui}
-      href="/medias/dashboard"
-      danger={stats.mediasRelanceAujourdhui > 0}
-    />
-
-    <AlertCard
-      label="Tâches urgentes"
-      value={urgentTasks.length}
-      href="/taches"
-      danger={urgentTasks.length > 0}
-    />
-
-    <AlertCard
-      label="Relances booking"
-      value={followUps.length}
-      href="/booking"
-      danger={followUps.length > 0}
-    />
-
-    <AlertCard
-      label="Candidatures"
-      value={stats.nouvellesCandidatures}
-      href="/dashboard/candidatures"
-      danger={stats.nouvellesCandidatures > 0}
-    />
-  </div>
-
-  <Panel title="Pipeline artistes" href="/dashboard/candidatures">
-    <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-      <MiniStat
-        label="Nouvelles"
-        value={stats.nouvellesCandidatures}
-      />
-
-      <MiniStat label="En étude" value={stats.candidaturesEnEtude} />
-      <MiniStat label="Signées" value={stats.candidaturesSignees} />
-    </div>
-
-    {latestCandidatures.length === 0 && (
-      <p className="text-zinc-500">
-        Aucune candidature récente.
-      </p>
-    )}
-
-    {latestCandidatures.map((candidature: any) => (
-      <Link
-        key={candidature.id}
-        href="/dashboard/candidatures"
-        className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
-      >
-        <h3 className="text-xl font-semibold">
-          {candidature.nom_artiste || "Artiste"}
-        </h3>
-
-        <p className="mt-2 text-sm text-zinc-500">
-          {candidature.ville || "Ville non renseignée"} •{" "}
-          {candidature.email || "Email non renseigné"}
+      <div className="mb-6">
+        <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+          Alertes critiques
         </p>
 
-        <p className="mt-2 text-xs text-zinc-600">
-          Statut : {candidature.statut || "nouvelle"}
-        </p>
-      </Link>
-    ))}
-  </Panel>
-</section>
-
-      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-  <KpiCard
-    label="CA du mois"
-    value={`${stats.revenusMois.toFixed(2)} €`}
-    tone="green"
-  />
-
-  <KpiCard
-    label="Dépenses du mois"
-    value={`${stats.depensesMois.toFixed(2)} €`}
-    tone="red"
-  />
-
-  <KpiCard
-    label="Résultat du mois"
-    value={`${stats.resultatMois.toFixed(2)} €`}
-  />
-</div>
-
-<div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-  <KpiCard
-    label="Royalties à payer"
-    value={`${stats.royaltiesDues.toFixed(2)} €`}
-    tone="red"
-  />
-
-  <KpiCard
-    label="Royalties payées"
-    value={`${stats.royaltiesPayees.toFixed(2)} €`}
-    tone="green"
-  />
-</div>
-
-<RevenueChart data={revenueChartData} />
-
-      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <KpiCard label="Artistes" value={stats.artistes} />
-        <KpiCard label="Projets" value={stats.projets} />
-        <KpiCard label="Nouvelles candidatures" value={stats.nouvellesCandidatures} />
-        <KpiCard label="Tâches ouvertes" value={stats.taches} />
-        <KpiCard label="Contrats à signer" value={stats.contratsASigner} />
-        <KpiCard label="Bookings confirmés" value={stats.bookingsConfirmes} />
-        <KpiCard label="Médias relancés" value={stats.mediasRelance} />
-        <KpiCard label="Relances médias du jour" value={stats.mediasRelanceAujourdhui} />
+        <h2 className="text-3xl font-bold">À traiter maintenant</h2>
       </div>
 
-<section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-  <div className="mb-6">
-    <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-      Alertes CEO
-    </p>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <AlertCard label="Tâches en retard" value={lateTasks.length} href="/taches" danger={lateTasks.length > 0} />
+        <AlertCard label="Contrats à signer" value={stats.contratsASigner} href="/contrats" danger={stats.contratsASigner > 0} />
+        <AlertCard label="Sorties J-7" value={urgentReleases.length} href="/projets" danger={urgentReleases.length > 0} />
+        <AlertCard label="Royalties à payer" value={Math.round(stats.royaltiesDues)} href="/royalties" danger={stats.royaltiesDues > 0} />
+        <AlertCard label="Relances médias" value={stats.mediasRelanceAujourdhui} href="/medias/dashboard" danger={stats.mediasRelanceAujourdhui > 0} />
+      </div>
+    </section>
 
-    <h2 className="text-3xl font-bold">
-      Points à surveiller
-    </h2>
-  </div>
+    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+            Pipeline artistes
+          </p>
 
-  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-    <AlertCard
-      label="Contrats à signer"
-      value={stats.contratsASigner}
-      href="/contrats"
-      danger={stats.contratsASigner > 0}
-    />
+          <h2 className="text-3xl font-bold">Candidatures</h2>
+        </div>
 
-    <AlertCard
-      label="Tâches ouvertes"
-      value={stats.taches}
-      href="/taches"
-      danger={stats.taches > 10}
-    />
+        <Link href="/dashboard/candidatures" className="text-sm text-zinc-400 hover:text-white">
+          Voir tout →
+        </Link>
+      </div>
 
-    <AlertCard
-      label="Relances médias aujourd'hui"
-      value={stats.mediasRelanceAujourdhui}
-      href="/medias/dashboard"
-      danger={stats.mediasRelanceAujourdhui > 0}
-    />
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <MiniStat label="Nouvelles" value={stats.nouvellesCandidatures} />
+        <MiniStat label="En étude" value={stats.candidaturesEnEtude} />
+        <MiniStat label="Signées" value={stats.candidaturesSignees} />
+      </div>
 
-    <AlertCard
-      label="Candidatures à traiter"
-      value={stats.nouvellesCandidatures}
-      href="/dashboard/candidatures"
-      danger={stats.nouvellesCandidatures > 0}
-    />
-  </div>
-</section>
+      <div className="space-y-4">
+        {latestCandidatures.length === 0 && (
+          <p className="text-zinc-500">Aucune candidature récente.</p>
+        )}
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
-        <Panel title="Sorties à venir" href="/projets">
-          {upcomingProjects.length === 0 && (
-            <p className="text-zinc-500">Aucune sortie planifiée.</p>
-          )}
+        {latestCandidatures.map((candidature: any) => (
+          <Link
+            key={candidature.id}
+            href={`/dashboard/candidatures/${candidature.id}`}
+            className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+          >
+            <h3 className="text-xl font-semibold">
+              {candidature.nom_artiste || "Artiste"}
+            </h3>
 
-          {upcomingProjects.map((project) => (
+            <p className="mt-2 text-sm text-zinc-500">
+              {candidature.ville || "Ville non renseignée"} •{" "}
+              {candidature.email || "Email non renseigné"}
+            </p>
+
+            <p className="mt-2 text-xs text-zinc-600">
+              Statut : {candidature.statut || "nouvelle"}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </section>
+
+    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+            Releases
+          </p>
+
+          <h2 className="text-3xl font-bold">Sorties des 30 prochains jours</h2>
+        </div>
+
+        <Link href="/projets" className="text-sm text-zinc-400 hover:text-white">
+          Voir tout →
+        </Link>
+      </div>
+
+      {next30Projects.length === 0 && (
+        <p className="text-zinc-500">
+          Aucune sortie prévue dans les 30 prochains jours.
+        </p>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {next30Projects.map((project: any) => {
+          const releaseDate = new Date(project.date_sortie);
+          const now = new Date();
+          const diffTime = releaseDate.getTime() - now.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          const isUrgent = diffDays <= 7;
+
+          return (
             <Link
               key={project.id}
               href={`/projets/${project.id}`}
-              className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+              className={`block rounded-2xl border p-5 transition hover:border-zinc-500 ${
+                isUrgent
+                  ? "border-yellow-500/40 bg-yellow-500/10"
+                  : "border-zinc-800 bg-black"
+              }`}
             >
-              <h3 className="text-lg font-semibold">{project.titre}</h3>
+              <p className={isUrgent ? "text-yellow-300" : "text-zinc-500"}>
+                {diffDays <= 0 ? "Sortie imminente" : `J-${diffDays}`}
+              </p>
+
+              <h3 className="mt-2 text-xl font-semibold">{project.titre}</h3>
+
               <p className="mt-2 text-sm text-zinc-500">
-                {project.date_sortie || "Date non renseignée"} • {project.statut || "Statut"}
+                {project.date_sortie} • {project.statut || "Statut"}
               </p>
             </Link>
-          ))}
-        </Panel>
-
-        <Panel title="Tâches urgentes" href="/taches">
-          {urgentTasks.length === 0 && (
-            <p className="text-zinc-500">Aucune tâche urgente.</p>
-          )}
-
-          {urgentTasks.map((task) => (
-            <Link
-              key={task.id}
-              href={`/taches/${task.id}`}
-              className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
-            >
-              <h3 className="text-lg font-semibold">{task.titre}</h3>
-              <p className="mt-2 text-sm text-zinc-500">
-                {task.deadline || "Sans deadline"} • {task.priorite}
-              </p>
-            </Link>
-          ))}
-        </Panel>
-
-        <Panel title="Relances booking" href="/booking">
-          {followUps.length === 0 && (
-            <p className="text-zinc-500">Aucune relance booking.</p>
-          )}
-
-          {followUps.map((booking) => (
-            <Link
-              key={booking.id}
-              href={`/booking/${booking.id}`}
-              className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
-            >
-              <h3 className="text-lg font-semibold">{booking.evenement}</h3>
-              <p className="mt-2 text-sm text-zinc-500">
-                {booking.prochaine_relance || "Date non renseignée"} • {booking.statut || "Statut"}
-              </p>
-            </Link>
-          ))}
-        </Panel>
-
-        <Panel title="Relances médias" href="/medias/dashboard">
-  {mediaFollowUps.length === 0 && (
-    <p className="text-zinc-500">Aucune relance média.</p>
-  )}
-
-  {mediaFollowUps.map((media) => (
-    <Link
-      key={media.id}
-      href={`/medias/${media.id}`}
-      className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
-    >
-      <h3 className="text-lg font-semibold">{media.nom}</h3>
-
-      <p className="mt-2 text-sm text-zinc-500">
-        {media.prochaine_relance || "Date non renseignée"} •{" "}
-        {media.statut || "Statut"}
-      </p>
-
-      <p className="mt-1 text-xs text-zinc-600">
-        {media.contact_nom || "Contact non renseigné"} •{" "}
-        {media.priorite || "Priorité normale"}
-      </p>
-    </Link>
-  ))}
-</Panel>
+          );
+        })}
       </div>
+    </section>
 
-<div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-  <Panel title="Top artistes rentables" href="/finances">
-    {topArtistes.length === 0 && (
-      <p className="text-zinc-500">Aucune donnée artiste.</p>
-    )}
+    <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <KpiCard label="CA du mois" value={`${stats.revenusMois.toFixed(2)} €`} tone="green" />
+      <KpiCard label="Dépenses du mois" value={`${stats.depensesMois.toFixed(2)} €`} tone="red" />
+      <KpiCard label="Résultat du mois" value={`${stats.resultatMois.toFixed(2)} €`} />
+    </div>
 
-    {topArtistes.map((artist) => (
-      <div
-        key={artist.nom}
-        className="rounded-2xl border border-zinc-800 bg-black p-5"
-      >
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold">{artist.nom}</h3>
+    <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+      <KpiCard label="Royalties à payer" value={`${stats.royaltiesDues.toFixed(2)} €`} tone="red" />
+      <KpiCard label="Royalties payées" value={`${stats.royaltiesPayees.toFixed(2)} €`} tone="green" />
+    </div>
 
-          <p
-            className={
-              artist.resultat >= 0 ? "text-green-400" : "text-red-400"
-            }
-          >
-            {artist.resultat.toFixed(2)} €
-          </p>
-        </div>
+    <RevenueChart data={revenueChartData} />
 
-        <p className="mt-2 text-sm text-zinc-500">
-          Revenus : {artist.revenus.toFixed(2)} € • Dépenses :{" "}
-          {artist.depenses.toFixed(2)} €
-        </p>
-      </div>
-    ))}
-  </Panel>
+    <div className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-4">
+      <Panel title="Sorties à venir" href="/projets">
+        {upcomingProjects.length === 0 && <p className="text-zinc-500">Aucune sortie planifiée.</p>}
 
-  <Panel title="Top projets rentables" href="/finances">
-    {topProjets.length === 0 && (
-      <p className="text-zinc-500">Aucune donnée projet.</p>
-    )}
+        {upcomingProjects.map((project) => (
+          <Link key={project.id} href={`/projets/${project.id}`} className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600">
+            <h3 className="text-lg font-semibold">{project.titre}</h3>
+            <p className="mt-2 text-sm text-zinc-500">
+              {project.date_sortie || "Date non renseignée"} • {project.statut || "Statut"}
+            </p>
+          </Link>
+        ))}
+      </Panel>
 
-    {topProjets.map((project) => (
-      <div
-        key={project.titre}
-        className="rounded-2xl border border-zinc-800 bg-black p-5"
-      >
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold">{project.titre}</h3>
+      <Panel title="Tâches urgentes" href="/taches">
+        {urgentTasks.length === 0 && <p className="text-zinc-500">Aucune tâche urgente.</p>}
 
-          <p
-            className={
-              project.resultat >= 0 ? "text-green-400" : "text-red-400"
-            }
-          >
-            {project.resultat.toFixed(2)} €
-          </p>
-        </div>
+        {urgentTasks.map((task) => (
+          <Link key={task.id} href={`/taches/${task.id}`} className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600">
+            <h3 className="text-lg font-semibold">{task.titre}</h3>
+            <p className="mt-2 text-sm text-zinc-500">
+              {task.deadline || "Sans deadline"} • {task.priorite}
+            </p>
+          </Link>
+        ))}
+      </Panel>
 
-        <p className="mt-2 text-sm text-zinc-500">
-          Revenus : {project.revenus.toFixed(2)} € • Dépenses :{" "}
-          {project.depenses.toFixed(2)} €
-        </p>
-      </div>
-    ))}
-  </Panel>
-</div>
+      <Panel title="Relances booking" href="/booking">
+        {followUps.length === 0 && <p className="text-zinc-500">Aucune relance booking.</p>}
 
-      <section className="mt-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-        <div className="mb-6 flex items-center justify-between">
-  <h2 className="text-3xl font-bold">Activité récente</h2>
+        {followUps.map((booking) => (
+          <Link key={booking.id} href={`/booking/${booking.id}`} className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600">
+            <h3 className="text-lg font-semibold">{booking.evenement}</h3>
+            <p className="mt-2 text-sm text-zinc-500">
+              {booking.prochaine_relance || "Date non renseignée"} • {booking.statut || "Statut"}
+            </p>
+          </Link>
+        ))}
+      </Panel>
 
-  <Link
-    href="/activity"
-    className="text-sm text-zinc-400 hover:text-white"
-  >
-    Voir tout →
-  </Link>
-</div>
+      <Panel title="Relances médias" href="/medias/dashboard">
+        {mediaFollowUps.length === 0 && <p className="text-zinc-500">Aucune relance média.</p>}
 
-        <div className="space-y-4">
-          {activityLogs.length === 0 && (
-            <p className="text-zinc-500">Aucune activité pour le moment.</p>
-          )}
+        {mediaFollowUps.map((media) => (
+          <Link key={media.id} href={`/medias/${media.id}`} className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600">
+            <h3 className="text-lg font-semibold">{media.nom}</h3>
+            <p className="mt-2 text-sm text-zinc-500">
+              {media.prochaine_relance || "Date non renseignée"} • {media.statut || "Statut"}
+            </p>
+            <p className="mt-1 text-xs text-zinc-600">
+              {media.contact_nom || "Contact non renseigné"} • {media.priorite || "Priorité normale"}
+            </p>
+          </Link>
+        ))}
+      </Panel>
+    </div>
 
-          {activityLogs.map((log) => (
-            <div
-              key={log.id}
-              className="rounded-2xl border border-zinc-800 bg-black p-5"
-            >
-              <p className="text-sm text-zinc-500">{log.type || "activité"}</p>
+    <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <Panel title="Top artistes rentables" href="/finances">
+        {topArtistes.length === 0 && <p className="text-zinc-500">Aucune donnée artiste.</p>}
 
-              <h3 className="mt-1 text-lg font-semibold">{log.titre}</h3>
-
-              <p className="mt-2 text-sm text-zinc-400">{log.description}</p>
-
-              <p className="mt-3 text-xs text-zinc-600">
-                {new Date(log.created_at).toLocaleString("fr-FR")}
+        {topArtistes.map((artist) => (
+          <div key={artist.nom} className="rounded-2xl border border-zinc-800 bg-black p-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">{artist.nom}</h3>
+              <p className={artist.resultat >= 0 ? "text-green-400" : "text-red-400"}>
+                {artist.resultat.toFixed(2)} €
               </p>
             </div>
-          ))}
-        </div>
-      </section>
-    </main>
-  );
+
+            <p className="mt-2 text-sm text-zinc-500">
+              Revenus : {artist.revenus.toFixed(2)} € • Dépenses : {artist.depenses.toFixed(2)} €
+            </p>
+          </div>
+        ))}
+      </Panel>
+
+      <Panel title="Top projets rentables" href="/finances">
+        {topProjets.length === 0 && <p className="text-zinc-500">Aucune donnée projet.</p>}
+
+        {topProjets.map((project) => (
+          <div key={project.titre} className="rounded-2xl border border-zinc-800 bg-black p-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">{project.titre}</h3>
+              <p className={project.resultat >= 0 ? "text-green-400" : "text-red-400"}>
+                {project.resultat.toFixed(2)} €
+              </p>
+            </div>
+
+            <p className="mt-2 text-sm text-zinc-500">
+              Revenus : {project.revenus.toFixed(2)} € • Dépenses : {project.depenses.toFixed(2)} €
+            </p>
+          </div>
+        ))}
+      </Panel>
+    </div>
+
+    <section className="mt-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-3xl font-bold">Activité récente</h2>
+
+        <Link href="/activity" className="text-sm text-zinc-400 hover:text-white">
+          Voir tout →
+        </Link>
+      </div>
+
+      <div className="space-y-4">
+        {activityLogs.length === 0 && (
+          <p className="text-zinc-500">Aucune activité pour le moment.</p>
+        )}
+
+        {activityLogs.map((log) => (
+          <div key={log.id} className="rounded-2xl border border-zinc-800 bg-black p-5">
+            <p className="text-sm text-zinc-500">{log.type || "activité"}</p>
+            <h3 className="mt-1 text-lg font-semibold">{log.titre}</h3>
+            <p className="mt-2 text-sm text-zinc-400">{log.description}</p>
+            <p className="mt-3 text-xs text-zinc-600">
+              {new Date(log.created_at).toLocaleString("fr-FR")}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  </main>
+);
 }
 
 function KpiCard({
