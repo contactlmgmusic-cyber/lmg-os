@@ -1,4 +1,7 @@
 import Link from "next/link";
+import CandidatureConvertClient from "@/components/CandidatureConvertClient";
+
+export const dynamic = "force-dynamic";
 
 export default async function ConvertirPage({
   params,
@@ -16,13 +19,7 @@ export default async function ConvertirPage({
         ← Retour à la candidature
       </Link>
 
-      <h1 className="mt-8 text-5xl font-bold">
-        Conversion artiste
-      </h1>
-
-      <p className="mt-4 text-zinc-400">
-        Candidature : {id}
-      </p>
+      <CandidatureConvertClient id={id} />
     </main>
   );
 }
