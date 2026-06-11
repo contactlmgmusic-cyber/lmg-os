@@ -220,9 +220,6 @@ export default function CandidaturesPage() {
                                         "Artiste non renseigné"}
                                     </h3>
 
-                                    <p className="text-red-500">
-  DEBUG : /dashboard/candidatures/{candidature.id}
-</p>
 
                                     <Link
   href={`/dashboard/candidatures/${candidature.id}`}
