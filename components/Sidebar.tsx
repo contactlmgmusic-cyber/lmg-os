@@ -37,7 +37,6 @@ export default function Sidebar() {
       const { count } = await supabaseBrowser
         .from("notifications")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
         .eq("lu", false);
 
       setUnreadNotifications(count || 0);
