@@ -7,19 +7,9 @@ export const dynamic = "force-dynamic";
 
 export default async function InfluenceursPage() {
   const { data: influenceurs, error } = await supabase
-    .from("influenceurs")
-    .select(`
-      *,
-      artistes (
-        id,
-        nom
-      ),
-      projets (
-        id,
-        titre
-      )
-    `)
-    .order("created_at", { ascending: false });
+  .from("influenceurs")
+  .select("*")
+  .order("created_at", { ascending: false });
 
   if (error) {
     return (
