@@ -47,6 +47,10 @@ export default function CandidatureConvertClient({ id }: { id: string }) {
 
     setConverting(true);
 
+    const {
+  data: { user },
+} = await supabaseBrowser.auth.getUser();
+
     const { data: existingArtist } = await supabaseBrowser
   .from("artistes")
   .select("id, nom")
@@ -149,6 +153,7 @@ await supabaseBrowser.from("taches").insert([
     priorite: "Haute",
     artiste_id: artiste.id,
     projet_id: onboardingProject?.id || null,
+    responsable_id: user?.id || null,
   },
   {
     titre: `Contrat management - ${artiste.nom}`,
@@ -157,6 +162,7 @@ await supabaseBrowser.from("taches").insert([
     priorite: "Haute",
     artiste_id: artiste.id,
     projet_id: onboardingProject?.id || null,
+    responsable_id: user?.id || null,
   },
   {
     titre: `Audit catalogue - ${artiste.nom}`,
@@ -165,6 +171,7 @@ await supabaseBrowser.from("taches").insert([
     priorite: "Moyenne",
     artiste_id: artiste.id,
     projet_id: onboardingProject?.id || null,
+    responsable_id: user?.id || null,
   },
   {
     titre: `Audit réseaux sociaux - ${artiste.nom}`,
@@ -173,6 +180,7 @@ await supabaseBrowser.from("taches").insert([
     priorite: "Moyenne",
     artiste_id: artiste.id,
     projet_id: onboardingProject?.id || null,
+    responsable_id: user?.id || null,
   },
   {
     titre: `Shooting / contenus - ${artiste.nom}`,
@@ -181,6 +189,7 @@ await supabaseBrowser.from("taches").insert([
     priorite: "Moyenne",
     artiste_id: artiste.id,
     projet_id: onboardingProject?.id || null,
+    responsable_id: user?.id || null,
   },
   {
     titre: `Stratégie 90 jours - ${artiste.nom}`,
@@ -189,6 +198,7 @@ await supabaseBrowser.from("taches").insert([
     priorite: "Haute",
     artiste_id: artiste.id,
     projet_id: onboardingProject?.id || null,
+    responsable_id: user?.id || null,
   },
   {
     titre: `Préparer première sortie - ${artiste.nom}`,
@@ -197,6 +207,7 @@ await supabaseBrowser.from("taches").insert([
     priorite: "Haute",
     artiste_id: artiste.id,
     projet_id: onboardingProject?.id || null,
+    responsable_id: user?.id || null,
   },
 ]);
 
