@@ -128,13 +128,66 @@ if (onboardingProjectError) {
   setConverting(false);
   return;
 }
-
 const { error: onboardingTasksError } = await supabaseBrowser
   .from("taches")
   .insert([
     {
       titre: `Call découverte - ${artiste.nom}`,
       description: "Organiser un premier échange stratégique avec l’artiste.",
+      statut: "À faire",
+      priorite: "Haute",
+      projet_id: onboardingProject?.id || null,
+      responsable_id: user?.id || null,
+      assigned_to: user?.id || null,
+    },
+    {
+      titre: `Contrat management - ${artiste.nom}`,
+      description: "Préparer et envoyer le contrat de collaboration LMG.",
+      statut: "À faire",
+      priorite: "Haute",
+      projet_id: onboardingProject?.id || null,
+      responsable_id: user?.id || null,
+      assigned_to: user?.id || null,
+    },
+    {
+      titre: `Audit catalogue - ${artiste.nom}`,
+      description: "Analyser les titres déjà sortis, les masters et les prochaines sorties possibles.",
+      statut: "À faire",
+      priorite: "Moyenne",
+      projet_id: onboardingProject?.id || null,
+      responsable_id: user?.id || null,
+      assigned_to: user?.id || null,
+    },
+    {
+      titre: `Audit réseaux sociaux - ${artiste.nom}`,
+      description: "Analyser Instagram, TikTok, YouTube, Spotify et l’identité visuelle.",
+      statut: "À faire",
+      priorite: "Moyenne",
+      projet_id: onboardingProject?.id || null,
+      responsable_id: user?.id || null,
+      assigned_to: user?.id || null,
+    },
+    {
+      titre: `Shooting / contenus - ${artiste.nom}`,
+      description: "Prévoir photos, vidéos courtes et contenus de présentation.",
+      statut: "À faire",
+      priorite: "Moyenne",
+      projet_id: onboardingProject?.id || null,
+      responsable_id: user?.id || null,
+      assigned_to: user?.id || null,
+    },
+    {
+      titre: `Stratégie 90 jours - ${artiste.nom}`,
+      description: "Définir les objectifs, le positionnement et les premières actions de développement.",
+      statut: "À faire",
+      priorite: "Haute",
+      projet_id: onboardingProject?.id || null,
+      responsable_id: user?.id || null,
+      assigned_to: user?.id || null,
+    },
+    {
+      titre: `Préparer première sortie - ${artiste.nom}`,
+      description: "Identifier le premier projet à développer avec LMG.",
       statut: "À faire",
       priorite: "Haute",
       projet_id: onboardingProject?.id || null,
