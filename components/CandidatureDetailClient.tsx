@@ -44,6 +44,12 @@ export default function CandidatureDetailClient({ id }: { id: string }) {
   }
 
   return (
+  <main className="min-h-screen bg-red-600 p-10 text-white">
+    <h1>TEST CANDIDATURE DETAIL CLIENT</h1>
+  </main>
+);
+
+  return (
     <main className="min-h-screen bg-black p-10 text-white">
       <Link
         href="/dashboard/candidatures"
