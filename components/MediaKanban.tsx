@@ -10,6 +10,7 @@ import {
 
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { notifyRoles } from "@/lib/notify";
 
 const statuses = [
   "À contacter",
@@ -84,27 +85,45 @@ export default function MediaKanban({ medias }: { medias: any[] }) {
   );
 
   async function onDragEnd(result: DropResult) {
-    if (!result.destination) return;
+  if (!result.destination) return;
 
-    const mediaId = result.draggableId;
-    const newStatus = result.destination.droppableId;
+  const mediaId = result.draggableId;
+  const newStatus = result.destination.droppableId;
 
-    const { error } = await supabase
-      .from("medias")
-      .update({
-        statut: newStatus,
-        derniere_relance:
-          newStatus === "Relancé" ? new Date().toISOString() : undefined,
-      })
-      .eq("id", mediaId);
+  const media = medias.find((item) => item.id === mediaId);
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
+  const { error } = await supabase
+    .from("medias")
+    .update({
+      statut: newStatus,
+      derniere_relance:
+        newStatus === "Relancé" ? new Date().toISOString() : null,
+    })
+    .eq("id", mediaId);
 
-    router.refresh();
+  if (error) {
+    alert(error.message);
+    return;
   }
+
+  if (newStatus === "Publié") {
+    await supabase.from("activity_logs").insert({
+      type: "Média",
+      titre: "Publication média obtenue",
+      description: `${media?.nom || "Un média"} est passé en statut Publié`,
+    });
+
+    await notifyRoles({
+      roles: ["super_admin", "manager"],
+      type: "Média",
+      titre: "Publication média obtenue",
+      description: `${media?.nom || "Un média"} est passé en statut Publié`,
+      link: `/medias/${mediaId}`,
+    });
+  }
+
+  router.refresh();
+}
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
