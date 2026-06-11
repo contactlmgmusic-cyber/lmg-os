@@ -47,6 +47,27 @@ export default function CandidatureConvertClient({ id }: { id: string }) {
 
     setConverting(true);
 
+    const { data: existingArtist } = await supabaseBrowser
+  .from("artistes")
+  .select("id, nom")
+  .eq("nom", candidature.nom_artiste)
+  .maybeSingle();
+
+if (existingArtist) {
+  alert("Cet artiste existe déjà dans le roster.");
+
+  await supabaseBrowser
+    .from("candidatures")
+    .update({
+      statut: "Signé",
+    })
+    .eq("id", candidature.id);
+
+  router.push(`/artistes/${existingArtist.id}`);
+  router.refresh();
+  return;
+}
+
     const { data: artiste, error } = await supabaseBrowser
       .from("artistes")
       .insert({
