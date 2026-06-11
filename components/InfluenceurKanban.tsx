@@ -9,6 +9,7 @@ import {
 } from "@hello-pangea/dnd";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { notifyRoles } from "@/lib/notify";
 
 const statuses = [
   "À contacter",
@@ -111,6 +112,22 @@ export default function InfluenceurKanban({
       alert(error.message);
       return;
     }
+
+    if (newStatus === "Publié") {
+  await supabaseBrowser.from("activity_logs").insert({
+    type: "Influenceur",
+    titre: "Publication influenceur obtenue",
+    description: "Un influenceur est passé en statut Publié",
+  });
+
+  await notifyRoles({
+    roles: ["super_admin", "manager"],
+    type: "Influenceur",
+    titre: "Publication influenceur obtenue",
+    description: "Un influenceur est passé en statut Publié",
+    link: `/influenceurs/${influenceurId}`,
+  });
+}
 
     router.refresh();
   }
