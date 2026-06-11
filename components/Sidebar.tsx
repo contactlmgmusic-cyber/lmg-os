@@ -16,6 +16,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [role, setRole] = useState<string | null>(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [newCandidatures, setNewCandidatures] = useState(0);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -37,9 +38,16 @@ export default function Sidebar() {
         .from("notifications")
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id)
-        .eq("is_read", false);
+        .eq("lu", false);
 
       setUnreadNotifications(count || 0);
+
+      const { count: candidaturesCount } = await supabaseBrowser
+  .from("candidatures")
+  .select("*", { count: "exact", head: true })
+  .eq("statut", "nouvelle");
+
+setNewCandidatures(candidaturesCount || 0);
     }
 
     fetchUserData();
@@ -155,6 +163,7 @@ export default function Sidebar() {
           {links.map((link) => {
             const active = pathname === link.href;
             const isNotifications = link.href === "/notifications";
+            const isCandidatures = link.href === "/dashboard/candidatures";
 
             return (
               <Link
@@ -179,6 +188,16 @@ export default function Sidebar() {
                     {unreadNotifications}
                   </span>
                 )}
+
+                {isCandidatures && newCandidatures > 0 && (
+  <span
+    className={`rounded-full px-2 py-1 text-xs font-bold ${
+      active ? "bg-black text-white" : "bg-yellow-500 text-black"
+    }`}
+  >
+    {newCandidatures}
+  </span>
+)}
               </Link>
             );
           })}

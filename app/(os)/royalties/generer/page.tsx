@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { notifyRoles } from "@/lib/notify";
 
 export default function GenererRoyaltiesPage() {
   const [splits, setSplits] = useState<any[]>([]);
@@ -132,6 +133,14 @@ export default function GenererRoyaltiesPage() {
       titre: "Royalties générées",
       description: `${selectedSplit.titre} • ${revenu.toFixed(2)} €`,
     });
+
+await notifyRoles({
+  roles: ["super_admin", "admin"],
+  type: "Royalties",
+  titre: "Royalties générées",
+  description: `${selectedSplit.titre} • ${revenu.toFixed(2)} €`,
+  link: "/royalties",
+});
 
     setMessage("Royalties générées avec succès.");
     setRevenuTotal("");
