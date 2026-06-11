@@ -24,6 +24,8 @@ export default function DashboardPage() {
     bookingsConfirmes: 0,
     mediasRelance: 0,
     nouvellesCandidatures: 0,
+    candidaturesEnEtude: 0,
+    candidaturesSignees: 0,
     revenusMois: 0,
     depensesMois: 0,
     resultatMois: 0,
@@ -99,7 +101,17 @@ const in7DaysString = in7Days.toISOString().split("T")[0];
       const { count: candidaturesCount } = await supabaseBrowser
   .from("candidatures")
   .select("*", { count: "exact", head: true })
-  .eq("statut", "nouvelle");
+  .eq("statut", "Nouvelle");
+
+  const { count: candidaturesEnEtudeCount } = await supabaseBrowser
+  .from("candidatures")
+  .select("*", { count: "exact", head: true })
+  .eq("statut", "En étude");
+
+const { count: candidaturesSigneesCount } = await supabaseBrowser
+  .from("candidatures")
+  .select("*", { count: "exact", head: true })
+  .eq("statut", "Signé");
 
   const { data: candidatures } = await supabaseBrowser
   .from("candidatures")
@@ -298,6 +310,8 @@ const royaltiesPayees =
       mediasRelance: mediasRelanceCount || 0,
       mediasRelanceAujourdhui: mediasRelanceAujourdhui || 0,
       nouvellesCandidatures: candidaturesCount || 0,
+      candidaturesEnEtude: candidaturesEnEtudeCount || 0,
+      candidaturesSignees: candidaturesSigneesCount || 0,
       revenusMois: revenus,
       depensesMois: depenses,
       resultatMois: revenus - depenses,
@@ -610,15 +624,8 @@ const healthTone =
         value={stats.nouvellesCandidatures}
       />
 
-      <MiniStat
-        label="En étude"
-        value={0}
-      />
-
-      <MiniStat
-        label="Signées"
-        value={0}
-      />
+      <MiniStat label="En étude" value={stats.candidaturesEnEtude} />
+      <MiniStat label="Signées" value={stats.candidaturesSignees} />
     </div>
 
     {latestCandidatures.length === 0 && (
