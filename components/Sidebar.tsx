@@ -19,38 +19,55 @@ export default function Sidebar() {
   const [newCandidatures, setNewCandidatures] = useState(0);
 
   useEffect(() => {
-    async function fetchUserData() {
-      const {
-        data: { user },
-      } = await supabaseBrowser.auth.getUser();
+  async function fetchUserData() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
 
-      if (!user) return;
+    if (!user) return;
 
-      const { data: profile } = await supabaseBrowser
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-      setRole(profile?.role || null);
+    setRole(profile?.role || null);
 
+    async function loadUnreadCount() {
       const { count } = await supabaseBrowser
         .from("notifications")
         .select("*", { count: "exact", head: true })
+        .eq("user_id", user?.id)
         .eq("lu", false);
 
       setUnreadNotifications(count || 0);
-
-      const { count: candidaturesCount } = await supabaseBrowser
-  .from("candidatures")
-  .select("*", { count: "exact", head: true })
-  .eq("statut", "nouvelle");
-
-setNewCandidatures(candidaturesCount || 0);
     }
 
-    fetchUserData();
-  }, []);
+    await loadUnreadCount();
+
+    const channel = supabaseBrowser
+      .channel("sidebar-notifications-count")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+        },
+        async () => {
+          await loadUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabaseBrowser.removeChannel(channel);
+    };
+  }
+
+  fetchUserData();
+}, []);
 
   const superAdminLinks = [
     { href: "/dashboard", label: "Dashboard" },
