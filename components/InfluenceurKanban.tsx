@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   DragDropContext,
   Droppable,
   Draggable,
   DropResult,
 } from "@hello-pangea/dnd";
-import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { notifyRoles } from "@/lib/notify";
 
@@ -80,67 +80,95 @@ export default function InfluenceurKanban({
 }: {
   influenceurs: any[];
 }) {
-  const router = useRouter();
-
-  const colonnes = Object.fromEntries(
-  statuses.map((status) => [
-    status,
-    influenceurs.filter((item) => {
-      const itemStatus = item.statut?.trim() || "À contacter";
-
-      if (status === "À contacter") {
-        return !statuses.includes(itemStatus) || itemStatus === "À contacter";
-      }
-
-      return itemStatus === status;
-    }),
-  ])
-);
-
-  async function onDragEnd(result: DropResult) {
-  if (!result.destination) return;
-
-  const influenceurId = result.draggableId;
-  const newStatus = result.destination.droppableId;
-
-  const influenceur = influenceurs.find(
-    (item) => item.id === influenceurId
+  const [localInfluenceurs, setLocalInfluenceurs] = useState<any[]>(
+    influenceurs || []
   );
 
-  const { error } = await supabaseBrowser
-    .from("influenceurs")
-    .update({
-      statut: newStatus,
-      prochaine_relance:
-        newStatus === "Relancé"
-          ? new Date().toISOString().split("T")[0]
-          : null,
-    })
-    .eq("id", influenceurId);
+  useEffect(() => {
+    setLocalInfluenceurs(influenceurs || []);
+  }, [influenceurs]);
 
-  if (error) {
-    alert(error.message);
-    return;
+  const colonnes = Object.fromEntries(
+    statuses.map((status) => [
+      status,
+      localInfluenceurs.filter((item) => {
+        const itemStatus = item.statut?.trim() || "À contacter";
+
+        if (status === "À contacter") {
+          return !statuses.includes(itemStatus) || itemStatus === "À contacter";
+        }
+
+        return itemStatus === status;
+      }),
+    ])
+  );
+
+  async function onDragEnd(result: DropResult) {
+    if (!result.destination) return;
+
+    const influenceurId = result.draggableId;
+    const newStatus = result.destination.droppableId;
+    const previousInfluenceurs = localInfluenceurs;
+
+    const influenceur = localInfluenceurs.find(
+      (item) => item.id === influenceurId
+    );
+
+    if (!influenceur) return;
+
+    if (influenceur.statut === newStatus) return;
+
+    const nextRelance =
+      newStatus === "Relancé"
+        ? new Date().toISOString().split("T")[0]
+        : null;
+
+    setLocalInfluenceurs((current) =>
+      current.map((item) =>
+        item.id === influenceurId
+          ? {
+              ...item,
+              statut: newStatus,
+              prochaine_relance: nextRelance,
+            }
+          : item
+      )
+    );
+
+    const { error } = await supabaseBrowser
+      .from("influenceurs")
+      .update({
+        statut: newStatus,
+        prochaine_relance: nextRelance,
+      })
+      .eq("id", influenceurId);
+
+    if (error) {
+      setLocalInfluenceurs(previousInfluenceurs);
+      alert(error.message);
+      return;
+    }
+
+    if (newStatus === "Publié") {
+      await supabaseBrowser.from("activity_logs").insert({
+        type: "Influenceur",
+        titre: "Publication influenceur obtenue",
+        description: `${
+          influenceur?.nom || "Un influenceur"
+        } est passé en statut Publié`,
+      });
+
+      await notifyRoles({
+        roles: ["super_admin", "manager"],
+        type: "Influenceur",
+        titre: "Publication influenceur obtenue",
+        description: `${
+          influenceur?.nom || "Un influenceur"
+        } est passé en statut Publié`,
+        link: `/influenceurs/${influenceurId}`,
+      });
+    }
   }
-
-  if (newStatus === "Publié") {
-    await supabaseBrowser.from("activity_logs").insert({
-      type: "Influenceur",
-      titre: "Publication influenceur obtenue",
-      description: `${influenceur?.nom || "Un influenceur"} est passé en statut Publié`,
-    });
-
-    await notifyRoles({
-      roles: ["super_admin", "manager"],
-      type: "Influenceur",
-      titre: "Publication influenceur obtenue",
-      description: `${influenceur?.nom || "Un influenceur"} est passé en statut Publié`,
-      link: `/influenceurs/${influenceurId}`,
-    });
-  }
-
-  router.refresh();
-}
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -219,8 +247,15 @@ export default function InfluenceurKanban({
                             </div>
 
                             <div className="space-y-1 text-sm text-zinc-400">
-                              <p>Audience : {formatNumber(influenceur.audience)}</p>
-                              <p>Tarif : {Number(influenceur.tarif || 0).toFixed(2)} €</p>
+                              <p>
+                                Audience :{" "}
+                                {formatNumber(influenceur.audience)}
+                              </p>
+
+                              <p>
+                                Tarif :{" "}
+                                {Number(influenceur.tarif || 0).toFixed(2)} €
+                              </p>
 
                               {influenceur.categorie && (
                                 <p>Catégorie : {influenceur.categorie}</p>
@@ -235,7 +270,9 @@ export default function InfluenceurKanban({
                               )}
 
                               {relanceInfo && (
-                                <p className={`pt-2 text-xs ${relanceInfo.className}`}>
+                                <p
+                                  className={`pt-2 text-xs ${relanceInfo.className}`}
+                                >
                                   {relanceInfo.label}
                                 </p>
                               )}
