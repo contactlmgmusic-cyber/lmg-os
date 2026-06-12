@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
+import { notifyRoles } from "@/lib/notify";
 
 export default function NouveauBookingPage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function NouveauBookingPage() {
 
   useEffect(() => {
     async function fetchArtistes() {
-      const { data } = await supabase
+      const { data } = await supabaseBrowser
         .from("artistes")
         .select("*")
         .order("nom", { ascending: true });
@@ -35,22 +36,58 @@ export default function NouveauBookingPage() {
   async function ajouterBooking(e: React.FormEvent) {
     e.preventDefault();
 
-    const { error } = await supabase.from("bookings").insert({
-      evenement,
-      organisateur: organisateur || null,
-      ville: ville || null,
-      date_event: dateEvent || null,
-      cachet: cachet ? Number(cachet) : null,
-      statut: statut || "Prospect",
-      contact: contact || null,
-      notes: notes || null,
-      artiste_id: artisteId || null,
-      prochaine_relance: prochaineRelance || null,
-    });
+    const finalStatut = statut || "Prospect";
+
+    const { data, error } = await supabaseBrowser
+      .from("bookings")
+      .insert({
+        evenement,
+        organisateur: organisateur || null,
+        ville: ville || null,
+        date_event: dateEvent || null,
+        cachet: cachet ? Number(cachet) : null,
+        statut: finalStatut,
+        contact: contact || null,
+        notes: notes || null,
+        artiste_id: artisteId || null,
+        prochaine_relance: prochaineRelance || null,
+      })
+      .select("id")
+      .single();
 
     if (error) {
       alert(error.message);
       return;
+    }
+
+    await supabaseBrowser.from("activity_logs").insert({
+      type: "Booking",
+      titre: "Nouveau booking créé",
+      description: `${evenement} • ${ville || "Ville non renseignée"}`,
+    });
+
+    await notifyRoles({
+      roles: ["super_admin", "manager"],
+      type: "Booking",
+      titre: "Nouveau booking créé",
+      description: `${evenement} • ${ville || "Ville non renseignée"}`,
+      link: `/booking/${data.id}`,
+    });
+
+    if (finalStatut === "Confirmé") {
+      await supabaseBrowser.from("activity_logs").insert({
+        type: "Booking",
+        titre: "Booking confirmé",
+        description: `${evenement} • ${dateEvent || "Date non renseignée"}`,
+      });
+
+      await notifyRoles({
+        roles: ["super_admin", "manager"],
+        type: "Booking",
+        titre: "Booking confirmé",
+        description: `${evenement} • ${dateEvent || "Date non renseignée"}`,
+        link: `/booking/${data.id}`,
+      });
     }
 
     router.push("/booking");
@@ -141,12 +178,12 @@ export default function NouveauBookingPage() {
           onChange={(e) => setNotes(e.target.value)}
         />
 
-<input
-  type="date"
-  value={prochaineRelance}
-  onChange={(e) => setProchaineRelance(e.target.value)}
-  className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
-/>
+        <input
+          type="date"
+          value={prochaineRelance}
+          onChange={(e) => setProchaineRelance(e.target.value)}
+          className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4 text-white"
+        />
 
         <button
           type="submit"
