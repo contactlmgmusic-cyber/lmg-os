@@ -77,6 +77,8 @@ export default function Sidebar() {
     { href: "/artistes", label: "Artistes" },
     { href: "/projets", label: "Projets" },
     { href: "/booking", label: "Booking" },
+    { href: "/sorties", label: "Sorties" },
+    { href: "/analytics", label: "Analytics" },
     { href: "/partenaires", label: "CRM Partenaires" },
     { href: "/influenceurs", label: "CRM Influenceurs" },
     { href: "/medias", label: "CRM Médias" },
