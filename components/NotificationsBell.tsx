@@ -6,9 +6,9 @@ import { supabaseBrowser } from "@/lib/supabase-browser";
 
 type Notification = {
   id: string;
+  type: string | null;
   titre: string;
   description: string | null;
-  type: string | null;
   lien: string | null;
   lu: boolean;
   created_at: string;
@@ -23,16 +23,53 @@ export default function NotificationsBell() {
       .from("notifications")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(10);
+      .limit(20);
 
     setNotifications(data || []);
+  }
+
+  async function markAsRead(id: string) {
+    await supabaseBrowser
+      .from("notifications")
+      .update({ lu: true })
+      .eq("id", id);
+
+    await loadNotifications();
+  }
+
+  async function markAllAsRead() {
+    await supabaseBrowser
+      .from("notifications")
+      .update({ lu: true })
+      .eq("lu", false);
+
+    await loadNotifications();
+  }
+
+  async function deleteNotification(id: string) {
+    await supabaseBrowser
+      .from("notifications")
+      .delete()
+      .eq("id", id);
+
+    await loadNotifications();
+  }
+
+  async function openNotification(id: string) {
+    await supabaseBrowser
+      .from("notifications")
+      .update({ lu: true })
+      .eq("id", id);
+
+    await loadNotifications();
+    setOpen(false);
   }
 
   useEffect(() => {
     loadNotifications();
 
     const channel = supabaseBrowser
-      .channel("notifications-realtime")
+      .channel("notifications-bell")
       .on(
         "postgres_changes",
         {
@@ -51,33 +88,16 @@ export default function NotificationsBell() {
     };
   }, []);
 
-  const unreadCount = notifications.filter((notification) => !notification.lu)
-    .length;
-
-async function markAsRead(id: string) {
-  await supabaseBrowser
-    .from("notifications")
-    .update({ lu: true })
-    .eq("id", id);
-
-  loadNotifications();
-}
-
-async function markAllAsRead() {
-  await supabaseBrowser
-    .from("notifications")
-    .update({ lu: true })
-    .eq("lu", false);
-
-  loadNotifications();
-}
+  const unreadCount = notifications.filter(
+    (notification) => !notification.lu
+  ).length;
 
   return (
     <div className="relative">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="relative rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-white hover:bg-zinc-800"
+        className="relative rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-white hover:bg-zinc-800"
       >
         🔔
 
@@ -90,45 +110,84 @@ async function markAllAsRead() {
 
       {open && (
         <div className="fixed left-80 top-24 z-[9999] max-h-[75vh] w-[420px] overflow-y-auto rounded-3xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl">
-          <h3 className="mb-4 text-lg font-bold text-white">Notifications</h3>
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h3 className="text-lg font-bold text-white">Notifications</h3>
+
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="text-sm text-zinc-500 hover:text-white"
+            >
+              Fermer
+            </button>
+          </div>
 
           {unreadCount > 0 && (
-  <button
-    type="button"
-    onClick={markAllAsRead}
-    className="mb-4 w-full rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
-  >
-    Tout marquer comme lu
-  </button>
-)}
+            <button
+              type="button"
+              onClick={markAllAsRead}
+              className="mb-4 w-full rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+            >
+              Tout marquer comme lu
+            </button>
+          )}
 
           <div className="space-y-3">
             {notifications.length === 0 && (
-              <p className="text-sm text-zinc-500">Aucune notification.</p>
+              <p className="text-sm text-zinc-500">
+                Aucune notification.
+              </p>
             )}
 
             {notifications.map((notification) => (
-              <Link
+              <div
                 key={notification.id}
-                href={notification.lien || "#"}
-                className={`block rounded-xl border p-4 text-sm transition hover:border-zinc-600 ${
+                className={`rounded-xl border p-4 text-sm transition ${
                   notification.lu
                     ? "border-zinc-800 bg-black text-zinc-400"
                     : "border-red-500/40 bg-red-500/10 text-white"
                 }`}
               >
-                <p className="font-semibold">{notification.titre}</p>
-
-                {notification.description && (
-                  <p className="mt-1 text-zinc-400">
-                    {notification.description}
+                <Link
+                  href={notification.lien || "#"}
+                  onClick={() => openNotification(notification.id)}
+                  className="block"
+                >
+                  <p className="font-semibold">
+                    {notification.titre}
                   </p>
-                )}
 
-                <p className="mt-2 text-xs text-zinc-600">
-                  {new Date(notification.created_at).toLocaleString("fr-FR")}
-                </p>
-              </Link>
+                  {notification.description && (
+                    <p className="mt-1 text-zinc-400">
+                      {notification.description}
+                    </p>
+                  )}
+
+                  <p className="mt-2 text-xs text-zinc-600">
+                    {new Date(notification.created_at).toLocaleString("fr-FR")}
+                  </p>
+                </Link>
+
+                <div className="mt-3 flex gap-2">
+                  {!notification.lu && (
+                    <button
+                      type="button"
+                      onClick={() => markAsRead(notification.id)}
+                      className="rounded-lg border border-zinc-700 px-3 py-1 text-xs text-zinc-300 hover:bg-zinc-800"
+                    >
+                      Marquer comme lu
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => deleteNotification(notification.id)}
+                    className="rounded-lg border border-red-500/40 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         </div>
