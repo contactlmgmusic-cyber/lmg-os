@@ -46,11 +46,7 @@ export function canViewFinances(role?: string | null) {
 }
 
 export function canGenerateRoyalties(role?: string | null) {
-  return (
-    role === ROLES.SUPER_ADMIN ||
-    role === ROLES.ADMIN ||
-    role === ROLES.MANAGER
-  );
+  return role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN;
 }
 
 export function canViewRoyalties(role?: string | null) {
@@ -58,9 +54,9 @@ export function canViewRoyalties(role?: string | null) {
 }
 
 export function canUseAssistant(role?: string | null) {
-  return (
-    role === ROLES.SUPER_ADMIN ||
-    role === ROLES.ADMIN ||
-    role === ROLES.MANAGER
-  );
+  return role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN;
+}
+
+export function canManagePartenaires(role?: string | null) {
+  return role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN;
 }
