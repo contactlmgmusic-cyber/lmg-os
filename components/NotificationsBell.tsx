@@ -19,6 +19,8 @@ export default function NotificationsBell() {
   const [open, setOpen] = useState(false);
 
   async function loadNotifications() {
+  console.log("LOAD NOTIFICATIONS");
+
   const {
     data: { user },
   } = await supabaseBrowser.auth.getUser();
@@ -85,27 +87,30 @@ export default function NotificationsBell() {
   }
 
   useEffect(() => {
-    loadNotifications();
+  loadNotifications();
 
-    const channel = supabaseBrowser
-      .channel("notifications-bell")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "notifications",
-        },
-        () => {
-          loadNotifications();
-        }
-      )
-      .subscribe();
+  const channel = supabaseBrowser
+    .channel(`notifications-${Date.now()}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "notifications",
+      },
+      async () => {
+        console.log("NOTIFICATION CHANGE RECEIVED");
+        await loadNotifications();
+      }
+    )
+    .subscribe((status) => {
+      console.log("NOTIFICATIONS REALTIME =", status);
+    });
 
-    return () => {
-      supabaseBrowser.removeChannel(channel);
-    };
-  }, []);
+  return () => {
+    supabaseBrowser.removeChannel(channel);
+  };
+}, []);
 
   const unreadCount = notifications.filter(
     (notification) => !notification.lu
