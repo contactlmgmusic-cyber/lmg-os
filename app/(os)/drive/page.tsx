@@ -1,164 +1,147 @@
-import { supabase } from "@/lib/supabase";
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
-import { ROLES } from "@/lib/roles";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useEffect, useState } from "react";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 
-function getAssetCategory(asset: any) {
-  return asset.categorie || "Autre";
-}
-
-function getAssetPreview(asset: any) {
-  const type = asset.type || "";
-
-  if (type.startsWith("image/")) {
-    return (
-      <img
-        src={asset.url}
-        alt={asset.nom}
-        className="h-56 w-full rounded-2xl object-cover"
-      />
-    );
-  }
-
-  if (type.startsWith("audio/")) {
-    return (
-      <div className="rounded-2xl border border-zinc-800 bg-black p-4">
-        <p className="mb-3 text-sm text-zinc-500">Audio</p>
-        <audio controls className="w-full">
-          <source src={asset.url} type={type} />
-        </audio>
-      </div>
-    );
-  }
-
-  if (type.startsWith("video/")) {
-    return (
-      <video controls className="h-56 w-full rounded-2xl object-cover">
-        <source src={asset.url} type={type} />
-      </video>
-    );
-  }
-
-  if (type === "application/pdf") {
-    return (
-      <div className="flex h-56 items-center justify-center rounded-2xl border border-zinc-800 bg-black text-zinc-500">
-        PDF Document
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex h-56 items-center justify-center rounded-2xl border border-zinc-800 bg-black text-zinc-500">
-      Fichier
-    </div>
-  );
-}
-
-export default async function DrivePage() {
-  const cookieStore = await cookies();
-
-  const supabaseAuth = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll() {},
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabaseAuth.auth.getUser();
-
-  const { data: currentProfile } = user
-    ? await supabase
-        .from("profiles")
-        .select("role, artiste_id")
-        .eq("id", user.id)
-        .single()
-    : { data: null };
-
-  let assetsQuery = supabase
-    .from("assets")
-    .select(`
-      *,
-      projets (
-        id,
-        titre,
-        artiste_id,
-        artistes (
-          id,
-          nom,
-          manager_id
-        )
-      ),
-      taches (
-        id,
-        titre
-      )
-    `)
-    .order("created_at", { ascending: false });
-
-  if (currentProfile?.role === ROLES.MANAGER && user?.id) {
-  const { data: managedArtists } = await supabase
-    .from("artistes")
-    .select("id")
-    .eq("manager_id", user.id);
-
-  const managedArtistIds = managedArtists?.map((a: any) => a.id) || [];
-
-  if (managedArtistIds.length === 0) {
-    assetsQuery = assetsQuery.eq("id", "00000000-0000-0000-0000-000000000000");
-  } else {
-    assetsQuery = assetsQuery.in("artiste_id", managedArtistIds);
-  }
-}
-
-if (currentProfile?.role === ROLES.ARTISTE && currentProfile.artiste_id) {
-  assetsQuery = assetsQuery.eq("artiste_id", currentProfile.artiste_id);
-}
-
-if (currentProfile?.role === ROLES.PRESTATAIRE) {
-  assetsQuery = assetsQuery.eq("id", "00000000-0000-0000-0000-000000000000");
-}
-
-  const { data: assets, error } = await assetsQuery;
-
-  if (error) {
-    return (
-      <main className="p-10 text-white">
-        <p className="text-red-400">{error.message}</p>
-      </main>
-    );
-  }
-
-  const groupedAssets =
-    assets?.reduce((acc: any, asset: any) => {
-      const category = getAssetCategory(asset);
-
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-
-      acc[category].push(asset);
-      return acc;
-    }, {}) || {};
-
-  const categories = [
-  "Cover",
+const categories = [
+  "Tous",
   "Master",
+  "Cover",
   "Clip",
+  "Photo presse",
+  "EPK",
   "Contrat",
-  "Press Kit",
-  "Promo",
+  "Document interne",
   "Autre",
 ];
+
+export default function DrivePage() {
+  const [files, setFiles] = useState<any[]>([]);
+  const [artistes, setArtistes] = useState<any[]>([]);
+  const [projets, setProjets] = useState<any[]>([]);
+
+  const [nom, setNom] = useState("");
+  const [categorie, setCategorie] = useState("Master");
+  const [artisteId, setArtisteId] = useState("");
+  const [projetId, setProjetId] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filter, setFilter] = useState("Tous");
+  const [loading, setLoading] = useState(false);
+
+  async function loadData() {
+    const { data: filesData } = await supabaseBrowser
+      .from("drive_files")
+      .select(`
+        *,
+        artistes ( id, nom ),
+        projets ( id, titre )
+      `)
+      .order("created_at", { ascending: false });
+
+    const { data: artistesData } = await supabaseBrowser
+      .from("artistes")
+      .select("id, nom")
+      .order("nom");
+
+    const { data: projetsData } = await supabaseBrowser
+      .from("projets")
+      .select("id, titre")
+      .order("titre");
+
+    setFiles(filesData || []);
+    setArtistes(artistesData || []);
+    setProjets(projetsData || []);
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  async function uploadFile(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!selectedFile) {
+      alert("Ajoute un fichier.");
+      return;
+    }
+
+    setLoading(true);
+
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
+
+    const filePath = `${Date.now()}-${selectedFile.name}`;
+
+    const { error: uploadError } = await supabaseBrowser.storage
+      .from("lmg-drive")
+      .upload(filePath, selectedFile);
+
+    if (uploadError) {
+      alert(uploadError.message);
+      setLoading(false);
+      return;
+    }
+
+    const { data: signedData } = await supabaseBrowser.storage
+      .from("lmg-drive")
+      .createSignedUrl(filePath, 60 * 60 * 24 * 7);
+
+    const { error } = await supabaseBrowser.from("drive_files").insert({
+      nom: nom || selectedFile.name,
+      type: selectedFile.type || null,
+      categorie,
+      artiste_id: artisteId || null,
+      projet_id: projetId || null,
+      fichier_url: signedData?.signedUrl || filePath,
+      taille: selectedFile.size,
+      uploaded_by: user?.id || null,
+    });
+
+    setLoading(false);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setNom("");
+    setCategorie("Master");
+    setArtisteId("");
+    setProjetId("");
+    setSelectedFile(null);
+
+    await loadData();
+  }
+
+  async function deleteFile(file: any) {
+    if (!confirm("Supprimer ce fichier ?")) return;
+
+    const path = file.fichier_url?.includes("lmg-drive/")
+      ? file.fichier_url.split("lmg-drive/")[1]?.split("?")[0]
+      : null;
+
+    if (path) {
+      await supabaseBrowser.storage.from("lmg-drive").remove([path]);
+    }
+
+    const { error } = await supabaseBrowser
+      .from("drive_files")
+      .delete()
+      .eq("id", file.id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    await loadData();
+  }
+
+  const filteredFiles =
+    filter === "Tous"
+      ? files
+      : files.filter((file) => file.categorie === filter);
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -167,97 +150,134 @@ if (currentProfile?.role === ROLES.PRESTATAIRE) {
           LMG Drive
         </p>
 
-        <h1 className="text-5xl font-bold">Drive Pro</h1>
+        <h1 className="text-5xl font-bold">Drive LMG</h1>
 
         <p className="mt-3 text-zinc-400">
-          Masters, covers, clips, press kits, contrats et assets liés aux projets.
+          Centralise masters, covers, clips, EPK, contrats et documents.
         </p>
       </div>
 
-      <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-4 xl:grid-cols-8">
-        {categories.map((category) => (
-          <div
-            key={category}
-            className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5"
+      <form
+        onSubmit={uploadFile}
+        className="mb-10 grid grid-cols-1 gap-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-8 xl:grid-cols-2"
+      >
+        <input
+          value={nom}
+          onChange={(e) => setNom(e.target.value)}
+          placeholder="Nom du fichier"
+          className="rounded-xl border border-zinc-800 bg-black px-4 py-4"
+        />
+
+        <select
+          value={categorie}
+          onChange={(e) => setCategorie(e.target.value)}
+          className="rounded-xl border border-zinc-800 bg-black px-4 py-4"
+        >
+          {categories.filter((c) => c !== "Tous").map((cat) => (
+            <option key={cat}>{cat}</option>
+          ))}
+        </select>
+
+        <select
+          value={artisteId}
+          onChange={(e) => setArtisteId(e.target.value)}
+          className="rounded-xl border border-zinc-800 bg-black px-4 py-4"
+        >
+          <option value="">Aucun artiste lié</option>
+          {artistes.map((artiste) => (
+            <option key={artiste.id} value={artiste.id}>
+              {artiste.nom}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={projetId}
+          onChange={(e) => setProjetId(e.target.value)}
+          className="rounded-xl border border-zinc-800 bg-black px-4 py-4"
+        >
+          <option value="">Aucun projet lié</option>
+          {projets.map((projet) => (
+            <option key={projet.id} value={projet.id}>
+              {projet.titre}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="file"
+          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+          className="rounded-xl border border-zinc-800 bg-black px-4 py-4"
+        />
+
+        <button
+          disabled={loading}
+          className="rounded-xl bg-white px-5 py-4 font-semibold text-black disabled:opacity-50"
+        >
+          {loading ? "Upload..." : "Uploader dans le Drive"}
+        </button>
+      </form>
+
+      <div className="mb-8 flex flex-wrap gap-3">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setFilter(cat)}
+            className={`rounded-full border px-4 py-2 text-sm ${
+              filter === cat
+                ? "border-white bg-white text-black"
+                : "border-zinc-700 text-zinc-400 hover:text-white"
+            }`}
           >
-            <p className="text-sm text-zinc-500">{category}</p>
-            <p className="mt-2 text-3xl font-bold">
-              {groupedAssets[category]?.length || 0}
-            </p>
-          </div>
+            {cat}
+          </button>
         ))}
       </div>
 
-      {(!assets || assets.length === 0) && (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8 text-zinc-500">
-          Aucun fichier uploadé pour le moment.
-        </div>
-      )}
+      <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {filteredFiles.length === 0 && (
+          <p className="text-zinc-500">Aucun fichier pour le moment.</p>
+        )}
 
-      <div className="space-y-10">
-        {categories.map((category) => {
-          const items = groupedAssets[category] || [];
+        {filteredFiles.map((file) => (
+          <div
+            key={file.id}
+            className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6"
+          >
+            <p className="text-sm text-zinc-500">{file.categorie}</p>
 
-          if (items.length === 0) return null;
+            <h2 className="mt-2 text-2xl font-bold">{file.nom}</h2>
 
-          return (
-            <section
-              key={category}
-              className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8"
-            >
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h2 className="text-3xl font-bold">{category}</h2>
-                  <p className="mt-2 text-sm text-zinc-500">
-                    {items.length} fichier(s)
-                  </p>
-                </div>
-              </div>
+            <div className="mt-4 space-y-1 text-sm text-zinc-400">
+              <p>Artiste : {file.artistes?.nom || "Non lié"}</p>
+              <p>Projet : {file.projets?.titre || "Non lié"}</p>
+              <p>
+                Taille :{" "}
+                {file.taille
+                  ? `${(Number(file.taille) / 1024 / 1024).toFixed(2)} MB`
+                  : "N/A"}
+              </p>
+            </div>
 
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {items.map((asset: any) => (
-                  <div
-                    key={asset.id}
-                    className="overflow-hidden rounded-3xl border border-zinc-800 bg-black p-5"
-                  >
-                    {getAssetPreview(asset)}
+            <div className="mt-6 flex gap-3">
+              <a
+                href={file.fichier_url}
+                target="_blank"
+                className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+              >
+                Ouvrir
+              </a>
 
-                    <div className="mt-5">
-                      <p className="text-sm text-zinc-500">
-                        {asset.type || "Fichier"}
-                      </p>
-
-                      <h3 className="mt-2 truncate text-xl font-bold">
-                        {asset.nom}
-                      </h3>
-
-                      <p className="mt-3 text-sm text-zinc-400">
-                        Projet : {asset.projets?.titre || "Non lié"}
-                      </p>
-
-                      <p className="mt-1 text-sm text-zinc-400">
-                        Artiste : {asset.projets?.artistes?.nom || "Non lié"}
-                      </p>
-
-                      <p className="mt-1 text-sm text-zinc-400">
-                        Tâche : {asset.taches?.titre || "Non liée"}
-                      </p>
-
-                      <a
-                        href={asset.url}
-                        target="_blank"
-                        className="mt-5 block rounded-xl bg-white px-5 py-3 text-center font-medium text-black hover:bg-zinc-200"
-                      >
-                        Ouvrir
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          );
-        })}
-      </div>
+              <button
+                onClick={() => deleteFile(file)}
+                className="rounded-xl border border-red-500/40 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        ))}
+      </section>
     </main>
   );
 }
