@@ -19,14 +19,21 @@ export default function NotificationsBell() {
   const [open, setOpen] = useState(false);
 
   async function loadNotifications() {
-    const { data } = await supabaseBrowser
-      .from("notifications")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(20);
+  const {
+    data: { user },
+  } = await supabaseBrowser.auth.getUser();
 
-    setNotifications(data || []);
-  }
+  if (!user) return;
+
+  const { data } = await supabaseBrowser
+    .from("notifications")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  setNotifications(data || []);
+}
 
   async function markAsRead(id: string) {
     await supabaseBrowser
@@ -38,13 +45,20 @@ export default function NotificationsBell() {
   }
 
   async function markAllAsRead() {
-    await supabaseBrowser
-      .from("notifications")
-      .update({ lu: true })
-      .eq("lu", false);
+  const {
+    data: { user },
+  } = await supabaseBrowser.auth.getUser();
 
-    await loadNotifications();
-  }
+  if (!user) return;
+
+  await supabaseBrowser
+    .from("notifications")
+    .update({ lu: true })
+    .eq("user_id", user.id)
+    .eq("lu", false);
+
+  await loadNotifications();
+}
 
   async function deleteNotification(id: string) {
   const { error } = await supabaseBrowser
