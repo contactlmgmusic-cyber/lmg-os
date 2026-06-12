@@ -47,13 +47,18 @@ export default function NotificationsBell() {
   }
 
   async function deleteNotification(id: string) {
-    await supabaseBrowser
-      .from("notifications")
-      .delete()
-      .eq("id", id);
+  const { error } = await supabaseBrowser
+    .from("notifications")
+    .delete()
+    .eq("id", id);
 
-    await loadNotifications();
+  if (error) {
+    alert(error.message);
+    return;
   }
+
+  await loadNotifications();
+}
 
   async function openNotification(id: string) {
     await supabaseBrowser
