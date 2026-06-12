@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { notifyRoles } from "@/lib/notify";
 
 export default function NouveauContratPage() {
   const router = useRouter();
@@ -75,20 +76,54 @@ export default function NouveauContratPage() {
 
     setLoading(true);
 
-    const { error } = await supabaseBrowser.from("contrats").insert({
-      titre,
-      type,
-      statut,
-      artiste_id: artisteId || null,
-      projet_id: projetId || null,
-      fichier_url: fichierUrl || null,
-      notes,
-    });
+    const { data, error } = await supabaseBrowser
+      .from("contrats")
+      .insert({
+        titre,
+        type,
+        statut,
+        artiste_id: artisteId || null,
+        projet_id: projetId || null,
+        fichier_url: fichierUrl || null,
+        notes,
+      })
+      .select("id")
+      .single();
 
     if (error) {
       alert(error.message);
       setLoading(false);
       return;
+    }
+
+    await supabaseBrowser.from("activity_logs").insert({
+      type: "Contrat",
+      titre: "Nouveau contrat ajouté",
+      description: `${titre} • ${statut}`,
+    });
+
+    await notifyRoles({
+      roles: ["super_admin", "manager"],
+      type: "Contrat",
+      titre: "Nouveau contrat ajouté",
+      description: `${titre} • ${statut}`,
+      link: `/contrats/${data.id}`,
+    });
+
+    if (statut === "Signé") {
+      await supabaseBrowser.from("activity_logs").insert({
+        type: "Contrat",
+        titre: "Contrat signé",
+        description: titre,
+      });
+
+      await notifyRoles({
+        roles: ["super_admin", "manager"],
+        type: "Contrat",
+        titre: "Contrat signé",
+        description: titre,
+        link: `/contrats/${data.id}`,
+      });
     }
 
     router.push("/contrats");
