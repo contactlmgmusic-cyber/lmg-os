@@ -2,12 +2,15 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import InfluenceurKanban from "@/components/InfluenceurKanban";
+import { requireRole } from "@/lib/require-role.server";
 
 
 export const dynamic = "force-dynamic";
 
 export default async function InfluenceursPage() {
   const cookieStore = await cookies();
+
+  await requireRole(["super_admin", "admin", "manager"]);
 
 const supabase = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL as string,

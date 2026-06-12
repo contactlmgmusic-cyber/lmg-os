@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { requireRole } from "@/lib/require-role";
+import { requireRole } from "@/lib/require-role.server";
 
 export const dynamic = "force-dynamic";
 

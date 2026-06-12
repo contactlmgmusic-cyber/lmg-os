@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import KanbanBoard from "@/components/KanbanBoard";
 import { ROLES } from "@/lib/roles";
-import { requireRole } from "@/lib/require-role";
+import { requireRole } from "@/lib/require-role.server";
 
 export const dynamic = "force-dynamic";
 

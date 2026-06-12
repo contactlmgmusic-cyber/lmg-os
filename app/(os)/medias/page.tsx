@@ -4,7 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
 import MediaKanban from "@/components/MediaKanban";
 import { ROLES } from "@/lib/roles";
-import { requireRole } from "@/lib/require-role";
+import { requireRole } from "@/lib/require-role.server";
 
 export const dynamic = "force-dynamic";
 

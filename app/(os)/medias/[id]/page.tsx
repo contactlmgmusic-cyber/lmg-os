@@ -2,6 +2,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import MediaRelances from "@/components/MediaRelances";
 import DeleteMediaButton from "@/components/DeleteMediaButton";
+import { requireRole } from "@/lib/require-role.server";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,8 @@ export default async function MediaDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  await requireRole(["super_admin", "admin", "manager"]);
 
   const { data: media, error } = await supabase
     .from("medias")
