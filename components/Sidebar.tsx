@@ -89,6 +89,7 @@ export default function Sidebar() {
     { href: "/taches", label: "Tâches" },
     { href: "/mes-taches", label: "Mes tâches" },
     { href: "/calendrier", label: "Calendrier" },
+    { href: "/calendrier/global", label: "Calendrier global" },
     { href: "/rollout", label: "Rollout" },
     { href: "/drive", label: "Drive" },
     { href: "/assistant", label: "Assistant IA" },
@@ -112,6 +113,7 @@ export default function Sidebar() {
     { href: "/taches", label: "Tâches" },
     { href: "/mes-taches", label: "Mes tâches" },
     { href: "/calendrier", label: "Calendrier" },
+    { href: "/calendrier/global", label: "Calendrier global" },
     { href: "/drive", label: "Drive" },
     { href: "/chat", label: "Chat" },
   ];
