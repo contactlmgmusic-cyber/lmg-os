@@ -144,6 +144,18 @@ export default async function ArtisteProfilPage({
   .eq("artiste_id", id)
   .order("ordre", { ascending: true });
 
+  const { data: driveFiles } = await supabase
+  .from("drive_files")
+  .select(`
+    *,
+    projets (
+      id,
+      titre
+    )
+  `)
+  .eq("artiste_id", id)
+  .order("created_at", { ascending: false });
+
   const { data: finances } = await supabase
   .from("finances")
   .select("*")
@@ -405,6 +417,60 @@ const revenusParProjet = projets
                   "Aucune bio ou note renseignée."}
               </p>
             </div>
+
+            {canViewInternalArtistData && (
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+    <div className="mb-6 flex items-center justify-between">
+      <h2 className="text-3xl font-bold">
+        Bibliothèque artiste
+      </h2>
+
+      {!isArtistUser && (
+        <Link
+          href="/drive"
+          className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+        >
+          + Ajouter fichier
+        </Link>
+      )}
+    </div>
+
+    {(!driveFiles || driveFiles.length === 0) && (
+      <p className="text-zinc-500">
+        Aucun fichier lié à cet artiste.
+      </p>
+    )}
+
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      {driveFiles?.map((file: any) => (
+        <a
+          key={file.id}
+          href={file.fichier_url}
+          target="_blank"
+          className="rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+        >
+          <p className="text-sm text-zinc-500">
+            {file.categorie || "Fichier"}
+          </p>
+
+          <h3 className="mt-2 truncate text-xl font-semibold">
+            {file.nom}
+          </h3>
+
+          <p className="mt-2 text-sm text-zinc-500">
+            Projet : {file.projets?.titre || "Non lié"}
+          </p>
+
+          <p className="mt-1 text-sm text-zinc-500">
+            {file.taille
+              ? `${(Number(file.taille) / 1024 / 1024).toFixed(2)} MB`
+              : "Taille non renseignée"}
+          </p>
+        </a>
+      ))}
+    </div>
+  </div>
+)}
 
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
               <h2 className="mb-6 text-3xl font-bold">Projets visibles</h2>
