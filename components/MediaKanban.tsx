@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   DragDropContext,
   Droppable,
@@ -9,7 +10,6 @@ import {
 } from "@hello-pangea/dnd";
 
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
 import { notifyRoles } from "@/lib/notify";
 
 const statuses = [
@@ -71,12 +71,16 @@ function getRelanceInfo(date?: string | null) {
 }
 
 export default function MediaKanban({ medias }: { medias: any[] }) {
-  const router = useRouter();
+  const [localMedias, setLocalMedias] = useState<any[]>(medias || []);
+
+  useEffect(() => {
+    setLocalMedias(medias || []);
+  }, [medias]);
 
   const colonnes = Object.fromEntries(
     statuses.map((status) => [
       status,
-      medias.filter((media) =>
+      localMedias.filter((media) =>
         status === "À contacter"
           ? !media.statut || media.statut === "À contacter"
           : media.statut === status
@@ -85,47 +89,65 @@ export default function MediaKanban({ medias }: { medias: any[] }) {
   );
 
   async function onDragEnd(result: DropResult) {
-  if (!result.destination) return;
+    if (!result.destination) return;
 
-  const mediaId = result.draggableId;
-  const newStatus = result.destination.droppableId;
+    const mediaId = result.draggableId;
+    const newStatus = result.destination.droppableId;
+    const previousMedias = localMedias;
 
-  const media = medias.find((item) => item.id === mediaId);
+    const media = localMedias.find((item) => item.id === mediaId);
 
-  const { error } = await supabase
-    .from("medias")
-    .update({
-      statut: newStatus,
-      prochaine_relance:
-  newStatus === "Relancé"
-    ? new Date().toISOString().split("T")[0]
-    : null,
-    })
-    .eq("id", mediaId);
+    if (!media) return;
 
-  if (error) {
-    alert(error.message);
-    return;
+    if (media.statut === newStatus) return;
+
+    const nextRelance =
+      newStatus === "Relancé"
+        ? new Date().toISOString().split("T")[0]
+        : null;
+
+    setLocalMedias((current) =>
+      current.map((item) =>
+        item.id === mediaId
+          ? {
+              ...item,
+              statut: newStatus,
+              prochaine_relance: nextRelance,
+            }
+          : item
+      )
+    );
+
+    const { error } = await supabase
+      .from("medias")
+      .update({
+        statut: newStatus,
+        prochaine_relance: nextRelance,
+      })
+      .eq("id", mediaId);
+
+    if (error) {
+      setLocalMedias(previousMedias);
+      alert(error.message);
+      return;
+    }
+
+    if (newStatus === "Publié") {
+      await supabase.from("activity_logs").insert({
+        type: "Média",
+        titre: "Publication média obtenue",
+        description: `${media?.nom || "Un média"} est passé en statut Publié`,
+      });
+
+      await notifyRoles({
+        roles: ["super_admin", "manager"],
+        type: "Média",
+        titre: "Publication média obtenue",
+        description: `${media?.nom || "Un média"} est passé en statut Publié`,
+        link: `/medias/${mediaId}`,
+      });
+    }
   }
-
-  if (newStatus === "Publié") {
-    await supabase.from("activity_logs").insert({
-      type: "Média",
-      titre: "Publication média obtenue",
-      description: `${media?.nom || "Un média"} est passé en statut Publié`,
-    });
-
-    await notifyRoles({
-      roles: ["super_admin", "manager"],
-      type: "Média",
-      titre: "Publication média obtenue",
-      description: `${media?.nom || "Un média"} est passé en statut Publié`,
-      link: `/medias/${mediaId}`,
-    });
-  }
-
-  router.refresh();
-}
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -201,7 +223,10 @@ export default function MediaKanban({ medias }: { medias: any[] }) {
                             </div>
 
                             <div className="space-y-1 text-sm text-zinc-400">
-                              <p>{media.plateforme || "Plateforme non renseignée"}</p>
+                              <p>
+                                {media.plateforme ||
+                                  "Plateforme non renseignée"}
+                              </p>
 
                               <p>
                                 {media.artistes?.nom
@@ -222,7 +247,9 @@ export default function MediaKanban({ medias }: { medias: any[] }) {
                               {media.ville && <p>Ville : {media.ville}</p>}
 
                               {relanceInfo && (
-                                <p className={`pt-2 text-xs ${relanceInfo.className}`}>
+                                <p
+                                  className={`pt-2 text-xs ${relanceInfo.className}`}
+                                >
                                   {relanceInfo.label}
                                 </p>
                               )}
