@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { requireRole } from "@/lib/require-role";
 
-export default function ModifierInfluenceurPage() {
+export default async function ModifierInfluenceurPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+
+  await requireRole(["super_admin", "admin", "manager"]);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
