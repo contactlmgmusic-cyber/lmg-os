@@ -20,14 +20,6 @@ export default async function SortieDetailPage({
     .eq("id", id)
     .single();
 
-  if (error || !sortie) {
-    return (
-      <main className="min-h-screen bg-black p-10 text-white">
-        <p className="text-red-400">Sortie introuvable.</p>
-      </main>
-    );
-  }
-
   const links = [
     { label: "Spotify", url: sortie.spotify_url },
     { label: "Apple Music", url: sortie.apple_music_url },
@@ -35,6 +27,40 @@ export default async function SortieDetailPage({
     { label: "YouTube", url: sortie.youtube_url },
     { label: "SoundCloud", url: sortie.soundcloud_url },
   ].filter((item) => item.url);
+
+const { data: analytics } = await supabase
+  .from("analytics")
+  .select("*")
+  .eq("sortie_id", id)
+  .order("date_snapshot", { ascending: false });
+
+if (error || !sortie) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <p className="text-red-400">Sortie introuvable.</p>
+    </main>
+  );
+}
+
+const totalStreams =
+  analytics?.reduce(
+    (acc: number, item: any) => acc + Number(item.streams || 0),
+    0
+  ) || 0;
+
+const totalVues =
+  analytics?.reduce(
+    (acc: number, item: any) => acc + Number(item.vues || 0),
+    0
+  ) || 0;
+
+const totalRevenus =
+  analytics?.reduce(
+    (acc: number, item: any) => acc + Number(item.revenus || 0),
+    0
+  ) || 0;
+
+const dernierSnapshot = analytics?.[0];
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -80,6 +106,28 @@ export default async function SortieDetailPage({
             <Info label="ISRC" value={sortie.isrc} />
             <Info label="Projet lié" value={sortie.projets?.titre} />
           </div>
+
+          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-4">
+  <Info
+    label="Streams"
+    value={totalStreams.toLocaleString("fr-FR")}
+  />
+
+  <Info
+    label="Vues"
+    value={totalVues.toLocaleString("fr-FR")}
+  />
+
+  <Info
+    label="Revenus"
+    value={`${totalRevenus.toFixed(2)} €`}
+  />
+
+  <Info
+    label="Dernier snapshot"
+    value={dernierSnapshot?.date_snapshot || "Aucune donnée"}
+  />
+</div>
 
           {links.length > 0 && (
             <div className="mt-8 rounded-2xl border border-zinc-800 bg-black p-6">
