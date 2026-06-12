@@ -19,7 +19,6 @@ export default function NotificationsBell() {
   const [open, setOpen] = useState(false);
 
   async function loadNotifications() {
-  console.log("LOAD NOTIFICATIONS");
 
   const {
     data: { user },
@@ -89,26 +88,12 @@ export default function NotificationsBell() {
   useEffect(() => {
   loadNotifications();
 
-  const channel = supabaseBrowser
-    .channel(`notifications-${Date.now()}`)
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "notifications",
-      },
-      async () => {
-        console.log("NOTIFICATION CHANGE RECEIVED");
-        await loadNotifications();
-      }
-    )
-    .subscribe((status) => {
-      console.log("NOTIFICATIONS REALTIME =", status);
-    });
+  const interval = setInterval(() => {
+    loadNotifications();
+  }, 5000);
 
   return () => {
-    supabaseBrowser.removeChannel(channel);
+    clearInterval(interval);
   };
 }, []);
 
