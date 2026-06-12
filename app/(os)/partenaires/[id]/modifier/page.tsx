@@ -58,11 +58,34 @@ export default function ModifierPartenairePage() {
 
   useEffect(() => {
     async function loadData() {
-      const { data: partenaire, error } = await supabaseBrowser
-        .from("partenaires")
-        .select("*")
-        .eq("id", id)
-        .single();
+  const {
+    data: { user },
+  } = await supabaseBrowser.auth.getUser();
+
+  if (!user) {
+    router.push("/login");
+    return;
+  }
+
+  const { data: profile } = await supabaseBrowser
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (
+    profile?.role !== "super_admin" &&
+    profile?.role !== "admin"
+  ) {
+    router.push("/");
+    return;
+  }
+
+  const { data: partenaire, error } = await supabaseBrowser
+    .from("partenaires")
+    .select("*")
+    .eq("id", id)
+    .single();
 
       if (error || !partenaire) {
         alert(error?.message || "Partenaire introuvable.");

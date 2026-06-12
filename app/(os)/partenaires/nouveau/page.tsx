@@ -42,23 +42,46 @@ export default function NouveauPartenairePage() {
   const [projets, setProjets] = useState<any[]>([]);
 
   useEffect(() => {
-    async function loadData() {
-      const { data: artistesData } = await supabaseBrowser
-        .from("artistes")
-        .select("id, nom")
-        .order("nom");
+  async function loadData() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
 
-      const { data: projetsData } = await supabaseBrowser
-        .from("projets")
-        .select("id, titre")
-        .order("titre");
-
-      setArtistes(artistesData || []);
-      setProjets(projetsData || []);
+    if (!user) {
+      router.push("/login");
+      return;
     }
 
-    loadData();
-  }, []);
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (
+      profile?.role !== "super_admin" &&
+      profile?.role !== "admin"
+    ) {
+      router.push("/");
+      return;
+    }
+
+    const { data: artistesData } = await supabaseBrowser
+      .from("artistes")
+      .select("id, nom")
+      .order("nom");
+
+    const { data: projetsData } = await supabaseBrowser
+      .from("projets")
+      .select("id, titre")
+      .order("titre");
+
+    setArtistes(artistesData || []);
+    setProjets(projetsData || []);
+  }
+
+  loadData();
+}, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
