@@ -4,25 +4,19 @@ import { supabase } from "@/lib/supabase";
 export const dynamic = "force-dynamic";
 
 function formatEuro(value: number) {
-  return `${value.toFixed(2)} €`;
+  return `${Number(value || 0).toFixed(2)} €`;
 }
 
 export default async function FinancesDashboardPage() {
   const { data: finances } = await supabase.from("finances").select(`
     *,
-    projets (
-      id,
-      titre
-    )
+    projets ( id, titre )
   `);
 
-  const { data: royalties } = await supabase.from("royalties").select(`
-    *,
-    projets (
-      id,
-      titre
-    )
-  `);
+  const { data: royalties } = await supabase.from("royalties").select("*");
+  const { data: contrats } = await supabase.from("contrats").select("*");
+  const { data: bookings } = await supabase.from("bookings").select("*");
+  const { data: campagnes } = await supabase.from("campagnes").select("*");
 
   const { data: projets } = await supabase.from("projets").select(`
     id,
@@ -37,6 +31,9 @@ export default async function FinancesDashboardPage() {
 
   const allFinances = finances || [];
   const allRoyalties = royalties || [];
+  const allContrats = contrats || [];
+  const allBookings = bookings || [];
+  const allCampagnes = campagnes || [];
   const allProjets = projets || [];
 
   const revenus = allFinances
@@ -57,7 +54,12 @@ export default async function FinancesDashboardPage() {
     .filter((item: any) => item.statut !== "Payé")
     .reduce((acc: number, item: any) => acc + Number(item.montant_du || 0), 0);
 
-  const budgetTotal = allProjets.reduce((acc: number, projet: any) => {
+  const budgetCampagnes = allCampagnes.reduce(
+    (acc: number, campagne: any) => acc + Number(campagne.budget || 0),
+    0
+  );
+
+  const budgetProjets = allProjets.reduce((acc: number, projet: any) => {
     return (
       acc +
       Number(projet.budget_clip || 0) +
@@ -68,6 +70,14 @@ export default async function FinancesDashboardPage() {
       Number(projet.budget_rp || 0)
     );
   }, 0);
+
+  const contratsSignes = allContrats.filter(
+    (contrat: any) => contrat.statut === "Signé"
+  ).length;
+
+  const bookingsConfirmes = allBookings.filter(
+    (booking: any) => booking.statut === "Confirmé"
+  ).length;
 
   const projetsRentabilite = allProjets
     .map((projet: any) => {
@@ -129,8 +139,23 @@ export default async function FinancesDashboardPage() {
     },
     {
       label: "Budget projets",
-      value: formatEuro(budgetTotal),
+      value: formatEuro(budgetProjets),
       className: "border-purple-500/30 bg-purple-500/10 text-purple-300",
+    },
+    {
+      label: "Budget campagnes",
+      value: formatEuro(budgetCampagnes),
+      className: "border-pink-500/30 bg-pink-500/10 text-pink-300",
+    },
+    {
+      label: "Contrats signés",
+      value: contratsSignes,
+      className: "border-blue-500/30 bg-blue-500/10 text-blue-300",
+    },
+    {
+      label: "Bookings confirmés",
+      value: bookingsConfirmes,
+      className: "border-orange-500/30 bg-orange-500/10 text-orange-300",
     },
   ];
 
@@ -144,11 +169,11 @@ export default async function FinancesDashboardPage() {
         <h1 className="text-5xl font-bold">Dashboard financier</h1>
 
         <p className="mt-3 text-zinc-400">
-          Vue globale des revenus, dépenses, budgets et royalties.
+          Vue globale des revenus, dépenses, budgets, royalties, contrats et bookings.
         </p>
       </div>
 
-      <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
+      <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         {kpis.map((kpi) => (
           <div
             key={kpi.label}
@@ -201,39 +226,30 @@ export default async function FinancesDashboardPage() {
         </div>
 
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-          <h2 className="mb-6 text-3xl font-bold">Projets déficitaires</h2>
+          <h2 className="mb-6 text-3xl font-bold">Alertes financières</h2>
 
           <div className="space-y-4">
-            {deficitaires.length === 0 && (
-              <p className="text-zinc-500">
-                Aucun projet déficitaire pour le moment.
-              </p>
+            {royaltiesAPayer > 0 && (
+              <div className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-5 text-yellow-300">
+                Royalties à payer : {formatEuro(royaltiesAPayer)}
+              </div>
             )}
 
-            {deficitaires.map((projet: any) => (
-              <Link
-                key={projet.id}
-                href={`/projets/${projet.id}`}
-                className="block rounded-2xl border border-red-500/30 bg-red-500/10 p-5 hover:border-red-400"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-xl font-semibold">
-                      {projet.titre || "Projet sans titre"}
-                    </h3>
+            {deficitaires.length > 0 && (
+              <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-5 text-red-300">
+                {deficitaires.length} projet(s) déficitaire(s)
+              </div>
+            )}
 
-                    <p className="mt-1 text-sm text-red-200/70">
-                      Revenus : {formatEuro(projet.revenus)} · Dépenses :{" "}
-                      {formatEuro(projet.depenses)}
-                    </p>
-                  </div>
+            {resultat < 0 && (
+              <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-5 text-red-300">
+                Résultat global négatif : {formatEuro(resultat)}
+              </div>
+            )}
 
-                  <p className="font-bold text-red-300">
-                    {formatEuro(projet.resultat)}
-                  </p>
-                </div>
-              </Link>
-            ))}
+            {royaltiesAPayer === 0 && deficitaires.length === 0 && resultat >= 0 && (
+              <p className="text-zinc-500">Aucune alerte financière.</p>
+            )}
           </div>
         </div>
       </section>
