@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { requireRole } from "@/lib/require-role";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,8 @@ function formatDate(date: string) {
 }
 
 export default async function GlobalCalendarPage() {
+  await requireRole(["super_admin", "admin"]);
+
   const { data: rolloutEvents } = await supabase
     .from("rollout_events")
     .select("id, titre, date_event, statut, type")
