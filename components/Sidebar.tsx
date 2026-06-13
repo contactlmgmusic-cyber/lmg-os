@@ -76,6 +76,7 @@ export default function Sidebar() {
   { href: "/notifications", label: "Notifications" },
 
   { href: "/artistes", label: "Artistes" },
+  { href: "/artistes/ranking", label: "Ranking Artistes" },
   { href: "/projets", label: "Projets" },
   { href: "/sorties", label: "Sorties" },
   { href: "/release-planner", label: "Release Planner" },
@@ -116,6 +117,7 @@ const managerLinks = [
   { href: "/notifications", label: "Notifications" },
 
   { href: "/artistes", label: "Mes artistes" },
+  { href: "/artistes/ranking", label: "Ranking Artistes" },
   { href: "/projets", label: "Projets" },
   { href: "/sorties", label: "Sorties" },
   { href: "/release-planner", label: "Release Planner" },
