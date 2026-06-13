@@ -70,86 +70,103 @@ export default function Sidebar() {
 }, []);
 
   const superAdminLinks = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/admin", label: "Administration" },
-    { href: "/dashboard/candidatures", label: "Candidatures" },
-    { href: "/notifications", label: "Notifications" },
-    { href: "/artistes", label: "Artistes" },
-    { href: "/projets", label: "Projets" },
-    { href: "/booking", label: "Booking" },
-    { href: "/sorties", label: "Sorties" },
-    { href: "/analytics", label: "Analytics" },
-    { href: "/partenaires", label: "CRM Partenaires" },
-    { href: "/influenceurs", label: "CRM Influenceurs" },
-    { href: "/medias", label: "CRM Médias" },
-    { href: "/medias/dashboard", label: "Dashboard Médias" },
-    { href: "/campagnes", label: "Campagnes" },
-    { href: "/contrats", label: "Contrats" },
-    { href: "/splits", label: "Split Sheets" },
-    { href: "/royalties", label: "Royalties" },
-    { href: "/finances", label: "Finances" },
-    { href: "/finances/dashboard", label: "Dashboard Finance" },
-    { href: "/taches", label: "Tâches" },
-    { href: "/mes-taches", label: "Mes tâches" },
-    { href: "/calendrier", label: "Calendrier" },
-    { href: "/calendrier/global", label: "Calendrier global" },
-    { href: "/rollout", label: "Rollout" },
-    { href: "/drive", label: "Drive" },
-    { href: "/assistant", label: "Assistant IA" },
-    { href: "/chat", label: "Chat" },
-    { href: "/equipe", label: "Équipe" },
-    { href: "/invitations", label: "Invitations" },
-  ];
+  { href: "/dashboard", label: "Dashboard CEO" },
+  { href: "/admin", label: "Administration" },
+  { href: "/dashboard/candidatures", label: "Candidatures" },
+  { href: "/notifications", label: "Notifications" },
 
-  const managerLinks = [
-    { href: "/manager", label: "Dashboard Manager" },
-    { href: "/notifications", label: "Notifications" },
-    { href: "/artistes", label: "Mes artistes" },
-    { href: "/projets", label: "Projets" },
-    { href: "/booking", label: "Booking" },
-    { href: "/influenceurs", label: "CRM Influenceurs" },
-    { href: "/medias", label: "CRM Médias" },
-    { href: "/campagnes", label: "Campagnes" },
-    { href: "/contrats", label: "Contrats" },
-    { href: "/splits", label: "Split Sheets" },
-    { href: "/royalties", label: "Royalties" },
-    { href: "/taches", label: "Tâches" },
-    { href: "/mes-taches", label: "Mes tâches" },
-    { href: "/calendrier", label: "Calendrier" },
-    { href: "/calendrier/global", label: "Calendrier global" },
-    { href: "/drive", label: "Drive" },
-    { href: "/chat", label: "Chat" },
-  ];
+  { href: "/artistes", label: "Artistes" },
+  { href: "/projets", label: "Projets" },
+  { href: "/sorties", label: "Sorties" },
+  { href: "/release-planner", label: "Release Planner" },
+  { href: "/objectifs", label: "Objectifs" },
+  { href: "/analytics", label: "Analytics" },
 
-  const artisteLinks = [
-    { href: "/mon-espace-artiste", label: "Mon espace artiste" },
-    { href: "/notifications", label: "Notifications" },
-    { href: "/projets", label: "Mes projets" },
-    { href: "/contrats", label: "Mes contrats" },
-    { href: "/royalties", label: "Mes royalties" },
-    { href: "/calendrier", label: "Calendrier" },
-    { href: "/chat", label: "Chat" },
-  ];
+  { href: "/booking", label: "Booking" },
+  { href: "/campagnes", label: "Campagnes" },
+  { href: "/partenaires", label: "CRM Partenaires" },
+  { href: "/influenceurs", label: "CRM Influenceurs" },
+  { href: "/medias", label: "CRM Médias" },
 
-  const prestataireLinks = [
-    { href: "/notifications", label: "Notifications" },
-    { href: "/mes-taches", label: "Mes tâches" },
-    { href: "/drive", label: "Drive" },
-    { href: "/calendrier", label: "Calendrier" },
-    { href: "/chat", label: "Chat" },
-  ];
+  { href: "/contrats", label: "Contrats" },
+  { href: "/splits", label: "Split Sheets" },
+  { href: "/royalties", label: "Royalties" },
+  { href: "/finances", label: "Finances" },
 
-  const links =
-    role === ROLES.ARTISTE
-      ? artisteLinks
-      : role === ROLES.MANAGER
-      ? managerLinks
-      : role === ROLES.PRESTATAIRE
-      ? prestataireLinks
-      : superAdminLinks;
+  { href: "/taches", label: "Tâches" },
+  { href: "/calendrier", label: "Calendrier" },
+  { href: "/calendrier/global", label: "Calendrier global" },
+  { href: "/rollout", label: "Rollout" },
+  { href: "/drive", label: "Drive" },
 
-  const canUseGlobalTools =
-    role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN || role === ROLES.MANAGER;
+  { href: "/assistant", label: "Assistant IA" },
+  { href: "/chat", label: "Chat" },
+  { href: "/equipe", label: "Équipe" },
+  { href: "/invitations", label: "Invitations" },
+];
+
+const adminLinks = superAdminLinks.filter(
+  (link) => link.href !== "/admin" && link.href !== "/invitations"
+);
+
+const managerLinks = [
+  { href: "/manager", label: "Dashboard Manager" },
+  { href: "/notifications", label: "Notifications" },
+
+  { href: "/artistes", label: "Mes artistes" },
+  { href: "/projets", label: "Projets" },
+  { href: "/sorties", label: "Sorties" },
+  { href: "/release-planner", label: "Release Planner" },
+  { href: "/objectifs", label: "Objectifs" },
+  { href: "/analytics", label: "Analytics" },
+
+  { href: "/booking", label: "Booking" },
+  { href: "/influenceurs", label: "CRM Influenceurs" },
+  { href: "/medias", label: "CRM Médias" },
+  { href: "/campagnes", label: "Campagnes" },
+
+  { href: "/contrats", label: "Contrats" },
+  { href: "/splits", label: "Split Sheets" },
+  { href: "/royalties", label: "Royalties" },
+
+  { href: "/taches", label: "Tâches" },
+  { href: "/mes-taches", label: "Mes tâches" },
+  { href: "/calendrier", label: "Calendrier" },
+  { href: "/calendrier/global", label: "Calendrier global" },
+  { href: "/rollout", label: "Rollout" },
+  { href: "/drive", label: "Drive" },
+  { href: "/chat", label: "Chat" },
+];
+
+const artisteLinks = [
+  { href: "/mon-espace-artiste", label: "Mon espace artiste" },
+  { href: "/notifications", label: "Notifications" },
+  { href: "/chat", label: "Chat" },
+];
+
+const prestataireLinks = [
+  { href: "/notifications", label: "Notifications" },
+  { href: "/mes-taches", label: "Mes tâches" },
+  { href: "/drive", label: "Drive" },
+  { href: "/calendrier", label: "Calendrier" },
+  { href: "/chat", label: "Chat" },
+];
+
+const links =
+  role === ROLES.ARTISTE
+    ? artisteLinks
+    : role === ROLES.MANAGER
+    ? managerLinks
+    : role === ROLES.PRESTATAIRE
+    ? prestataireLinks
+    : role === ROLES.ADMIN
+    ? adminLinks
+    : superAdminLinks;
+
+const canUseGlobalTools =
+  role === ROLES.SUPER_ADMIN ||
+  role === ROLES.ADMIN ||
+  role === ROLES.MANAGER;
 
   return (
     <aside className="fixed left-0 top-0 z-50 flex h-screen w-72 flex-col overflow-y-auto border-r border-zinc-900 bg-black p-6 text-white">
