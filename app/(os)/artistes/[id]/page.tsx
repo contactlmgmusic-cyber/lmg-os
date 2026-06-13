@@ -166,6 +166,18 @@ const { data: royalties } = await supabase
   .select("*")
   .eq("email", artiste.email || "");
 
+  const { data: analytics } = await supabase
+  .from("analytics")
+  .select(`
+    *,
+    sorties (
+      id,
+      titre
+    )
+  `)
+  .eq("artiste_id", id)
+  .order("date_snapshot", { ascending: false });
+
   const { data: activities } = await supabase
     .from("activity_logs")
     .select("*")
@@ -226,6 +238,40 @@ const royaltiesAPayer =
       (acc: number, r: any) => acc + Number(r.montant_du || 0),
       0
     ) || 0;
+
+    const totalStreamsAnalytics =
+  analytics?.reduce(
+    (acc: number, item: any) => acc + Number(item.streams || 0),
+    0
+  ) || 0;
+
+const totalFollowersAnalytics =
+  analytics?.reduce(
+    (acc: number, item: any) => acc + Number(item.followers || 0),
+    0
+  ) || 0;
+
+const totalVuesAnalytics =
+  analytics?.reduce(
+    (acc: number, item: any) => acc + Number(item.vues || 0),
+    0
+  ) || 0;
+
+const totalRevenusAnalytics =
+  analytics?.reduce(
+    (acc: number, item: any) => acc + Number(item.revenus || 0),
+    0
+  ) || 0;
+
+const dernierSnapshotAnalytics = analytics?.[0];
+
+const topSortieAnalytics = analytics
+  ?.filter((item: any) => item.sorties?.titre)
+  .sort(
+    (a: any, b: any) =>
+      Number(b.streams || 0) + Number(b.vues || 0) -
+      (Number(a.streams || 0) + Number(a.vues || 0))
+  )?.[0];
 
 const revenusParProjet = projets
   ?.map((projet: any) => {
@@ -327,6 +373,50 @@ const revenusParProjet = projets
               {artiste.statut || "Non renseigné"}
             </p>
           </div>
+
+          {canViewInternalArtistData && (
+  <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5">
+    <div className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-6">
+      <p className="text-sm text-blue-300">Streams analytics</p>
+      <p className="mt-2 text-xl font-semibold">
+        {totalStreamsAnalytics.toLocaleString("fr-FR")}
+      </p>
+    </div>
+
+    <div className="rounded-3xl border border-purple-500/30 bg-purple-500/10 p-6">
+      <p className="text-sm text-purple-300">Followers analytics</p>
+      <p className="mt-2 text-xl font-semibold">
+        {totalFollowersAnalytics.toLocaleString("fr-FR")}
+      </p>
+    </div>
+
+    <div className="rounded-3xl border border-pink-500/30 bg-pink-500/10 p-6">
+      <p className="text-sm text-pink-300">Vues analytics</p>
+      <p className="mt-2 text-xl font-semibold">
+        {totalVuesAnalytics.toLocaleString("fr-FR")}
+      </p>
+    </div>
+
+    <div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+      <p className="text-sm text-green-300">Revenus analytics</p>
+      <p className="mt-2 text-xl font-semibold">
+        {totalRevenusAnalytics.toFixed(2)} €
+      </p>
+    </div>
+
+    <div className="rounded-3xl border border-zinc-700 bg-zinc-900 p-6">
+      <p className="text-sm text-zinc-400">Top sortie</p>
+      <p className="mt-2 text-xl font-semibold">
+        {topSortieAnalytics?.sorties?.titre || "Aucune donnée"}
+      </p>
+
+      <p className="mt-2 text-xs text-zinc-500">
+        Dernier snapshot :{" "}
+        {dernierSnapshotAnalytics?.date_snapshot || "Aucun"}
+      </p>
+    </div>
+  </div>
+)}
 
           <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
             <p className="text-sm text-zinc-500">Manager</p>
