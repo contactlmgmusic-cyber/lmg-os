@@ -891,37 +891,60 @@ const revenusParProjet = projets
                 </div>
 
                 <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-                  <h2 className="mb-6 text-3xl font-bold">
-                    Timeline activité
-                  </h2>
+  <div className="mb-8 flex items-center justify-between">
+    <div>
+      <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+        Journal artiste
+      </p>
 
-                  {(!activities || activities.length === 0) && (
-                    <p className="text-zinc-500">Aucune activité récente.</p>
-                  )}
+      <h2 className="text-3xl font-bold">
+        Timeline activité
+      </h2>
+    </div>
 
-                  <div className="space-y-4">
-                    {activities?.map((activity: any) => (
-                      <div
-                        key={activity.id}
-                        className="rounded-2xl border border-zinc-800 bg-black p-5"
-                      >
-                        <p className="text-sm text-zinc-500">
-                          {activity.type || "Activité"}
-                        </p>
+    <span className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300">
+      {activities?.length || 0} événements
+    </span>
+  </div>
 
-                        <h3 className="mt-1 text-xl font-semibold">
-                          {activity.titre}
-                        </h3>
+  {(!activities || activities.length === 0) && (
+    <p className="text-zinc-500">
+      Aucune activité récente.
+    </p>
+  )}
 
-                        {activity.description && (
-                          <p className="mt-2 text-sm text-zinc-400">
-                            {activity.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+  <div className="relative space-y-6 border-l border-zinc-800 pl-6">
+    {activities?.map((activity: any) => (
+      <div key={activity.id} className="relative">
+        <div className="absolute -left-[31px] top-1 h-4 w-4 rounded-full border border-white bg-black" />
+
+        <div className="rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600">
+          <div className="mb-3 flex items-center justify-between gap-4">
+            <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
+              {activity.type || "Activité"}
+            </span>
+
+            <p className="text-xs text-zinc-600">
+              {activity.created_at
+                ? new Date(activity.created_at).toLocaleString("fr-FR")
+                : "Date inconnue"}
+            </p>
+          </div>
+
+          <h3 className="text-xl font-semibold">
+            {activity.titre || "Activité artiste"}
+          </h3>
+
+          {activity.description && (
+            <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+              {activity.description}
+            </p>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
               </>
             )}
           </div>
