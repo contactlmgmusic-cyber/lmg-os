@@ -32,6 +32,12 @@ export default function DashboardPage() {
     royaltiesDues: 0,
     royaltiesPayees: 0,
     mediasRelanceAujourdhui: 0,
+    streamsTotaux: 0,
+    followersTotaux: 0,
+    vuesTotales: 0,
+    revenusAnalytics: 0,
+    sortiesMois: 0,
+    roiMoyen: 0,
   });
 
   const router = useRouter();
@@ -49,6 +55,8 @@ const [checkingAccess, setCheckingAccess] = useState(true);
   const [next30Projects, setNext30Projects] = useState<any[]>([]);
   const [lateTasks, setLateTasks] = useState<any[]>([]);
   const [urgentReleases, setUrgentReleases] = useState<any[]>([]);
+  const [topSortiesAnalytics, setTopSortiesAnalytics] = useState<any[]>([]);
+  const [topArtistesAnalytics, setTopArtistesAnalytics] = useState<any[]>([]);
 
   function monthStart() {
     const d = new Date();
@@ -301,6 +309,93 @@ const royaltiesPayees =
       0
     ) || 0;
 
+    const { data: analytics } = await supabaseBrowser
+  .from("analytics")
+  .select(`
+    *,
+    artistes ( id, nom ),
+    sorties ( id, titre )
+  `);
+
+const { data: sortiesMoisData } = await supabaseBrowser
+  .from("sorties")
+  .select("id, titre, date_sortie")
+  .gte("date_sortie", start);
+
+const streamsTotaux =
+  analytics?.reduce((acc: number, item: any) => acc + Number(item.streams || 0), 0) || 0;
+
+const followersTotaux =
+  analytics?.reduce((acc: number, item: any) => acc + Number(item.followers || 0), 0) || 0;
+
+const vuesTotales =
+  analytics?.reduce((acc: number, item: any) => acc + Number(item.vues || 0), 0) || 0;
+
+const revenusAnalytics =
+  analytics?.reduce((acc: number, item: any) => acc + Number(item.revenus || 0), 0) || 0;
+
+const bySortieAnalytics = new Map();
+
+analytics?.forEach((item: any) => {
+  if (!item.sorties?.titre) return;
+
+  const current = bySortieAnalytics.get(item.sorties.titre) || {
+    titre: item.sorties.titre,
+    streams: 0,
+    vues: 0,
+    revenus: 0,
+  };
+
+  current.streams += Number(item.streams || 0);
+  current.vues += Number(item.vues || 0);
+  current.revenus += Number(item.revenus || 0);
+
+  bySortieAnalytics.set(item.sorties.titre, current);
+});
+
+const sortieAnalyticsRanking = Array.from(bySortieAnalytics.values())
+  .sort((a: any, b: any) => b.streams + b.vues - (a.streams + a.vues))
+  .slice(0, 5);
+
+const byArtisteAnalytics = new Map();
+
+analytics?.forEach((item: any) => {
+  if (!item.artistes?.nom) return;
+
+  const current = byArtisteAnalytics.get(item.artistes.nom) || {
+    nom: item.artistes.nom,
+    streams: 0,
+    vues: 0,
+    followers: 0,
+    revenus: 0,
+  };
+
+  current.streams += Number(item.streams || 0);
+  current.vues += Number(item.vues || 0);
+  current.followers += Number(item.followers || 0);
+  current.revenus += Number(item.revenus || 0);
+
+  byArtisteAnalytics.set(item.artistes.nom, current);
+});
+
+const artisteAnalyticsRanking = Array.from(byArtisteAnalytics.values())
+  .sort((a: any, b: any) => b.streams + b.vues - (a.streams + a.vues))
+  .slice(0, 5);
+
+const roiMoyen =
+  topProjets.length > 0
+    ? Math.round(
+        topProjets.reduce((acc: number, projet: any) => {
+          const budget = Number(projet.depenses || 0);
+          const revenusProjet = Number(projet.revenus || 0);
+
+          if (budget <= 0) return acc;
+
+          return acc + ((revenusProjet - budget) / budget) * 100;
+        }, 0) / topProjets.length
+      )
+    : 0;
+
     setStats({
       artistes: artistesCount || 0,
       projets: projetsCount || 0,
@@ -317,6 +412,12 @@ const royaltiesPayees =
       resultatMois: revenus - depenses,
       royaltiesDues,
       royaltiesPayees,
+      streamsTotaux,
+      followersTotaux,
+      vuesTotales,
+      revenusAnalytics,
+      sortiesMois: sortiesMoisData?.length || 0,
+      roiMoyen,
     });
 
     setUpcomingProjects(projects || []);
@@ -331,6 +432,8 @@ const royaltiesPayees =
     setNext30Projects(next30 || []);
     setLateTasks(lateTasksData || []);
     setUrgentReleases(urgentReleasesData || []);
+    setTopSortiesAnalytics(sortieAnalyticsRanking);
+    setTopArtistesAnalytics(artisteAnalyticsRanking);
   }
 
 useEffect(() => {
@@ -595,6 +698,40 @@ const healthTone =
       <KpiCard label="Royalties payées" value={`${stats.royaltiesPayees.toFixed(2)} €`} tone="green" />
     </div>
 
+    <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3 xl:grid-cols-6">
+  <KpiCard
+    label="Streams totaux"
+    value={stats.streamsTotaux.toLocaleString("fr-FR")}
+  />
+
+  <KpiCard
+    label="Followers totaux"
+    value={stats.followersTotaux.toLocaleString("fr-FR")}
+  />
+
+  <KpiCard
+    label="Vues totales"
+    value={stats.vuesTotales.toLocaleString("fr-FR")}
+  />
+
+  <KpiCard
+    label="Revenus analytics"
+    value={`${stats.revenusAnalytics.toFixed(2)} €`}
+    tone="green"
+  />
+
+  <KpiCard
+    label="Sorties ce mois"
+    value={stats.sortiesMois}
+  />
+
+  <KpiCard
+    label="ROI moyen"
+    value={`${stats.roiMoyen}%`}
+    tone={stats.roiMoyen >= 0 ? "green" : "red"}
+  />
+</div>
+
     <RevenueChart data={revenueChartData} />
 
     <div className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-4">
@@ -693,6 +830,59 @@ const healthTone =
         ))}
       </Panel>
     </div>
+
+<div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+  <Panel title="Top artistes analytics" href="/analytics">
+    {topArtistesAnalytics.length === 0 && (
+      <p className="text-zinc-500">Aucune donnée analytics artiste.</p>
+    )}
+
+    {topArtistesAnalytics.map((artist) => (
+      <div
+        key={artist.nom}
+        className="rounded-2xl border border-zinc-800 bg-black p-5"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-semibold">{artist.nom}</h3>
+          <p className="text-green-400">
+            {artist.revenus.toFixed(2)} €
+          </p>
+        </div>
+
+        <p className="mt-2 text-sm text-zinc-500">
+          Streams : {artist.streams.toLocaleString("fr-FR")} • Vues :{" "}
+          {artist.vues.toLocaleString("fr-FR")} • Followers :{" "}
+          {artist.followers.toLocaleString("fr-FR")}
+        </p>
+      </div>
+    ))}
+  </Panel>
+
+  <Panel title="Top sorties analytics" href="/sorties">
+    {topSortiesAnalytics.length === 0 && (
+      <p className="text-zinc-500">Aucune donnée analytics sortie.</p>
+    )}
+
+    {topSortiesAnalytics.map((sortie) => (
+      <div
+        key={sortie.titre}
+        className="rounded-2xl border border-zinc-800 bg-black p-5"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-semibold">{sortie.titre}</h3>
+          <p className="text-green-400">
+            {sortie.revenus.toFixed(2)} €
+          </p>
+        </div>
+
+        <p className="mt-2 text-sm text-zinc-500">
+          Streams : {sortie.streams.toLocaleString("fr-FR")} • Vues :{" "}
+          {sortie.vues.toLocaleString("fr-FR")}
+        </p>
+      </div>
+    ))}
+  </Panel>
+</div>
 
     <section className="mt-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
       <div className="mb-6 flex items-center justify-between">
