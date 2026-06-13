@@ -82,6 +82,7 @@ export default function Sidebar() {
   { href: "/objectifs", label: "Objectifs" },
   { href: "/analytics", label: "Analytics" },
   { href: "/analytics/dashboard", label: "Analytics Dashboard" },
+  { href: "/analytics/graphs", label: "Analytics Graphs" },
 
   { href: "/booking", label: "Booking" },
   { href: "/campagnes", label: "Campagnes" },
