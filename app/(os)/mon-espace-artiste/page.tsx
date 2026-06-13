@@ -238,6 +238,30 @@ const progressionObjectifs =
     ? Math.round((objectifsAtteints / totalObjectifs) * 100)
     : 0;
 
+    const sortiesCount = sorties?.length || 0;
+const bookingsConfirmes =
+  bookings?.filter((booking: any) => booking.statut === "Confirmé").length || 0;
+
+const lmgScore = Math.min(
+  100,
+  Math.round(
+    progressionObjectifs * 0.3 +
+      Math.min(totalStreams / 100000, 1) * 25 +
+      Math.min(bookingsConfirmes / 10, 1) * 20 +
+      Math.min(royaltiesPayees / 5000, 1) * 15 +
+      Math.min(sortiesCount / 5, 1) * 10
+  )
+);
+
+const lmgScoreLabel =
+  lmgScore >= 80
+    ? "Excellent"
+    : lmgScore >= 60
+    ? "En forte progression"
+    : lmgScore >= 40
+    ? "En développement"
+    : "Phase de lancement";
+
   return (
     <main className="min-h-screen bg-black text-white">
       <div className="relative h-[420px] overflow-hidden">
@@ -321,6 +345,74 @@ const progressionObjectifs =
   <p className="mt-2 text-4xl font-bold">
     {royaltiesPayees.toFixed(0)} €
   </p>
+</div>
+
+<div className="mt-8 rounded-3xl border border-cyan-500/30 bg-cyan-500/10 p-8">
+  <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+    <div>
+      <p className="mb-2 text-sm uppercase tracking-[0.3em] text-cyan-300">
+        Ma carrière chez LMG
+      </p>
+
+      <h2 className="text-4xl font-bold">
+        LMG Score
+      </h2>
+
+      <p className="mt-3 text-xl text-cyan-100">
+        {lmgScoreLabel}
+      </p>
+    </div>
+
+    <div className="text-left xl:text-right">
+      <p className="text-6xl font-bold">
+        {lmgScore}
+      </p>
+
+      <p className="text-sm text-cyan-200">
+        / 100
+      </p>
+    </div>
+  </div>
+
+  <div className="mt-6 h-4 overflow-hidden rounded-full bg-black/40">
+    <div
+      className="h-full rounded-full bg-cyan-300"
+      style={{ width: `${lmgScore}%` }}
+    />
+  </div>
+
+  <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-5">
+    <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
+      <p className="text-sm text-cyan-200">Sorties</p>
+      <p className="mt-2 text-2xl font-bold">{sortiesCount}</p>
+    </div>
+
+    <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
+      <p className="text-sm text-cyan-200">Streams</p>
+      <p className="mt-2 text-2xl font-bold">
+        {totalStreams.toLocaleString("fr-FR")}
+      </p>
+    </div>
+
+    <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
+      <p className="text-sm text-cyan-200">Bookings confirmés</p>
+      <p className="mt-2 text-2xl font-bold">{bookingsConfirmes}</p>
+    </div>
+
+    <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
+      <p className="text-sm text-cyan-200">Royalties payées</p>
+      <p className="mt-2 text-2xl font-bold">
+        {royaltiesPayees.toFixed(0)} €
+      </p>
+    </div>
+
+    <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
+      <p className="text-sm text-cyan-200">Objectifs</p>
+      <p className="mt-2 text-2xl font-bold">
+        {progressionObjectifs}%
+      </p>
+    </div>
+  </div>
 </div>
         </div>
 
