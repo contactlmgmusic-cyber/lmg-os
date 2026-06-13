@@ -100,11 +100,11 @@ export default async function ContratDetailPage({
           <DeleteContractButton contratId={contrat.id} />
 
           <Link
-            href={`/contrats/${contrat.id}/signer`}
-            className="block rounded-xl border border-green-500/40 bg-green-500/10 px-5 py-4 text-center text-green-300 hover:bg-green-500/20"
-          >
-            Signer contrat
-          </Link>
+  href={`/contrats/${contrat.id}/signature`}
+  className="block rounded-xl bg-white px-5 py-4 text-center font-medium text-black hover:bg-zinc-200"
+>
+  Signer / Archiver signature
+</Link>
         </aside>
       </div>
     </main>
