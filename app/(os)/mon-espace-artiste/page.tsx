@@ -295,126 +295,109 @@ const lmgScoreLabel =
       </div>
 
       <section className="p-10">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-6">
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Projets</p>
-            <p className="mt-2 text-4xl font-bold">{projets?.length || 0}</p>
-          </div>
+  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-7">
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+      <p className="text-sm text-zinc-500">Projets</p>
+      <p className="mt-2 text-4xl font-bold">{projets?.length || 0}</p>
+    </div>
 
-          <div className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-6">
-  <p className="text-sm text-blue-300">Contrats</p>
+    <div className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-6">
+      <p className="text-sm text-blue-300">Contrats</p>
+      <p className="mt-2 text-4xl font-bold">{contrats?.length || 0}</p>
+    </div>
 
-  <p className="mt-2 text-4xl font-bold">
-    {contrats?.length || 0}
-  </p>
-</div>
+    <div className="rounded-3xl border border-purple-500/30 bg-purple-500/10 p-6">
+      <p className="text-sm text-purple-300">Bookings</p>
+      <p className="mt-2 text-4xl font-bold">{bookings?.length || 0}</p>
+    </div>
 
-<div className="rounded-3xl border border-purple-500/30 bg-purple-500/10 p-6">
-  <p className="text-sm text-purple-300">Bookings</p>
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+      <p className="text-sm text-zinc-500">Tâches</p>
+      <p className="mt-2 text-4xl font-bold">{taches?.length || 0}</p>
+    </div>
 
-  <p className="mt-2 text-4xl font-bold">
-    {bookings?.length || 0}
-  </p>
-</div>
-
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Tâches</p>
-            <p className="mt-2 text-4xl font-bold">{taches?.length || 0}</p>
-          </div>
-
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Assets</p>
-            <p className="mt-2 text-4xl font-bold">{assets?.length || 0}</p>
-          </div>
-
-          <div className="rounded-3xl border border-yellow-500/30 bg-yellow-500/10 p-6">
-  <p className="text-sm text-yellow-300">
-    Royalties à payer
-  </p>
-
-  <p className="mt-2 text-4xl font-bold">
-    {royaltiesAPayer.toFixed(0)} €
-  </p>
-</div>
-
-<div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
-  <p className="text-sm text-green-300">
-    Royalties payées
-  </p>
-
-  <p className="mt-2 text-4xl font-bold">
-    {royaltiesPayees.toFixed(0)} €
-  </p>
-</div>
-
-<div className="mt-8 rounded-3xl border border-cyan-500/30 bg-cyan-500/10 p-8">
-  <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-    <div>
-      <p className="mb-2 text-sm uppercase tracking-[0.3em] text-cyan-300">
-        Ma carrière chez LMG
-      </p>
-
-      <h2 className="text-4xl font-bold">
-        LMG Score
-      </h2>
-
-      <p className="mt-3 text-xl text-cyan-100">
-        {lmgScoreLabel}
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+      <p className="text-sm text-zinc-500">Documents</p>
+      <p className="mt-2 text-4xl font-bold">
+        {driveFiles?.length || assets?.length || 0}
       </p>
     </div>
 
-    <div className="text-left xl:text-right">
-      <p className="text-6xl font-bold">
-        {lmgScore}
-      </p>
-
-      <p className="text-sm text-cyan-200">
-        / 100
-      </p>
-    </div>
-  </div>
-
-  <div className="mt-6 h-4 overflow-hidden rounded-full bg-black/40">
-    <div
-      className="h-full rounded-full bg-cyan-300"
-      style={{ width: `${lmgScore}%` }}
-    />
-  </div>
-
-  <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-5">
-    <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
-      <p className="text-sm text-cyan-200">Sorties</p>
-      <p className="mt-2 text-2xl font-bold">{sortiesCount}</p>
-    </div>
-
-    <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
-      <p className="text-sm text-cyan-200">Streams</p>
-      <p className="mt-2 text-2xl font-bold">
-        {totalStreams.toLocaleString("fr-FR")}
+    <div className="rounded-3xl border border-yellow-500/30 bg-yellow-500/10 p-6">
+      <p className="text-sm text-yellow-300">Royalties à payer</p>
+      <p className="mt-2 text-4xl font-bold">
+        {royaltiesAPayer.toFixed(0)} €
       </p>
     </div>
 
-    <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
-      <p className="text-sm text-cyan-200">Bookings confirmés</p>
-      <p className="mt-2 text-2xl font-bold">{bookingsConfirmes}</p>
-    </div>
-
-    <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
-      <p className="text-sm text-cyan-200">Royalties payées</p>
-      <p className="mt-2 text-2xl font-bold">
+    <div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+      <p className="text-sm text-green-300">Royalties payées</p>
+      <p className="mt-2 text-4xl font-bold">
         {royaltiesPayees.toFixed(0)} €
       </p>
     </div>
+  </div>
 
-    <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
-      <p className="text-sm text-cyan-200">Objectifs</p>
-      <p className="mt-2 text-2xl font-bold">
-        {progressionObjectifs}%
-      </p>
+  <div className="mt-8 rounded-3xl border border-cyan-500/30 bg-cyan-500/10 p-8">
+    <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+      <div>
+        <p className="mb-2 text-sm uppercase tracking-[0.3em] text-cyan-300">
+          Ma carrière chez LMG
+        </p>
+
+        <h2 className="text-4xl font-bold">LMG Score</h2>
+
+        <p className="mt-3 text-xl text-cyan-100">
+          {lmgScoreLabel}
+        </p>
+      </div>
+
+      <div className="text-left xl:text-right">
+        <p className="text-6xl font-bold">{lmgScore}</p>
+        <p className="text-sm text-cyan-200">/ 100</p>
+      </div>
+    </div>
+
+    <div className="mt-6 h-4 overflow-hidden rounded-full bg-black/40">
+      <div
+        className="h-full rounded-full bg-cyan-300"
+        style={{ width: `${lmgScore}%` }}
+      />
+    </div>
+
+    <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
+        <p className="text-sm text-cyan-200">Sorties</p>
+        <p className="mt-2 text-2xl font-bold">{sortiesCount}</p>
+      </div>
+
+      <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
+        <p className="text-sm text-cyan-200">Streams</p>
+        <p className="mt-2 text-2xl font-bold">
+          {totalStreams.toLocaleString("fr-FR")}
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
+        <p className="text-sm text-cyan-200">Bookings confirmés</p>
+        <p className="mt-2 text-2xl font-bold">{bookingsConfirmes}</p>
+      </div>
+
+      <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
+        <p className="text-sm text-cyan-200">Royalties payées</p>
+        <p className="mt-2 text-2xl font-bold">
+          {royaltiesPayees.toFixed(0)} €
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-cyan-500/20 bg-black/30 p-4">
+        <p className="text-sm text-cyan-200">Objectifs</p>
+        <p className="mt-2 text-2xl font-bold">
+          {progressionObjectifs}%
+        </p>
+      </div>
     </div>
   </div>
-</div>
-        </div>
 
         <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
   <div className="mb-6">
