@@ -156,6 +156,12 @@ export default async function ArtisteProfilPage({
   .eq("artiste_id", id)
   .order("created_at", { ascending: false });
 
+  const { data: objectifs } = await supabase
+  .from("objectifs_artistes")
+  .select("*")
+  .eq("artiste_id", id)
+  .order("created_at", { ascending: false });
+
   const { data: finances } = await supabase
   .from("finances")
   .select("*")
@@ -507,6 +513,74 @@ const revenusParProjet = projets
       "Aucune bio ou note renseignée."}
   </p>
 </div>
+
+{canViewInternalArtistData && (
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+    <div className="mb-6 flex items-center justify-between">
+      <h2 className="text-3xl font-bold">Objectifs</h2>
+
+      {!isArtistUser && (
+        <Link
+          href="/objectifs/nouveau"
+          className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
+        >
+          + Ajouter objectif
+        </Link>
+      )}
+    </div>
+
+    {(!objectifs || objectifs.length === 0) && (
+      <p className="text-zinc-500">Aucun objectif lié à cet artiste.</p>
+    )}
+
+    <div className="space-y-4">
+      {objectifs?.map((objectif: any) => {
+        const valeurActuelle = Number(objectif.actuel || 0);
+
+        const progression =
+          objectif.objectif > 0
+            ? Math.min(
+                100,
+                Math.round((valeurActuelle / objectif.objectif) * 100)
+              )
+            : 0;
+
+        return (
+          <div
+            key={objectif.id}
+            className="rounded-2xl border border-zinc-800 bg-black p-5"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold">{objectif.type}</h3>
+
+                <p className="mt-1 text-sm text-zinc-500">
+                  {valeurActuelle.toLocaleString("fr-FR")} /{" "}
+                  {Number(objectif.objectif || 0).toLocaleString("fr-FR")}
+                </p>
+              </div>
+
+              <span className="rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-300">
+                {progression}%
+              </span>
+            </div>
+
+            <div className="h-3 overflow-hidden rounded-full bg-zinc-800">
+              <div
+                className="h-full rounded-full bg-white"
+                style={{ width: `${progression}%` }}
+              />
+            </div>
+
+            <p className="mt-3 text-xs text-zinc-500">
+              Échéance : {objectif.date_limite || "Non définie"}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
 
 <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
   <div className="mb-6 flex items-center justify-between">
