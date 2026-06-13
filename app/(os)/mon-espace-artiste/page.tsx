@@ -104,8 +104,25 @@ export default async function MonEspaceArtistePage() {
   .eq("artiste_id", profile.artiste_id)
   .order("date_event", { ascending: true });
 
+  const { data: sorties } = await supabase
+  .from("sorties")
+  .select("*")
+  .eq("artiste_id", profile.artiste_id)
+  .order("date_sortie", { ascending: false });
+
+const { data: analytics } = await supabase
+  .from("analytics")
+  .select("*")
+  .eq("artiste_id", profile.artiste_id);
+
+const { data: driveFiles } = await supabase
+  .from("drive_files")
+  .select("*")
+  .eq("artiste_id", profile.artiste_id)
+  .order("created_at", { ascending: false });
+
   const { data: objectifs } = await supabase
-  .from("objectifs_artiste")
+  .from("objectifs_artistes")
   .select("*")
   .eq("artiste_id", profile.artiste_id)
   .order("created_at", { ascending: false });
@@ -183,6 +200,30 @@ const royaltiesPayees =
     ) || 0;
 
     const totalObjectifs = objectifs?.length || 0;
+
+    const totalStreams =
+  analytics?.reduce(
+    (acc: number, item: any) => acc + Number(item.streams || 0),
+    0
+  ) || 0;
+
+const totalVues =
+  analytics?.reduce(
+    (acc: number, item: any) => acc + Number(item.vues || 0),
+    0
+  ) || 0;
+
+const totalFollowers =
+  analytics?.reduce(
+    (acc: number, item: any) => acc + Number(item.followers || 0),
+    0
+  ) || 0;
+
+const totalRevenusAnalytics =
+  analytics?.reduce(
+    (acc: number, item: any) => acc + Number(item.revenus || 0),
+    0
+  ) || 0;
 
 const objectifsAtteints =
   objectifs?.filter((objectif: any) => {
@@ -282,6 +323,46 @@ const progressionObjectifs =
   </p>
 </div>
         </div>
+
+        <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div className="mb-6">
+    <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+      Performance
+    </p>
+
+    <h2 className="text-3xl font-bold">Mes analytics</h2>
+  </div>
+
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+    <div className="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-5">
+      <p className="text-sm text-blue-300">Streams</p>
+      <p className="mt-2 text-3xl font-bold">
+        {totalStreams.toLocaleString("fr-FR")}
+      </p>
+    </div>
+
+    <div className="rounded-2xl border border-pink-500/30 bg-pink-500/10 p-5">
+      <p className="text-sm text-pink-300">Vues</p>
+      <p className="mt-2 text-3xl font-bold">
+        {totalVues.toLocaleString("fr-FR")}
+      </p>
+    </div>
+
+    <div className="rounded-2xl border border-purple-500/30 bg-purple-500/10 p-5">
+      <p className="text-sm text-purple-300">Followers</p>
+      <p className="mt-2 text-3xl font-bold">
+        {totalFollowers.toLocaleString("fr-FR")}
+      </p>
+    </div>
+
+    <div className="rounded-2xl border border-green-500/30 bg-green-500/10 p-5">
+      <p className="text-sm text-green-300">Revenus analytics</p>
+      <p className="mt-2 text-3xl font-bold">
+        {totalRevenusAnalytics.toFixed(2)} €
+      </p>
+    </div>
+  </div>
+</div>
 
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
           <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
@@ -396,69 +477,41 @@ const progressionObjectifs =
 <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
   <div className="mb-6 flex items-center justify-between">
     <div>
-      <h2 className="text-3xl font-bold">Mes objectifs</h2>
-
-      <p className="mt-2 text-zinc-500">
-        {objectifsAtteints} / {totalObjectifs} atteints · {progressionObjectifs}%
+      <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+        Documents
       </p>
-    </div>
 
-    <div className="text-right">
-      <p className="text-sm text-zinc-500">Progression</p>
-      <p className="text-3xl font-bold">{progressionObjectifs}%</p>
+      <h2 className="text-3xl font-bold">Mon Drive artiste</h2>
     </div>
   </div>
 
-  <div className="mb-6 h-3 overflow-hidden rounded-full bg-black">
-    <div
-      className="h-full rounded-full bg-white"
-      style={{ width: `${progressionObjectifs}%` }}
-    />
-  </div>
-
-  {(!objectifs || objectifs.length === 0) && (
-    <p className="text-zinc-500">Aucun objectif renseigné.</p>
+  {(!driveFiles || driveFiles.length === 0) && (
+    <p className="text-zinc-500">Aucun document disponible.</p>
   )}
 
-  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-    {objectifs?.map((objectif: any) => {
-      const target = Number(objectif.objectif || 0);
-      const current = Number(objectif.actuel || 0);
-      const percent =
-        target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+    {driveFiles?.map((file: any) => (
+      <a
+        key={file.id}
+        href={file.fichier_url}
+        target="_blank"
+        className="rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <p className="text-sm text-zinc-500">
+          {file.categorie || "Document"}
+        </p>
 
-      return (
-        <div
-          key={objectif.id}
-          className="rounded-2xl border border-zinc-800 bg-black p-5"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h3 className="text-xl font-bold">{objectif.titre}</h3>
+        <h3 className="mt-2 truncate text-xl font-bold">
+          {file.nom}
+        </h3>
 
-              <p className="mt-2 text-sm text-zinc-500">
-                {current} / {target} {objectif.unite || ""}
-              </p>
-            </div>
-
-            <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
-              {objectif.statut || "En cours"}
-            </span>
-          </div>
-
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-zinc-900">
-            <div
-              className="h-full rounded-full bg-green-400"
-              style={{ width: `${percent}%` }}
-            />
-          </div>
-
-          <p className="mt-2 text-xs text-zinc-500">
-            Progression : {percent}%
-          </p>
-        </div>
-      );
-    })}
+        <p className="mt-3 text-sm text-zinc-500">
+          {file.taille
+            ? `${(Number(file.taille) / 1024 / 1024).toFixed(2)} MB`
+            : "Taille non renseignée"}
+        </p>
+      </a>
+    ))}
   </div>
 </div>
         </div>
