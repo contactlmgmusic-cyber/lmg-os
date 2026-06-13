@@ -541,6 +541,83 @@ const revenusParProjet = projets
     </div>
   )}
 
+{canViewInternalArtistData && (
+  <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+    <div className="mb-6">
+      <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+        Centre de commande
+      </p>
+
+      <h2 className="text-3xl font-bold">
+        Performance artiste
+      </h2>
+    </div>
+
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+      <Link
+        href="/objectifs"
+        className="rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <p className="text-sm text-zinc-500">Objectifs</p>
+        <p className="mt-2 text-2xl font-bold">
+          {objectifs?.length || 0}
+        </p>
+      </Link>
+
+      <Link
+        href="/analytics"
+        className="rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <p className="text-sm text-zinc-500">Analytics</p>
+        <p className="mt-2 text-2xl font-bold">
+          {totalStreamsAnalytics.toLocaleString("fr-FR")}
+        </p>
+        <p className="mt-1 text-xs text-zinc-500">streams</p>
+      </Link>
+
+      <Link
+        href="/sorties"
+        className="rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <p className="text-sm text-zinc-500">Sorties</p>
+        <p className="mt-2 text-2xl font-bold">
+          {releasedProjects.length}
+        </p>
+      </Link>
+
+      <Link
+        href="/booking"
+        className="rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <p className="text-sm text-zinc-500">Bookings</p>
+        <p className="mt-2 text-2xl font-bold">
+          {bookings?.length || 0}
+        </p>
+      </Link>
+
+      <Link
+        href="/finances"
+        className="rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <p className="text-sm text-zinc-500">Résultat</p>
+        <p className="mt-2 text-2xl font-bold">
+          {resultat.toFixed(2)} €
+        </p>
+      </Link>
+
+      <Link
+        href="/contrats"
+        className="rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
+      >
+        <p className="text-sm text-zinc-500">Contrats</p>
+        <p className="mt-2 text-2xl font-bold">
+          {contrats?.length || 0}
+        </p>
+      </Link>
+    </div>
+  </div>
+)}
+
 </section>
 
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.6fr]">
