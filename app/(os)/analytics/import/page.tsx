@@ -1,14 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Papa from "papaparse";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { ROLES } from "@/lib/roles";
 
 export default function ImportAnalyticsPage() {
   const [rows, setRows] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+const [loading, setLoading] = useState(false);
 
-  function handleFile(file: File) {
+useEffect(() => {
+  async function checkAccess() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
+
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (
+      profile?.role !== ROLES.SUPER_ADMIN &&
+      profile?.role !== ROLES.ADMIN
+    ) {
+      window.location.href = "/";
+      return;
+    }
+  }
+
+  checkAccess();
+}, []);
+
+function handleFile(file: File) {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,

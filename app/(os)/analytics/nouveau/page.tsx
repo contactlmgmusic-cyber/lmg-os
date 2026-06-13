@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { ROLES } from "@/lib/roles";
 
 export default function NouveauAnalyticsPage() {
   const router = useRouter();
@@ -23,37 +24,71 @@ export default function NouveauAnalyticsPage() {
   const [sorties, setSorties] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    async function loadData() {
-      const { data: artistesData } = await supabaseBrowser.from("artistes").select("id, nom").order("nom");
-      const { data: projetsData } = await supabaseBrowser.from("projets").select("id, titre").order("titre");
-      const { data: sortiesData } = await supabaseBrowser.from("sorties").select("id, titre").order("titre");
+useEffect(() => {
+  async function loadData() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
 
-      setArtistes(artistesData || []);
-      setProjets(projetsData || []);
-      setSorties(sortiesData || []);
+    if (!user) {
+      window.location.href = "/login";
+      return;
     }
 
-    loadData();
-  }, []);
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
+    if (
+      profile?.role !== ROLES.SUPER_ADMIN &&
+      profile?.role !== ROLES.ADMIN &&
+      profile?.role !== ROLES.MANAGER
+    ) {
+      window.location.href = "/";
+      return;
+    }
 
-    const { error } = await supabaseBrowser.from("analytics").insert({
-      plateforme,
-      artiste_id: artisteId || null,
-      projet_id: projetId || null,
-      sortie_id: sortieId || null,
-      streams: streams ? Number(streams) : 0,
-      listeners: listeners ? Number(listeners) : 0,
-      followers: followers ? Number(followers) : 0,
-      vues: vues ? Number(vues) : 0,
-      revenus: revenus ? Number(revenus) : 0,
-      date_snapshot: dateSnapshot || new Date().toISOString().split("T")[0],
-    });
+    const { data: artistesData } = await supabaseBrowser
+      .from("artistes")
+      .select("id, nom")
+      .order("nom");
 
+    const { data: projetsData } = await supabaseBrowser
+      .from("projets")
+      .select("id, titre")
+      .order("titre");
+
+    const { data: sortiesData } = await supabaseBrowser
+      .from("sorties")
+      .select("id, titre")
+      .order("titre");
+
+    setArtistes(artistesData || []);
+    setProjets(projetsData || []);
+    setSorties(sortiesData || []);
+  }
+
+  loadData();
+}, []);
+
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
+  setLoading(true);
+
+  const { error } = await supabaseBrowser.from("analytics").insert({
+    plateforme,
+    artiste_id: artisteId || null,
+    projet_id: projetId || null,
+    sortie_id: sortieId || null,
+    streams: streams ? Number(streams) : 0,
+    listeners: listeners ? Number(listeners) : 0,
+    followers: followers ? Number(followers) : 0,
+    vues: vues ? Number(vues) : 0,
+    revenus: revenus ? Number(revenus) : 0,
+    date_snapshot: dateSnapshot || new Date().toISOString().split("T")[0],
+  });
     setLoading(false);
 
     if (error) {

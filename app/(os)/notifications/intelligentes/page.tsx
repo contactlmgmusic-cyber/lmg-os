@@ -1,12 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { notifyRoles } from "@/lib/notify";
+import { ROLES } from "@/lib/roles";
 
 export default function NotificationsIntelligentesPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    async function checkAccess() {
+      const {
+        data: { user },
+      } = await supabaseBrowser.auth.getUser();
+
+      if (!user) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const { data: profile } = await supabaseBrowser
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (
+        profile?.role !== ROLES.SUPER_ADMIN &&
+        profile?.role !== ROLES.ADMIN
+      ) {
+        window.location.href = "/";
+        return;
+      }
+    }
+
+    checkAccess();
+  }, []);
 
   async function lancerAnalyse() {
     setLoading(true);

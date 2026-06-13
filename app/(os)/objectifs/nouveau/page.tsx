@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { ROLES } from "@/lib/roles";
 
 export default function NouvelObjectifPage() {
   const router = useRouter();
@@ -16,18 +17,41 @@ export default function NouvelObjectifPage() {
 
   const [artistes, setArtistes] = useState<any[]>([]);
 
-  useEffect(() => {
-    async function loadArtistes() {
-      const { data } = await supabaseBrowser
-        .from("artistes")
-        .select("id, nom")
-        .order("nom");
+useEffect(() => {
+  async function loadArtistes() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
 
-      setArtistes(data || []);
+    if (!user) {
+      window.location.href = "/login";
+      return;
     }
 
-    loadArtistes();
-  }, []);
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (
+      profile?.role !== ROLES.SUPER_ADMIN &&
+      profile?.role !== ROLES.ADMIN
+    ) {
+      window.location.href = "/";
+      return;
+    }
+
+    const { data } = await supabaseBrowser
+      .from("artistes")
+      .select("id, nom")
+      .order("nom");
+
+    setArtistes(data || []);
+  }
+
+  loadArtistes();
+}, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
