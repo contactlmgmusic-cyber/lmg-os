@@ -81,6 +81,7 @@ export default function Sidebar() {
   { href: "/release-planner", label: "Release Planner" },
   { href: "/objectifs", label: "Objectifs" },
   { href: "/analytics", label: "Analytics" },
+  { href: "/analytics/dashboard", label: "Analytics Dashboard" },
 
   { href: "/booking", label: "Booking" },
   { href: "/campagnes", label: "Campagnes" },
