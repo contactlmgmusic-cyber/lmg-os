@@ -4,11 +4,6 @@ import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
-await requireRole([
-  ROLES.SUPER_ADMIN,
-  ROLES.ADMIN,
-]);
-
 function formatNumber(value: number) {
   return Number(value || 0).toLocaleString("fr-FR");
 }
@@ -18,6 +13,12 @@ function formatEuro(value: number) {
 }
 
 export default async function AnalyticsPage() {
+await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.MANAGER,
+]);
+
   const { data: analytics } = await supabase
     .from("analytics")
     .select(`
