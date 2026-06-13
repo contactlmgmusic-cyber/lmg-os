@@ -44,8 +44,7 @@ export default function AnalyticsGraphsPage() {
 
       if (
         profile?.role !== ROLES.SUPER_ADMIN &&
-        profile?.role !== ROLES.ADMIN &&
-        profile?.role !== ROLES.MANAGER
+        profile?.role !== ROLES.ADMIN
       ) {
         window.location.href = "/";
         return;
