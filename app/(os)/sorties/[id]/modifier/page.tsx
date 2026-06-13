@@ -34,6 +34,30 @@ export default function ModifierSortiePage() {
 
   useEffect(() => {
     async function loadData() {
+
+const {
+  data: { user },
+} = await supabaseBrowser.auth.getUser();
+
+if (!user) {
+  router.push("/login");
+  return;
+}
+
+const { data: profile } = await supabaseBrowser
+  .from("profiles")
+  .select("role")
+  .eq("id", user.id)
+  .single();
+
+if (
+  profile?.role !== "super_admin" &&
+  profile?.role !== "admin"
+) {
+  router.push("/");
+  return;
+}
+
       const { data: sortie, error } = await supabaseBrowser
         .from("sorties")
         .select("*")

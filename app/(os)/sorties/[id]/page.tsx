@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +11,11 @@ export default async function SortieDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+]);
 
   const { data: sortie, error } = await supabase
     .from("sorties")

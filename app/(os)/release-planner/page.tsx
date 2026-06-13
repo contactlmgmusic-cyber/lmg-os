@@ -1,9 +1,16 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReleasePlannerPage() {
+  await requireRole([
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+  ]);
+
   const { data: sorties } = await supabase
     .from("sorties")
     .select(`

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { ROLES } from "@/lib/roles";
 
 const templateTasks = [
   { titre: "Finaliser la cover", jours_avant: 60 },
@@ -29,6 +30,29 @@ export default function ReleasePlannerDetailPage() {
   const [generating, setGenerating] = useState(false);
 
   async function loadData() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (
+      profile?.role !== ROLES.SUPER_ADMIN &&
+      profile?.role !== ROLES.ADMIN
+    ) {
+      router.push("/");
+      return;
+    }
+
     const { data: sortieData } = await supabaseBrowser
       .from("sorties")
       .select(`
@@ -107,8 +131,7 @@ export default function ReleasePlannerDetailPage() {
   }
 
   async function toggleTask(task: any) {
-    const nextStatus =
-      task.statut === "Terminé" ? "À faire" : "Terminé";
+    const nextStatus = task.statut === "Terminé" ? "À faire" : "Terminé";
 
     const { error } = await supabaseBrowser
       .from("release_tasks")
@@ -167,7 +190,7 @@ export default function ReleasePlannerDetailPage() {
         ← Retour Release Planner
       </Link>
 
-      <div className="mt-8 mb-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+      <div className="mb-10 mt-8 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
             {sortie.artistes?.nom || "Artiste non lié"}
@@ -176,7 +199,8 @@ export default function ReleasePlannerDetailPage() {
           <h1 className="text-5xl font-bold">{sortie.titre}</h1>
 
           <p className="mt-3 text-zinc-400">
-            {sortie.type || "Sortie"} • {sortie.date_sortie || "Date non renseignée"}
+            {sortie.type || "Sortie"} •{" "}
+            {sortie.date_sortie || "Date non renseignée"}
           </p>
         </div>
 
@@ -192,6 +216,7 @@ export default function ReleasePlannerDetailPage() {
       <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-3xl font-bold">Progression release</h2>
+
           <span className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300">
             {progression}%
           </span>
@@ -240,9 +265,7 @@ export default function ReleasePlannerDetailPage() {
                       : `J+${Math.abs(task.jours_avant)}`}
                   </p>
 
-                  <h3 className="mt-1 text-xl font-semibold">
-                    {task.titre}
-                  </h3>
+                  <h3 className="mt-1 text-xl font-semibold">{task.titre}</h3>
 
                   <p className="mt-2 text-sm text-zinc-500">
                     Date prévue : {task.date_prevue || "Non renseignée"}
