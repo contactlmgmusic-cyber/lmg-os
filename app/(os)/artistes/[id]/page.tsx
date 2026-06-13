@@ -271,6 +271,28 @@ const totalRevenusAnalytics =
 
 const dernierSnapshotAnalytics = analytics?.[0];
 
+const artistPerformanceScore = Math.min(
+  100,
+  Math.round(
+    Math.min(totalStreamsAnalytics / 100000, 1) * 30 +
+      Math.min(totalFollowersAnalytics / 10000, 1) * 20 +
+      Math.min(totalRevenusAnalytics / 5000, 1) * 20 +
+      Math.min((bookings?.length || 0) / 10, 1) * 15 +
+      Math.min((releasedProjects.length || 0) / 5, 1) * 15
+  )
+);
+
+const artistLevel =
+  artistPerformanceScore >= 90
+    ? "Diamond Artist"
+    : artistPerformanceScore >= 75
+    ? "Platinum Artist"
+    : artistPerformanceScore >= 60
+    ? "Gold Artist"
+    : artistPerformanceScore >= 40
+    ? "Silver Artist"
+    : "Bronze Artist";
+
 const topSortieAnalytics = analytics
   ?.filter((item: any) => item.sorties?.titre)
   .sort(
@@ -348,6 +370,20 @@ const revenusParProjet = projets
           <p className="mt-3 text-xl text-zinc-300">
             {artiste.style || "Style non renseigné"}
           </p>
+
+          {canViewInternalArtistData && (
+  <div className="mt-4 inline-flex items-center gap-3 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-5 py-3 text-yellow-300">
+    <span>🏆</span>
+
+    <span className="font-semibold">
+      {artistLevel}
+    </span>
+
+    <span className="text-sm text-yellow-200/70">
+      {artistPerformanceScore}/100
+    </span>
+  </div>
+)}
 
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
