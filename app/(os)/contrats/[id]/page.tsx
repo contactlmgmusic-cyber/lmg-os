@@ -49,9 +49,23 @@ export default async function ContratDetailPage({
 
           <h1 className="mt-3 text-5xl font-bold">{contrat.titre}</h1>
 
-          <span className="mt-6 inline-block rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300">
-            {contrat.statut || "Brouillon"}
-          </span>
+          <div className="mt-6 flex flex-wrap gap-3">
+  <span
+    className={`inline-block rounded-full border px-4 py-2 text-sm ${
+      contrat.statut === "Signé"
+        ? "border-green-500/40 bg-green-500/10 text-green-300"
+        : "border-zinc-700 text-zinc-300"
+    }`}
+  >
+    {contrat.statut || "Brouillon"}
+  </span>
+
+  {contrat.statut === "Signé" && (
+    <span className="inline-block rounded-full border border-green-500/40 bg-green-500/10 px-4 py-2 text-sm text-green-300">
+      Signé le {contrat.date_signature || "date non renseignée"}
+    </span>
+  )}
+</div>
 
           <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-zinc-800 bg-black p-5">
@@ -68,6 +82,36 @@ export default async function ContratDetailPage({
               </p>
             </div>
           </div>
+
+          {contrat.statut === "Signé" && (
+  <div className="mt-8 rounded-2xl border border-green-500/30 bg-green-500/10 p-6">
+    <h2 className="text-2xl font-bold text-green-300">
+      Signature
+    </h2>
+
+    <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="rounded-xl border border-green-500/20 bg-black/40 p-4">
+        <p className="text-sm text-green-200/70">Signé par</p>
+        <p className="mt-2 text-lg font-semibold text-green-100">
+          {contrat.signe_par || "Non renseigné"}
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-green-500/20 bg-black/40 p-4">
+        <p className="text-sm text-green-200/70">Date de signature</p>
+        <p className="mt-2 text-lg font-semibold text-green-100">
+          {contrat.date_signature || "Non renseignée"}
+        </p>
+      </div>
+    </div>
+
+    {contrat.signature_notes && (
+      <p className="mt-5 whitespace-pre-line text-sm leading-relaxed text-green-100/80">
+        {contrat.signature_notes}
+      </p>
+    )}
+  </div>
+)}
 
           <div className="mt-8 rounded-2xl border border-zinc-800 bg-black p-6">
             <h2 className="text-2xl font-bold">Notes internes</h2>
@@ -89,6 +133,16 @@ export default async function ContratDetailPage({
               Ouvrir PDF
             </a>
           )}
+
+          {contrat.fichier_signe_url && (
+  <a
+    href={contrat.fichier_signe_url}
+    target="_blank"
+    className="block rounded-xl border border-green-500/40 bg-green-500/10 px-5 py-4 text-center font-medium text-green-300 hover:bg-green-500/20"
+  >
+    Ouvrir PDF signé
+  </a>
+)}
 
           <Link
             href={`/contrats/${contrat.id}/modifier`}
