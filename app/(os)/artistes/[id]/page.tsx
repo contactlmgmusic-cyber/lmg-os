@@ -372,135 +372,176 @@ const revenusParProjet = projets
       </div>
 
       <section className="p-10">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Statut</p>
-            <p className="mt-2 text-xl font-semibold">
-              {artiste.statut || "Non renseigné"}
-            </p>
-          </div>
 
-          {canViewInternalArtistData && (
-  <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5">
-    <div className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-6">
-      <p className="text-sm text-blue-300">Streams analytics</p>
+  {/* KPI PRINCIPAUX */}
+  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
+
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+      <p className="text-sm text-zinc-500">Statut</p>
       <p className="mt-2 text-xl font-semibold">
-        {totalStreamsAnalytics.toLocaleString("fr-FR")}
+        {artiste.statut || "Non renseigné"}
       </p>
     </div>
 
-    <div className="rounded-3xl border border-purple-500/30 bg-purple-500/10 p-6">
-      <p className="text-sm text-purple-300">Followers analytics</p>
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+      <p className="text-sm text-zinc-500">Manager</p>
       <p className="mt-2 text-xl font-semibold">
-        {totalFollowersAnalytics.toLocaleString("fr-FR")}
+        {artiste.manager?.nom || "LMG"}
       </p>
     </div>
 
-    <div className="rounded-3xl border border-pink-500/30 bg-pink-500/10 p-6">
-      <p className="text-sm text-pink-300">Vues analytics</p>
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+      <p className="text-sm text-zinc-500">Projets</p>
       <p className="mt-2 text-xl font-semibold">
-        {totalVuesAnalytics.toLocaleString("fr-FR")}
+        {visibleProjects.length}
       </p>
     </div>
 
-    <div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
-      <p className="text-sm text-green-300">Revenus analytics</p>
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+      <p className="text-sm text-zinc-500">Sorties</p>
       <p className="mt-2 text-xl font-semibold">
-        {totalRevenusAnalytics.toFixed(2)} €
+        {releasedProjects.length}
       </p>
     </div>
 
-    <div className="rounded-3xl border border-zinc-700 bg-zinc-900 p-6">
-      <p className="text-sm text-zinc-400">Top sortie</p>
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+      <p className="text-sm text-zinc-500">Tâches ouvertes</p>
       <p className="mt-2 text-xl font-semibold">
-        {topSortieAnalytics?.sorties?.titre || "Aucune donnée"}
-      </p>
-
-      <p className="mt-2 text-xs text-zinc-500">
-        Dernier snapshot :{" "}
-        {dernierSnapshotAnalytics?.date_snapshot || "Aucun"}
+        {canViewInternalArtistData ? openTasks.length : "Privé"}
       </p>
     </div>
+
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+      <p className="text-sm text-zinc-500">Assets</p>
+      <p className="mt-2 text-xl font-semibold">
+        {canViewInternalArtistData ? assets?.length || 0 : "Privé"}
+      </p>
+    </div>
+
   </div>
-)}
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Manager</p>
-            <p className="mt-2 text-xl font-semibold">
-              {artiste.manager?.nom || "LMG"}
-            </p>
-          </div>
+  {/* ANALYTICS */}
+  {canViewInternalArtistData && (
+    <div className="mt-8">
+      <h2 className="mb-4 text-2xl font-bold">
+        Analytics
+      </h2>
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Projets</p>
-            <p className="mt-2 text-xl font-semibold">
-              {visibleProjects.length}
-            </p>
-          </div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5">
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Sorties</p>
-            <p className="mt-2 text-xl font-semibold">
-              {releasedProjects.length}
-            </p>
-          </div>
+        <div className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-6">
+          <p className="text-sm text-blue-300">
+            Streams
+          </p>
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Tâches ouvertes</p>
-            <p className="mt-2 text-xl font-semibold">
-              {canViewInternalArtistData ? openTasks.length : "Privé"}
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm text-zinc-500">Assets</p>
-            <p className="mt-2 text-xl font-semibold">
-              {canViewInternalArtistData ? assets?.length || 0 : "Privé"}
-            </p>
-          </div>
+          <p className="mt-2 text-2xl font-semibold">
+            {totalStreamsAnalytics.toLocaleString("fr-FR")}
+          </p>
         </div>
 
-<div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
-  <p className="text-sm text-green-300">CA généré</p>
+        <div className="rounded-3xl border border-purple-500/30 bg-purple-500/10 p-6">
+          <p className="text-sm text-purple-300">
+            Followers
+          </p>
 
-  <p className="mt-2 text-xl font-semibold">
-    {canViewInternalArtistData
-      ? `${revenus.toFixed(2)} €`
-      : "Privé"}
-  </p>
-</div>
+          <p className="mt-2 text-2xl font-semibold">
+            {totalFollowersAnalytics.toLocaleString("fr-FR")}
+          </p>
+        </div>
 
-<div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-6">
-  <p className="text-sm text-red-300">Dépenses</p>
+        <div className="rounded-3xl border border-pink-500/30 bg-pink-500/10 p-6">
+          <p className="text-sm text-pink-300">
+            Vues
+          </p>
 
-  <p className="mt-2 text-xl font-semibold">
-    {canViewInternalArtistData
-      ? `${depenses.toFixed(2)} €`
-      : "Privé"}
-  </p>
-</div>
+          <p className="mt-2 text-2xl font-semibold">
+            {totalVuesAnalytics.toLocaleString("fr-FR")}
+          </p>
+        </div>
 
-<div className="rounded-3xl border border-zinc-700 bg-zinc-900 p-6">
-  <p className="text-sm text-zinc-400">Résultat net</p>
+        <div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+          <p className="text-sm text-green-300">
+            Revenus
+          </p>
 
-  <p className="mt-2 text-xl font-semibold">
-    {canViewInternalArtistData
-      ? `${resultat.toFixed(2)} €`
-      : "Privé"}
-  </p>
-</div>
+          <p className="mt-2 text-2xl font-semibold">
+            {totalRevenusAnalytics.toFixed(2)} €
+          </p>
+        </div>
 
-<div className="rounded-3xl border border-yellow-500/30 bg-yellow-500/10 p-6">
-  <p className="text-sm text-yellow-300">
-    Royalties à payer
-  </p>
+        <div className="rounded-3xl border border-zinc-700 bg-zinc-900 p-6">
+          <p className="text-sm text-zinc-400">
+            Top sortie
+          </p>
 
-  <p className="mt-2 text-xl font-semibold">
-    {canViewInternalArtistData
-      ? `${royaltiesAPayer.toFixed(2)} €`
-      : "Privé"}
-  </p>
-</div>
+          <p className="mt-2 text-xl font-semibold">
+            {topSortieAnalytics?.sorties?.titre || "Aucune donnée"}
+          </p>
+
+          <p className="mt-2 text-xs text-zinc-500">
+            Dernier snapshot :{" "}
+            {dernierSnapshotAnalytics?.date_snapshot || "Aucun"}
+          </p>
+        </div>
+
+      </div>
+    </div>
+  )}
+
+  {/* FINANCES */}
+  {canViewInternalArtistData && (
+    <div className="mt-8">
+      <h2 className="mb-4 text-2xl font-bold">
+        Finances
+      </h2>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+        <div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+          <p className="text-sm text-green-300">
+            CA généré
+          </p>
+
+          <p className="mt-2 text-2xl font-semibold">
+            {revenus.toFixed(2)} €
+          </p>
+        </div>
+
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-6">
+          <p className="text-sm text-red-300">
+            Dépenses
+          </p>
+
+          <p className="mt-2 text-2xl font-semibold">
+            {depenses.toFixed(2)} €
+          </p>
+        </div>
+
+        <div className="rounded-3xl border border-zinc-700 bg-zinc-900 p-6">
+          <p className="text-sm text-zinc-400">
+            Résultat net
+          </p>
+
+          <p className="mt-2 text-2xl font-semibold">
+            {resultat.toFixed(2)} €
+          </p>
+        </div>
+
+        <div className="rounded-3xl border border-yellow-500/30 bg-yellow-500/10 p-6">
+          <p className="text-sm text-yellow-300">
+            Royalties à payer
+          </p>
+
+          <p className="mt-2 text-2xl font-semibold">
+            {royaltiesAPayer.toFixed(2)} €
+          </p>
+        </div>
+
+      </div>
+    </div>
+  )}
+
+</section>
 
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.6fr]">
           <div className="space-y-6">
@@ -1044,7 +1085,6 @@ const revenusParProjet = projets
             )}
           </aside>
         </div>
-      </section>
     </main>
   );
 }
