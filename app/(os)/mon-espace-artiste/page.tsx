@@ -262,6 +262,48 @@ const lmgScoreLabel =
     ? "En développement"
     : "Phase de lancement";
 
+    const artistLevel =
+  lmgScore >= 90
+    ? "Diamond Artist"
+    : lmgScore >= 75
+    ? "Platinum Artist"
+    : lmgScore >= 60
+    ? "Gold Artist"
+    : lmgScore >= 40
+    ? "Silver Artist"
+    : "Bronze Artist";
+
+const badges = [
+  {
+    label: "Premier contrat signé",
+    unlocked: contrats?.some((contrat: any) => contrat.statut === "Signé"),
+  },
+  {
+    label: "Première sortie",
+    unlocked: sortiesCount > 0,
+  },
+  {
+    label: "10K streams",
+    unlocked: totalStreams >= 10000,
+  },
+  {
+    label: "100K streams",
+    unlocked: totalStreams >= 100000,
+  },
+  {
+    label: "Premier booking",
+    unlocked: bookingsConfirmes > 0,
+  },
+  {
+    label: "Objectif atteint",
+    unlocked: objectifsAtteints > 0,
+  },
+  {
+    label: "Royalties générées",
+    unlocked: royaltiesPayees > 0 || royaltiesAPayer > 0,
+  },
+];
+
   return (
     <main className="min-h-screen bg-black text-white">
       <div className="relative h-[420px] overflow-hidden">
@@ -436,6 +478,60 @@ const lmgScoreLabel =
         {totalRevenusAnalytics.toFixed(2)} €
       </p>
     </div>
+  </div>
+</div>
+
+<div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+        Progression artiste
+      </p>
+
+      <h2 className="text-3xl font-bold">
+        {artistLevel}
+      </h2>
+
+      <p className="mt-2 text-zinc-400">
+        Niveau calculé automatiquement selon ton activité LMG.
+      </p>
+    </div>
+
+    <div className="rounded-2xl border border-zinc-700 bg-black px-6 py-4 text-center">
+      <p className="text-sm text-zinc-500">Badges débloqués</p>
+      <p className="mt-1 text-3xl font-bold">
+        {badges.filter((badge) => badge.unlocked).length} / {badges.length}
+      </p>
+    </div>
+  </div>
+
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    {badges.map((badge) => (
+      <div
+        key={badge.label}
+        className={`rounded-2xl border p-5 ${
+          badge.unlocked
+            ? "border-green-500/30 bg-green-500/10"
+            : "border-zinc-800 bg-black opacity-50"
+        }`}
+      >
+        <p className="text-2xl">
+          {badge.unlocked ? "🏆" : "🔒"}
+        </p>
+
+        <h3
+          className={`mt-3 font-semibold ${
+            badge.unlocked ? "text-green-300" : "text-zinc-500"
+          }`}
+        >
+          {badge.label}
+        </h3>
+
+        <p className="mt-2 text-xs text-zinc-500">
+          {badge.unlocked ? "Débloqué" : "À débloquer"}
+        </p>
+      </div>
+    ))}
   </div>
 </div>
 
