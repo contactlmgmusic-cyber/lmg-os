@@ -43,6 +43,19 @@ const { data: analytics } = await supabase
   .eq("sortie_id", id)
   .order("date_snapshot", { ascending: false });
 
+  const { data: releaseTasks } = await supabase
+  .from("release_tasks")
+  .select("*")
+  .eq("sortie_id", id);
+
+const releaseTotal = releaseTasks?.length || 0;
+
+const releaseDone =
+  releaseTasks?.filter((task: any) => task.statut === "Terminé").length || 0;
+
+const releaseProgress =
+  releaseTotal > 0 ? Math.round((releaseDone / releaseTotal) * 100) : 0;
+
   const budgetSortie =
   Number(sortie?.projets?.budget_clip || 0) +
   Number(sortie?.projets?.budget_cover || 0) +
@@ -163,6 +176,36 @@ const dernierSnapshot = analytics?.[0];
       : "Budget non renseigné"
   }
 />
+</div>
+
+<div className="mt-8 rounded-2xl border border-zinc-800 bg-black p-6">
+  <div className="flex items-center justify-between gap-4">
+    <div>
+      <h2 className="text-2xl font-bold">Release Planner</h2>
+
+      <p className="mt-2 text-sm text-zinc-500">
+        {releaseDone} / {releaseTotal} actions terminées
+      </p>
+    </div>
+
+    <span className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300">
+      {releaseProgress}%
+    </span>
+  </div>
+
+  <div className="mt-5 h-3 overflow-hidden rounded-full bg-zinc-800">
+    <div
+      className="h-full rounded-full bg-white"
+      style={{ width: `${releaseProgress}%` }}
+    />
+  </div>
+
+  <Link
+    href={`/release-planner/${sortie.id}`}
+    className="mt-6 inline-block rounded-xl bg-white px-5 py-3 font-medium text-black hover:bg-zinc-200"
+  >
+    Ouvrir le planner →
+  </Link>
 </div>
 
           {links.length > 0 && (

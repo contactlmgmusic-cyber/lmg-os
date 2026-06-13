@@ -56,6 +56,11 @@ export default async function GlobalCalendarPage() {
   .select("id, nom, prochaine_relance, statut")
   .not("prochaine_relance", "is", null);
 
+  const { data: releaseTasks } = await supabase
+  .from("release_tasks")
+  .select("id, titre, date_prevue, statut, sortie_id")
+  .not("date_prevue", "is", null);
+
   const items: CalendarItem[] = [
     ...(rolloutEvents || []).map((item: any) => ({
       id: item.id,
@@ -110,6 +115,16 @@ export default async function GlobalCalendarPage() {
   statut: item.statut,
   link: `/partenaires/${item.id}`,
   description: "Relance CRM partenaires",
+})),
+
+...(releaseTasks || []).map((item: any) => ({
+  id: item.id,
+  type: "Release Planner",
+  titre: item.titre,
+  date: item.date_prevue,
+  statut: item.statut,
+  link: `/release-planner/${item.sortie_id}`,
+  description: "Action release",
 })),
   ].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()

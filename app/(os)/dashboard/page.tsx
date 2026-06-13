@@ -38,6 +38,9 @@ export default function DashboardPage() {
     revenusAnalytics: 0,
     sortiesMois: 0,
     roiMoyen: 0,
+    releaseTasksTotal: 0,
+    releaseTasksDone: 0,
+    releaseProgressMoyenne: 0,
   });
 
   const router = useRouter();
@@ -396,6 +399,20 @@ const roiMoyen =
       )
     : 0;
 
+    const { data: releaseTasks } = await supabaseBrowser
+  .from("release_tasks")
+  .select("*");
+
+const releaseTasksTotal = releaseTasks?.length || 0;
+
+const releaseTasksDone =
+  releaseTasks?.filter((task: any) => task.statut === "Terminé").length || 0;
+
+const releaseProgressMoyenne =
+  releaseTasksTotal > 0
+    ? Math.round((releaseTasksDone / releaseTasksTotal) * 100)
+    : 0;
+
     setStats({
       artistes: artistesCount || 0,
       projets: projetsCount || 0,
@@ -418,6 +435,9 @@ const roiMoyen =
       revenusAnalytics,
       sortiesMois: sortiesMoisData?.length || 0,
       roiMoyen,
+      releaseTasksTotal,
+      releaseTasksDone,
+      releaseProgressMoyenne,
     });
 
     setUpcomingProjects(projects || []);
@@ -583,6 +603,28 @@ const healthTone =
         <AlertCard label="Relances médias" value={stats.mediasRelanceAujourdhui} href="/medias/dashboard" danger={stats.mediasRelanceAujourdhui > 0} />
       </div>
     </section>
+
+    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div className="mb-6 flex items-center justify-between">
+    <div>
+      <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+        Release Planner
+      </p>
+
+      <h2 className="text-3xl font-bold">Suivi des sorties</h2>
+    </div>
+
+    <Link href="/release-planner" className="text-sm text-zinc-400 hover:text-white">
+      Ouvrir →
+    </Link>
+  </div>
+
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <MiniStat label="Actions release" value={stats.releaseTasksTotal} />
+    <MiniStat label="Actions terminées" value={stats.releaseTasksDone} />
+    <MiniStat label="Progression moyenne" value={stats.releaseProgressMoyenne} />
+  </div>
+</section>
 
     <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
       <div className="mb-6 flex items-center justify-between">
