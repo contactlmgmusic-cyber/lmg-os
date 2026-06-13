@@ -5,15 +5,90 @@ export const dynamic = "force-dynamic";
 
 export default async function ObjectifsPage() {
   const { data: objectifs } = await supabase
-    .from("objectifs_artistes")
-    .select(`
-      *,
-      artistes (
-        id,
-        nom
-      )
-    `)
-    .order("created_at", { ascending: false });
+  .from("objectifs_artistes")
+  .select(`
+    *,
+    artistes (
+      id,
+      nom
+    )
+  `)
+  .order("created_at", { ascending: false });
+
+const { data: analytics } = await supabase
+  .from("analytics")
+  .select("*");
+
+const { data: finances } = await supabase
+  .from("finances")
+  .select("*");
+
+const { data: bookings } = await supabase
+  .from("bookings")
+  .select("*");
+
+const { data: contrats } = await supabase
+  .from("contrats")
+  .select("*");
+
+function getAutomaticValue(objectif: any) {
+  const artisteId = objectif.artiste_id;
+
+  if (objectif.type === "Streams") {
+    return (
+      analytics
+        ?.filter((item: any) => item.artiste_id === artisteId)
+        .reduce((acc: number, item: any) => acc + Number(item.streams || 0), 0) || 0
+    );
+  }
+
+  if (objectif.type === "Followers") {
+    return (
+      analytics
+        ?.filter((item: any) => item.artiste_id === artisteId)
+        .reduce((acc: number, item: any) => acc + Number(item.followers || 0), 0) || 0
+    );
+  }
+
+  if (objectif.type === "Vues") {
+    return (
+      analytics
+        ?.filter((item: any) => item.artiste_id === artisteId)
+        .reduce((acc: number, item: any) => acc + Number(item.vues || 0), 0) || 0
+    );
+  }
+
+  if (objectif.type === "Revenus") {
+    return (
+      finances
+        ?.filter(
+          (item: any) =>
+            item.artiste_id === artisteId && item.type === "Revenu"
+        )
+        .reduce((acc: number, item: any) => acc + Number(item.montant || 0), 0) || 0
+    );
+  }
+
+  if (objectif.type === "Bookings") {
+    return (
+      bookings?.filter(
+        (item: any) =>
+          item.artiste_id === artisteId && item.statut === "Confirmé"
+      ).length || 0
+    );
+  }
+
+  if (objectif.type === "Contrats") {
+    return (
+      contrats?.filter(
+        (item: any) =>
+          item.artiste_id === artisteId && item.statut === "Signé"
+      ).length || 0
+    );
+  }
+
+  return Number(objectif.actuel || 0);
+}
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -38,15 +113,17 @@ export default async function ObjectifsPage() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {objectifs?.map((objectif: any) => {
-          const progression =
-            objectif.objectif > 0
-              ? Math.min(
-                  100,
-                  Math.round(
-                    (objectif.actuel / objectif.objectif) * 100
-                  )
-                )
-              : 0;
+          const valeurActuelle = getAutomaticValue(objectif);
+
+const progression =
+  objectif.objectif > 0
+    ? Math.min(
+        100,
+        Math.round(
+          (valeurActuelle / objectif.objectif) * 100
+        )
+      )
+    : 0;
 
           return (
             <div
@@ -71,7 +148,7 @@ export default async function ObjectifsPage() {
 
               <div className="mt-6">
                 <div className="mb-2 flex justify-between text-sm">
-                  <span>{objectif.actuel}</span>
+                  <span>{valeurActuelle.toLocaleString("fr-FR")}</span>
                   <span>{objectif.objectif}</span>
                 </div>
 
