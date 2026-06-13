@@ -15,7 +15,16 @@ export default async function SortieDetailPage({
     .select(`
       *,
       artistes ( id, nom ),
-      projets ( id, titre )
+      projets (
+  id,
+  titre,
+  budget_clip,
+  budget_cover,
+  budget_promo,
+  budget_studio,
+  budget_influence,
+  budget_rp
+)
     `)
     .eq("id", id)
     .single();
@@ -33,6 +42,14 @@ const { data: analytics } = await supabase
   .select("*")
   .eq("sortie_id", id)
   .order("date_snapshot", { ascending: false });
+
+  const budgetSortie =
+  Number(sortie?.projets?.budget_clip || 0) +
+  Number(sortie?.projets?.budget_cover || 0) +
+  Number(sortie?.projets?.budget_promo || 0) +
+  Number(sortie?.projets?.budget_studio || 0) +
+  Number(sortie?.projets?.budget_influence || 0) +
+  Number(sortie?.projets?.budget_rp || 0);
 
 if (error || !sortie) {
   return (
@@ -59,6 +76,11 @@ const totalRevenus =
     (acc: number, item: any) => acc + Number(item.revenus || 0),
     0
   ) || 0;
+
+  const roi =
+  budgetSortie > 0
+    ? Math.round(((totalRevenus - budgetSortie) / budgetSortie) * 100)
+    : 0;
 
 const dernierSnapshot = analytics?.[0];
 
@@ -107,7 +129,7 @@ const dernierSnapshot = analytics?.[0];
             <Info label="Projet lié" value={sortie.projets?.titre} />
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-4">
+          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-6">
   <Info
     label="Streams"
     value={totalStreams.toLocaleString("fr-FR")}
@@ -127,6 +149,20 @@ const dernierSnapshot = analytics?.[0];
     label="Dernier snapshot"
     value={dernierSnapshot?.date_snapshot || "Aucune donnée"}
   />
+
+  <Info
+  label="Budget lié"
+  value={`${budgetSortie.toFixed(2)} €`}
+/>
+
+<Info
+  label="ROI"
+  value={
+    budgetSortie > 0
+      ? `${roi}%`
+      : "Budget non renseigné"
+  }
+/>
 </div>
 
           {links.length > 0 && (
