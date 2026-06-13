@@ -1,12 +1,45 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
+import CalendarFilterView from "@/components/CalendarFilterView";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
+function formatDay(date: Date) {
+  return date.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+  });
+}
+
+function formatMonth(date: Date) {
+  return date.toLocaleDateString("fr-FR", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function toDateKey(date: string) {
+  return new Date(date).toISOString().split("T")[0];
+}
+
 export default async function CalendrierArtistePage() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  const days = Array.from({ length: lastDay.getDate() }, (_, i) => {
+    const date = new Date(year, month, i + 1);
+
+    return {
+      date,
+      key: date.toISOString().split("T")[0],
+    };
+  });
+
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -28,147 +61,204 @@ export default async function CalendrierArtistePage() {
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
+  const { data: currentProfile } = await supabase
     .from("profiles")
     .select("role, artiste_id")
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== ROLES.ARTISTE) {
+  if (currentProfile?.role !== ROLES.ARTISTE) {
     redirect("/");
   }
 
-  if (!profile.artiste_id) {
+  if (!currentProfile?.artiste_id) {
     return (
       <main className="min-h-screen bg-black p-10 text-white">
-        Aucun artiste lié à ce compte.
+        <p>Aucun artiste lié à ce compte.</p>
       </main>
     );
   }
 
-  const artisteId = profile.artiste_id;
+  const artisteId = currentProfile.artiste_id;
 
   const { data: projets } = await supabase
     .from("projets")
-    .select("id, titre, date_sortie, statut")
-    .eq("artiste_id", artisteId);
+    .select(`
+      id,
+      titre,
+      date_sortie,
+      statut,
+      artiste_id
+    `)
+    .eq("artiste_id", artisteId)
+    .not("date_sortie", "is", null);
 
-  const projetIds = projets?.map((p: any) => p.id) || [];
+  const projetIds = projets?.map((projet: any) => projet.id) || [];
+
+  const { data: rolloutEvents } =
+    projetIds.length > 0
+      ? await supabase
+          .from("rollout_events")
+          .select(`
+            id,
+            titre,
+            date_event,
+            type,
+            statut,
+            projet_id
+          `)
+          .in("projet_id", projetIds)
+          .not("date_event", "is", null)
+      : { data: [] };
 
   const { data: taches } =
     projetIds.length > 0
       ? await supabase
           .from("taches")
-          .select("id, titre, deadline, statut")
+          .select(`
+            id,
+            titre,
+            deadline,
+            statut,
+            priorite,
+            projet_id
+          `)
           .in("projet_id", projetIds)
+          .not("deadline", "is", null)
       : { data: [] };
 
   const { data: bookings } = await supabase
     .from("bookings")
-    .select("id, evenement, date_event, ville, statut")
-    .eq("artiste_id", artisteId);
+    .select("id, evenement, ville, date_event, statut, prochaine_relance")
+    .eq("artiste_id", artisteId)
+    .not("date_event", "is", null);
+
+  const { data: contrats } = await supabase
+    .from("contrats")
+    .select("id, titre, statut, date_signature")
+    .eq("artiste_id", artisteId)
+    .not("date_signature", "is", null);
 
   const { data: sorties } = await supabase
     .from("sorties")
     .select("id, titre, date_sortie, statut")
-    .eq("artiste_id", artisteId);
+    .eq("artiste_id", artisteId)
+    .not("date_sortie", "is", null);
 
   const events = [
-    ...(projets || [])
-      .filter((p: any) => p.date_sortie)
-      .map((p: any) => ({
-        id: p.id,
-        type: "Projet",
-        titre: p.titre,
-        date: p.date_sortie,
-        statut: p.statut,
-        href: `/projets/${p.id}`,
-      })),
+    ...(projets || []).map((projet: any) => ({
+      id: projet.id,
+      title: projet.titre,
+      date: toDateKey(projet.date_sortie),
+      type: "Projet",
+      category: "Sortie",
+      href: `/projets/${projet.id}`,
+      color: "border-violet-500/50 bg-violet-500/10 text-violet-200",
+    })),
 
-    ...(sorties || [])
-      .filter((s: any) => s.date_sortie)
-      .map((s: any) => ({
-        id: s.id,
-        type: "Sortie",
-        titre: s.titre,
-        date: s.date_sortie,
-        statut: s.statut,
-        href: `/sorties/${s.id}`,
-      })),
+    ...(sorties || []).map((sortie: any) => ({
+      id: `sortie-${sortie.id}`,
+      title: sortie.titre,
+      date: toDateKey(sortie.date_sortie),
+      type: `Sortie ${sortie.statut || ""}`,
+      category: "Sortie",
+      href: `/sorties/${sortie.id}`,
+      color: "border-purple-500/50 bg-purple-500/10 text-purple-200",
+    })),
 
-    ...(taches || [])
-      .filter((t: any) => t.deadline)
-      .map((t: any) => ({
-        id: t.id,
-        type: "Tâche",
-        titre: t.titre,
-        date: t.deadline,
-        statut: t.statut,
-        href: `/taches/${t.id}`,
-      })),
+    ...(rolloutEvents || []).map((event: any) => ({
+      id: event.id,
+      title: event.titre,
+      date: toDateKey(event.date_event),
+      type: event.type || "Rollout",
+      category: "Rollout",
+      href: "/mon-espace-artiste",
+      color: "border-cyan-500/50 bg-cyan-500/10 text-cyan-200",
+    })),
+
+    ...(taches || []).map((tache: any) => ({
+      id: tache.id,
+      title: tache.titre,
+      date: toDateKey(tache.deadline),
+      type: "Tâche",
+      category: "Tâche",
+      href: `/taches/${tache.id}`,
+      color:
+        tache.priorite === "Haute"
+          ? "border-red-500/50 bg-red-500/10 text-red-200"
+          : tache.priorite === "Moyenne"
+          ? "border-orange-500/50 bg-orange-500/10 text-orange-200"
+          : "border-zinc-700 bg-zinc-800 text-zinc-300",
+    })),
+
+    ...(contrats || []).map((contrat: any) => ({
+      id: contrat.id,
+      title: contrat.titre,
+      date: toDateKey(contrat.date_signature),
+      type: `Contrat ${contrat.statut || ""}`,
+      category: "Contrat",
+      href: `/contrats/${contrat.id}`,
+      color: "border-green-500/50 bg-green-500/10 text-green-200",
+    })),
+
+    ...(bookings || []).map((booking: any) => ({
+      id: booking.id,
+      title: booking.evenement,
+      date: toDateKey(booking.date_event),
+      type: `Booking ${booking.statut || ""}`,
+      category: "Booking",
+      href: `/booking/${booking.id}`,
+      color: "border-pink-500/50 bg-pink-500/10 text-pink-200",
+    })),
 
     ...(bookings || [])
-      .filter((b: any) => b.date_event)
-      .map((b: any) => ({
-        id: b.id,
-        type: "Booking",
-        titre: b.evenement,
-        date: b.date_event,
-        statut: b.statut,
-        ville: b.ville,
-        href: `/booking/${b.id}`,
+      .filter((booking: any) => booking.prochaine_relance)
+      .map((booking: any) => ({
+        id: `${booking.id}-relance`,
+        title: `Relance : ${booking.evenement}`,
+        date: toDateKey(booking.prochaine_relance),
+        type: "Relance booking",
+        category: "Relance",
+        href: `/booking/${booking.id}`,
+        color: "border-yellow-500/50 bg-yellow-500/10 text-yellow-200",
       })),
-  ].sort(
-    (a: any, b: any) =>
-      new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  ];
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
-      <div className="mb-10">
-        <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-          Mon espace artiste
-        </p>
+      <div className="mb-10 flex items-end justify-between">
+        <div>
+          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+            Mon espace artiste
+          </p>
 
-        <h1 className="text-5xl font-bold">Mon calendrier</h1>
+          <h1 className="text-5xl font-bold capitalize">
+            {formatMonth(today)}
+          </h1>
 
-        <p className="mt-3 text-zinc-400">
-          Toutes tes dates importantes : sorties, tâches, projets et bookings.
-        </p>
+          <p className="mt-3 text-zinc-400">
+            Ton calendrier personnel : sorties, tâches, rollouts, contrats et bookings.
+          </p>
+        </div>
       </div>
 
-      <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-        {events.length === 0 && (
-          <p className="text-zinc-500">Aucun événement à venir.</p>
-        )}
-
-        <div className="space-y-4">
-          {events.map((event: any) => (
-            <Link
-              key={`${event.type}-${event.id}`}
-              href={event.href}
-              className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm text-zinc-500">{event.type}</p>
-
-                  <h2 className="mt-1 text-2xl font-bold">{event.titre}</h2>
-
-                  <p className="mt-2 text-sm text-zinc-500">
-                    {event.ville ? `${event.ville} • ` : ""}
-                    {event.statut || "Statut non renseigné"}
-                  </p>
-                </div>
-
-                <p className="text-right text-sm font-semibold text-zinc-300">
-                  {event.date}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+      <CalendarFilterView
+        days={[
+          ...Array.from({ length: (firstDay.getDay() + 6) % 7 }).map(
+            (_, index) => ({
+              key: `empty-${index}`,
+              day: "",
+              isToday: false,
+            })
+          ),
+          ...days.map((day) => ({
+            key: day.key,
+            day: formatDay(day.date),
+            isToday: day.key === toDateKey(new Date().toISOString()),
+          })),
+        ]}
+        events={events}
+      />
     </main>
   );
 }
