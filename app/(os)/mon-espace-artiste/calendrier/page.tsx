@@ -151,6 +151,9 @@ export default async function CalendrierArtistePage() {
   .eq("artiste_id", artisteId)
   .not("date_event", "is", null);
 
+  console.log("ARTISTE ID =", artisteId);
+console.log("ARTISTE EVENTS =", artisteEvents);
+
   const events = [
     ...(projets || []).map((projet: any) => ({
       id: projet.id,
