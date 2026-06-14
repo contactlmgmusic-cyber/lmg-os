@@ -304,6 +304,26 @@ const badges = [
   },
 ];
 
+const prochainEvenement =
+  artisteTimeline?.find((event: any) => new Date(event.date) >= new Date()) ||
+  null;
+
+const prochaineTache =
+  taches
+    ?.filter((tache: any) => tache.deadline && tache.statut !== "Terminé")
+    .sort(
+      (a: any, b: any) =>
+        new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+    )[0] || null;
+
+const prochainBooking =
+  bookings
+    ?.filter((booking: any) => booking.date_event)
+    .sort(
+      (a: any, b: any) =>
+        new Date(a.date_event).getTime() - new Date(b.date_event).getTime()
+    )[0] || null;
+
   return (
     <main className="min-h-screen bg-black text-white">
       <div className="relative h-[420px] overflow-hidden">
@@ -379,6 +399,58 @@ const badges = [
       </p>
     </div>
   </div>
+
+  <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div className="mb-6">
+    <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+      Dashboard artiste
+    </p>
+
+    <h2 className="text-3xl font-bold">Vue d’ensemble</h2>
+
+    <p className="mt-2 text-zinc-400">
+      Tes prochaines actions importantes dans l’écosystème LMG.
+    </p>
+  </div>
+
+  <div className="grid grid-cols-1 gap-5 xl:grid-cols-4">
+    <DashboardCard
+      label="Prochaine sortie"
+      title={prochainesSorties[0]?.titre || "Aucune sortie prévue"}
+      description={prochainesSorties[0]?.date_sortie || "Date non renseignée"}
+      href={
+        prochainesSorties[0]?.id
+          ? `/projets/${prochainesSorties[0].id}`
+          : "/mon-espace-artiste"
+      }
+    />
+
+    <DashboardCard
+      label="Prochain événement"
+      title={prochainEvenement?.titre || "Aucun événement prévu"}
+      description={
+        prochainEvenement?.date
+          ? `${prochainEvenement.type} • ${prochainEvenement.date}`
+          : "Calendrier à jour"
+      }
+      href={prochainEvenement?.href || "/mon-espace-artiste/calendrier"}
+    />
+
+    <DashboardCard
+      label="Prochaine tâche"
+      title={prochaineTache?.titre || "Aucune tâche ouverte"}
+      description={prochaineTache?.deadline || "Tout est clean"}
+      href={prochaineTache?.id ? `/taches/${prochaineTache.id}` : "/mon-espace-artiste"}
+    />
+
+    <DashboardCard
+      label="Royalties à recevoir"
+      title={`${royaltiesAPayer.toFixed(0)} €`}
+      description={`${royaltiesPayees.toFixed(0)} € déjà payés`}
+      href="/royalties"
+    />
+  </div>
+</div>
 
   <div className="mt-8 rounded-3xl border border-cyan-500/30 bg-cyan-500/10 p-8">
     <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
@@ -960,5 +1032,38 @@ const badges = [
         </div>
       </section>
     </main>
+  );
+}
+
+function DashboardCard({
+  label,
+  title,
+  description,
+  href,
+}: {
+  label: string;
+  title: string;
+  description: string;
+  href: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="block rounded-2xl border border-zinc-800 bg-black p-6 transition hover:border-zinc-600"
+    >
+      <p className="text-sm text-zinc-500">{label}</p>
+
+      <h3 className="mt-3 line-clamp-2 text-2xl font-bold">
+        {title}
+      </h3>
+
+      <p className="mt-3 text-sm text-zinc-400">
+        {description}
+      </p>
+
+      <p className="mt-5 text-xs text-zinc-600">
+        Ouvrir →
+      </p>
+    </Link>
   );
 }
