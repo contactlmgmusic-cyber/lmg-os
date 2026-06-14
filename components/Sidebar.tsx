@@ -101,6 +101,7 @@ setUnreadChatNotifications(chatCount || 0);
 
   { href: "/booking", label: "Booking" },
   { href: "/campagnes", label: "Campagnes" },
+  { href: "/prospects", label: "CRM Prospects" },
   { href: "/partenaires", label: "CRM Partenaires" },
   { href: "/influenceurs", label: "CRM Influenceurs" },
   { href: "/medias", label: "CRM Médias" },
