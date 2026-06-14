@@ -67,33 +67,51 @@ export default function NouvelEvenementArtistePage() {
     setLoading(true);
 
     const { error } = await supabaseBrowser.from("artiste_events").insert({
-      artiste_id: artisteId,
-      titre,
-      type,
-      date_event: dateEvent,
-      heure: heure || null,
-      lieu: lieu || null,
-      description: description || null,
-      statut,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    await supabaseBrowser.from("notifications").insert({
-  user_id: artisteId,
-  type: "Événement",
-  titre: "Nouvel événement ajouté",
-  description: `${type} • ${titre}`,
-  lu: false,
+  artiste_id: artisteId,
+  titre,
+  type,
+  date_event: dateEvent,
+  heure: heure || null,
+  lieu: lieu || null,
+  description: description || null,
+  statut,
 });
 
-    router.push("/calendrier");
-    router.refresh();
+setLoading(false);
+
+if (error) {
+  alert(error.message);
+  return;
+}
+
+const { data: artisteProfiles } = await supabaseBrowser
+  .from("profiles")
+  .select("id")
+  .eq("artiste_id", artisteId)
+  .eq("role", ROLES.ARTISTE);
+
+if (artisteProfiles && artisteProfiles.length > 0) {
+  await supabaseBrowser.from("notifications").insert(
+    artisteProfiles.map((profile) => ({
+      user_id: profile.id,
+      type: "Événement",
+      titre: "Nouvel événement artiste",
+      description: `${type} • ${titre}`,
+      lien: "/mon-espace-artiste/calendrier",
+      lu: false,
+    }))
+  );
+}
+
+await supabaseBrowser.from("activity_logs").insert({
+  type: "Événement artiste",
+  titre: "Nouvel événement ajouté",
+  description: `${type} • ${titre}`,
+  artiste_id: artisteId,
+});
+
+router.push("/calendrier");
+router.refresh();
   }
 
   return (

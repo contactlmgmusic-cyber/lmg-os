@@ -4,4 +4,7 @@ export const ROLES = {
   MANAGER: "manager",
   ARTISTE: "artiste",
   PRESTATAIRE: "prestataire",
-};
+} as const;
+
+export type UserRole =
+  (typeof ROLES)[keyof typeof ROLES];

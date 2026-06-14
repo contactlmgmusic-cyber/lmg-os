@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
-export default function NouveauInfluenceurPage() {
+
+export default async function NouveauInfluenceurPage() {
   const router = useRouter();
 
   const [nom, setNom] = useState("");

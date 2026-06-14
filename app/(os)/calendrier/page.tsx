@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import CalendarFilterView from "@/components/CalendarFilterView";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -118,13 +119,13 @@ let tachesQuery = supabase
   `)
   .not("deadline", "is", null);
 
-if (currentProfile?.role === "manager") {
+if (currentProfile?.role === ROLES.MANAGER) {
   projetsQuery = projetsQuery.eq("artistes.manager_id", user?.id);
   rolloutQuery = rolloutQuery.eq("projets.artistes.manager_id", user?.id);
   tachesQuery = tachesQuery.eq("projets.artistes.manager_id", user?.id);
 }
 
-if (currentProfile?.role === "artiste") {
+if (currentProfile?.role === ROLES.ARTISTE) {
   projetsQuery = projetsQuery.eq("artiste_id", currentProfile.artiste_id);
   rolloutQuery = rolloutQuery.eq("projets.artiste_id", currentProfile.artiste_id);
   tachesQuery = tachesQuery.eq("projets.artiste_id", currentProfile.artiste_id);
@@ -137,6 +138,24 @@ const { data: taches } = await tachesQuery;
 const { data: bookings } = await supabase
   .from("bookings")
   .select("id, evenement, ville, date_event, statut, prochaine_relance")
+  .not("date_event", "is", null);
+
+  const { data: artisteEvents } = await supabase
+  .from("artiste_events")
+  .select(`
+    id,
+    titre,
+    type,
+    date_event,
+    heure,
+    lieu,
+    statut,
+    artiste_id,
+    artistes (
+      id,
+      nom
+    )
+  `)
   .not("date_event", "is", null);
 
 const { data: contrats } = await supabase
@@ -154,6 +173,16 @@ const { data: contrats } = await supabase
       href: `/projets/${projet.id}`,
       color: "border-violet-500/50 bg-violet-500/10 text-violet-200",
     })),
+
+    ...(artisteEvents || []).map((event: any) => ({
+  id: `artist-event-${event.id}`,
+  title: `${event.type} : ${event.titre}`,
+  date: toDateKey(event.date_event),
+  type: `${event.artistes?.nom || "Artiste"}${event.heure ? ` • ${event.heure}` : ""}`,
+  category: "Artiste",
+  href: "/calendrier",
+  color: "border-blue-500/50 bg-blue-500/10 text-blue-200",
+})),
 
     ...(rolloutEvents || []).map((event: any) => ({
       id: event.id,
@@ -230,33 +259,7 @@ const { data: contrats } = await supabase
           </p>
         </div>
 
-        <div className="mb-8 flex flex-wrap gap-3">
-  <span className="rounded-full border border-violet-500/50 bg-violet-500/10 px-3 py-1 text-sm text-violet-200">
-    Sorties
-  </span>
-
-  <span className="rounded-full border border-cyan-500/50 bg-cyan-500/10 px-3 py-1 text-sm text-cyan-200">
-    Rollout
-  </span>
-
-  <span className="rounded-full border border-green-500/50 bg-green-500/10 px-3 py-1 text-sm text-green-200">
-    Contrats
-  </span>
-
-  <span className="rounded-full border border-pink-500/50 bg-pink-500/10 px-3 py-1 text-sm text-pink-200">
-    Bookings
-  </span>
-
-  <span className="rounded-full border border-yellow-500/50 bg-yellow-500/10 px-3 py-1 text-sm text-yellow-200">
-    Relances
-  </span>
-
-  <span className="rounded-full border border-red-500/50 bg-red-500/10 px-3 py-1 text-sm text-red-200">
-    Urgences
-  </span>
-</div>
-
-        {currentProfile?.role !== "artiste" && (
+        {currentProfile?.role !== ROLES.ARTISTE && (
   <a
     href="/taches/nouveau"
     className="rounded-2xl bg-white px-5 py-3 font-semibold text-black transition hover:bg-zinc-200"

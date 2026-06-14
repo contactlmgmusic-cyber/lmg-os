@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import RolloutKanban from "@/components/RolloutKanban";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -37,8 +38,8 @@ export default async function RolloutPage() {
     profile = data;
   }
 
-  const isArtistUser = profile?.role === "artiste";
-  const isManagerUser = profile?.role === "manager";
+  const isArtistUser = profile?.role === ROLES.ARTISTE;
+  const isManagerUser = profile?.role === ROLES.MANAGER;
 
   let artisteIds: string[] = [];
 

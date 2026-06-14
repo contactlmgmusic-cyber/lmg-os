@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -45,11 +46,11 @@ export default async function ProjetsPage() {
     `)
     .order("created_at", { ascending: false });
 
-if (currentProfile?.role === "manager") {
+if (currentProfile?.role === ROLES.MANAGER) {
   query = query.eq("artistes.manager_id", user?.id);
 }
 
-if (currentProfile?.role === "artiste" && currentProfile?.artiste_id) {
+if (currentProfile?.role === ROLES.ARTISTE && currentProfile?.artiste_id) {
   query = query.eq("artiste_id", currentProfile.artiste_id);
 }
 
@@ -64,9 +65,9 @@ if (currentProfile?.role === "artiste" && currentProfile?.artiste_id) {
   }
 
   const canCreateProject =
-  currentProfile?.role === "super_admin" ||
-  currentProfile?.role === "admin" ||
-  currentProfile?.role === "manager";
+  currentProfile?.role === ROLES.SUPER_ADMIN ||
+  currentProfile?.role === ROLES.ADMIN ||
+  currentProfile?.role === ROLES.MANAGER;
 
   return (
     <main className="p-10 text-white">
@@ -75,7 +76,7 @@ if (currentProfile?.role === "artiste" && currentProfile?.artiste_id) {
           <h1 className="text-5xl font-bold">Projets</h1>
 
           <p className="mt-2 text-zinc-400">
-            {currentProfile?.role === "manager"
+            {currentProfile?.role === ROLES.MANAGER
               ? "Projets de mes artistes"
               : "Singles, EP, albums et rollouts LMG"}
           </p>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -16,9 +17,9 @@ export default async function AdminPage() {
     .limit(6);
 
   const usersCount = profiles?.length || 0;
-  const superAdmins = profiles?.filter((p: any) => p.role === "super_admin").length || 0;
-  const managers = profiles?.filter((p: any) => p.role === "manager").length || 0;
-  const artistes = profiles?.filter((p: any) => p.role === "artiste").length || 0;
+  const superAdmins = profiles?.filter((p: any) => p.role === ROLES.SUPER_ADMIN).length || 0;
+  const managers = profiles?.filter((p: any) => p.role === ROLES.MANAGER).length || 0;
+  const artistes = profiles?.filter((p: any) => p.role === ROLES.ARTISTE).length || 0;
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">

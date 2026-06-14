@@ -33,7 +33,15 @@ export default function ChecklistEditor({
     if (error) {
       alert(error.message);
     }
+
+await supabaseBrowser.from("task_activity_logs").insert({
+  task_id: tacheId,
+  type: "checklist",
+  message: "A mis à jour la checklist",
+});
+
   }
+  
 
   async function addItem() {
     if (!newItem.trim()) return;
@@ -62,11 +70,11 @@ export default function ChecklistEditor({
     const nextItems = items.filter((_, i) => i !== index);
     await saveChecklist(nextItems);
   }
-
-  return (
+  
+ return (
     <div className="mt-8 rounded-2xl bg-black p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Checklist</h2>
+        <h2 className="text-2xl font-bold">ChecklistEditor chargé</h2>
 
         {saving && <p className="text-xs text-zinc-500">Sauvegarde...</p>}
       </div>
