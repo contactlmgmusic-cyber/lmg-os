@@ -28,7 +28,7 @@ export default async function ManagerKpiPage() {
     .order("nom");
 
   const visibleArtistes = isManager
-    ? artistes?.filter((artiste: any) => artiste.manager_id === profile.id) || []
+    ? artistes?.filter((artiste: any) => artiste.manager_id === (profile as any).id) || []
     : artistes || [];
 
   const artisteIds = visibleArtistes.map((artiste: any) => artiste.id);
