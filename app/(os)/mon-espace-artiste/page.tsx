@@ -275,31 +275,51 @@ const lmgScoreLabel =
 
 const badges = [
   {
+    icon: "🏆",
     label: "Premier contrat signé",
+    description: "Un contrat LMG a été signé.",
     unlocked: contrats?.some((contrat: any) => contrat.statut === "Signé"),
   },
   {
+    icon: "🚀",
     label: "Première sortie",
+    description: "Une sortie est enregistrée.",
     unlocked: sortiesCount > 0,
   },
   {
+    icon: "🔥",
     label: "10K streams",
+    description: "Atteindre 10 000 streams.",
     unlocked: totalStreams >= 10000,
   },
   {
+    icon: "💎",
     label: "100K streams",
+    description: "Atteindre 100 000 streams.",
     unlocked: totalStreams >= 100000,
   },
   {
+    icon: "🎤",
     label: "Premier booking",
+    description: "Un booking confirmé.",
     unlocked: bookingsConfirmes > 0,
   },
   {
+    icon: "📈",
+    label: "10 bookings",
+    description: "Atteindre 10 bookings confirmés.",
+    unlocked: bookingsConfirmes >= 10,
+  },
+  {
+    icon: "🎯",
     label: "Objectif atteint",
+    description: "Au moins un objectif atteint.",
     unlocked: objectifsAtteints > 0,
   },
   {
+    icon: "💰",
     label: "Royalties générées",
+    description: "Des royalties ont été générées.",
     unlocked: royaltiesPayees > 0 || royaltiesAPayer > 0,
   },
 ];
@@ -554,23 +574,22 @@ const prochainBooking =
 </div>
 
 <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-  <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+  <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
     <div>
       <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
         Progression artiste
       </p>
 
-      <h2 className="text-3xl font-bold">
-        {artistLevel}
-      </h2>
+      <h2 className="text-3xl font-bold">{artistLevel}</h2>
 
       <p className="mt-2 text-zinc-400">
-        Niveau calculé automatiquement selon ton activité LMG.
+        Badges débloqués selon ton activité, tes sorties, tes streams et tes objectifs.
       </p>
     </div>
 
     <div className="rounded-2xl border border-zinc-700 bg-black px-6 py-4 text-center">
       <p className="text-sm text-zinc-500">Badges débloqués</p>
+
       <p className="mt-1 text-3xl font-bold">
         {badges.filter((badge) => badge.unlocked).length} / {badges.length}
       </p>
@@ -581,27 +600,37 @@ const prochainBooking =
     {badges.map((badge) => (
       <div
         key={badge.label}
-        className={`rounded-2xl border p-5 ${
+        className={`rounded-2xl border p-5 transition ${
           badge.unlocked
             ? "border-green-500/30 bg-green-500/10"
             : "border-zinc-800 bg-black opacity-50"
         }`}
       >
-        <p className="text-2xl">
-          {badge.unlocked ? "🏆" : "🔒"}
-        </p>
+        <div className="flex items-start gap-4">
+          <div className="text-3xl">{badge.unlocked ? badge.icon : "🔒"}</div>
 
-        <h3
-          className={`mt-3 font-semibold ${
-            badge.unlocked ? "text-green-300" : "text-zinc-500"
-          }`}
-        >
-          {badge.label}
-        </h3>
+          <div>
+            <h3
+              className={`font-semibold ${
+                badge.unlocked ? "text-green-300" : "text-zinc-500"
+              }`}
+            >
+              {badge.label}
+            </h3>
 
-        <p className="mt-2 text-xs text-zinc-500">
-          {badge.unlocked ? "Débloqué" : "À débloquer"}
-        </p>
+            <p className="mt-2 text-sm text-zinc-500">
+              {badge.description}
+            </p>
+
+            <p className="mt-3 text-xs font-medium">
+              {badge.unlocked ? (
+                <span className="text-green-300">Débloqué</span>
+              ) : (
+                <span className="text-zinc-600">À débloquer</span>
+              )}
+            </p>
+          </div>
+        </div>
       </div>
     ))}
   </div>
