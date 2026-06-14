@@ -83,6 +83,13 @@ export default async function ArtisteEventsPage() {
                 <span className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300">
                   {event.statut || "Prévu"}
                 </span>
+
+                <Link
+  href={`/artiste-events/${event.id}/modifier`}
+  className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+>
+  Modifier
+</Link>
               </div>
             </div>
           ))}
