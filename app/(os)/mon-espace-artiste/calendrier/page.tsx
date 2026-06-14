@@ -20,7 +20,7 @@ function formatMonth(date: Date) {
 }
 
 function toDateKey(date: string) {
-  return new Date(date).toISOString().split("T")[0];
+  return date.split("T")[0];
 }
 
 export default async function CalendrierArtistePage() {
@@ -145,6 +145,12 @@ export default async function CalendrierArtistePage() {
     .eq("artiste_id", artisteId)
     .not("date_sortie", "is", null);
 
+    const { data: artisteEvents } = await supabase
+  .from("artiste_events")
+  .select("id, titre, type, date_event, heure, lieu, statut")
+  .eq("artiste_id", artisteId)
+  .not("date_event", "is", null);
+
   const events = [
     ...(projets || []).map((projet: any) => ({
       id: projet.id,
@@ -222,6 +228,18 @@ export default async function CalendrierArtistePage() {
         href: `/booking/${booking.id}`,
         color: "border-yellow-500/50 bg-yellow-500/10 text-yellow-200",
       })),
+
+      ...(artisteEvents || []).map((event: any) => ({
+  id: `artist-event-${event.id}`,
+  title: event.titre,
+  date: toDateKey(event.date_event),
+  type: `${event.type || "Événement"}${event.heure ? ` • ${event.heure}` : ""}${
+    event.lieu ? ` • ${event.lieu}` : ""
+  }`,
+  category: "Artiste",
+  href: "/mon-espace-artiste/calendrier",
+  color: "border-blue-500/50 bg-blue-500/10 text-blue-200",
+})),
   ];
 
   return (
