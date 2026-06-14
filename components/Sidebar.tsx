@@ -99,6 +99,7 @@ export default function Sidebar() {
   { href: "/taches", label: "Tâches" },
   { href: "/calendrier", label: "Calendrier" },
   { href: "/calendrier/global", label: "Calendrier global" },
+  { href: "/artiste-events/nouveau", label: "Nouvel événement artiste" },
   { href: "/rollout", label: "Rollout" },
   { href: "/drive", label: "Drive" },
 
@@ -136,6 +137,7 @@ const managerLinks = [
   { href: "/taches", label: "Tâches" },
   { href: "/mes-taches", label: "Mes tâches" },
   { href: "/calendrier", label: "Calendrier" },
+  { href: "/artiste-events/nouveau", label: "Nouvel événement artiste" },
   { href: "/calendrier/global", label: "Calendrier global" },
   { href: "/rollout", label: "Rollout" },
   { href: "/drive", label: "Drive" },
