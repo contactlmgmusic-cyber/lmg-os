@@ -67,6 +67,12 @@ export default function ChatPriveDetailPage() {
     setMembers(membersData || []);
     setMessages(messagesData || []);
     setLoading(false);
+
+    await supabaseBrowser
+  .from("private_messages")
+  .update({ lu: true })
+  .eq("conversation_id", conversationId)
+  .neq("sender_id", user.id);
   }
 
   useEffect(() => {
