@@ -118,6 +118,7 @@ setUnreadChatNotifications(chatCount || 0);
 
   { href: "/assistant", label: "Assistant IA" },
   { href: "/chat", label: "Chat" },
+  { href: "/chat/prive", label: "Messages privés" },
   { href: "/equipe", label: "Équipe" },
   { href: "/invitations", label: "Invitations" },
 ];
@@ -158,6 +159,7 @@ const managerLinks = [
   { href: "/rollout", label: "Rollout" },
   { href: "/drive", label: "Drive" },
   { href: "/chat", label: "Chat" },
+  { href: "/chat/prive", label: "Messages privés" },
 ];
 
 const artisteLinks = [
@@ -176,6 +178,7 @@ const prestataireLinks = [
   { href: "/drive", label: "Drive" },
   { href: "/calendrier", label: "Calendrier" },
   { href: "/chat", label: "Chat" },
+  { href: "/chat/prive", label: "Messages privés" },
 ];
 
 const links =
