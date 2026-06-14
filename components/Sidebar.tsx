@@ -147,6 +147,7 @@ const managerLinks = [
 const artisteLinks = [
   { href: "/mon-espace-artiste", label: "Mon espace artiste" },
   { href: "/mon-espace-artiste/calendrier", label: "Mon calendrier" },
+  { href: "/mon-espace-artiste/evenements", label: "Mes événements" },
   { href: "/notifications", label: "Notifications" },
   { href: "/chat", label: "Chat" },
 ];
