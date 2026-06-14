@@ -41,10 +41,14 @@ export default function DashboardPage() {
     releaseTasksTotal: 0,
     releaseTasksDone: 0,
     releaseProgressMoyenne: 0,
+    validationsArtisteEnAttente: 0,
+    validationsContratsEnAttente: 0,
+    managersActifs: 0,
+    lmgGlobalScore: 0,
   });
 
   const router = useRouter();
-const [checkingAccess, setCheckingAccess] = useState(true);
+  const [checkingAccess, setCheckingAccess] = useState(true);
 
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [upcomingProjects, setUpcomingProjects] = useState<any[]>([]);
@@ -134,6 +138,21 @@ const { count: mediasRelanceAujourdhui } = await supabaseBrowser
   .from("medias")
   .select("*", { count: "exact", head: true })
   .eq("prochaine_relance", today);
+
+  const { count: validationsArtisteCount } = await supabaseBrowser
+  .from("artist_approvals")
+  .select("*", { count: "exact", head: true })
+  .eq("statut", "En attente");
+
+const { count: validationsContratsCount } = await supabaseBrowser
+  .from("contract_approvals")
+  .select("*", { count: "exact", head: true })
+  .eq("statut", "En attente");
+
+const { count: managersCount } = await supabaseBrowser
+  .from("profiles")
+  .select("*", { count: "exact", head: true })
+  .eq("role", ROLES.MANAGER);
 
     const { data: finances } = await supabaseBrowser
   .from("finances")
@@ -413,6 +432,24 @@ const releaseProgressMoyenne =
     ? Math.round((releaseTasksDone / releaseTasksTotal) * 100)
     : 0;
 
+    const lmgGlobalScore = Math.max(
+  0,
+  Math.min(
+    100,
+    Math.round(
+      50 +
+        Math.min(streamsTotaux / 1000000, 1) * 15 +
+        Math.min(revenusAnalytics / 10000, 1) * 15 +
+        Math.min((bookingsConfirmesCount || 0) / 30, 1) * 10 +
+        Math.min((sortiesMoisData?.length || 0) / 10, 1) * 10 -
+        Math.min((contratsCount || 0) * 2, 15) -
+        Math.min((lateTasksData?.length || 0) * 3, 15) -
+        Math.min((validationsArtisteCount || 0) * 2, 10) -
+        Math.min((validationsContratsCount || 0) * 2, 10)
+    )
+  )
+);
+
     setStats({
       artistes: artistesCount || 0,
       projets: projetsCount || 0,
@@ -438,6 +475,10 @@ const releaseProgressMoyenne =
       releaseTasksTotal,
       releaseTasksDone,
       releaseProgressMoyenne,
+      validationsArtisteEnAttente: validationsArtisteCount || 0,
+      validationsContratsEnAttente: validationsContratsCount || 0,
+      managersActifs: managersCount || 0,
+      lmgGlobalScore,
     });
 
     setUpcomingProjects(projects || []);
@@ -585,6 +626,41 @@ const healthTone =
         </div>
       </div>
     </section>
+
+    <section className="mb-10 rounded-3xl border border-cyan-500/30 bg-cyan-500/10 p-8 text-cyan-200">
+  <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p className="mb-2 text-sm uppercase tracking-[0.3em] text-cyan-300">
+        LMG Global Score
+      </p>
+
+      <h2 className="text-5xl font-bold">
+        {stats.lmgGlobalScore} / 100
+      </h2>
+
+      <p className="mt-3 text-sm text-cyan-100/80">
+        Score global basé sur analytics, revenus, bookings, sorties, contrats,
+        tâches et validations en attente.
+      </p>
+    </div>
+
+    <div className="w-full md:w-80">
+      <div className="h-4 overflow-hidden rounded-full bg-black/40">
+        <div
+          className="h-full rounded-full bg-cyan-300 transition-all"
+          style={{ width: `${stats.lmgGlobalScore}%` }}
+        />
+      </div>
+    </div>
+  </div>
+
+  <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-4">
+    <MiniStat label="Managers actifs" value={stats.managersActifs} />
+    <MiniStat label="Artistes actifs" value={stats.artistes} />
+    <MiniStat label="Validations artistes" value={stats.validationsArtisteEnAttente} />
+    <MiniStat label="Validations contrats" value={stats.validationsContratsEnAttente} />
+  </div>
+</section>
 
     <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
       <div className="mb-6">
