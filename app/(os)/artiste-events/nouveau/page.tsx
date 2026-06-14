@@ -84,6 +84,14 @@ export default function NouvelEvenementArtistePage() {
       return;
     }
 
+    await supabaseBrowser.from("notifications").insert({
+  user_id: artisteId,
+  type: "Événement",
+  titre: "Nouvel événement ajouté",
+  description: `${type} • ${titre}`,
+  lu: false,
+});
+
     router.push("/calendrier");
     router.refresh();
   }
