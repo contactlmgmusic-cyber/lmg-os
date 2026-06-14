@@ -170,6 +170,7 @@ const artisteLinks = [
   { href: "/mon-espace-artiste/evenements", label: "Mes événements" },
   { href: "/notifications", label: "Notifications" },
   { href: "/chat", label: "Chat" },
+  { href: "/mon-espace-artiste/documents", label: "Mes documents" },
 ];
 
 const prestataireLinks = [
