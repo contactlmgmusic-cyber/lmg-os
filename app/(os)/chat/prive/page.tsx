@@ -71,7 +71,7 @@ export default function ChatPrivePage() {
     });
 
     if (existing?.conversation_id) {
-      window.location.href = `/chat/prive/${existing.conversation_id}`;
+      window.location.href = `/chat/prive/conversation/${existing.conversation_id}`;
       return;
     }
 
@@ -104,7 +104,7 @@ export default function ChatPrivePage() {
       return;
     }
 
-    window.location.href = `/chat/prive/${conversation.id}`;
+    window.location.href = `/chat/prive/conversation/${conversation.id}`;
   }
 
   if (loading) {
@@ -175,7 +175,7 @@ export default function ChatPrivePage() {
             return (
               <Link
                 key={item.conversation_id}
-                href={`/chat/prive/${item.conversation_id}`}
+                href={`/chat/prive/conversation/${item.conversation_id}`}
                 className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
               >
                 <h3 className="text-xl font-bold">
