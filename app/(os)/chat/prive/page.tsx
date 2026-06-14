@@ -32,25 +32,54 @@ export default function ChatPrivePage() {
     setProfiles(usersData || []);
 
     const { data: memberships } = await supabaseBrowser
-      .from("private_conversation_members")
-      .select(`
-        conversation_id,
-        private_conversations (
+  .from("private_conversation_members")
+  .select(`
+    conversation_id,
+    private_conversations (
+      id,
+      created_at,
+      private_conversation_members (
+        user_id,
+        profiles (
           id,
-          created_at,
-          private_conversation_members (
-            user_id,
-            profiles (
-              id,
-              nom,
-              role
-            )
-          )
+          nom,
+          role
         )
-      `)
-      .eq("user_id", user.id);
+      ),
+      private_messages (
+        id,
+        message,
+        sender_id,
+        lu,
+        created_at
+      )
+    )
+  `)
+  .eq("user_id", user.id);
 
-    setConversations(memberships || []);
+const formattedConversations =
+  memberships?.map((item: any) => {
+    const messages = item.private_conversations?.private_messages || [];
+
+    const sortedMessages = [...messages].sort(
+      (a: any, b: any) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    const lastMessage = sortedMessages[0] || null;
+
+    const unreadCount = messages.filter(
+      (msg: any) => msg.sender_id !== user.id && msg.lu === false
+    ).length;
+
+    return {
+      ...item,
+      lastMessage,
+      unreadCount,
+    };
+  }) || [];
+
+setConversations(formattedConversations);
     setLoading(false);
   }
 
@@ -178,13 +207,27 @@ export default function ChatPrivePage() {
                 href={`/chat/prive/conversation/${item.conversation_id}`}
                 className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
               >
-                <h3 className="text-xl font-bold">
-                  {otherMember?.profiles?.nom || "Conversation privée"}
-                </h3>
+                <div className="flex items-start justify-between gap-4">
+  <div>
+    <h3 className="text-xl font-bold">
+      {otherMember?.profiles?.nom || "Conversation privée"}
+    </h3>
 
-                <p className="mt-2 text-sm text-zinc-500">
-                  {otherMember?.profiles?.role || "membre"}
-                </p>
+    <p className="mt-2 text-sm text-zinc-500">
+      {otherMember?.profiles?.role || "membre"}
+    </p>
+
+    <p className="mt-3 line-clamp-1 text-sm text-zinc-400">
+      {item.lastMessage?.message || "Aucun message pour le moment."}
+    </p>
+  </div>
+
+  {item.unreadCount > 0 && (
+    <span className="rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white">
+      {item.unreadCount}
+    </span>
+  )}
+</div>
               </Link>
             );
           })}

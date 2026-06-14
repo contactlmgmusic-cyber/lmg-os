@@ -29,7 +29,7 @@ export async function requireRole(allowedRoles: string[]) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("id, role, artiste_id")
     .eq("id", user.id)
     .single();
 
