@@ -116,27 +116,66 @@ const [activeChannel, setActiveChannel] =
   }
 
   async function sendMessage(e: React.FormEvent) {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!message.trim()) return;
+  if (!message.trim()) return;
 
-    const {
-      data: { user },
-    } = await supabaseBrowser.auth.getUser();
+  const {
+    data: { user },
+  } = await supabaseBrowser.auth.getUser();
 
-    if (!user) {
-  window.location.href = "/login";
-  return;
-}
-
-    await supabaseBrowser.from("chat_messages").insert({
-      channel: activeChannel,
-      user_id: user?.id || null,
-      message,
-    });
-
-    setMessage("");
+  if (!user) {
+    window.location.href = "/login";
+    return;
   }
+
+  const { data: profile } = await supabaseBrowser
+    .from("profiles")
+    .select("id, nom, role")
+    .eq("id", user.id)
+    .single();
+
+  await supabaseBrowser.from("chat_messages").insert({
+    channel: activeChannel,
+    user_id: user.id,
+    message,
+  });
+
+  const { data: channelMembers } = await supabaseBrowser
+    .from("profiles")
+    .select("id, role")
+    .neq("id", user.id);
+
+  const { data: currentChannel } = await supabaseBrowser
+    .from("chat_channels")
+    .select("name, slug, allowed_roles")
+    .eq("slug", activeChannel)
+    .single();
+
+  const allowedRoles = currentChannel?.allowed_roles || [];
+
+  const recipients =
+    channelMembers?.filter((member: any) =>
+      allowedRoles.includes(member.role)
+    ) || [];
+
+  if (recipients.length > 0) {
+    await supabaseBrowser.from("notifications").insert(
+      recipients.map((member: any) => ({
+        user_id: member.id,
+        type: "Chat",
+        titre: `Nouveau message dans #${currentChannel?.name || activeChannel}`,
+        description: `${profile?.nom || "Un membre"} : ${message.slice(0, 80)}`,
+        lien: `/chat?channel=${activeChannel}`,
+        niveau: "Info",
+        lu: false,
+        is_read: false,
+      }))
+    );
+  }
+
+  setMessage("");
+}
 
   const activeChannelData = channels.find(
     (channel) => channel.slug === activeChannel
