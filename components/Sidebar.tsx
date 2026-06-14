@@ -77,6 +77,7 @@ export default function Sidebar() {
 
   { href: "/artistes", label: "Artistes" },
   { href: "/validations-artiste", label: "Validations artistes" },
+  { href: "/contrats/validations", label: "Validations contrats" },
   { href: "/artistes/ranking", label: "Ranking Artistes" },
   { href: "/projets", label: "Projets" },
   { href: "/sorties", label: "Sorties" },
@@ -119,6 +120,7 @@ const managerLinks = [
   { href: "/notifications", label: "Notifications" },
 
   { href: "/artistes", label: "Mes artistes" },
+  { href: "/contrats/validations", label: "Validations contrats" },
   { href: "/artistes/ranking", label: "Ranking Artistes" },
   { href: "/validations-artiste", label: "Validations artistes" },
   { href: "/projets", label: "Projets" },
@@ -149,6 +151,7 @@ const managerLinks = [
 const artisteLinks = [
   { href: "/mon-espace-artiste", label: "Mon espace artiste" },
   { href: "/mon-espace-artiste/validations", label: "Mes validations" },
+  { href: "/mon-espace-artiste/contrats", label: "Mes contrats" },
   { href: "/mon-espace-artiste/calendrier", label: "Mon calendrier" },
   { href: "/mon-espace-artiste/evenements", label: "Mes événements" },
   { href: "/notifications", label: "Notifications" },
