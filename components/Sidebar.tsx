@@ -87,6 +87,7 @@ setUnreadChatNotifications(chatCount || 0);
   { href: "/notifications", label: "Notifications" },
 
   { href: "/artistes", label: "Artistes" },
+  { href: "/objectifs-artistes", label: "Objectifs artistes" },
   { href: "/validations-artiste", label: "Validations artistes" },
   { href: "/contrats/validations", label: "Validations contrats" },
   { href: "/artistes/ranking", label: "Ranking Artistes" },
@@ -133,6 +134,7 @@ const managerLinks = [
   { href: "/notifications", label: "Notifications" },
 
   { href: "/artistes", label: "Mes artistes" },
+  { href: "/objectifs-artistes", label: "Objectifs artistes" },
   { href: "/contrats/validations", label: "Validations contrats" },
   { href: "/artistes/ranking", label: "Ranking Artistes" },
   { href: "/validations-artiste", label: "Validations artistes" },
