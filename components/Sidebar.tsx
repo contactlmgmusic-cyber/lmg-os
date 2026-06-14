@@ -16,6 +16,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [role, setRole] = useState<string | null>(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadChatNotifications, setUnreadChatNotifications] = useState(0);
   const [newCandidatures, setNewCandidatures] = useState(0);
 
   useEffect(() => {
@@ -42,6 +43,15 @@ export default function Sidebar() {
         .eq("lu", false);
 
       setUnreadNotifications(count || 0);
+
+      const { count: chatCount } = await supabaseBrowser
+  .from("notifications")
+  .select("*", { count: "exact", head: true })
+  .eq("user_id", user?.id)
+  .eq("type", "Chat")
+  .or("lu.eq.false,is_read.eq.false");
+
+setUnreadChatNotifications(chatCount || 0);
     }
 
     await loadUnreadCount();
@@ -217,6 +227,7 @@ const canUseGlobalTools =
           {links.map((link) => {
             const active = pathname === link.href;
             const isNotifications = link.href === "/notifications";
+            const isChat = link.href === "/chat";
             const isCandidatures = link.href === "/dashboard/candidatures";
 
             return (
@@ -242,6 +253,16 @@ const canUseGlobalTools =
                     {unreadNotifications}
                   </span>
                 )}
+
+                {isChat && unreadChatNotifications > 0 && (
+  <span
+    className={`rounded-full px-2 py-1 text-xs font-bold ${
+      active ? "bg-black text-white" : "bg-red-500 text-white"
+    }`}
+  >
+    {unreadChatNotifications}
+  </span>
+)}
 
                 {isCandidatures && newCandidatures > 0 && (
   <span
