@@ -72,6 +72,7 @@ export default function Sidebar() {
   const superAdminLinks = [
   { href: "/dashboard", label: "Dashboard CEO" },
   { href: "/admin", label: "Administration" },
+  { href: "/manager/kpi", label: "KPI Manager" },
   { href: "/dashboard/candidatures", label: "Candidatures" },
   { href: "/notifications", label: "Notifications" },
 
@@ -117,6 +118,7 @@ const adminLinks = superAdminLinks.filter(
 
 const managerLinks = [
   { href: "/manager", label: "Dashboard Manager" },
+  { href: "/manager/kpi", label: "KPI Manager" },
   { href: "/notifications", label: "Notifications" },
 
   { href: "/artistes", label: "Mes artistes" },
