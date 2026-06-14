@@ -37,13 +37,34 @@ const [activeChannel, setActiveChannel] =
   const [message, setMessage] = useState("");
 
   async function fetchChannels() {
-    const { data } = await supabaseBrowser
-      .from("chat_channels")
-      .select("*")
-      .order("created_at", { ascending: true });
+  const {
+    data: { user },
+  } = await supabaseBrowser.auth.getUser();
 
-    setChannels(data || []);
+  if (!user) {
+    window.location.href = "/login";
+    return;
   }
+
+  const { data: profile } = await supabaseBrowser
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  const { data } = await supabaseBrowser
+    .from("chat_channels")
+    .select("*")
+    .contains("allowed_roles", [profile?.role])
+    .order("created_at", { ascending: true });
+
+  setChannels(data || []);
+
+  if (data && data.length > 0 && !data.some((c) => c.slug === activeChannel)) {
+    setActiveChannel(data[0].slug);
+    await fetchMessages(data[0].slug);
+  }
+}
 
   async function fetchMessages(channelSlug = activeChannel) {
     const { data } = await supabaseBrowser
@@ -102,6 +123,11 @@ const [activeChannel, setActiveChannel] =
     const {
       data: { user },
     } = await supabaseBrowser.auth.getUser();
+
+    if (!user) {
+  window.location.href = "/login";
+  return;
+}
 
     await supabaseBrowser.from("chat_messages").insert({
       channel: activeChannel,
