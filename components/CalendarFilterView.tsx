@@ -19,6 +19,7 @@ const categoryStyles: Record<string, string> = {
   Booking: "border-pink-500/50 bg-pink-500/10 text-pink-200",
   Relance: "border-yellow-500/50 bg-yellow-500/10 text-yellow-200",
   Tâche: "border-red-500/50 bg-red-500/10 text-red-200",
+  Artiste: "border-blue-500/50 bg-blue-500/10 text-blue-200",
 };
 
 export default function CalendarFilterView({
@@ -28,7 +29,7 @@ export default function CalendarFilterView({
   days: { key: string; day: string; isToday: boolean }[];
   events: CalendarEvent[];
 }) {
-  const categories = ["Sortie", "Rollout", "Contrat", "Booking", "Relance", "Tâche"];
+  const categories = ["Sortie", "Rollout", "Contrat", "Booking", "Relance", "Tâche", "Artiste"];
   const [activeCategories, setActiveCategories] = useState(categories);
 
   function toggleCategory(category: string) {
