@@ -62,15 +62,15 @@ export default function ReleasesCarousel() {
       {release.cover_url && (
         <>
           <Image
-            key={`${release.id}-blur`}
-            src={release.cover_url}
-            alt=""
-            fill
-            priority
-            className="absolute inset-0 scale-125 object-cover object-center opacity-35 blur-3xl"
-          />
+  key={`${release.id}-blur`}
+  src={release.cover_url}
+  alt=""
+  fill
+  priority
+  className="absolute inset-0 scale-[1.45] object-cover object-center opacity-60 blur-[80px]"
+/>
 
-          <div className="absolute inset-0 bg-black/70" />
+<div className="absolute inset-0 bg-black/55" />
         </>
       )}
 
@@ -117,12 +117,6 @@ export default function ReleasesCarousel() {
             {release.artistes?.nom || "Legacy Music Group"}
           </p>
 
-          <Link
-            href={`/site/projets/${release.slug}`}
-            className="mt-5 inline-block font-semibold text-yellow-500 transition hover:text-yellow-400"
-          >
-            Découvrir →
-          </Link>
         </div>
       </div>
 
