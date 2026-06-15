@@ -108,19 +108,18 @@ export default function ReleasesCarousel() {
           </div>
         </Link>
 
-        <div className="mt-8">
-          <h3 className="text-4xl font-black uppercase text-white md:text-6xl">
-            {release.titre}
-          </h3>
+       <div className="mt-8 mb-12 text-center">
+  <h3 className="text-4xl font-black uppercase leading-none text-white md:text-6xl">
+    {release.titre}
+  </h3>
 
-          <p className="mt-3 text-lg text-zinc-400">
-            {release.artistes?.nom || "Legacy Music Group"}
-          </p>
-
-        </div>
+  <p className="mt-5 text-lg font-medium uppercase tracking-[0.25em] text-zinc-300">
+    {release.artistes?.nom || "Legacy Music Group"}
+  </p>
+</div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 gap-3">
+      <div className="absolute bottom-10 left-1/2 z-30 flex -translate-x-1/2 gap-3">
         {releases.map((_, index) => (
           <button
             key={index}
