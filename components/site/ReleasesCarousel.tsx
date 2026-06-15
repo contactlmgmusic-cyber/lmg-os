@@ -59,19 +59,21 @@ export default function ReleasesCarousel() {
  return (
   <section className="relative overflow-hidden border-y border-zinc-900 bg-black">
     <div className="relative flex h-[760px] items-center justify-center overflow-hidden px-6 pt-20">
-        {release.cover_url && (
-  <>
-    <Image
-      src={release.cover_url}
-      alt=""
-      fill
-      priority
-      className="object-cover object-center scale-125 blur-3xl opacity-25"
-    />
+      {release.cover_url && (
+        <>
+          <Image
+            key={`${release.id}-blur`}
+            src={release.cover_url}
+            alt=""
+            fill
+            priority
+            className="absolute inset-0 scale-125 object-cover object-center opacity-35 blur-3xl"
+          />
 
-    <div className="absolute inset-0 bg-black/75" />
-  </>
-)}
+          <div className="absolute inset-0 bg-black/70" />
+        </>
+      )}
+
       <button
         onClick={prevSlide}
         className="absolute left-8 top-1/2 z-30 -translate-y-1/2 text-8xl font-thin text-white/30 transition hover:text-white"
@@ -91,6 +93,7 @@ export default function ReleasesCarousel() {
           <div className="relative h-[500px] w-[500px] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.02]">
             {release.cover_url ? (
               <Image
+                key={release.id}
                 src={release.cover_url}
                 alt={release.titre || "Release LMG"}
                 fill
