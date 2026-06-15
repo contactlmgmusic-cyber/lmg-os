@@ -5,6 +5,7 @@ import FeaturedArtists from "@/components/site/FeaturedArtists";
 import FeaturedReleases from "@/components/site/FeaturedReleases";
 import Footer from "@/components/site/Footer";
 import ApplicationForm from "@/components/site/ApplicationForm";
+import ReleasesCarousel from "@/components/site/ReleasesCarousel";
 
 export default function SitePage() {
   return (
@@ -57,6 +58,8 @@ export default function SitePage() {
           </div>
         </div>
       </section>
+
+      <ReleasesCarousel />
 
       <section className="bg-zinc-950 px-6 py-28">
   <div className="mx-auto max-w-6xl">
