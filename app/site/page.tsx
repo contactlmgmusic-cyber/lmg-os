@@ -59,8 +59,6 @@ export default function SitePage() {
         </div>
       </section>
 
-      <ReleasesCarousel />
-
       <section className="bg-zinc-950 px-6 py-28">
   <div className="mx-auto max-w-6xl">
     <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
@@ -81,6 +79,8 @@ export default function SitePage() {
     </div>
   </div>
 </section>
+
+<ReleasesCarousel />
 
 <section className="border-t border-zinc-900 bg-black px-6 py-28">
   <div className="mx-auto max-w-6xl">
