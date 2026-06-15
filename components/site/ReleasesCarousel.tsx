@@ -88,20 +88,18 @@ export default function ReleasesCarousel() {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40" />
 
         <button
-          type="button"
-          onClick={prevSlide}
-          className="absolute left-5 top-1/2 z-30 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-3xl text-white backdrop-blur transition hover:border-yellow-500 hover:text-yellow-500 md:left-8 md:h-16 md:w-16"
-        >
-          ←
-        </button>
+  onClick={prevSlide}
+  className="absolute left-8 top-1/2 z-30 -translate-y-1/2 text-7xl font-thin text-white/60 transition hover:text-white"
+>
+  ‹
+</button>
 
-        <button
-          type="button"
-          onClick={nextSlide}
-          className="absolute right-5 top-1/2 z-30 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-3xl text-white backdrop-blur transition hover:border-yellow-500 hover:text-yellow-500 md:right-8 md:h-16 md:w-16"
-        >
-          →
-        </button>
+<button
+  onClick={nextSlide}
+  className="absolute right-8 top-1/2 z-30 -translate-y-1/2 text-7xl font-thin text-white/60 transition hover:text-white"
+>
+  ›
+</button>
 
         <div className="absolute inset-0 z-20 flex items-end">
           <div className="mx-auto w-full max-w-7xl px-8 pb-20 md:pb-24">
@@ -130,20 +128,19 @@ export default function ReleasesCarousel() {
               Découvrir le projet
             </Link>
 
-            <div className="mt-10 flex gap-2">
-              {releases.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => setCurrent(index)}
-                  className={`h-2 rounded-full transition-all ${
-                    index === current
-                      ? "w-12 bg-yellow-500"
-                      : "w-3 bg-white/30"
-                  }`}
-                />
-              ))}
-            </div>
+            <div className="absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 gap-3">
+  {releases.map((_, index) => (
+    <button
+      key={index}
+      onClick={() => setCurrent(index)}
+      className={`h-3 w-3 rounded-full transition-all ${
+        index === current
+          ? "bg-yellow-500"
+          : "bg-white/60"
+      }`}
+    />
+  ))}
+</div>
           </div>
         </div>
       </div>
