@@ -61,6 +61,47 @@ export default function SitePage() {
       <FeaturedArtists />
       <FeaturedReleases />
 
+<section className="border-t border-zinc-900 bg-black px-6 py-28">
+  <div className="mx-auto max-w-6xl">
+    <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+      Notre vision
+    </p>
+
+    <h2 className="text-4xl font-black md:text-6xl">
+      Construire des carrières, pas seulement des sorties.
+    </h2>
+
+    <p className="mt-8 max-w-4xl text-lg leading-8 text-zinc-400">
+      Legacy Music Group accompagne les artistes dans la construction d’une
+      carrière durable : identité artistique, stratégie, image, marketing,
+      booking et développement global.
+    </p>
+
+    <p className="mt-6 max-w-4xl text-lg leading-8 text-zinc-400">
+      Notre objectif est simple : bâtir une structure solide autour d’artistes
+      à fort potentiel comme LAAM et YHN, en avançant avec une vision long terme
+      et une vraie exigence professionnelle.
+    </p>
+
+    <div className="mt-14 grid gap-6 md:grid-cols-4">
+      {[
+        ["Vision long terme", "Développer des artistes capables de durer."],
+        ["Stratégie sur mesure", "Chaque projet mérite une trajectoire claire."],
+        ["Image forte", "Construire une identité reconnaissable."],
+        ["Croissance réelle", "Transformer le potentiel en résultats."],
+      ].map(([title, text]) => (
+        <div
+          key={title}
+          className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 hover:border-yellow-500"
+        >
+          <h3 className="text-xl font-bold text-white">{title}</h3>
+          <p className="mt-4 text-sm leading-6 text-zinc-400">{text}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
       <section id="services" className="bg-zinc-950 px-6 py-28">
         <div className="mx-auto max-w-6xl">
           <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
