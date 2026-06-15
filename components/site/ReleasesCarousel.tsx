@@ -58,7 +58,7 @@ export default function ReleasesCarousel() {
 
   return (
   <section className="relative overflow-hidden">
-    <div className="relative h-[85vh] min-h-[680px] w-full overflow-hidden">
+    <div className="relative h-[65vh] min-h-[520px] w-full overflow-hidden">
       {release.cover_url ? (
         <Image
           key={release.id}
