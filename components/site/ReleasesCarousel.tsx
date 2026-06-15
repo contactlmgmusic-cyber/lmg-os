@@ -105,16 +105,16 @@ export default function ReleasesCarousel() {
             </Link>
           </div>
 
-          <div className="relative mx-auto aspect-square w-full max-w-[520px] overflow-hidden rounded-[1.5rem] shadow-2xl">
+          <div className="relative mx-auto flex aspect-square w-full max-w-[520px] items-center justify-center overflow-hidden rounded-[1.5rem] shadow-2xl">
             {release.cover_url ? (
               <Image
-                key={release.id}
-                src={release.cover_url}
-                alt={release.titre || "Release LMG"}
-                fill
-                priority
-                className="object-cover"
-              />
+  key={release.id}
+  src={release.cover_url}
+  alt={release.titre || "Release LMG"}
+  fill
+  priority
+  className="object-cover object-center"
+ />
             ) : (
               <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-600">
                 No Cover
