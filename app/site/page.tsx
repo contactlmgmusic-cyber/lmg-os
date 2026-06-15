@@ -60,24 +60,26 @@ export default function SitePage() {
       </section>
 
       <section className="bg-zinc-950 px-6 py-28">
-  <div className="mx-auto max-w-6xl">
-    <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
-      Artistes en développement
-    </p>
+  <div className="mx-auto max-w-7xl">
+  <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+    <div>
+      <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+        Roster
+      </p>
 
-    <h2 className="text-4xl font-black md:text-6xl">
-      Les talents accompagnés par LMG.
-    </h2>
+      <h2 className="text-4xl font-black uppercase md:text-6xl">
+        Artistes LMG
+      </h2>
+    </div>
 
-    <p className="mt-6 max-w-3xl text-lg text-zinc-400">
+    <p className="max-w-xl text-zinc-400">
       Découvrez les artistes que nous accompagnons dans leur développement,
       leur image et leur stratégie de carrière.
     </p>
-
-    <div className="mt-14">
-      <FeaturedArtists />
-    </div>
   </div>
+
+  <FeaturedArtists />
+</div>
 </section>
 
 <ReleasesCarousel />
