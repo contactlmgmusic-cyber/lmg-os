@@ -31,22 +31,6 @@ export default function FeaturedReleases() {
   return (
     <section className="bg-zinc-950 px-6 py-28">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-14 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-          <div>
-            <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
-              Latest Releases
-            </p>
-
-            <h2 className="text-4xl font-black md:text-6xl">
-              Dernières sorties
-            </h2>
-          </div>
-
-          <p className="max-w-xl text-zinc-400">
-            Découvrez les derniers projets développés et accompagnés par Legacy
-            Music Group.
-          </p>
-        </div>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {projets.map((projet) => (
