@@ -57,85 +57,82 @@ export default function ReleasesCarousel() {
   };
 
  return (
-  <section className="relative overflow-hidden bg-black">
-    <div className="relative h-[65vh] min-h-[560px] w-full overflow-hidden">
-      {release.cover_url && (
-        <Image
-          key={`${release.id}-bg`}
-          src={release.cover_url}
-          alt=""
-          fill
-          priority
-          className="object-cover object-center scale-110 opacity-30 blur-2xl"
-        />
-      )}
+  <section className="relative bg-black overflow-hidden border-y border-zinc-900">
+    <div className="relative h-[720px] flex items-center justify-center">
 
-      <div className="absolute inset-0 bg-black/70" />
-
+      {/* Flèche gauche */}
       <button
         onClick={prevSlide}
-        className="absolute left-8 top-1/2 z-30 -translate-y-1/2 text-9xl font-thin text-white/25 transition hover:text-white"
+        className="absolute left-8 z-30 text-8xl font-thin text-white/30 transition hover:text-white"
       >
         ‹
       </button>
 
+      {/* Flèche droite */}
       <button
         onClick={nextSlide}
-        className="absolute right-8 top-1/2 z-30 -translate-y-1/2 text-9xl font-thin text-white/25 transition hover:text-white"
+        className="absolute right-8 z-30 text-8xl font-thin text-white/30 transition hover:text-white"
       >
         ›
       </button>
 
-      <div className="absolute inset-0 z-20 flex items-center justify-center">
+      {/* Contenu */}
+      <div className="flex flex-col items-center text-center">
 
-        <div className="absolute left-[10%] max-w-md">
+        {/* Cover */}
+        <Link href={`/site/projets/${release.slug}`}>
+          <div className="relative h-[520px] w-[520px] overflow-hidden rounded-[20px] shadow-2xl transition duration-500 hover:scale-[1.02]">
+            {release.cover_url ? (
+              <Image
+                src={release.cover_url}
+                alt={release.titre}
+                fill
+                priority
+                className="object-cover object-center"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-500">
+                No Cover
+              </div>
+            )}
+          </div>
+        </Link>
+
+        {/* Infos */}
+        <div className="mt-10">
           <h3 className="text-5xl font-black uppercase text-white md:text-7xl">
             {release.titre}
           </h3>
 
-          <p className="mt-4 text-xl text-zinc-300">
-            {release.artistes?.nom || "Legacy Music Group"}
+          <p className="mt-4 text-xl text-zinc-400">
+            {release.artistes?.nom}
           </p>
 
           <Link
             href={`/site/projets/${release.slug}`}
-            className="mt-8 inline-block text-lg font-semibold text-yellow-500 transition hover:text-yellow-400"
+            className="mt-6 inline-block font-semibold text-yellow-500 transition hover:text-yellow-400"
           >
             Découvrir →
           </Link>
         </div>
 
-        <div className="relative h-[520px] w-[520px] overflow-hidden rounded-[24px] shadow-[0_0_80px_rgba(0,0,0,0.5)]">
-          {release.cover_url ? (
-            <Image
-              key={release.id}
-              src={release.cover_url}
-              alt={release.titre || "Release LMG"}
-              fill
-              priority
-              className="object-cover object-center"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-600">
-              No Cover
-            </div>
-          )}
-        </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 gap-3">
+      {/* Pagination */}
+      <div className="absolute bottom-10 left-1/2 flex -translate-x-1/2 gap-3">
         {releases.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`h-3 w-3 rounded-full transition-all ${
+            className={`h-3 w-3 rounded-full transition ${
               index === current
                 ? "bg-yellow-500"
-                : "bg-white/50"
+                : "bg-white/40"
             }`}
           />
         ))}
       </div>
+
     </div>
   </section>
 );
