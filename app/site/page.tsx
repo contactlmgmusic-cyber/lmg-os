@@ -140,6 +140,40 @@ export default function SitePage() {
   </div>
 </section>
 
+<section className="border-t border-zinc-900 bg-black px-6 py-28">
+  <div className="mx-auto max-w-6xl">
+    <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+      Pour qui ?
+    </p>
+
+    <h2 className="text-4xl font-black md:text-6xl">
+      Nous ne cherchons pas seulement des talents.
+    </h2>
+
+    <p className="mt-8 max-w-4xl text-lg leading-8 text-zinc-400">
+      LMG accompagne des artistes sérieux, réguliers, ambitieux et prêts à
+      construire une carrière durable. Le talent est important, mais la vision,
+      le travail et la discipline font la différence.
+    </p>
+
+    <div className="mt-14 grid gap-6 md:grid-cols-3">
+      {[
+        ["Artistes ambitieux", "Tu veux construire une vraie trajectoire, pas juste sortir un morceau."],
+        ["Projets sérieux", "Tu es prêt à travailler ton image, ton contenu, ta stratégie et ton audience."],
+        ["Vision long terme", "Tu veux bâtir une marque artistique solide avec une équipe impliquée."],
+      ].map(([title, text]) => (
+        <div
+          key={title}
+          className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 hover:border-yellow-500"
+        >
+          <h3 className="text-xl font-bold text-white">{title}</h3>
+          <p className="mt-4 text-sm leading-6 text-zinc-400">{text}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
       <section id="services" className="bg-zinc-950 px-6 py-28">
         <div className="mx-auto max-w-6xl">
           <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
