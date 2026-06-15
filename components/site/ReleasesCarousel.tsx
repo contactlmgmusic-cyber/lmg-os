@@ -39,7 +39,7 @@ export default function ReleasesCarousel() {
 
     const interval = setInterval(() => {
       setCurrent((prev) => (prev + 1) % releases.length);
-    }, 4000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [releases.length]);
@@ -48,78 +48,104 @@ export default function ReleasesCarousel() {
 
   const release = releases[current];
 
+  const nextSlide = () => {
+    setCurrent((prev) => (prev + 1) % releases.length);
+  };
+
+  const prevSlide = () => {
+    setCurrent((prev) => (prev === 0 ? releases.length - 1 : prev - 1));
+  };
+
   return (
-    <section className="relative overflow-hidden bg-black px-6 py-28">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-12 flex items-end justify-between gap-6">
-          <div>
-            <p className="mb-4 text-sm uppercase tracking-[0.4em] text-yellow-500">
-              Latest Releases
-            </p>
+    <section className="relative overflow-hidden bg-black">
+      <div className="absolute left-8 top-8 z-20 md:left-14 md:top-14">
+        <p className="mb-3 text-sm uppercase tracking-[0.4em] text-yellow-500">
+          Latest Releases
+        </p>
 
-            <h2 className="text-4xl font-black uppercase md:text-7xl">
-              Dernières sorties
-            </h2>
+        <h2 className="text-4xl font-black uppercase text-white md:text-7xl">
+          Dernières sorties
+        </h2>
+      </div>
+
+      <div className="relative h-[85vh] min-h-[680px] w-full overflow-hidden">
+        {release.cover_url ? (
+          <Image
+            key={release.id}
+            src={release.cover_url}
+            alt={release.titre || "Release LMG"}
+            fill
+            priority
+            className="object-cover transition duration-700"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-600">
+            No Cover
           </div>
+        )}
 
-          <div className="hidden gap-2 md:flex">
-            {releases.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrent(index)}
-                className={`h-2 rounded-full transition-all ${
-                  index === current
-                    ? "w-10 bg-yellow-500"
-                    : "w-2 bg-zinc-700"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40" />
 
-        <Link
-          href={`/site/projets/${release.slug}`}
-          className="group grid overflow-hidden rounded-[2.5rem] border border-zinc-800 bg-zinc-950 transition hover:border-yellow-500 lg:grid-cols-[55%_45%]"
+        <button
+          type="button"
+          onClick={prevSlide}
+          className="absolute left-5 top-1/2 z-30 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-3xl text-white backdrop-blur transition hover:border-yellow-500 hover:text-yellow-500 md:left-8 md:h-16 md:w-16"
         >
-          <div className="relative h-[480px] bg-zinc-900 md:h-[620px]">
-            {release.cover_url ? (
-              <Image
-                src={release.cover_url}
-                alt={release.titre || "Release LMG"}
-                fill
-                className="object-cover transition duration-700 group-hover:scale-105"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-zinc-600">
-                No Cover
-              </div>
-            )}
-          </div>
+          ←
+        </button>
 
-          <div className="flex flex-col justify-center p-8 md:p-12">
+        <button
+          type="button"
+          onClick={nextSlide}
+          className="absolute right-5 top-1/2 z-30 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-3xl text-white backdrop-blur transition hover:border-yellow-500 hover:text-yellow-500 md:right-8 md:h-16 md:w-16"
+        >
+          →
+        </button>
+
+        <div className="absolute inset-0 z-20 flex items-end">
+          <div className="mx-auto w-full max-w-7xl px-8 pb-20 md:pb-24">
             <p className="text-sm uppercase tracking-[0.35em] text-yellow-500">
               {release.type || "Release"}
             </p>
 
-            <h3 className="mt-5 text-5xl font-black uppercase md:text-7xl">
+            <h3 className="mt-4 max-w-4xl text-5xl font-black uppercase text-white md:text-8xl">
               {release.titre}
             </h3>
 
-            <p className="mt-6 text-xl text-zinc-300">
+            <p className="mt-5 text-xl text-zinc-300">
               {release.artistes?.nom || "Legacy Music Group"}
             </p>
 
-            <p className="mt-3 text-zinc-500">
+            <p className="mt-2 text-zinc-500">
               {release.date_sortie
                 ? new Date(release.date_sortie).toLocaleDateString("fr-FR")
                 : "Date à venir"}
             </p>
 
-            <p className="mt-10 font-bold text-yellow-500">
-              Découvrir le projet →
-            </p>
+            <Link
+              href={`/site/projets/${release.slug}`}
+              className="mt-8 inline-block rounded-full bg-yellow-500 px-8 py-4 font-bold text-black transition hover:bg-yellow-400"
+            >
+              Découvrir le projet
+            </Link>
+
+            <div className="mt-10 flex gap-2">
+              {releases.map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setCurrent(index)}
+                  className={`h-2 rounded-full transition-all ${
+                    index === current
+                      ? "w-12 bg-yellow-500"
+                      : "w-3 bg-white/30"
+                  }`}
+                />
+              ))}
+            </div>
           </div>
-        </Link>
+        </div>
       </div>
     </section>
   );
