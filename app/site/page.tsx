@@ -79,8 +79,6 @@ export default function SitePage() {
   </div>
 </section>
 
-      <FeaturedReleases />
-
 <section className="border-t border-zinc-900 bg-black px-6 py-28">
   <div className="mx-auto max-w-6xl">
     <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
@@ -268,6 +266,27 @@ export default function SitePage() {
           </div>
         </div>
       </section>
+
+      <section className="border-t border-zinc-900 bg-black px-6 py-28">
+  <div className="mx-auto max-w-6xl">
+    <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+      Projets récents
+    </p>
+
+    <h2 className="text-4xl font-black md:text-6xl">
+      Les dernières sorties accompagnées par LMG.
+    </h2>
+
+    <p className="mt-6 max-w-3xl text-lg text-zinc-400">
+      Découvrez les projets, sorties et développements artistiques
+      actuellement portés par Legacy Music Group.
+    </p>
+
+    <div className="mt-14">
+      <FeaturedReleases />
+    </div>
+  </div>
+</section>
 
       <section className="border-t border-zinc-900 bg-zinc-950 px-6 py-28 text-center">
   <div className="mx-auto max-w-4xl">
