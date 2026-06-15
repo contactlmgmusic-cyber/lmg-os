@@ -78,6 +78,106 @@ export default function ServicesPage() {
         </div>
       </section>
 
+      <section className="px-6 py-28">
+  <div className="mx-auto max-w-6xl">
+    <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+      Notre méthode
+    </p>
+
+    <h2 className="text-4xl font-black md:text-6xl">
+      Une approche construite autour de l'artiste.
+    </h2>
+
+    <p className="mt-8 max-w-3xl text-lg leading-8 text-zinc-400">
+      Chez LMG, chaque projet bénéficie d'un accompagnement structuré.
+      Nous ne nous contentons pas de fournir des services : nous construisons
+      une trajectoire adaptée à l'identité et aux ambitions de chaque artiste.
+    </p>
+
+    <div className="mt-14 grid gap-6 md:grid-cols-4">
+      {[
+        [
+          "01",
+          "Analyse",
+          "Comprendre l'artiste, son univers et son positionnement."
+        ],
+        [
+          "02",
+          "Stratégie",
+          "Définir une vision claire et des objectifs mesurables."
+        ],
+        [
+          "03",
+          "Développement",
+          "Construire l'image, le contenu et les opportunités."
+        ],
+        [
+          "04",
+          "Croissance",
+          "Transformer les actions en résultats concrets."
+        ],
+      ].map(([number, title, text]) => (
+        <div
+          key={number}
+          className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 hover:border-yellow-500"
+        >
+          <p className="text-2xl font-black text-yellow-500">{number}</p>
+
+          <h3 className="mt-4 text-xl font-bold">{title}</h3>
+
+          <p className="mt-4 text-sm leading-6 text-zinc-400">
+            {text}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section className="bg-black px-6 py-28">
+  <div className="mx-auto max-w-6xl">
+    <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+      Ce que nous construisons
+    </p>
+
+    <h2 className="text-4xl font-black md:text-6xl">
+      Bien plus qu'une sortie musicale.
+    </h2>
+
+    <div className="mt-14 grid gap-6 md:grid-cols-2">
+      {[
+        [
+          "Identité artistique",
+          "Définir un univers cohérent et reconnaissable."
+        ],
+        [
+          "Image & Branding",
+          "Construire une image forte sur les réseaux et au-delà."
+        ],
+        [
+          "Audience",
+          "Développer une communauté engagée autour du projet."
+        ],
+        [
+          "Opportunités",
+          "Créer des connexions avec médias, bookers et partenaires."
+        ],
+      ].map(([title, text]) => (
+        <div
+          key={title}
+          className="rounded-3xl border border-zinc-800 bg-zinc-950 p-8 hover:border-yellow-500"
+        >
+          <h3 className="text-2xl font-bold">{title}</h3>
+
+          <p className="mt-4 text-zinc-400">
+            {text}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
       <section className="px-6 pb-28">
         <div className="mx-auto grid max-w-6xl gap-8">
           {services.map((service, index) => (
