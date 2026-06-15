@@ -66,11 +66,11 @@ export default function ReleasesCarousel() {
           alt=""
           fill
           priority
-          className="scale-110 object-cover opacity-30 blur-2xl"
+          className="object-cover object-center scale-110 opacity-30 blur-2xl"
         />
       )}
 
-      <div className="absolute inset-0 bg-black/60" />
+      <div className="absolute inset-0 bg-black/70" />
 
       <button
         onClick={prevSlide}
@@ -86,41 +86,40 @@ export default function ReleasesCarousel() {
         ›
       </button>
 
-      <div className="absolute inset-0 z-20 flex items-center">
-        <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-20 md:grid-cols-[40%_60%]">
-          <div>
-            <h3 className="text-4xl font-black uppercase text-white md:text-6xl">
-              {release.titre}
-            </h3>
+      <div className="absolute inset-0 z-20 flex items-center justify-center">
 
-            <p className="mt-4 text-xl text-zinc-300">
-              {release.artistes?.nom || "Legacy Music Group"}
-            </p>
+        <div className="absolute left-[10%] max-w-md">
+          <h3 className="text-5xl font-black uppercase text-white md:text-7xl">
+            {release.titre}
+          </h3>
 
-            <Link
-              href={`/site/projets/${release.slug}`}
-              className="mt-8 inline-block text-lg font-semibold text-yellow-500 transition hover:text-yellow-400"
-            >
-              Découvrir →
-            </Link>
-          </div>
+          <p className="mt-4 text-xl text-zinc-300">
+            {release.artistes?.nom || "Legacy Music Group"}
+          </p>
 
-          <div className="relative mx-auto flex aspect-square w-full max-w-[520px] items-center justify-center overflow-hidden rounded-[1.5rem] shadow-2xl">
-            {release.cover_url ? (
-              <Image
-  key={release.id}
-  src={release.cover_url}
-  alt={release.titre || "Release LMG"}
-  fill
-  priority
-  className="object-cover object-center"
- />
-            ) : (
-              <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-600">
-                No Cover
-              </div>
-            )}
-          </div>
+          <Link
+            href={`/site/projets/${release.slug}`}
+            className="mt-8 inline-block text-lg font-semibold text-yellow-500 transition hover:text-yellow-400"
+          >
+            Découvrir →
+          </Link>
+        </div>
+
+        <div className="relative h-[520px] w-[520px] overflow-hidden rounded-[24px] shadow-[0_0_80px_rgba(0,0,0,0.5)]">
+          {release.cover_url ? (
+            <Image
+              key={release.id}
+              src={release.cover_url}
+              alt={release.titre || "Release LMG"}
+              fill
+              priority
+              className="object-cover object-center"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-600">
+              No Cover
+            </div>
+          )}
         </div>
       </div>
 
@@ -130,7 +129,9 @@ export default function ReleasesCarousel() {
             key={index}
             onClick={() => setCurrent(index)}
             className={`h-3 w-3 rounded-full transition-all ${
-              index === current ? "bg-yellow-500" : "bg-white/60"
+              index === current
+                ? "bg-yellow-500"
+                : "bg-white/50"
             }`}
           />
         ))}
