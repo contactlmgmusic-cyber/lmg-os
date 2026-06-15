@@ -224,30 +224,6 @@ export default function SitePage() {
         </div>
       </section>
 
-      <section className="px-6 py-28">
-        <div className="mx-auto max-w-6xl">
-          <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
-            Artists
-          </p>
-
-          <h2 className="text-4xl font-black md:text-6xl">
-            Les talents accompagnés
-          </h2>
-
-          <div className="mt-14 rounded-[2rem] border border-zinc-800 bg-zinc-950 p-8">
-            <p className="text-sm uppercase tracking-[0.3em] text-yellow-500">
-              DJ / Performer
-            </p>
-
-            <h3 className="mt-4 text-4xl font-black">DJ El Jack</h3>
-
-            <p className="mt-4 max-w-2xl text-zinc-300">
-              Open Format • Afrobeat • Amapiano • Urban Music
-            </p>
-          </div>
-        </div>
-      </section>
-
       <section className="bg-zinc-950 px-6 py-28">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-4xl font-black md:text-6xl">
@@ -276,14 +252,7 @@ export default function SitePage() {
       Projets récents
     </p>
 
-    <h2 className="text-4xl font-black md:text-6xl">
-      Les dernières sorties accompagnées par LMG.
-    </h2>
 
-    <p className="mt-6 max-w-3xl text-lg text-zinc-400">
-      Découvrez les projets, sorties et développements artistiques
-      actuellement portés par Legacy Music Group.
-    </p>
 
     <div className="mt-14">
       <FeaturedReleases />
