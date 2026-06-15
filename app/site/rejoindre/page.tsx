@@ -77,6 +77,93 @@ export default function RejoindrePage() {
           et prêts à construire sur le long terme.
         </p>
 
+        <section className="mb-24">
+  <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+    Notre processus
+  </p>
+
+  <h2 className="text-4xl font-black md:text-6xl">
+    Comment rejoindre LMG ?
+  </h2>
+
+  <div className="mt-14 grid gap-6 md:grid-cols-2">
+    {[
+      [
+        "01",
+        "Candidature",
+        "Présente ton projet, ton univers et tes ambitions."
+      ],
+      [
+        "02",
+        "Étude",
+        "Nous analysons ton identité artistique, ton potentiel et ta vision."
+      ],
+      [
+        "03",
+        "Échange",
+        "Si ton profil correspond à LMG, nous prenons contact avec toi."
+      ],
+      [
+        "04",
+        "Développement",
+        "Nous construisons ensemble une stratégie adaptée à ton projet."
+      ],
+    ].map(([number, title, text]) => (
+      <div
+        key={number}
+        className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6"
+      >
+        <p className="text-2xl font-black text-yellow-500">{number}</p>
+
+        <h3 className="mt-4 text-xl font-bold">{title}</h3>
+
+        <p className="mt-4 text-sm leading-6 text-zinc-400">
+          {text}
+        </p>
+      </div>
+    ))}
+  </div>
+</section>
+
+<section className="mb-24 rounded-[2rem] border border-zinc-800 bg-zinc-950 p-8">
+  <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+    Ce que nous recherchons
+  </p>
+
+  <h2 className="text-3xl font-black">
+    Plus que du talent.
+  </h2>
+
+  <div className="mt-8 grid gap-6 md:grid-cols-2">
+    {[
+      "Une identité artistique claire",
+      "Une vision long terme",
+      "De la régularité dans le travail",
+      "Une volonté de progresser",
+      "Un projet sérieux",
+      "Un état d'esprit professionnel",
+    ].map((item) => (
+      <div
+        key={item}
+        className="rounded-2xl border border-zinc-800 bg-black p-4"
+      >
+        {item}
+      </div>
+    ))}
+  </div>
+</section>
+
+<div className="mb-10">
+  <h2 className="text-3xl font-black">
+    Présente ton projet
+  </h2>
+
+  <p className="mt-4 max-w-2xl text-zinc-400">
+    Remplis le formulaire ci-dessous avec le plus d'informations
+    possible. Chaque candidature est étudiée individuellement.
+  </p>
+</div>
+
         <form
           onSubmit={handleSubmit}
           className="mt-14 rounded-[2rem] border border-zinc-800 bg-zinc-950 p-8"
