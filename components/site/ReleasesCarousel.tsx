@@ -58,7 +58,7 @@ export default function ReleasesCarousel() {
 
  return (
   <section className="relative overflow-hidden border-y border-zinc-900 bg-black">
-    <div className="relative mx-auto flex h-[520px] w-full max-w-[1400px] items-center justify-center overflow-hidden px-6">
+    <div className="relative mx-auto flex h-[560px] w-full max-w-[1400px] items-center justify-center overflow-hidden px-6 pt-24">
       {release.cover_url && (
         <>
           <Image
