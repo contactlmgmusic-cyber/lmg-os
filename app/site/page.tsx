@@ -102,6 +102,44 @@ export default function SitePage() {
   </div>
 </section>
 
+<section className="border-t border-zinc-900 bg-zinc-950 px-6 py-28">
+  <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[45%_55%]">
+    <div>
+      <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+        Événement
+      </p>
+
+      <h2 className="text-4xl font-black md:text-6xl">
+        LMG Launch Night
+      </h2>
+
+      <p className="mt-8 text-lg leading-8 text-zinc-400">
+        Une réception de lancement à Paris pensée comme une expérience immersive :
+        présentation des artistes, show live, networking, projections LMG et
+        univers Black & Gold.
+      </p>
+    </div>
+
+    <div className="rounded-[2rem] border border-zinc-800 bg-black p-8">
+      <div className="grid gap-6 md:grid-cols-2">
+        {[
+          ["Lieu", "Paris"],
+          ["Dress code", "Black & Gold"],
+          ["Format", "Réception privée"],
+          ["Expérience", "Show live & networking"],
+        ].map(([title, text]) => (
+          <div key={title} className="border-l border-yellow-500 pl-5">
+            <p className="text-sm uppercase tracking-[0.2em] text-yellow-500">
+              {title}
+            </p>
+            <p className="mt-3 text-xl font-bold text-white">{text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
       <section id="services" className="bg-zinc-950 px-6 py-28">
         <div className="mx-auto max-w-6xl">
           <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
