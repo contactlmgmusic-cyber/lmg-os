@@ -249,6 +249,30 @@ export default function SitePage() {
         </div>
       </section>
 
+      <section className="border-t border-zinc-900 bg-zinc-950 px-6 py-28 text-center">
+  <div className="mx-auto max-w-4xl">
+    <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
+      Build Your Legacy
+    </p>
+
+    <h2 className="text-4xl font-black md:text-6xl">
+      Ton projet mérite une vraie stratégie.
+    </h2>
+
+    <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-400">
+      Si tu es prêt à travailler ton image, structurer ta carrière et construire
+      sur le long terme, présente ton projet à LMG.
+    </p>
+
+    <Link
+      href="/site/rejoindre"
+      className="mt-10 inline-block rounded-full bg-yellow-500 px-8 py-4 font-bold text-black hover:bg-yellow-400"
+    >
+      Rejoindre LMG
+    </Link>
+  </div>
+</section>
+
       <ApplicationForm />
       <Footer />
     </main>
