@@ -57,13 +57,7 @@ export default function ReleasesCarousel() {
   };
 
   return (
-  <section className="relative overflow-hidden bg-black">
-    <div className="absolute left-8 top-8 z-20 md:left-14 md:top-14">
-      <h2 className="text-3xl font-black uppercase text-white md:text-5xl">
-        Dernières sorties
-      </h2>
-    </div>
-
+  <section className="relative overflow-hidden">
     <div className="relative h-[85vh] min-h-[680px] w-full overflow-hidden">
       {release.cover_url ? (
         <Image
@@ -85,21 +79,21 @@ export default function ReleasesCarousel() {
 
       <button
         onClick={prevSlide}
-        className="absolute left-8 top-1/2 z-30 -translate-y-1/2 text-8xl font-thin text-white/40 transition hover:text-white"
+        className="absolute left-8 top-1/2 z-30 -translate-y-1/2 text-9xl font-thin text-white/25 transition hover:text-white"
       >
         ‹
       </button>
 
       <button
         onClick={nextSlide}
-        className="absolute right-8 top-1/2 z-30 -translate-y-1/2 text-8xl font-thin text-white/40 transition hover:text-white"
+        className="absolute right-8 top-1/2 z-30 -translate-y-1/2 text-9xl font-thin text-white/25 transition hover:text-white"
       >
         ›
       </button>
 
       <div className="absolute inset-0 z-20 flex items-end">
-        <div className="mx-auto w-full max-w-7xl px-8 pb-24">
-          <h3 className="max-w-4xl text-5xl font-black uppercase text-white md:text-8xl">
+        <div className="mx-auto w-full max-w-7xl px-8 pb-32">
+          <h3 className="max-w-3xl text-4xl font-black uppercase text-white md:text-6xl">
             {release.titre}
           </h3>
 
@@ -121,7 +115,7 @@ export default function ReleasesCarousel() {
           <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`h-2 w-2 rounded-full transition-all ${
+            className={`h-3 w-3 rounded-full transition-all ${
               index === current
                 ? "bg-yellow-500"
                 : "bg-white/60"
