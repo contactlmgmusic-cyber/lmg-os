@@ -59,20 +59,31 @@ export default function ReleasesCarousel() {
   return (
   <section className="relative overflow-hidden">
     <div className="relative h-[65vh] min-h-[520px] w-full overflow-hidden">
-      {release.cover_url ? (
-        <Image
-          key={release.id}
-          src={release.cover_url}
-          alt={release.titre || "Release LMG"}
-          fill
-          priority
-          className="object-cover transition duration-700"
-        />
-      ) : (
-        <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-600">
-          No Cover
-        </div>
-      )}
+     {release.cover_url ? (
+  <>
+    <Image
+      key={`${release.id}-bg`}
+      src={release.cover_url}
+      alt=""
+      fill
+      priority
+      className="scale-110 object-cover blur-2xl opacity-40"
+    />
+
+    <Image
+      key={release.id}
+      src={release.cover_url}
+      alt={release.titre || "Release LMG"}
+      fill
+      priority
+      className="object-contain p-10 transition duration-700"
+    />
+  </>
+) : (
+  <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-600">
+    No Cover
+  </div>
+)}
 
       <div className="absolute inset-0 bg-black/20" />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20" />
