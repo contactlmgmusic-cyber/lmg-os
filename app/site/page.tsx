@@ -246,20 +246,6 @@ export default function SitePage() {
         </div>
       </section>
 
-      <section className="border-t border-zinc-900 bg-black px-6 py-28">
-  <div className="mx-auto max-w-6xl">
-    <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
-      Projets récents
-    </p>
-
-
-
-    <div className="mt-14">
-      <FeaturedReleases />
-    </div>
-  </div>
-</section>
-
       <section className="border-t border-zinc-900 bg-zinc-950 px-6 py-28 text-center">
   <div className="mx-auto max-w-4xl">
     <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
