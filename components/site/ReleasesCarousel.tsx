@@ -110,7 +110,7 @@ export default function ReleasesCarousel() {
             </div>
           </Link>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 mb-12 text-center">
             <h3 className="text-3xl font-black uppercase leading-none text-white md:text-4xl">
               {release.titre}
             </h3>
@@ -121,7 +121,7 @@ export default function ReleasesCarousel() {
           </div>
         </div>
 
-        <div className="absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 gap-3">
+        <div className="absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 gap-3">
           {releases.map((_, index) => (
             <button
               key={index}

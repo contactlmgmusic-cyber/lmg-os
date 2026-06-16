@@ -8,7 +8,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-50 bg-transparent">
+    <header className="absolute left-0 right-0 top-0 z-50 bg-transparent">
       <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-5 md:px-8">
         <Link href="/site" className="flex items-center gap-3">
           <Image
@@ -23,9 +23,6 @@ export default function Navbar() {
           <div>
             <p className="text-sm font-bold leading-tight text-white drop-shadow md:text-base">
               Legacy Music Group
-            </p>
-            <p className="hidden text-xs uppercase tracking-[0.2em] text-white/60 md:block">
-              Management • Marketing • Booking
             </p>
           </div>
         </Link>
