@@ -90,36 +90,46 @@ export default function ReleasesCarousel() {
           ›
         </button>
 
-        <div className="relative z-20 flex flex-col items-center text-center">
-          <Link href={`/site/projets/${release.slug}`}>
-            <div className="relative h-[400px] w-[400px] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.02] md:h-[420px] md:w-[420px]">
-              {release.cover_url ? (
-                <Image
-                  key={release.id}
-                  src={release.cover_url}
-                  alt={release.titre || "Release LMG"}
-                  fill
-                  priority
-                  className="object-cover object-center"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-500">
-                  No Cover
-                </div>
-              )}
-            </div>
-          </Link>
+        <div className="relative z-20 flex w-full items-center justify-center">
+          <div className="absolute left-16 top-1/2 hidden -translate-y-1/2 text-left lg:block">
+  <h3 className="text-6xl font-black uppercase leading-none text-white">
+    {release.titre}
+  </h3>
 
-          <div className="mt-6 mb-12 text-center">
-            <h3 className="text-3xl font-black uppercase leading-none text-white md:text-4xl">
-              {release.titre}
-            </h3>
+  <p className="mt-4 text-xl uppercase tracking-[0.3em] text-zinc-300">
+    {release.artistes?.nom || "Legacy Music Group"}
+  </p>
+</div>
 
-            <p className="mt-3 text-sm font-medium uppercase tracking-[0.25em] text-zinc-300 md:text-base">
-              {release.artistes?.nom || "Legacy Music Group"}
-            </p>
-          </div>
-        </div>
+<Link href={`/site/projets/${release.slug}`}>
+  <div className="relative h-[400px] w-[400px] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.02] md:h-[420px] md:w-[420px]">
+    {release.cover_url ? (
+      <Image
+        key={release.id}
+        src={release.cover_url}
+        alt={release.titre || "Release LMG"}
+        fill
+        priority
+        className="object-cover object-center"
+      />
+    ) : (
+      <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-500">
+        No Cover
+      </div>
+    )}
+  </div>
+</Link>
+
+           <div className="mt-6 text-center lg:hidden">
+    <h3 className="text-3xl font-black uppercase text-white">
+      {release.titre}
+    </h3>
+
+    <p className="mt-2 uppercase tracking-[0.25em] text-zinc-300">
+      {release.artistes?.nom}
+    </p>
+  </div>
+</div>
 
         <div className="absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 gap-3">
           {releases.map((_, index) => (
