@@ -58,7 +58,7 @@ export default function ReleasesCarousel() {
 
  return (
   <section className="relative overflow-hidden border-y border-zinc-900 bg-black">
-    <div className="relative mx-auto flex h-[560px] w-full max-w-[1400px] items-center justify-center overflow-hidden px-6 pt-24">
+   <div className="relative mx-auto flex h-[620px] w-full max-w-[1400px] items-center justify-center overflow-hidden px-6">
       {release.cover_url && (
         <>
           <Image
@@ -90,7 +90,7 @@ export default function ReleasesCarousel() {
 
       <div className="relative z-20 flex flex-col items-center text-center">
         <Link href={`/site/projets/${release.slug}`}>
-          <div className="relative h-[330px] w-[330px] overflow-hidden rounded-[18px] shadow-2xl transition duration-500 hover:scale-[1.02]">
+          <div className="relative mx-auto flex h-[520px] w-full max-w-[1400px] items-center justify-center overflow-hidden px-6 pt-24">
             {release.cover_url ? (
               <Image
                 key={release.id}
@@ -109,7 +109,7 @@ export default function ReleasesCarousel() {
         </Link>
 
         <div className="mt-6 text-center">
-          <h3 className="text-3xl font-black uppercase leading-none text-white md:text-5xl">
+          <h3 className="text-3xl font-black uppercase leading-none text-white md:text-4xl">
             {release.titre}
           </h3>
 

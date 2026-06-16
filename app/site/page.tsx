@@ -8,10 +8,9 @@ export default function SitePage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
-
       <ReleasesCarousel />
 
-      <section className="bg-zinc-950 px-6 py-24">
+      <section className="bg-zinc-950 px-6 pt-16 pb-24">
         <div className="mx-auto max-w-7xl">
           <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
