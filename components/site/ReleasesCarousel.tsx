@@ -14,16 +14,17 @@ export default function ReleasesCarousel() {
       const { data } = await supabaseBrowser
         .from("projets")
         .select(`
-          id,
-          titre,
-          slug,
-          type,
-          cover_url,
-          date_sortie,
-          artistes (
-            nom
-          )
-        `)
+  id,
+  titre,
+  slug,
+  type,
+  cover_url,
+  hero_image_url,
+  date_sortie,
+  artistes (
+    nom
+  )
+`)
         .not("slug", "is", null)
         .order("date_sortie", { ascending: false })
         .limit(6);
@@ -48,6 +49,8 @@ export default function ReleasesCarousel() {
 
   const release = releases[current];
 
+  const heroImage = release.hero_image_url || release.cover_url;
+
   const nextSlide = () => {
     setCurrent((prev) => (prev + 1) % releases.length);
   };
@@ -59,11 +62,11 @@ export default function ReleasesCarousel() {
   return (
     <section className="relative overflow-hidden border-b border-zinc-900 bg-black">
       <div className="relative flex min-h-[620px] w-full items-center justify-center overflow-hidden">
-        {release.cover_url && (
+        {release.hero_image_url || release.cover_url && (
           <>
             <Image
               key={`${release.id}-blur`}
-              src={release.cover_url}
+              src={heroImage}
               alt=""
               fill
               priority
@@ -103,10 +106,10 @@ export default function ReleasesCarousel() {
 
 <Link href={`/site/projets/${release.slug}`}>
   <div className="relative h-[400px] w-[400px] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.02] md:h-[420px] md:w-[420px]">
-    {release.cover_url ? (
+    {release.hero_image_url || release.cover_url ? (
       <Image
         key={release.id}
-        src={release.cover_url}
+        src={heroImage}
         alt={release.titre || "Release LMG"}
         fill
         priority
