@@ -62,7 +62,7 @@ export default function ReleasesCarousel() {
   return (
     <section className="relative overflow-hidden border-b border-zinc-900 bg-black">
       <div className="relative flex min-h-[620px] w-full items-center justify-center overflow-hidden">
-        {release.hero_image_url || release.cover_url && (
+        {heroImage && (
           <>
             <Image
               key={`${release.id}-blur`}
@@ -106,7 +106,7 @@ export default function ReleasesCarousel() {
 
 <Link href={`/site/projets/${release.slug}`}>
   <div className="relative h-[400px] w-[400px] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.02] md:h-[420px] md:w-[420px]">
-    {release.hero_image_url || release.cover_url ? (
+    {heroImage ? (
       <Image
         key={release.id}
         src={heroImage}
