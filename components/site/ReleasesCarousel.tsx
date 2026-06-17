@@ -105,7 +105,7 @@ export default function ReleasesCarousel() {
 </div>
 
 <Link href={`/site/projets/${release.slug}`}>
-  <div className="relative h-[320px] w-[560px] max-w-[90vw] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.02] md:h-[360px] md:w-[640px]">
+  <div className="relative h-[360px] w-[720px] max-w-[72vw] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.02] md:h-[390px] md:w-[780px]">
     {heroImage ? (
       <Image
         key={release.id}
@@ -134,7 +134,7 @@ export default function ReleasesCarousel() {
   </div>
 </div>
 
-        <div className="absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 gap-3">
+<div className="absolute bottom-10 left-1/2 z-30 flex -translate-x-1/2 gap-3">
           {releases.map((_, index) => (
             <button
               key={index}
