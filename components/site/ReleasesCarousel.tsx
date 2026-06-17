@@ -70,7 +70,7 @@ export default function ReleasesCarousel() {
               alt=""
               fill
               priority
-              className="absolute inset-0 scale-[1.8] object-cover object-center opacity-80 blur-[120px]"
+              className="absolute inset-0 scale-[1.8] object-cover object-center opacity-90 blur-[140px]"
             />
 
             <div className="absolute inset-0 bg-black/40" />
@@ -94,18 +94,18 @@ export default function ReleasesCarousel() {
         </button>
 
         <div className="relative z-20 flex w-full items-center justify-center">
-          <div className="absolute left-32 top-1/2 hidden -translate-y-1/2 text-left lg:block">
-  <h3 className="text-6xl font-black uppercase leading-none text-white">
-    {release.titre}
-  </h3>
+         <div className="absolute left-[7%] top-1/2 hidden max-w-[280px] -translate-y-1/2 text-left lg:block">
+  <p className="mb-3 text-sm uppercase tracking-[0.4em] text-zinc-400">
+    Artist
+  </p>
 
-  <p className="mt-4 text-xl uppercase tracking-[0.3em] text-zinc-300">
-    {release.artistes?.nom || "Legacy Music Group"}
+  <p className="text-3xl font-black uppercase text-white">
+    {release.artistes?.nom}
   </p>
 </div>
 
 <Link href={`/site/projets/${release.slug}`}>
-  <div className="relative h-[380px] w-[760px] max-w-[72vw] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.02] md:h-[450px] md:w-[900px]">
+  <div className="relative h-[380px] w-[760px] max-w-[72vw] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.03] md:h-[450px] md:w-[900px]">
     {heroImage ? (
       <Image
         key={release.id}
