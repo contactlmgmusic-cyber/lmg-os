@@ -93,8 +93,8 @@ export default function ReleasesCarousel() {
           ›
         </button>
 
-        <div className="relative z-20 flex w-full items-center justify-center">
-         <div className="absolute left-[7%] top-1/2 hidden max-w-[280px] -translate-y-1/2 text-left lg:block">
+        <div className="relative z-20 flex w-full flex-col items-center justify-center px-6 lg:flex-row">
+         <div className="hidden lg:absolute lg:left-[7%] lg:top-1/2 lg:block lg:max-w-[280px] lg:-translate-y-1/2 lg:text-left">
   <p className="mb-3 text-sm uppercase tracking-[0.4em] text-zinc-400">
     Artist
   </p>
@@ -105,7 +105,7 @@ export default function ReleasesCarousel() {
 </div>
 
 <Link href={`/site/projets/${release.slug}`}>
-  <div className="relative h-[380px] w-[760px] max-w-[72vw] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.03] md:h-[450px] md:w-[900px]">
+  <div className="relative h-[420px] w-[92vw] max-w-[420px] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.02] lg:h-[450px] lg:w-[760px] lg:max-w-none xl:w-[900px]">
     {heroImage ? (
       <Image
         key={release.id}
