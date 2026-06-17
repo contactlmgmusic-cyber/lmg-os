@@ -70,10 +70,10 @@ export default function ReleasesCarousel() {
               alt=""
               fill
               priority
-              className="absolute inset-0 scale-[1.45] object-cover object-center opacity-60 blur-[80px]"
+              className="absolute inset-0 scale-[1.8] object-cover object-center opacity-80 blur-[120px]"
             />
 
-            <div className="absolute inset-0 bg-black/60" />
+            <div className="absolute inset-0 bg-black/40" />
           </>
         )}
 
@@ -94,7 +94,7 @@ export default function ReleasesCarousel() {
         </button>
 
         <div className="relative z-20 flex w-full items-center justify-center">
-          <div className="absolute left-16 top-1/2 hidden -translate-y-1/2 text-left lg:block">
+          <div className="absolute left-32 top-1/2 hidden -translate-y-1/2 text-left lg:block">
   <h3 className="text-6xl font-black uppercase leading-none text-white">
     {release.titre}
   </h3>
@@ -105,7 +105,7 @@ export default function ReleasesCarousel() {
 </div>
 
 <Link href={`/site/projets/${release.slug}`}>
-  <div className="relative h-[360px] w-[720px] max-w-[72vw] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.02] md:h-[390px] md:w-[780px]">
+  <div className="relative h-[380px] w-[760px] max-w-[72vw] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.02] md:h-[450px] md:w-[900px]">
     {heroImage ? (
       <Image
         key={release.id}
