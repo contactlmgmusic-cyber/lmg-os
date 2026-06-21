@@ -158,6 +158,19 @@ export default function Sidebar() {
       ],
     },
     {
+  title: "LMG AI",
+  links: [
+    { href: "/assistant", label: "Assistant IA" },
+    { href: "/assistant/chat", label: "Assistant IA central" },
+    { href: "/assistant/rollout", label: "Générer un rollout" },
+    { href: "/assistant/tiktok", label: "Stratégie TikTok" },
+    { href: "/assistant/bio", label: "Bio artiste" },
+    { href: "/assistant/booking", label: "Pitch booking" },
+    { href: "/assistant/communique", label: "Communiqué presse" },
+    { href: "/assistant/epk", label: "EPK" },
+  ],
+},
+    {
       title: "Communication",
       links: [
         { href: "/notifications", label: "Notifications" },
@@ -169,7 +182,6 @@ export default function Sidebar() {
       title: "Admin",
       links: [
         { href: "/admin", label: "Administration" },
-        { href: "/assistant", label: "Assistant IA" },
         { href: "/equipe", label: "Équipe" },
         { href: "/invitations", label: "Invitations" },
       ],
