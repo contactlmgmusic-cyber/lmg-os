@@ -18,7 +18,7 @@ export default function AssistantChatClient() {
     {
       role: "assistant",
       content:
-        "Hello, je suis l’assistant LMG. Donne-moi un artiste, un projet ou un objectif, et je te prépare un plan clair.",
+        "Hello, je suis l’assistant AI LMG. Donne-moi un artiste, un projet ou un objectif, et je te prépare un plan clair.",
     },
   ]);
 
