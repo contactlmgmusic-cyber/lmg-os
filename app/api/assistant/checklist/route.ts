@@ -120,6 +120,11 @@ export async function POST(request: Request) {
       };
     });
 
+    await supabase
+  .from("release_tasks")
+  .delete()
+  .eq("sortie_id", sortie.id);
+
     const { error: insertError } = await supabase
       .from("release_tasks")
       .insert(rows);
