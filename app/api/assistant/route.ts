@@ -355,6 +355,44 @@ function generateLocalAssistantResponse(message: string) {
   return buildDefault(message);
 }
 
+function detectActions(message: string) {
+  const prompt = message.toLowerCase();
+
+  const actions = [];
+
+  if (
+    prompt.includes("rollout") ||
+    prompt.includes("sortie")
+  ) {
+    actions.push({
+      type: "create_release_checklist",
+      label: "Créer checklist Release Planner",
+    });
+  }
+
+  if (
+    prompt.includes("tiktok") ||
+    prompt.includes("marketing")
+  ) {
+    actions.push({
+      type: "create_marketing_tasks",
+      label: "Créer tâches marketing",
+    });
+  }
+
+  if (
+    prompt.includes("booking") ||
+    prompt.includes("concert")
+  ) {
+    actions.push({
+      type: "create_booking_pipeline",
+      label: "Créer pipeline booking",
+    });
+  }
+
+  return actions;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -369,7 +407,10 @@ export async function POST(request: Request) {
 
     const response = generateLocalAssistantResponse(message);
 
-    return NextResponse.json({ response });
+    return NextResponse.json({
+  response,
+  actions: detectActions(message),
+});
   } catch (error) {
     return NextResponse.json(
       { error: "Erreur assistant." },
