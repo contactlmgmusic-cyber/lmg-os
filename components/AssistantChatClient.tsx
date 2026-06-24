@@ -12,9 +12,18 @@ const suggestions = [
 ];
 
 export default function AssistantChatClient() {
-  const [messages, setMessages] = useState<
-    { role: "user" | "assistant"; content: string }[]
-  >([
+  type AssistantAction = {
+  type: string;
+  label: string;
+};
+
+type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+  actions?: AssistantAction[];
+};
+
+const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
       content:
@@ -57,6 +66,7 @@ export default function AssistantChatClient() {
       {
         role: "assistant",
         content: data.response || "Je n’ai pas réussi à générer de réponse.",
+        actions: data.actions || []
       },
     ]);
   } catch (error) {
@@ -127,6 +137,22 @@ function useSuggestion(value: string) {
                   </p>
 
                   {message.content}
+
+                  {message.role === "assistant" &&
+  message.actions &&
+  message.actions.length > 0 && (
+    <div className="mt-4 flex flex-wrap gap-2">
+      {message.actions.map((action) => (
+        <button
+          key={action.type}
+          type="button"
+          className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-zinc-200"
+        >
+          {action.label}
+        </button>
+      ))}
+    </div>
+  )}
                 </div>
               </div>
             );
