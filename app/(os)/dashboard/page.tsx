@@ -73,86 +73,122 @@ export default function DashboardPage() {
   }
 
   async function loadDashboard() {
-    const start = monthStart();
+  console.time("dashboard");
 
-    const { count: artistesCount } = await supabaseBrowser
+  const start = monthStart();
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const in30Days = new Date();
+  in30Days.setDate(in30Days.getDate() + 30);
+  const in30DaysString = in30Days.toISOString().split("T")[0];
+
+  const in7Days = new Date();
+  in7Days.setDate(in7Days.getDate() + 7);
+  const in7DaysString = in7Days.toISOString().split("T")[0];
+
+  const [
+    artistesRes,
+    projetsRes,
+    tachesRes,
+    contratsRes,
+    bookingsConfirmesRes,
+    mediasRelanceRes,
+    candidaturesNouvellesRes,
+    candidaturesEnEtudeRes,
+    candidaturesSigneesRes,
+    candidaturesLatestRes,
+    mediasRelanceAujourdhuiRes,
+    validationsArtisteRes,
+    validationsContratsRes,
+    managersRes,
+  ] = await Promise.all([
+    supabaseBrowser
       .from("artistes")
-      .select("*", { count: "exact", head: true });
+      .select("*", { count: "exact", head: true }),
 
-    const { count: projetsCount } = await supabaseBrowser
+    supabaseBrowser
       .from("projets")
-      .select("*", { count: "exact", head: true });
+      .select("*", { count: "exact", head: true }),
 
-    const { count: tachesCount } = await supabaseBrowser
+    supabaseBrowser
       .from("taches")
       .select("*", { count: "exact", head: true })
-      .neq("statut", "Terminé");
+      .neq("statut", "Terminé"),
 
-    const { count: contratsCount } = await supabaseBrowser
+    supabaseBrowser
       .from("contrats")
       .select("*", { count: "exact", head: true })
-      .neq("statut", "Signé");
+      .neq("statut", "Signé"),
 
-    const { count: bookingsConfirmesCount } = await supabaseBrowser
+    supabaseBrowser
       .from("bookings")
       .select("*", { count: "exact", head: true })
-      .eq("statut", "Confirmé");
+      .eq("statut", "Confirmé"),
 
-    const { count: mediasRelanceCount } = await supabaseBrowser
+    supabaseBrowser
       .from("medias")
       .select("*", { count: "exact", head: true })
-      .eq("statut", "Relancé");
+      .eq("statut", "Relancé"),
 
-      const today = new Date().toISOString().split("T")[0];
+    supabaseBrowser
+      .from("candidatures")
+      .select("*", { count: "exact", head: true })
+      .eq("statut", "Nouvelle"),
 
-      const in30Days = new Date();
-in30Days.setDate(in30Days.getDate() + 30);
-const in30DaysString = in30Days.toISOString().split("T")[0];
+    supabaseBrowser
+      .from("candidatures")
+      .select("*", { count: "exact", head: true })
+      .eq("statut", "En étude"),
 
-const in7Days = new Date();
-in7Days.setDate(in7Days.getDate() + 7);
-const in7DaysString = in7Days.toISOString().split("T")[0];
+    supabaseBrowser
+      .from("candidatures")
+      .select("*", { count: "exact", head: true })
+      .eq("statut", "Signé"),
 
-      const { count: candidaturesCount } = await supabaseBrowser
-  .from("candidatures")
-  .select("*", { count: "exact", head: true })
-  .eq("statut", "Nouvelle");
+    supabaseBrowser
+      .from("candidatures")
+      .select("id, nom_artiste, email, ville, statut, created_at")
+      .order("created_at", { ascending: false })
+      .limit(5),
 
-  const { count: candidaturesEnEtudeCount } = await supabaseBrowser
-  .from("candidatures")
-  .select("*", { count: "exact", head: true })
-  .eq("statut", "En étude");
+    supabaseBrowser
+      .from("medias")
+      .select("*", { count: "exact", head: true })
+      .eq("prochaine_relance", today),
 
-const { count: candidaturesSigneesCount } = await supabaseBrowser
-  .from("candidatures")
-  .select("*", { count: "exact", head: true })
-  .eq("statut", "Signé");
+    supabaseBrowser
+      .from("artist_approvals")
+      .select("*", { count: "exact", head: true })
+      .eq("statut", "En attente"),
 
-  const { data: candidatures } = await supabaseBrowser
-  .from("candidatures")
-  .select("id, nom_artiste, email, ville, statut, created_at")
-  .order("created_at", { ascending: false })
-  .limit(5);
+    supabaseBrowser
+      .from("contract_approvals")
+      .select("*", { count: "exact", head: true })
+      .eq("statut", "En attente"),
 
-const { count: mediasRelanceAujourdhui } = await supabaseBrowser
-  .from("medias")
-  .select("*", { count: "exact", head: true })
-  .eq("prochaine_relance", today);
+    supabaseBrowser
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("role", ROLES.MANAGER),
+  ]);
 
-  const { count: validationsArtisteCount } = await supabaseBrowser
-  .from("artist_approvals")
-  .select("*", { count: "exact", head: true })
-  .eq("statut", "En attente");
+  const artistesCount = artistesRes.count || 0;
+  const projetsCount = projetsRes.count || 0;
+  const tachesCount = tachesRes.count || 0;
+  const contratsCount = contratsRes.count || 0;
+  const bookingsConfirmesCount = bookingsConfirmesRes.count || 0;
+  const mediasRelanceCount = mediasRelanceRes.count || 0;
 
-const { count: validationsContratsCount } = await supabaseBrowser
-  .from("contract_approvals")
-  .select("*", { count: "exact", head: true })
-  .eq("statut", "En attente");
+  const candidaturesCount = candidaturesNouvellesRes.count || 0;
+  const candidaturesEnEtudeCount = candidaturesEnEtudeRes.count || 0;
+  const candidaturesSigneesCount = candidaturesSigneesRes.count || 0;
+  const candidatures = candidaturesLatestRes.data || [];
 
-const { count: managersCount } = await supabaseBrowser
-  .from("profiles")
-  .select("*", { count: "exact", head: true })
-  .eq("role", ROLES.MANAGER);
+  const mediasRelanceAujourdhui = mediasRelanceAujourdhuiRes.count || 0;
+  const validationsArtisteCount = validationsArtisteRes.count || 0;
+  const validationsContratsCount = validationsContratsRes.count || 0;
+  const managersCount = managersRes.count || 0;
 
     const { data: finances } = await supabaseBrowser
   .from("finances")
@@ -495,6 +531,7 @@ const releaseProgressMoyenne =
     setUrgentReleases(urgentReleasesData || []);
     setTopSortiesAnalytics(sortieAnalyticsRanking);
     setTopArtistesAnalytics(artisteAnalyticsRanking);
+    console.timeEnd("dashboard");
   }
 
 useEffect(() => {
