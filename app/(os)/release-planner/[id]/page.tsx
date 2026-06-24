@@ -165,6 +165,28 @@ export default function ReleasePlannerDetailPage() {
 
     setGenerating(true);
 
+    const response = await fetch("/api/assistant/checklist", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    sortieId: sortie.id,
+  }),
+});
+
+const data = await response.json();
+
+setGenerating(false);
+
+if (!response.ok) {
+  alert(data.error || "Erreur génération checklist.");
+  return;
+}
+
+alert(data.message || "Checklist générée.");
+await loadData();
+
     const releaseDate = new Date(sortie.date_sortie);
 
     const selectedTemplate = getTemplateForSortie(sortie.type);
