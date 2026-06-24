@@ -24,150 +24,55 @@ export default function AssistantChatClient() {
 
   const [input, setInput] = useState("");
 
-  function generateLocalResponse(prompt: string) {
-    const lowerPrompt = prompt.toLowerCase();
 
-    if (lowerPrompt.includes("rollout")) {
-      return `Voici une structure de rollout LMG :
+  async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
 
-1. Positionnement
-- Définir le message principal de la sortie
-- Identifier l’audience cible
-- Valider l’univers visuel
+  if (!input.trim()) return;
 
-2. Pré-lancement J-30 à J-15
-- Teasers vidéo
-- Annonce cover
-- Création contenus TikTok/Reels
-- Préparation pitch médias/playlists
+  const userMessage = input.trim();
 
-3. Activation J-14 à J-3
-- Extraits audio
-- Storytelling artiste
-- Behind the scenes
-- Relances médias/influenceurs
+  setMessages((current) => [
+    ...current,
+    { role: "user", content: userMessage },
+  ]);
 
-4. Release Day
-- Post officiel
-- Stories lien streaming
-- Push équipe/proches
-- Activation médias et playlists
+  setInput("");
 
-5. Post-sortie J+1 à J+30
-- Analyse stats
-- Relance contenu performant
-- Version live/acoustique/remix
-- Campagne UGC/TikTok`;
-    }
+  try {
+    const response = await fetch("/api/assistant", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: userMessage,
+      }),
+    });
 
-    if (lowerPrompt.includes("bio")) {
-      return `Voici une base de bio artiste :
-
-[Nom de l’artiste] est un artiste émergent qui développe un univers entre authenticité, ambition et identité forte. À travers sa musique, il construit un lien direct avec son public, porté par une direction artistique cohérente et une vision claire.
-
-Accompagné par Legacy Music Group, [Nom] travaille sur son développement artistique, son image, sa stratégie de sortie et son positionnement professionnel. Son objectif : construire une carrière durable, crédible et impactante.`;
-    }
-
-    if (lowerPrompt.includes("booking") || lowerPrompt.includes("pitch")) {
-      return `Objet : Proposition booking artiste LMG
-
-Bonjour,
-
-Je me permets de vous contacter au nom de Legacy Music Group afin de vous présenter [Nom de l’artiste], artiste que nous accompagnons dans son développement.
-
-Son univers musical, son énergie scénique et son potentiel de progression pourraient parfaitement correspondre à votre programmation.
-
-Nous serions ravis d’échanger avec vous au sujet d’une éventuelle date, première partie, showcase ou programmation à venir.
-
-Je peux vous transmettre son press kit, ses liens d’écoute et ses éléments visuels.
-
-Bien cordialement,`;
-    }
-
-    if (lowerPrompt.includes("tiktok")) {
-      return `Stratégie TikTok 30 jours :
-
-Semaine 1 — Installer l’univers
-- 3 vidéos storytelling artiste
-- 2 extraits studio
-- 2 vidéos lifestyle
-
-Semaine 2 — Tester les angles
-- Hook émotionnel
-- Hook performance
-- Hook tendance
-- Hook coulisses
-
-Semaine 3 — Amplifier
-- Reposter le meilleur format
-- Créer une série récurrente
-- Encourager les commentaires
-- Répondre en vidéo
-
-Semaine 4 — Convertir
-- Push vers streaming
-- Teaser release
-- Vidéo face cam
-- Contenu fan/community`;
-    }
-
-    if (lowerPrompt.includes("communiqué")) {
-      return `COMMUNIQUÉ DE PRESSE
-
-Legacy Music Group présente [Nom de l’artiste] avec son nouveau projet [Titre].
-
-Avec cette sortie, l’artiste affirme un univers musical fort, porté par une direction artistique soignée et une identité authentique. Le projet s’inscrit dans une dynamique de développement ambitieuse, mêlant stratégie musicale, image et storytelling.
-
-Disponible prochainement sur les plateformes, [Titre] marque une nouvelle étape dans le parcours de [Nom de l’artiste].
-
-Contact presse :
-Legacy Music Group`;
-    }
-
-    return `Voici une première réponse structurée :
-
-1. Objectif
-Clarifier ce que tu veux obtenir : visibilité, streams, booking, image, communauté ou revenus.
-
-2. Situation actuelle
-Identifier l’artiste, le projet, la date, les forces, les faiblesses et les ressources disponibles.
-
-3. Plan d’action
-Construire une stratégie en 3 temps :
-- préparation
-- activation
-- suivi
-
-4. Prochaines actions
-- définir le message
-- créer les contenus
-- planifier les dates
-- assigner les tâches
-- mesurer les résultats
-
-Donne-moi plus de détails sur l’artiste ou le projet et je te fais une version beaucoup plus précise.`;
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!input.trim()) return;
-
-    const userMessage = input.trim();
-    const assistantResponse = generateLocalResponse(userMessage);
+    const data = await response.json();
 
     setMessages((current) => [
       ...current,
-      { role: "user", content: userMessage },
-      { role: "assistant", content: assistantResponse },
+      {
+        role: "assistant",
+        content: data.response || "Je n’ai pas réussi à générer de réponse.",
+      },
     ]);
-
-    setInput("");
+  } catch (error) {
+    setMessages((current) => [
+      ...current,
+      {
+        role: "assistant",
+        content: "Erreur de connexion avec l’assistant LMG.",
+      },
+    ]);
   }
+}
 
-  function useSuggestion(value: string) {
-    setInput(value);
-  }
+function useSuggestion(value: string) {
+  setInput(value);
+}
 
   return (
     <main className="flex min-h-screen flex-col bg-black p-10 text-white">
