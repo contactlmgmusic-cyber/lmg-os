@@ -150,73 +150,43 @@ export default function ReleasePlannerDetailPage() {
   }, [tasks]);
 
   async function generateChecklist() {
-    if (!sortie?.date_sortie) {
-      alert("Ajoute une date de sortie avant de générer la checklist.");
-      return;
-    }
-
-    if (tasks.length > 0) {
-      const confirmGenerate = confirm(
-        "Une checklist existe déjà. Générer quand même ?"
-      );
-
-      if (!confirmGenerate) return;
-    }
-
-    setGenerating(true);
-
-    const response = await fetch("/api/assistant/checklist", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    sortieId: sortie.id,
-  }),
-});
-
-const data = await response.json();
-
-setGenerating(false);
-
-if (!response.ok) {
-  alert(data.error || "Erreur génération checklist.");
-  return;
-}
-
-alert(data.message || "Checklist générée.");
-await loadData();
-
-    const releaseDate = new Date(sortie.date_sortie);
-
-    const selectedTemplate = getTemplateForSortie(sortie.type);
-
-    const rows = selectedTemplate.map((task) => {
-      const datePrevue = new Date(releaseDate);
-      datePrevue.setDate(releaseDate.getDate() - task.jours_avant);
-
-      return {
-        sortie_id: sortie.id,
-        projet_id: sortie.projet_id || null,
-        titre: task.titre,
-        categorie: task.categorie,
-        jours_avant: task.jours_avant,
-        statut: "À faire",
-        date_prevue: datePrevue.toISOString().split("T")[0],
-      };
-    });
-
-    const { error } = await supabaseBrowser.from("release_tasks").insert(rows);
-
-    setGenerating(false);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    await loadData();
+  if (!sortie?.date_sortie) {
+    alert("Ajoute une date de sortie avant de générer la checklist.");
+    return;
   }
+
+  if (tasks.length > 0) {
+    const confirmGenerate = confirm(
+      "Une checklist existe déjà. Régénérer va remplacer l’ancienne checklist."
+    );
+
+    if (!confirmGenerate) return;
+  }
+
+  setGenerating(true);
+
+  const response = await fetch("/api/assistant/checklist", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      sortieId: sortie.id,
+    }),
+  });
+
+  const data = await response.json();
+
+  setGenerating(false);
+
+  if (!response.ok) {
+    alert(data.error || "Erreur génération checklist.");
+    return;
+  }
+
+  alert(data.message || "Checklist générée.");
+  await loadData();
+}
 
   async function toggleTask(task: any) {
     const nextStatus = task.statut === "Terminé" ? "À faire" : "Terminé";
