@@ -92,12 +92,12 @@ function useSuggestion(value: string) {
 async function handleAction(action: AssistantAction) {
   if (action.type === "release.createChecklist") {
     if (!action.payload?.sortieId) {
-      alert("Il faut d’abord choisir une sortie dans le Release Planner.");
+      alert(
+        "Je n’ai pas trouvé de sortie liée. Ouvre le Release Planner pour choisir la sortie."
+      );
       window.location.href = "/release-planner";
       return;
     }
-
-    setExecutingAction(action.type);
 
     const response = await fetch("/api/assistant/checklist", {
       method: "POST",
@@ -111,14 +111,12 @@ async function handleAction(action: AssistantAction) {
 
     const data = await response.json();
 
-    setExecutingAction(null);
-
     if (!response.ok) {
-      alert(data.error || "Erreur lors de la création.");
+      alert(data.error || "Erreur génération checklist.");
       return;
     }
 
-    alert(data.message || "Checklist créée.");
+    alert(data.message || "Checklist générée.");
     return;
   }
 
