@@ -1,5 +1,10 @@
 export type AssistantAction = {
   type: string;
   label: string;
-  payload?: Record<string, any>;
+  payload?: {
+    artisteId?: string;
+    artiste?: string;
+    sortieId?: string;
+    projetId?: string;
+  };
 };
