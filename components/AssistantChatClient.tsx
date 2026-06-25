@@ -15,6 +15,9 @@ export default function AssistantChatClient() {
   type AssistantAction = {
   type: string;
   label: string;
+  payload?: {
+    sortieId?: string;
+  };
 };
 
 type ChatMessage = {
@@ -32,6 +35,8 @@ const [messages, setMessages] = useState<ChatMessage[]>([
   ]);
 
   const [input, setInput] = useState("");
+
+  const [executingAction, setExecutingAction] = useState<string | null>(null);
 
 
   async function handleSubmit(e: React.FormEvent) {
@@ -82,6 +87,42 @@ const [messages, setMessages] = useState<ChatMessage[]>([
 
 function useSuggestion(value: string) {
   setInput(value);
+}
+
+async function handleAction(action: AssistantAction) {
+  if (action.type === "release.createChecklist") {
+    if (!action.payload?.sortieId) {
+      alert("Il faut d’abord choisir une sortie dans le Release Planner.");
+      window.location.href = "/release-planner";
+      return;
+    }
+
+    setExecutingAction(action.type);
+
+    const response = await fetch("/api/assistant/checklist", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sortieId: action.payload.sortieId,
+      }),
+    });
+
+    const data = await response.json();
+
+    setExecutingAction(null);
+
+    if (!response.ok) {
+      alert(data.error || "Erreur lors de la création.");
+      return;
+    }
+
+    alert(data.message || "Checklist créée.");
+    return;
+  }
+
+  alert("Cette action sera bientôt disponible.");
 }
 
   return (
@@ -144,12 +185,14 @@ function useSuggestion(value: string) {
     <div className="mt-4 flex flex-wrap gap-2">
       {message.actions.map((action) => (
         <button
-          key={action.type}
-          type="button"
-          className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-zinc-200"
-        >
-          {action.label}
-        </button>
+  key={action.type}
+  type="button"
+  onClick={() => handleAction(action)}
+  disabled={executingAction === action.type}
+  className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-zinc-200 disabled:opacity-50"
+>
+  {executingAction === action.type ? "Création..." : action.label}
+</button>
       ))}
     </div>
   )}
