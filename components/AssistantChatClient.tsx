@@ -70,8 +70,14 @@ const [messages, setMessages] = useState<ChatMessage[]>([
       ...current,
       {
         role: "assistant",
-        content: data.response || "Je n’ai pas réussi à générer de réponse.",
-        actions: data.actions || []
+        content: `${data.plan?.summary ? `${data.plan.summary}\n\n` : ""}${
+  data.plan?.recommendations?.length
+    ? `Plan recommandé :\n${data.plan.recommendations
+        .map((item: string) => `✓ ${item}`)
+        .join("\n")}\n\nTemps estimé : ${data.plan.estimatedTime}\n\n`
+    : ""
+}${data.response || "Je n’ai pas réussi à générer de réponse."}`,
+        actions: data.plan?.actions || []
       },
     ]);
   } catch (error) {

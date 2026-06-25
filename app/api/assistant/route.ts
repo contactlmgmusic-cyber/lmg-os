@@ -371,11 +371,12 @@ export async function POST(request: Request) {
     const response = generateLocalAssistantResponse(message);
 const engine = await runAssistantEngine(message);
 
+
+const plan = await runAssistantEngine(message);
+
 return NextResponse.json({
-  response: `${engine.summary}\n\n${response}`,
-  summary: engine.summary,
-  context: engine.context,
-  actions: engine.actions,
+  response,
+  plan,
 });
   } catch (error) {
     return NextResponse.json(

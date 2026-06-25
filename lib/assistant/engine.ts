@@ -1,20 +1,34 @@
+import type { AssistantPlan } from "./types";
 import { searchLMGContext } from "./knowledge/search";
 import { planAssistantActions } from "./planner";
 
-export async function runAssistantEngine(message: string) {
+export async function runAssistantEngine(
+  message: string
+): Promise<AssistantPlan> {
   const context = await searchLMGContext(message);
+
   const actions = planAssistantActions(message, context);
+
+  const recommendations: string[] = [];
+
+  if (actions.some((a) => a.type === "release.createChecklist")) {
+    recommendations.push("Créer la checklist Release Planner");
+    recommendations.push("Créer les événements calendrier");
+    recommendations.push("Préparer les tâches marketing");
+    recommendations.push("Préparer les relances médias");
+  }
 
   const summary =
     context?.sortie?.titre
-      ? `J’ai identifié la sortie "${context.sortie.titre}"${context.artiste?.nom ? ` de ${context.artiste.nom}` : ""}.`
+      ? `J'ai identifié la sortie "${context.sortie.titre}" de ${context.artiste?.nom}.`
       : context?.artiste?.nom
-      ? `J’ai identifié l’artiste ${context.artiste.nom}, mais aucune sortie future liée n’a été trouvée.`
-      : "Je n’ai pas encore trouvé d’artiste ou de sortie liée dans LMG OS.";
+      ? `J'ai identifié l'artiste ${context.artiste.nom}.`
+      : "Je n'ai trouvé aucun artiste ou projet correspondant dans LMG OS.";
 
   return {
     summary,
-    context,
+    recommendations,
+    estimatedTime: "≈ 2 minutes",
     actions,
   };
 }
