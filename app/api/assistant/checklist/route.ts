@@ -125,6 +125,21 @@ export async function POST(request: Request) {
   .delete()
   .eq("sortie_id", sortie.id);
 
+  const { count: existingTasks } = await supabase
+  .from("release_tasks")
+  .select("*", { count: "exact", head: true })
+  .eq("sortie_id", sortie.id);
+
+if ((existingTasks || 0) > 0) {
+  return NextResponse.json(
+    {
+      error:
+        "Une checklist existe déjà pour cette sortie. Supprime-la ou régénère-la depuis le Release Planner.",
+    },
+    { status: 409 }
+  );
+}
+
     const { error: insertError } = await supabase
       .from("release_tasks")
       .insert(rows);
