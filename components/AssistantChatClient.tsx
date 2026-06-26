@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import AssistantPlanCard from "@/components/AssistantPlanCard";
+import AssistantWorkflowCard from "@/components/AssistantWorkflowCard";
 
 const suggestions = [
   "Crée un rollout complet pour une sortie single",
@@ -28,12 +29,13 @@ type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   actions?: AssistantAction[];
+  workflow?: any;
   plan?: {
-  summary: string;
-  recommendations: string[];
-  estimatedTime: string;
-};
+    summary: string;
+    recommendations: string[];
+    estimatedTime: string;
   };
+};
 
 const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -211,37 +213,41 @@ if (action.type === "marketing.createTasks") {
                   }`}
                 >
                   <p className="mb-2 text-xs opacity-60">
-                    {isUser ? "Toi" : "Assistant LMG"}
-                  </p>
+  {isUser ? "Toi" : "Assistant LMG"}
+</p>
 
-                  {message.plan && (
-  <AssistantPlanCard
-  plan={message.plan}
-  onExecuteAll={async () => {
-    if (!message.actions || message.actions.length === 0) return;
+{message.workflow && (
+  <AssistantWorkflowCard
+    workflow={message.workflow}
+    onExecuteAll={async () => {
+      if (!message.actions) return;
 
-    for (const action of message.actions) {
-      await handleAction(action);
-    }
-  }}
-/>
+      for (const action of message.actions) {
+        await handleAction(action);
+      }
+    }}
+  />
 )}
-                  {message.content}
 
-                  {message.role === "assistant" &&
+{message.plan && (
+  <AssistantPlanCard plan={message.plan} />
+)}
+
+{message.content}
+
+{message.role === "assistant" &&
   message.actions &&
   message.actions.length > 0 && (
     <div className="mt-4 flex flex-wrap gap-2">
       {message.actions.map((action) => (
         <button
-  key={action.type}
-  type="button"
-  onClick={() => handleAction(action)}
-  disabled={executingAction === action.type}
-  className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-zinc-200 disabled:opacity-50"
->
-  {executingAction === action.type ? "Création..." : action.label}
-</button>
+          key={action.type}
+          type="button"
+          onClick={() => handleAction(action)}
+          className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-zinc-200"
+        >
+          {action.label}
+        </button>
       ))}
     </div>
   )}
