@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AssistantPlanCard from "@/components/AssistantPlanCard";
 
 const suggestions = [
   "Crée un rollout complet pour une sortie single",
@@ -24,14 +25,19 @@ type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   actions?: AssistantAction[];
+  plan?: {
+  summary: string;
+  recommendations: string[];
+  estimatedTime: string;
 };
+  };
 
 const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
       content:
-        "Hello, je suis l’assistant AI LMG. Donne-moi un artiste, un projet ou un objectif, et je te prépare un plan clair.",
-    },
+        "Hello, je suis l’assistant AI LMG. Donne-moi un artiste, un projet ou un objectif, et je te prépare un plan clair.", 
+      },
   ]);
 
   const [input, setInput] = useState("");
@@ -77,6 +83,7 @@ const [messages, setMessages] = useState<ChatMessage[]>([
         .join("\n")}\n\nTemps estimé : ${data.plan.estimatedTime}\n\n`
     : ""
 }${data.response || "Je n’ai pas réussi à générer de réponse."}`,
+        plan: data.plan,
         actions: data.plan?.actions || []
       },
     ]);
@@ -181,6 +188,9 @@ async function handleAction(action: AssistantAction) {
                     {isUser ? "Toi" : "Assistant LMG"}
                   </p>
 
+                  {message.plan && (
+  <AssistantPlanCard plan={message.plan} />
+)}
                   {message.content}
 
                   {message.role === "assistant" &&
