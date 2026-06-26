@@ -189,7 +189,16 @@ async function handleAction(action: AssistantAction) {
                   </p>
 
                   {message.plan && (
-  <AssistantPlanCard plan={message.plan} />
+  <AssistantPlanCard
+  plan={message.plan}
+  onExecuteAll={async () => {
+    if (!message.actions || message.actions.length === 0) return;
+
+    for (const action of message.actions) {
+      await handleAction(action);
+    }
+  }}
+/>
 )}
                   {message.content}
 

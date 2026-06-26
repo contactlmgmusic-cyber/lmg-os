@@ -1,13 +1,27 @@
+type AssistantAction = {
+  type: string;
+  label: string;
+  payload?: {
+    artisteId?: string;
+    artiste?: string;
+    sortieId?: string;
+    projetId?: string;
+  };
+};
+
 type AssistantPlan = {
   summary: string;
   recommendations: string[];
   estimatedTime: string;
+  actions?: AssistantAction[];
 };
 
 export default function AssistantPlanCard({
   plan,
+onExecuteAll,
 }: {
   plan: AssistantPlan;
+  onExecuteAll?: () => void;
 }) {
   return (
     <div className="mb-5 rounded-3xl border border-zinc-800 bg-zinc-950 p-6">
@@ -61,6 +75,16 @@ export default function AssistantPlanCard({
           {plan.estimatedTime}
         </span>
       </div>
+
+      {plan.actions && plan.actions.length > 0 && onExecuteAll && (
+  <button
+    type="button"
+    onClick={onExecuteAll}
+    className="mt-6 w-full rounded-2xl bg-white px-5 py-4 font-semibold text-black hover:bg-zinc-200"
+  >
+    Exécuter tout
+  </button>
+)}
     </div>
   );
 }
