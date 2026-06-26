@@ -20,8 +20,19 @@ export function planAssistantActions(
   artiste: context?.artiste?.nom,
   sortieId: context?.sortie?.id,
   projetId: context?.sortie?.projet_id,
-},
-    });
+  },
+ });
+
+ actions.push({
+  type: "marketing.createTasks",
+  label: "Créer tâches marketing",
+  payload: {
+    artisteId: context?.artiste?.id,
+    artiste: context?.artiste?.nom,
+    sortieId: context?.sortie?.id,
+    projetId: context?.sortie?.projet_id,
+  },
+});
   }
 
   return actions;

@@ -17,7 +17,10 @@ export default function AssistantChatClient() {
   type: string;
   label: string;
   payload?: {
+    artisteId?: string;
+    artiste?: string;
     sortieId?: string;
+    projetId?: string;
   };
 };
 
@@ -132,6 +135,28 @@ async function handleAction(action: AssistantAction) {
     alert(data.message || "Checklist générée.");
     return;
   }
+
+if (action.type === "marketing.createTasks") {
+  const response = await fetch("/api/assistant/marketing-tasks", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+  projetId: action.payload?.projetId ?? null,
+}),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    alert(data.error || "Erreur création tâches marketing.");
+    return;
+  }
+
+  alert(data.message || "Tâches marketing créées.");
+  return;
+}
 
   alert("Cette action sera bientôt disponible.");
 }
