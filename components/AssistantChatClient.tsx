@@ -87,6 +87,7 @@ const [messages, setMessages] = useState<ChatMessage[]>([
     : ""
 }${data.response || "Je n’ai pas réussi à générer de réponse."}`,
         plan: data.plan,
+        workflow: data.plan?.workflow,
         actions: data.plan?.actions || []
       },
     ]);
