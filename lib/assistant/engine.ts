@@ -1,13 +1,20 @@
 import type { AssistantPlan } from "./types";
 import { searchLMGContext } from "./knowledge/search";
 import { planAssistantActions } from "./planner";
+import { detectIntent } from "./intents/detectIntent";
 
 export async function runAssistantEngine(
   message: string
 ): Promise<AssistantPlan> {
   const context = await searchLMGContext(message);
 
-  const actions = planAssistantActions(message, context);
+  const intent = detectIntent(message);
+
+const actions = planAssistantActions(
+  intent,
+  message,
+  context
+);
 
   const recommendations: string[] = [];
 

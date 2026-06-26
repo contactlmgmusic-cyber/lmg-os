@@ -1,17 +1,20 @@
 import type { AssistantAction } from "./actions";
 
+import type { AssistantIntent } from "./intents/types";
+
 export function planAssistantActions(
+
+  intent: AssistantIntent,
+
   message: string,
+
   context: any
+
 ): AssistantAction[] {
-  const prompt = message.toLowerCase();
 
   const actions: AssistantAction[] = [];
 
-  if (
-    prompt.includes("rollout") ||
-    prompt.includes("sortie")
-  ) {
+  if (intent === "release") {
     actions.push({
       type: "release.createChecklist",
       label: "Créer checklist Release Planner",
