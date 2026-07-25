@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AssistantPlanCard from "@/components/AssistantPlanCard";
 import AssistantWorkflowCard from "@/components/AssistantWorkflowCard";
+import { executeAssistantAction } from "@/lib/assistant/action-registry";
 
 const suggestions = [
   "Crée un rollout complet pour une sortie single",
@@ -109,61 +110,18 @@ function useSuggestion(value: string) {
 }
 
 async function handleAction(action: AssistantAction) {
-  if (action.type === "release.createChecklist") {
-    if (!action.payload?.sortieId) {
-      alert(
-        "Je n’ai pas trouvé de sortie liée. Ouvre le Release Planner pour choisir la sortie."
-      );
-      window.location.href = "/release-planner";
-      return;
-    }
-
-    const response = await fetch("/api/assistant/checklist", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        sortieId: action.payload.sortieId,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.error || "Erreur génération checklist.");
-      return;
-    }
-
-    alert(data.message || "Checklist générée.");
-    return;
+  try {
+    const message = await executeAssistantAction(action);
+    alert(message);
+  } catch (error) {
+    alert(
+      error instanceof Error
+        ? error.message
+        : "Erreur lors de l’exécution de l’action."
+    );
   }
-
-if (action.type === "marketing.createTasks") {
-  const response = await fetch("/api/assistant/marketing-tasks", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-  projetId: action.payload?.projetId ?? null,
-}),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    alert(data.error || "Erreur création tâches marketing.");
-    return;
-  }
-
-  alert(data.message || "Tâches marketing créées.");
-  return;
 }
-
-  alert("Cette action sera bientôt disponible.");
-}
-
+  
   return (
     <main className="flex min-h-screen flex-col bg-black p-10 text-white">
       <div className="mb-8">
