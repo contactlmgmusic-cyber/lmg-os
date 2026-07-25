@@ -266,6 +266,62 @@ export default function Sidebar() {
     },
   ];
 
+const artisticDirectorSections: SidebarSection[] = [
+  {
+    title: "Pilotage",
+    links: [
+      { href: "/dashboard", label: "Dashboard Artistique" },
+    ],
+  },
+  {
+    title: "Artistes",
+    links: [
+      { href: "/artistes", label: "Artistes" },
+      { href: "/artistes/ranking", label: "Ranking Artistes" },
+      { href: "/objectifs-artistes", label: "Objectifs artistes" },
+      { href: "/validations-artiste", label: "Validations artistes" },
+    ],
+  },
+  {
+    title: "Projets & Releases",
+    links: [
+      { href: "/projets", label: "Projets" },
+      { href: "/sorties", label: "Sorties" },
+      { href: "/release-planner", label: "Release Planner" },
+      { href: "/rollout", label: "Rollout" },
+      { href: "/objectifs", label: "Objectifs" },
+    ],
+  },
+  {
+    title: "Direction Artistique",
+    links: [
+      { href: "/campagnes", label: "Campagnes" },
+      { href: "/partenaires", label: "CRM Partenaires" },
+      { href: "/influenceurs", label: "CRM Influenceurs" },
+      { href: "/medias", label: "CRM Médias" },
+    ],
+  },
+  {
+    title: "Production",
+    links: [
+      { href: "/taches", label: "Tâches" },
+      { href: "/mes-taches", label: "Mes tâches" },
+      { href: "/calendrier", label: "Calendrier" },
+      { href: "/calendrier/global", label: "Calendrier global" },
+      { href: "/artiste-events", label: "Événements artistes" },
+      { href: "/drive", label: "Drive" },
+    ],
+  },
+  {
+    title: "Communication",
+    links: [
+      { href: "/notifications", label: "Notifications" },
+      { href: "/chat", label: "Chat" },
+      { href: "/chat/prive", label: "Messages privés" },
+    ],
+  },
+];
+
   const artisteSections: SidebarSection[] = [
     {
       title: "Mon espace",
@@ -313,15 +369,17 @@ export default function Sidebar() {
   ];
 
   const sections =
-    role === ROLES.ARTISTE
-      ? artisteSections
-      : role === ROLES.MANAGER
-      ? managerSections
-      : role === ROLES.PRESTATAIRE
-      ? prestataireSections
-      : role === ROLES.ADMIN
-      ? adminSections
-      : superAdminSections;
+  role === ROLES.ARTISTE
+    ? artisteSections
+    : role === ROLES.MANAGER
+    ? managerSections
+    : role === ROLES.ARTISTIC_DIRECTOR
+    ? artisticDirectorSections
+    : role === ROLES.PRESTATAIRE
+    ? prestataireSections
+    : role === ROLES.ADMIN
+    ? adminSections
+    : superAdminSections;
 
   const canUseGlobalTools =
     role === ROLES.SUPER_ADMIN ||
