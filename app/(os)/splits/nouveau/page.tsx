@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { ROLES } from "@/lib/roles";
 
 export default function NouveauSplitPage() {
   const router = useRouter();
@@ -17,39 +18,121 @@ export default function NouveauSplitPage() {
   const [projets, setProjets] = useState<any[]>([]);
   const [artistes, setArtistes] = useState<any[]>([]);
 
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentRole, setCurrentRole] = useState<string | null>(null);
+
   useEffect(() => {
-    async function loadData() {
-      const { data: projetsData } = await supabaseBrowser
-        .from("projets")
-        .select("id,titre")
-        .order("titre");
+  async function loadData() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
 
-      const { data: artistesData } = await supabaseBrowser
-        .from("artistes")
-        .select("id,nom")
-        .order("nom");
-
-      setProjets(projetsData || []);
-      setArtistes(artistesData || []);
+    if (!user) {
+      router.push("/login");
+      return;
     }
 
-    loadData();
-  }, []);
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("id, role")
+      .eq("id", user.id)
+      .single();
+
+    if (
+      profile?.role !== ROLES.SUPER_ADMIN &&
+      profile?.role !== ROLES.ADMIN &&
+      profile?.role !== ROLES.ARTISTIC_DIRECTOR &&
+      profile?.role !== ROLES.MANAGER
+    ) {
+      router.push("/");
+      return;
+    }
+
+    setCurrentUserId(user.id);
+    setCurrentRole(profile.role);
+
+    if (profile.role === ROLES.MANAGER) {
+      const { data: artistesData } = await supabaseBrowser
+        .from("artistes")
+        .select("id, nom")
+        .eq("manager_id", profile.id)
+        .order("nom");
+
+      const artisteIds = (artistesData || []).map(
+        (artiste: any) => artiste.id
+      );
+
+      let projetsData: any[] = [];
+
+      if (artisteIds.length > 0) {
+        const { data } = await supabaseBrowser
+          .from("projets")
+          .select("id, titre, artiste_id")
+          .in("artiste_id", artisteIds)
+          .order("titre");
+
+        projetsData = data || [];
+      }
+
+      setArtistes(artistesData || []);
+      setProjets(projetsData);
+      return;
+    }
+
+    const { data: projetsData } = await supabaseBrowser
+      .from("projets")
+      .select("id,titre")
+      .order("titre");
+
+    const { data: artistesData } = await supabaseBrowser
+      .from("artistes")
+      .select("id,nom")
+      .order("nom");
+
+    setArtistes(artistesData || []);
+    setProjets(projetsData || []);
+  }
+
+  loadData();
+}, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     setSaving(true);
 
+    if (!currentRole) {
+  alert("Impossible de vérifier tes permissions.");
+  setSaving(false);
+  return;
+}
+
+if (currentRole === ROLES.MANAGER) {
+  const artisteAutorise = artistes.some(
+    (artiste: any) => artiste.id === artisteId
+  );
+
+  const projetAutorise =
+    !projetId ||
+    projets.some((projet: any) => projet.id === projetId);
+
+  if (!artisteAutorise || !projetAutorise) {
+    alert("Tu ne peux créer un split que pour tes artistes.");
+    setSaving(false);
+    return;
+  }
+}
+
     const { data, error } = await supabaseBrowser
       .from("splits")
       .insert({
-        titre,
-        projet_id: projetId || null,
-        artiste_id: artisteId || null,
-        notes,
-        statut: "Brouillon",
-      })
+  titre,
+  projet_id: projetId || null,
+  artiste_id: artisteId || null,
+  notes,
+  statut: "Brouillon",
+  created_by: currentUserId,
+})
       .select()
       .single();
 

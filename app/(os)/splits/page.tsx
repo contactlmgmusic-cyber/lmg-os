@@ -1,10 +1,45 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
 export default async function SplitsPage() {
-  const { data: splits, error } = await supabase
+  await requireRole([
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.ARTISTIC_DIRECTOR,
+    ROLES.MANAGER,
+  ]);
+
+  const cookieStore = await cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll() {},
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", user?.id)
+    .single();
+
+  let splitsQuery = supabase
     .from("splits")
     .select(`
       *,
@@ -12,6 +47,25 @@ export default async function SplitsPage() {
       artistes ( id, nom )
     `)
     .order("created_at", { ascending: false });
+
+  if (profile?.role === ROLES.MANAGER) {
+    const { data: managedArtists } = await supabase
+      .from("artistes")
+      .select("id")
+      .eq("manager_id", profile.id);
+
+    const artisteIds = (managedArtists || []).map(
+      (artiste: any) => artiste.id
+    );
+
+    if (artisteIds.length === 0) {
+      splitsQuery = splitsQuery.in("artiste_id", ["00000000-0000-0000-0000-000000000000"]);
+    } else {
+      splitsQuery = splitsQuery.in("artiste_id", artisteIds);
+    }
+  }
+
+  const { data: splits, error } = await splitsQuery;
 
   if (error) {
     return (
