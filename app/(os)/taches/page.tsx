@@ -10,7 +10,13 @@ export const dynamic = "force-dynamic";
 export default async function TachesPage() {
   const cookieStore = await cookies();
 
-  await requireRole(["super_admin", "admin", "manager", "prestataire"]);
+  await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.ARTISTIC_DIRECTOR,
+  ROLES.MANAGER,
+  ROLES.PRESTATAIRE,
+]);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL as string,
@@ -62,9 +68,10 @@ export default async function TachesPage() {
   }
 
   const canCreateTask =
-    currentProfile?.role === ROLES.SUPER_ADMIN ||
-    currentProfile?.role === ROLES.ADMIN ||
-    currentProfile?.role === ROLES.MANAGER;
+  currentProfile?.role === ROLES.SUPER_ADMIN ||
+  currentProfile?.role === ROLES.ADMIN ||
+  currentProfile?.role === ROLES.ARTISTIC_DIRECTOR ||
+  currentProfile?.role === ROLES.MANAGER;
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
