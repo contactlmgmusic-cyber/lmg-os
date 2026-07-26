@@ -9,6 +9,7 @@ export default async function SortiesPage() {
   await requireRole([
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
+  ROLES.ARTISTIC_DIRECTOR,
 ]);
 
   const { data: sorties, error } = await supabase
