@@ -50,16 +50,23 @@ export default function NotificationsPage() {
   }
 
   async function markAsRead(id: string) {
-    await supabaseBrowser
-      .from("notifications")
-      .update({
-        is_read: true,
-        lu: true,
-      })
-      .eq("id", id);
+  const {
+    data: { user },
+  } = await supabaseBrowser.auth.getUser();
 
-    await loadNotifications();
-  }
+  if (!user) return;
+
+  await supabaseBrowser
+    .from("notifications")
+    .update({
+      is_read: true,
+      lu: true,
+    })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  await loadNotifications();
+}
 
   async function markAllAsRead() {
     const {
@@ -80,10 +87,20 @@ export default function NotificationsPage() {
   }
 
   async function deleteNotification(id: string) {
-    await supabaseBrowser.from("notifications").delete().eq("id", id);
+  const {
+    data: { user },
+  } = await supabaseBrowser.auth.getUser();
 
-    await loadNotifications();
-  }
+  if (!user) return;
+
+  await supabaseBrowser
+    .from("notifications")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  await loadNotifications();
+}
 
   useEffect(() => {
     loadNotifications();
