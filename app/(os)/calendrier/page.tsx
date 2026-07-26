@@ -242,6 +242,12 @@ const { data: contrats } = await supabase
   })),
   ];
 
+const canCreateTask =
+  currentProfile?.role === ROLES.SUPER_ADMIN ||
+  currentProfile?.role === ROLES.ADMIN ||
+  currentProfile?.role === ROLES.ARTISTIC_DIRECTOR ||
+  currentProfile?.role === ROLES.MANAGER;
+
   return (
     <main className="min-h-screen bg-black p-10 text-white">
       <div className="mb-10 flex items-end justify-between">
@@ -259,7 +265,7 @@ const { data: contrats } = await supabase
           </p>
         </div>
 
-        {currentProfile?.role !== ROLES.ARTISTE && (
+        {canCreateTask && (
   <a
     href="/taches/nouveau"
     className="rounded-2xl bg-white px-5 py-3 font-semibold text-black transition hover:bg-zinc-200"
