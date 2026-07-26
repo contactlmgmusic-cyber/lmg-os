@@ -296,6 +296,7 @@ const artisticDirectorSections: SidebarSection[] = [
     title: "Direction Artistique",
     links: [
       { href: "/campagnes", label: "Campagnes" },
+      { href: "/royalties", label: "Royalties"},
       { href: "/partenaires", label: "CRM Partenaires" },
       { href: "/influenceurs", label: "CRM Influenceurs" },
       { href: "/medias", label: "CRM Médias" },
