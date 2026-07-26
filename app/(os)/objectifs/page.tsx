@@ -9,7 +9,11 @@ export default async function ObjectifsPage() {
 await requireRole([
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
+  ROLES.ARTISTIC_DIRECTOR,
+  ROLES.MANAGER,
 ]);
+
+const canManageGoals = true;
 
   const { data: objectifs } = await supabase
   .from("objectifs_artistes")
@@ -110,12 +114,14 @@ function getAutomaticValue(objectif: any) {
           </h1>
         </div>
 
-        <Link
-          href="/objectifs/nouveau"
-          className="rounded-xl bg-white px-5 py-3 font-semibold text-black"
-        >
-          + Nouvel objectif
-        </Link>
+        {canManageGoals && (
+  <Link
+    href="/objectifs/nouveau"
+    className="rounded-xl bg-white px-5 py-3 font-semibold text-black"
+  >
+    + Nouvel objectif
+  </Link>
+)}
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
