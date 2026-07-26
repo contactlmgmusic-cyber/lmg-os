@@ -2,6 +2,8 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 
 export const dynamic = "force-dynamic";
 
@@ -20,18 +22,49 @@ function formatEuro(value: number) {
 }
 
 export default async function ProspectsPage() {
-  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER]);
+  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER]);
 
-  const { data: prospects } = await supabase
-    .from("prospects_lmg")
-    .select(`
-      *,
-      profiles (
-        id,
-        nom
-      )
-    `)
-    .order("created_at", { ascending: false });
+const cookieStore = await cookies();
+
+const supabaseServer = createServerClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll() {},
+    },
+  }
+);
+
+const {
+  data: { user },
+} = await supabaseServer.auth.getUser();
+
+const { data: profile } = await supabaseServer
+  .from("profiles")
+  .select("id, role")
+  .eq("id", user?.id)
+  .single();
+
+  let prospectsQuery = supabase
+  .from("prospects_lmg")
+  .select(`
+    *,
+    profiles (
+      id,
+      nom
+    )
+  `)
+  .order("created_at", { ascending: false });
+
+if (profile?.role === ROLES.MANAGER) {
+  prospectsQuery = prospectsQuery.eq("responsable_id", profile.id);
+}
+
+const { data: prospects } = await prospectsQuery;
 
   const totalPotentiel =
     prospects?.reduce(

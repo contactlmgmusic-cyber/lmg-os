@@ -45,6 +45,7 @@ export default function NouveauProspectForm() {
       if (
         profile?.role !== ROLES.SUPER_ADMIN &&
         profile?.role !== ROLES.ADMIN &&
+        profile?.role !== ROLES.ARTISTIC_DIRECTOR &&
         profile?.role !== ROLES.MANAGER
       ) {
         window.location.href = "/";
