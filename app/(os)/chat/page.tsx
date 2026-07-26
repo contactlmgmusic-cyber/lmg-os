@@ -28,105 +28,18 @@ function ChatContent() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const searchParams = useSearchParams();
 
-const initialChannel =
-  searchParams.get("channel") || "general";
-
-const [activeChannel, setActiveChannel] =
-  useState(initialChannel);
+const [activeChannel, setActiveChannel] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState("");
 
-  async function fetchChannels() {
+  async function getCurrentProfile() {
   const {
     data: { user },
   } = await supabaseBrowser.auth.getUser();
 
   if (!user) {
     window.location.href = "/login";
-    return;
-  }
-
-  const { data: profile } = await supabaseBrowser
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  const { data } = await supabaseBrowser
-    .from("chat_channels")
-    .select("*")
-    .contains("allowed_roles", [profile?.role])
-    .order("created_at", { ascending: true });
-
-  setChannels(data || []);
-
-  if (data && data.length > 0 && !data.some((c) => c.slug === activeChannel)) {
-    setActiveChannel(data[0].slug);
-    await fetchMessages(data[0].slug);
-  }
-}
-
-  async function fetchMessages(channelSlug = activeChannel) {
-    const { data } = await supabaseBrowser
-      .from("chat_messages")
-      .select(`
-        *,
-        profiles (
-          nom,
-          role
-        )
-      `)
-      .eq("channel", channelSlug)
-      .order("created_at", { ascending: true });
-
-    setMessages(data || []);
-  }
-
-  useEffect(() => {
-    fetchChannels();
-    fetchMessages("general");
-
-    const realtimeChannel = supabaseBrowser
-      .channel("chat-live")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "chat_messages",
-        },
-        async (payload) => {
-          const newMessage = payload.new as Message;
-
-          if (newMessage.channel === activeChannel) {
-            await fetchMessages(activeChannel);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabaseBrowser.removeChannel(realtimeChannel);
-    };
-  }, [activeChannel]);
-
-  async function changeChannel(slug: string) {
-    setActiveChannel(slug);
-    await fetchMessages(slug);
-  }
-
-  async function sendMessage(e: React.FormEvent) {
-  e.preventDefault();
-
-  if (!message.trim()) return;
-
-  const {
-    data: { user },
-  } = await supabaseBrowser.auth.getUser();
-
-  if (!user) {
-    window.location.href = "/login";
-    return;
+    return null;
   }
 
   const { data: profile } = await supabaseBrowser
@@ -135,24 +48,181 @@ const [activeChannel, setActiveChannel] =
     .eq("id", user.id)
     .single();
 
-  await supabaseBrowser.from("chat_messages").insert({
+  if (!profile?.role) {
+    window.location.href = "/";
+    return null;
+  }
+
+  return {
+    user,
+    profile,
+  };
+}
+
+  async function fetchChannels() {
+  const auth = await getCurrentProfile();
+
+  if (!auth) return;
+
+  const { data, error } = await supabaseBrowser
+    .from("chat_channels")
+    .select("*")
+    .contains("allowed_roles", [auth.profile.role])
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    setChannels([]);
+    setMessages([]);
+    return;
+  }
+
+  const allowedChannels = data || [];
+
+  setChannels(allowedChannels);
+
+  const requestedChannel = searchParams.get("channel");
+
+  const requestedChannelIsAllowed = allowedChannels.some(
+    (channel) => channel.slug === requestedChannel
+  );
+
+  const selectedChannel =
+    requestedChannel && requestedChannelIsAllowed
+      ? requestedChannel
+      : allowedChannels[0]?.slug || "";
+
+  setActiveChannel(selectedChannel);
+}
+
+  async function fetchMessages(channelSlug: string) {
+  if (!channelSlug) {
+    setMessages([]);
+    return;
+  }
+
+  const auth = await getCurrentProfile();
+
+  if (!auth) return;
+
+  const { data: allowedChannel } = await supabaseBrowser
+    .from("chat_channels")
+    .select("id, slug")
+    .eq("slug", channelSlug)
+    .contains("allowed_roles", [auth.profile.role])
+    .maybeSingle();
+
+  if (!allowedChannel) {
+    setMessages([]);
+    return;
+  }
+
+  const { data, error } = await supabaseBrowser
+    .from("chat_messages")
+    .select(`
+      *,
+      profiles (
+        nom,
+        role
+      )
+    `)
+    .eq("channel", channelSlug)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    setMessages([]);
+    return;
+  }
+
+  setMessages(data || []);
+}
+
+  useEffect(() => {
+
+  fetchChannels();
+}, []);
+
+useEffect(() => {
+  if (!activeChannel) {
+    setMessages([]);
+    return;
+  }
+
+  fetchMessages(activeChannel);
+
+  const realtimeChannel = supabaseBrowser
+    .channel(`chat-live-${activeChannel}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "chat_messages",
+        filter: `channel=eq.${activeChannel}`,
+      },
+      async () => {
+        await fetchMessages(activeChannel);
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabaseBrowser.removeChannel(realtimeChannel);
+  };
+}, [activeChannel]);
+
+  function changeChannel(slug: string) {
+  const channelIsAllowed = channels.some(
+    (channel) => channel.slug === slug
+  );
+
+  if (!channelIsAllowed) return;
+
+  setActiveChannel(slug);
+}
+
+  async function sendMessage(e: React.FormEvent) {
+  e.preventDefault();
+
+  if (!message.trim()) return;
+
+  const auth = await getCurrentProfile();
+
+if (!auth) return;
+
+const { user, profile } = auth;
+
+const { data: authorizedChannel } = await supabaseBrowser
+  .from("chat_channels")
+  .select("name, slug, allowed_roles")
+  .eq("slug", activeChannel)
+  .contains("allowed_roles", [profile.role])
+  .maybeSingle();
+
+if (!authorizedChannel) {
+  alert("Tu n’as pas accès à ce channel.");
+  return;
+}
+
+const { error: messageError } = await supabaseBrowser
+  .from("chat_messages")
+  .insert({
     channel: activeChannel,
     user_id: user.id,
-    message,
+    message: message.trim(),
   });
+
+if (messageError) {
+  alert(messageError.message);
+  return;
+}
 
   const { data: channelMembers } = await supabaseBrowser
     .from("profiles")
     .select("id, role")
     .neq("id", user.id);
 
-  const { data: currentChannel } = await supabaseBrowser
-    .from("chat_channels")
-    .select("name, slug, allowed_roles")
-    .eq("slug", activeChannel)
-    .single();
-
-  const allowedRoles = currentChannel?.allowed_roles || [];
+  const currentChannel = authorizedChannel;
+  const allowedRoles = authorizedChannel.allowed_roles || [];
 
   const recipients =
     channelMembers?.filter((member: any) =>
