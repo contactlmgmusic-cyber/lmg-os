@@ -34,6 +34,20 @@ export default async function ProjetsPage() {
         .single()
     : { data: null };
 
+    if (currentProfile?.role === ROLES.PRESTATAIRE) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <h1 className="text-3xl font-bold text-red-400">
+        Accès refusé
+      </h1>
+
+      <p className="mt-3 text-zinc-500">
+        Vous n&apos;avez pas accès aux projets du label.
+      </p>
+    </main>
+  );
+}
+
   let query = supabase
     .from("projets")
     .select(`
