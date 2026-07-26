@@ -3,10 +3,18 @@ import RolloutKanban from "@/components/RolloutKanban";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { ROLES } from "@/lib/roles";
+import { requireRole } from "@/lib/require-role.server";
 
 export const dynamic = "force-dynamic";
 
 export default async function RolloutPage() {
+  await requireRole([
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.ARTISTIC_DIRECTOR,
+    ROLES.MANAGER,
+  ]);
+
   const cookieStore = await cookies();
 
   const supabaseServer = createServerClient(
