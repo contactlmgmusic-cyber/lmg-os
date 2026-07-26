@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { ROLES } from "@/lib/roles";
 
 const categories = [
   "Tous",
@@ -27,8 +28,73 @@ export default function DrivePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filter, setFilter] = useState("Tous");
   const [loading, setLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentRole, setCurrentRole] = useState<string | null>(null);
 
   async function loadData() {
+  const {
+    data: { user },
+  } = await supabaseBrowser.auth.getUser();
+
+  if (!user) {
+    window.location.href = "/login";
+    return;
+  }
+
+  const { data: profile } = await supabaseBrowser
+    .from("profiles")
+    .select("id, role")
+    .eq("id", user.id)
+    .single();
+
+  if (
+    profile?.role !== ROLES.SUPER_ADMIN &&
+    profile?.role !== ROLES.ADMIN &&
+    profile?.role !== ROLES.ARTISTIC_DIRECTOR &&
+    profile?.role !== ROLES.MANAGER
+  ) {
+    window.location.href = "/";
+    return;
+  }
+
+  setCurrentUserId(user.id);
+  setCurrentRole(profile.role);
+
+  if (profile.role === ROLES.MANAGER) {
+    const { data: artistesData } = await supabaseBrowser
+      .from("artistes")
+      .select("id, nom")
+      .eq("manager_id", profile.id)
+      .order("nom");
+
+    const artisteIds = (artistesData || []).map(
+      (artiste: any) => artiste.id
+    );
+
+    let projetsData: any[] = [];
+
+    if (artisteIds.length > 0) {
+      const { data } = await supabaseBrowser
+        .from("projets")
+        .select("id, titre, artiste_id")
+        .in("artiste_id", artisteIds)
+        .order("titre");
+
+      projetsData = data || [];
+    }
+
+    const projetIds = projetsData.map((projet: any) => projet.id);
+
+    const driveFilters = [`uploaded_by.eq.${user.id}`];
+
+    if (artisteIds.length > 0) {
+      driveFilters.push(`artiste_id.in.(${artisteIds.join(",")})`);
+    }
+
+    if (projetIds.length > 0) {
+      driveFilters.push(`projet_id.in.(${projetIds.join(",")})`);
+    }
+
     const { data: filesData } = await supabaseBrowser
       .from("drive_files")
       .select(`
@@ -36,22 +102,38 @@ export default function DrivePage() {
         artistes ( id, nom ),
         projets ( id, titre )
       `)
+      .or(driveFilters.join(","))
       .order("created_at", { ascending: false });
-
-    const { data: artistesData } = await supabaseBrowser
-      .from("artistes")
-      .select("id, nom")
-      .order("nom");
-
-    const { data: projetsData } = await supabaseBrowser
-      .from("projets")
-      .select("id, titre")
-      .order("titre");
 
     setFiles(filesData || []);
     setArtistes(artistesData || []);
-    setProjets(projetsData || []);
+    setProjets(projetsData);
+    return;
   }
+
+  const { data: filesData } = await supabaseBrowser
+    .from("drive_files")
+    .select(`
+      *,
+      artistes ( id, nom ),
+      projets ( id, titre )
+    `)
+    .order("created_at", { ascending: false });
+
+  const { data: artistesData } = await supabaseBrowser
+    .from("artistes")
+    .select("id, nom")
+    .order("nom");
+
+  const { data: projetsData } = await supabaseBrowser
+    .from("projets")
+    .select("id, titre")
+    .order("titre");
+
+  setFiles(filesData || []);
+  setArtistes(artistesData || []);
+  setProjets(projetsData || []);
+}
 
   useEffect(() => {
     loadData();
@@ -64,6 +146,26 @@ export default function DrivePage() {
       alert("Ajoute un fichier.");
       return;
     }
+
+if (!currentUserId || !currentRole) {
+  alert("Impossible de vérifier ton accès.");
+  return;
+}
+
+if (currentRole === ROLES.MANAGER) {
+  const artisteAutorise =
+    !artisteId ||
+    artistes.some((artiste: any) => artiste.id === artisteId);
+
+  const projetAutorise =
+    !projetId ||
+    projets.some((projet: any) => projet.id === projetId);
+
+  if (!artisteAutorise || !projetAutorise) {
+    alert("Tu ne peux pas associer ce fichier à cet artiste ou ce projet.");
+    return;
+  }
+}
 
     setLoading(true);
 
@@ -116,6 +218,16 @@ export default function DrivePage() {
 
   async function deleteFile(file: any) {
     if (!confirm("Supprimer ce fichier ?")) return;
+
+    if (
+  currentRole !== ROLES.SUPER_ADMIN &&
+  currentRole !== ROLES.ADMIN &&
+  currentRole !== ROLES.ARTISTIC_DIRECTOR &&
+  !(currentRole === ROLES.MANAGER && file.uploaded_by === currentUserId)
+) {
+  alert("Tu n’as pas l’autorisation de supprimer ce fichier.");
+  return;
+}
 
     const path = file.fichier_url?.includes("lmg-drive/")
       ? file.fichier_url.split("lmg-drive/")[1]?.split("?")[0]
@@ -268,12 +380,20 @@ export default function DrivePage() {
                 Ouvrir
               </a>
 
-              <button
-                onClick={() => deleteFile(file)}
-                className="rounded-xl border border-red-500/40 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10"
-              >
-                Supprimer
-              </button>
+              {(
+  currentRole === ROLES.SUPER_ADMIN ||
+  currentRole === ROLES.ADMIN ||
+  currentRole === ROLES.ARTISTIC_DIRECTOR ||
+  (currentRole === ROLES.MANAGER &&
+    file.uploaded_by === currentUserId)
+) && (
+  <button
+    onClick={() => deleteFile(file)}
+    className="rounded-xl border border-red-500/40 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10"
+  >
+    Supprimer
+  </button>
+)}
             </div>
           </div>
         ))}
