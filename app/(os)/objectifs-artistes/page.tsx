@@ -15,7 +15,33 @@ function progress(current: number, target: number) {
 }
 
 export default async function ObjectifsArtistesPage() {
-  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER]);
+  await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.ARTISTIC_DIRECTOR,
+  ROLES.MANAGER,
+]);
+
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("*")
+  .eq("id", user?.id)
+  .single();
+
+let artisteIds: string[] = [];
+
+if (profile?.role === ROLES.MANAGER) {
+  const { data: managedArtists } = await supabase
+    .from("artistes")
+    .select("id")
+    .eq("manager_id", profile.id);
+
+  artisteIds = managedArtists?.map((a) => a.id) || [];
+}
 
   const { data: objectifs } = await supabase
     .from("artiste_objectifs")
@@ -82,6 +108,14 @@ export default async function ObjectifsArtistesPage() {
       };
     }) || [];
 
+let filteredRows = rows;
+
+if (profile?.role === ROLES.MANAGER) {
+  filteredRows = rows.filter((row: any) =>
+    artisteIds.includes(row.artiste_id)
+  );
+}
+    
   return (
     <main className="min-h-screen bg-black p-10 text-white">
       <div className="mb-10 flex items-center justify-between gap-6">
@@ -110,7 +144,7 @@ export default async function ObjectifsArtistesPage() {
           <p className="text-zinc-500">Aucun objectif artiste.</p>
         )}
 
-        {rows.map((item: any) => (
+        {filteredRows.map((item: any) => (
           <Link
             key={item.id}
             href={`/artistes/${item.artiste_id}`}
