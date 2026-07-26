@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +14,13 @@ function formatNumber(value: number) {
 }
 
 export default async function CampagnesPage() {
+  await requireRole([
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.ARTISTIC_DIRECTOR,
+    ROLES.MANAGER,
+  ]);
+
   const { data: campagnes, error } = await supabase
     .from("campagnes")
     .select(`
