@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -8,9 +11,41 @@ export default async function SplitDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireRole([
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.ARTISTIC_DIRECTOR,
+    ROLES.MANAGER,
+  ]);
+
   const { id } = await params;
 
-  const { data: split, error } = await supabase
+  const cookieStore = await cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll() {},
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", user?.id)
+    .single();
+
+  let splitQuery = supabase
     .from("splits")
     .select(`
       *,
@@ -24,8 +59,28 @@ export default async function SplitDetailPage({
         email
       )
     `)
-    .eq("id", id)
-    .single();
+    .eq("id", id);
+
+  if (profile?.role === ROLES.MANAGER) {
+    const { data: managedArtists } = await supabase
+      .from("artistes")
+      .select("id")
+      .eq("manager_id", profile.id);
+
+    const artisteIds = (managedArtists || []).map(
+      (artiste: any) => artiste.id
+    );
+
+    if (artisteIds.length === 0) {
+      splitQuery = splitQuery.in("artiste_id", [
+        "00000000-0000-0000-0000-000000000000",
+      ]);
+    } else {
+      splitQuery = splitQuery.in("artiste_id", artisteIds);
+    }
+  }
+
+  const { data: split, error } = await splitQuery.single();
 
   if (error || !split) {
     return (
@@ -156,12 +211,14 @@ export default async function SplitDetailPage({
                 </Link>
               )}
 
-              <Link
-  href={`/splits/${split.id}/supprimer`}
-  className="block rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-center text-red-300 hover:bg-red-500/20"
->
-  Supprimer split sheet
-</Link>
+              {profile?.role !== ROLES.MANAGER && (
+  <Link
+    href={`/splits/${split.id}/supprimer`}
+    className="block rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-center text-red-300 hover:bg-red-500/20"
+  >
+    Supprimer split sheet
+  </Link>
+)}
             </div>
           </section>
         </aside>
