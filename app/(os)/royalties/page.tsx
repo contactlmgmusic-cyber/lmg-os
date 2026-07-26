@@ -28,15 +28,29 @@ export default async function RoyaltiesPage() {
   } = await supabaseAuth.auth.getUser();
 
   const { data: currentProfile } = user
-    ? await supabase
-        .from("profiles")
-        .select("role, artiste_id, email")
-        .eq("id", user.id)
-        .single()
-    : { data: null };
+  ? await supabase
+      .from("profiles")
+      .select("role, artiste_id, email")
+      .eq("id", user.id)
+      .single()
+  : { data: null };
 
-  let query = supabase
-    .from("royalties")
+if (currentProfile?.role === ROLES.PRESTATAIRE) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <h1 className="text-3xl font-bold text-red-400">
+        Accès refusé
+      </h1>
+
+      <p className="mt-3 text-zinc-500">
+        Vous n&apos;avez pas accès aux royalties du label.
+      </p>
+    </main>
+  );
+}
+
+let query = supabase
+  .from("royalties")
     .select(`
       *,
       projets (
@@ -58,10 +72,6 @@ export default async function RoyaltiesPage() {
 
   if (currentProfile?.role === ROLES.ARTISTE && currentProfile?.email) {
     query = query.eq("email", currentProfile.email);
-  }
-
-  if (currentProfile?.role === ROLES.PRESTATAIRE) {
-    query = query.eq("id", "00000000-0000-0000-0000-000000000000");
   }
 
   const { data: royalties, error } = await query;
