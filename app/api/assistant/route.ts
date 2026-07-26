@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import { runAssistantEngine } from "@/lib/assistant/engine";
+import { ROLES } from "@/lib/roles";
 
 function cleanMessage(message: string) {
   return message.trim().toLowerCase();
@@ -358,27 +361,98 @@ function generateLocalAssistantResponse(message: string) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const message = body.message;
+    const cookieStore = await cookies();
 
-    if (!message || typeof message !== "string") {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                cookieStore.set(name, value, options);
+              });
+            } catch {
+              // Certaines exécutions serveur ne permettent pas
+              // la modification directe des cookies.
+            }
+          },
+        },
+      }
+    );
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: "Non authentifié." },
+        { status: 401 }
+      );
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, role")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError || !profile) {
+      return NextResponse.json(
+        { error: "Profil introuvable." },
+        { status: 403 }
+      );
+    }
+
+    const allowedRoles = [
+      ROLES.SUPER_ADMIN,
+      ROLES.ADMIN,
+      ROLES.ARTISTIC_DIRECTOR,
+      ROLES.MANAGER,
+    ];
+
+    if (!allowedRoles.includes(profile.role)) {
+      return NextResponse.json(
+        { error: "Accès refusé." },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json().catch(() => null);
+    const message = body?.message;
+
+    if (typeof message !== "string" || !message.trim()) {
       return NextResponse.json(
         { error: "Message manquant." },
         { status: 400 }
       );
     }
 
-    const response = generateLocalAssistantResponse(message);
-const engine = await runAssistantEngine(message);
+    const cleanedMessage = message.trim();
 
+    if (cleanedMessage.length > 4000) {
+      return NextResponse.json(
+        { error: "Le message est trop long." },
+        { status: 400 }
+      );
+    }
 
-const plan = await runAssistantEngine(message);
+    const response = generateLocalAssistantResponse(cleanedMessage);
+    const plan = await runAssistantEngine(cleanedMessage);
 
-return NextResponse.json({
-  response,
-  plan,
-});
+    return NextResponse.json({
+      response,
+      plan,
+    });
   } catch (error) {
+    console.error("Assistant API error:", error);
+
     return NextResponse.json(
       { error: "Erreur assistant." },
       { status: 500 }
