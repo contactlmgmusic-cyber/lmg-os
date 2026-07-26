@@ -4,21 +4,49 @@ import NewTaskForm from "@/components/NewTaskForm";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const supabaseServer = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  process.env.SUPABASE_SERVICE_ROLE_KEY as string
-);
+function getSupabaseServerClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl) {
+    throw new Error("NEXT_PUBLIC_SUPABASE_URL est manquante.");
+  }
+
+  if (!serviceRoleKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY est manquante.");
+  }
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+}
 
 export default async function NouvelleTachePage() {
-  const { data: profiles } = await supabaseServer
-    .from("profiles")
-    .select("id, nom")
-    .order("nom", { ascending: true });
+  const supabaseServer = getSupabaseServerClient();
 
-  const { data: projets } = await supabaseServer
-    .from("projets")
-    .select("id, titre")
-    .order("titre", { ascending: true });
+  const [{ data: profiles, error: profilesError }, { data: projets, error: projetsError }] =
+    await Promise.all([
+      supabaseServer
+        .from("profiles")
+        .select("id, nom")
+        .order("nom", { ascending: true }),
+
+      supabaseServer
+        .from("projets")
+        .select("id, titre")
+        .order("titre", { ascending: true }),
+    ]);
+
+  if (profilesError) {
+    console.error("Erreur chargement profils :", profilesError);
+  }
+
+  if (projetsError) {
+    console.error("Erreur chargement projets :", projetsError);
+  }
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -30,7 +58,10 @@ export default async function NouvelleTachePage() {
         </p>
       </div>
 
-      <NewTaskForm profiles={profiles || []} projets={projets || []} />
+      <NewTaskForm
+        profiles={profiles ?? []}
+        projets={projets ?? []}
+      />
     </main>
   );
 }
