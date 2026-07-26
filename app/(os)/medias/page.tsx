@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function MediasPage() {
   const cookieStore = await cookies();
 
-  const profile = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER]);
+  const profile = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER]);
 
   const supabaseAuth = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL as string,
@@ -77,9 +77,10 @@ export default async function MediasPage() {
   }
 
   const canCreateMedia =
-    currentProfile?.role === ROLES.SUPER_ADMIN ||
-    currentProfile?.role === ROLES.ADMIN ||
-    currentProfile?.role === ROLES.MANAGER;
+  currentProfile?.role === ROLES.SUPER_ADMIN ||
+  currentProfile?.role === ROLES.ADMIN ||
+  currentProfile?.role === ROLES.ARTISTIC_DIRECTOR ||
+  currentProfile?.role === ROLES.MANAGER;
 
   return (
     <main className="p-10 text-white">
