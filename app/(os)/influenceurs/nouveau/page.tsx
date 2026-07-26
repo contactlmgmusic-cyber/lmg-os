@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { ROLES } from "@/lib/roles";
 
 
-export default async function NouveauInfluenceurPage() {
+export default function NouveauInfluenceurPage() {
   const router = useRouter();
 
   const [nom, setNom] = useState("");
@@ -28,23 +29,74 @@ export default async function NouveauInfluenceurPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    async function loadData() {
-      const { data: artistesData } = await supabaseBrowser
-        .from("artistes")
-        .select("id, nom")
-        .order("nom");
+  async function checkAccessAndLoadData() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
 
-      const { data: projetsData } = await supabaseBrowser
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("id, role")
+      .eq("id", user.id)
+      .single();
+
+    if (
+      profile?.role !== ROLES.SUPER_ADMIN &&
+      profile?.role !== ROLES.ADMIN &&
+      profile?.role !== ROLES.ARTISTIC_DIRECTOR &&
+      profile?.role !== ROLES.MANAGER
+    ) {
+      window.location.href = "/";
+      return;
+    }
+
+    let artistesQuery = supabaseBrowser
+      .from("artistes")
+      .select("id, nom")
+      .order("nom");
+
+    if (profile?.role === ROLES.MANAGER) {
+      artistesQuery = artistesQuery.eq("manager_id", profile.id);
+    }
+
+    const { data: artistesData } = await artistesQuery;
+
+    const artisteIds = (artistesData || []).map(
+      (artiste: any) => artiste.id
+    );
+
+    let projetsData: any[] = [];
+
+    if (profile?.role === ROLES.MANAGER) {
+      if (artisteIds.length > 0) {
+        const { data } = await supabaseBrowser
+          .from("projets")
+          .select("id, titre")
+          .in("artiste_id", artisteIds)
+          .order("titre");
+
+        projetsData = data || [];
+      }
+    } else {
+      const { data } = await supabaseBrowser
         .from("projets")
         .select("id, titre")
         .order("titre");
 
-      setArtistes(artistesData || []);
-      setProjets(projetsData || []);
+      projetsData = data || [];
     }
 
-    loadData();
-  }, []);
+    setArtistes(artistesData || []);
+    setProjets(projetsData);
+  }
+
+  checkAccessAndLoadData();
+}, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

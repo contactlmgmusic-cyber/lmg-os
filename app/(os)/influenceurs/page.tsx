@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import InfluenceurKanban from "@/components/InfluenceurKanban";
 import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,12 @@ export const dynamic = "force-dynamic";
 export default async function InfluenceursPage() {
   const cookieStore = await cookies();
 
-  await requireRole(["super_admin", "admin", "manager"]);
+  await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.ARTISTIC_DIRECTOR,
+  ROLES.MANAGER,
+]);
 
 const supabase = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL as string,
@@ -25,10 +31,23 @@ const supabase = createServerClient(
   }
 );
 
-const { data: influenceurs, error } = await supabase
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("id, role")
+  .eq("id", user?.id)
+  .single();
+
+let influenceursQuery = supabase
   .from("influenceurs")
   .select("*")
   .order("created_at", { ascending: false });
+
+
+const { data: influenceurs, error } = await influenceursQuery;
 
   if (error) {
     return (
