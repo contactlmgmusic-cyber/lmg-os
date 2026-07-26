@@ -38,7 +38,8 @@ const { data: profile } = await supabase
 
 if (
   profile?.role !== ROLES.SUPER_ADMIN &&
-  profile?.role !== ROLES.ADMIN
+  profile?.role !== ROLES.ADMIN &&
+  profile?.role !== ROLES.ARTISTIC_DIRECTOR
 ) {
   redirect("/");
 }

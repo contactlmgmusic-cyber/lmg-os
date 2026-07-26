@@ -91,12 +91,16 @@ export default function PartenaireKanban({
       });
 
       await notifyRoles({
-        roles: ["super_admin", "manager"],
-        type: "Partenaire",
-        titre: "Nouveau partenaire actif",
-        description: `${partenaire.nom} est passé en partenaire actif`,
-        link: `/partenaires/${partenaireId}`,
-      });
+  roles: [
+    "super_admin",
+    "admin",
+    "artistic_director",
+  ],
+  type: "Partenaire",
+  titre: "Nouveau partenaire actif",
+  description: `${partenaire.nom} est passé en partenaire actif`,
+  link: `/partenaires/${partenaireId}`,
+});
     }
   }
 

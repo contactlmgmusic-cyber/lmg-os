@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { ROLES } from "@/lib/roles";
 
 const types = [
   "Beatmaker",
@@ -54,14 +55,15 @@ export default function NouveauPartenairePage() {
 
     const { data: profile } = await supabaseBrowser
       .from("profiles")
-      .select("role")
+      .select("*")
       .eq("id", user.id)
       .single();
 
     if (
-      profile?.role !== "super_admin" &&
-      profile?.role !== "admin"
-    ) {
+  profile?.role !== ROLES.SUPER_ADMIN &&
+  profile?.role !== ROLES.ADMIN &&
+  profile?.role !== ROLES.ARTISTIC_DIRECTOR
+) {
       router.push("/");
       return;
     }
