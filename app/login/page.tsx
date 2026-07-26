@@ -60,13 +60,7 @@ export default function LoginPage() {
         <button className="mt-6 w-full rounded-xl bg-white px-5 py-4 font-semibold text-black">
           Se connecter
         </button>
-
-        <a
-          href="/signup"
-          className="mt-5 block text-center text-sm text-zinc-400 hover:text-white"
-        >
-          Pas encore de compte ? Créer un compte
-        </a>
+        
       </form>
     </main>
   );
