@@ -115,9 +115,10 @@ const bookingsFactures =
   bookings?.filter((booking: any) => booking.statut === "Facturé").length || 0;
 
   const canCreateBooking =
-    currentProfile?.role === ROLES.SUPER_ADMIN ||
-    currentProfile?.role === ROLES.ADMIN ||
-    currentProfile?.role === ROLES.MANAGER;
+  currentProfile?.role === ROLES.SUPER_ADMIN ||
+  currentProfile?.role === ROLES.ADMIN ||
+  currentProfile?.role === ROLES.ARTISTIC_DIRECTOR ||
+  currentProfile?.role === ROLES.MANAGER;
 
   return (
     <main className="p-10 text-white">
