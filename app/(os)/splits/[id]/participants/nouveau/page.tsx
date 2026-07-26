@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { ROLES } from "@/lib/roles";
 
 export default function NouveauParticipantPage() {
   const params = useParams();
@@ -16,11 +17,116 @@ export default function NouveauParticipantPage() {
   const [role, setRole] = useState("Auteur");
   const [pourcentage, setPourcentage] = useState("");
   const [email, setEmail] = useState("");
+  const [currentRole, setCurrentRole] = useState<string | null>(null);
+  const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
+
+useEffect(() => {
+  async function checkAccess() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("id, role")
+      .eq("id", user.id)
+      .single();
+
+    if (
+      profile?.role !== ROLES.SUPER_ADMIN &&
+      profile?.role !== ROLES.ADMIN &&
+      profile?.role !== ROLES.ARTISTIC_DIRECTOR &&
+      profile?.role !== ROLES.MANAGER
+    ) {
+      router.push("/");
+      return;
+    }
+
+    setCurrentRole(profile.role);
+    setCurrentProfileId(profile.id);
+
+    if (profile.role === ROLES.MANAGER) {
+      const { data: managedArtists } = await supabaseBrowser
+        .from("artistes")
+        .select("id")
+        .eq("manager_id", profile.id);
+
+      const artisteIds = (managedArtists || []).map(
+        (artiste: any) => artiste.id
+      );
+
+      const { data: split } = await supabaseBrowser
+        .from("splits")
+        .select("artiste_id")
+        .eq("id", splitId)
+        .single();
+
+      if (!split || !artisteIds.includes(split.artiste_id)) {
+        router.push("/splits");
+      }
+    }
+  }
+
+  checkAccess();
+}, [router, splitId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     setSaving(true);
+
+    if (!currentRole || !currentProfileId) {
+  alert("Impossible de vérifier tes permissions.");
+  setSaving(false);
+  return;
+}
+
+if (currentRole === ROLES.MANAGER) {
+  const { data: managedArtists } = await supabaseBrowser
+    .from("artistes")
+    .select("id")
+    .eq("manager_id", currentProfileId);
+
+  const artisteIds = (managedArtists || []).map(
+    (artiste: any) => artiste.id
+  );
+
+  const { data: split } = await supabaseBrowser
+    .from("splits")
+    .select("artiste_id")
+    .eq("id", splitId)
+    .single();
+
+  if (!split || !artisteIds.includes(split.artiste_id)) {
+    alert("Tu n'as pas accès à ce split.");
+    setSaving(false);
+    return;
+  }
+}
+
+const { data: participants } = await supabaseBrowser
+  .from("split_participants")
+  .select("pourcentage")
+  .eq("split_id", splitId);
+
+const totalActuel =
+  (participants || []).reduce(
+    (sum: number, p: any) => sum + Number(p.pourcentage || 0),
+    0
+  ) + Number(pourcentage);
+
+if (totalActuel > 100) {
+  alert(
+    `Le total dépasserait 100 % (${totalActuel.toFixed(2)} %).`
+  );
+  setSaving(false);
+  return;
+}
 
     const { error } = await supabaseBrowser
       .from("split_participants")
