@@ -49,6 +49,11 @@ export default async function RolloutPage() {
   const isArtistUser = profile?.role === ROLES.ARTISTE;
   const isManagerUser = profile?.role === ROLES.MANAGER;
 
+  const canManageRollout =
+  profile?.role === ROLES.SUPER_ADMIN ||
+  profile?.role === ROLES.ADMIN ||
+  profile?.role === ROLES.ARTISTIC_DIRECTOR;
+
   let artisteIds: string[] = [];
 
   if (isManagerUser) {
@@ -116,7 +121,10 @@ export default async function RolloutPage() {
         </div>
       </div>
 
-<RolloutKanban events={filteredEvents} />
+<RolloutKanban
+  events={filteredEvents}
+  canManage={canManageRollout}
+/>
    </main>
   );
 }

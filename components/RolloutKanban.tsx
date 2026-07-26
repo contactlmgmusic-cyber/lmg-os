@@ -26,8 +26,10 @@ const columns = [
 
 export default function RolloutKanban({
   events,
+  canManage,
 }: {
   events: RolloutEvent[];
+  canManage: boolean;
 }) {
   const [items, setItems] = useState(events);
 
@@ -123,27 +125,27 @@ export default function RolloutKanban({
                     Ouvrir la fiche
                   </button>
 
-                  <select
-                    value={
-                      event.statut || "À faire"
-                    }
-                    onChange={(e) =>
-                      updateStatus(
-                        event.id,
-                        e.target.value
-                      )
-                    }
-                    className="mt-3 w-full rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-sm text-white"
-                  >
-                    {columns.map((status) => (
-                      <option
-                        key={status}
-                        value={status}
-                      >
-                        {status}
-                      </option>
-                    ))}
-                  </select>
+                  {canManage && (
+  <select
+    value={event.statut || "À faire"}
+    onChange={(e) =>
+      updateStatus(
+        event.id,
+        e.target.value
+      )
+    }
+    className="mt-3 w-full rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-sm text-white"
+  >
+    {columns.map((status) => (
+      <option
+        key={status}
+        value={status}
+      >
+        {status}
+      </option>
+    ))}
+  </select>
+)}
                 </div>
               ))}
             </div>
