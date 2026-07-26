@@ -75,6 +75,7 @@ export default async function ContratsPage() {
   const canCreateContract =
     currentProfile?.role === ROLES.SUPER_ADMIN ||
     currentProfile?.role === ROLES.ADMIN ||
+    currentProfile?.role === ROLES.ARTISTIC_DIRECTOR ||
     currentProfile?.role === ROLES.MANAGER;
 
   return (
