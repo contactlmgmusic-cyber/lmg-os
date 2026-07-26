@@ -48,19 +48,26 @@ const [messages, setMessages] = useState<ChatMessage[]>([
 
   const [input, setInput] = useState("");
 
+  const [sending, setSending] = useState(false);
+
   const [executingAction, setExecutingAction] = useState<string | null>(null);
 
 
   async function handleSubmit(e: React.FormEvent) {
   e.preventDefault();
 
-  if (!input.trim()) return;
-
   const userMessage = input.trim();
+
+  if (!userMessage || sending) return;
+
+  setSending(true);
 
   setMessages((current) => [
     ...current,
-    { role: "user", content: userMessage },
+    {
+      role: "user",
+      content: userMessage,
+    },
   ]);
 
   setInput("");
@@ -76,22 +83,39 @@ const [messages, setMessages] = useState<ChatMessage[]>([
       }),
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error || "Impossible de contacter l’assistant LMG."
+      );
+    }
 
     setMessages((current) => [
       ...current,
       {
         role: "assistant",
-        content: `${data.plan?.summary ? `${data.plan.summary}\n\n` : ""}${
-  data.plan?.recommendations?.length
-    ? `Plan recommandé :\n${data.plan.recommendations
-        .map((item: string) => `✓ ${item}`)
-        .join("\n")}\n\nTemps estimé : ${data.plan.estimatedTime}\n\n`
-    : ""
-}${data.response || "Je n’ai pas réussi à générer de réponse."}`,
-        plan: data.plan,
-        workflow: data.plan?.workflow,
-        actions: data.plan?.actions || []
+        content: `${
+          data?.plan?.summary
+            ? `${data.plan.summary}\n\n`
+            : ""
+        }${
+          data?.plan?.recommendations?.length
+            ? `Plan recommandé :\n${data.plan.recommendations
+                .map((item: string) => `✓ ${item}`)
+                .join("\n")}\n\nTemps estimé : ${
+                data.plan.estimatedTime || "Non précisé"
+              }\n\n`
+            : ""
+        }${
+          data?.response ||
+          "Je n’ai pas réussi à générer de réponse."
+        }`,
+        plan: data?.plan,
+        workflow: data?.plan?.workflow,
+        actions: Array.isArray(data?.plan?.actions)
+          ? data.plan.actions
+          : [],
       },
     ]);
   } catch (error) {
@@ -99,9 +123,14 @@ const [messages, setMessages] = useState<ChatMessage[]>([
       ...current,
       {
         role: "assistant",
-        content: "Erreur de connexion avec l’assistant LMG.",
+        content:
+          error instanceof Error
+            ? error.message
+            : "Erreur de connexion avec l’assistant LMG.",
       },
     ]);
+  } finally {
+    setSending(false);
   }
 }
 
@@ -110,6 +139,12 @@ function useSuggestion(value: string) {
 }
 
 async function handleAction(action: AssistantAction) {
+  if (executingAction) return;
+
+  const actionKey = `${action.type}-${action.label}`;
+
+  setExecutingAction(actionKey);
+
   try {
     const message = await executeAssistantAction(action);
     alert(message);
@@ -119,6 +154,8 @@ async function handleAction(action: AssistantAction) {
         ? error.message
         : "Erreur lors de l’exécution de l’action."
     );
+  } finally {
+    setExecutingAction(null);
   }
 }
   
@@ -142,11 +179,12 @@ async function handleAction(action: AssistantAction) {
         <div className="flex flex-wrap gap-3">
           {suggestions.map((suggestion) => (
             <button
-              key={suggestion}
-              type="button"
-              onClick={() => useSuggestion(suggestion)}
-              className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
-            >
+  key={suggestion}
+  type="button"
+  onClick={() => useSuggestion(suggestion)}
+  disabled={sending}
+  className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+>
               {suggestion}
             </button>
           ))}
@@ -177,13 +215,13 @@ async function handleAction(action: AssistantAction) {
 {message.workflow && (
   <AssistantWorkflowCard
     workflow={message.workflow}
-    onExecuteAll={async () => {
-      if (!message.actions) return;
+   onExecuteAll={async () => {
+  if (!message.actions || executingAction) return;
 
-      for (const action of message.actions) {
-        await handleAction(action);
-      }
-    }}
+  for (const action of message.actions) {
+    await handleAction(action);
+  }
+}}
   />
 )}
 
@@ -197,16 +235,22 @@ async function handleAction(action: AssistantAction) {
   message.actions &&
   message.actions.length > 0 && (
     <div className="mt-4 flex flex-wrap gap-2">
-      {message.actions.map((action) => (
-        <button
-          key={action.type}
-          type="button"
-          onClick={() => handleAction(action)}
-          className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-zinc-200"
-        >
-          {action.label}
-        </button>
-      ))}
+      {message.actions.map((action) => {
+  const actionKey = `${action.type}-${action.label}`;
+  const isExecuting = executingAction === actionKey;
+
+  return (
+    <button
+      key={actionKey}
+      type="button"
+      onClick={() => handleAction(action)}
+      disabled={executingAction !== null}
+      className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {isExecuting ? "Exécution..." : action.label}
+    </button>
+  );
+})}
     </div>
   )}
                 </div>
@@ -223,9 +267,13 @@ async function handleAction(action: AssistantAction) {
             className="flex-1 rounded-2xl border border-zinc-800 bg-black px-4 py-4 text-white"
           />
 
-          <button className="rounded-2xl bg-white px-6 py-4 font-semibold text-black">
-            Envoyer
-          </button>
+          <button
+  type="submit"
+  disabled={sending || !input.trim()}
+  className="rounded-2xl bg-white px-6 py-4 font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50"
+>
+  {sending ? "Génération..." : "Envoyer"}
+</button>
         </form>
       </section>
     </main>

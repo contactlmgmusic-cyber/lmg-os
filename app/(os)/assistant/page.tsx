@@ -1,6 +1,15 @@
 import Link from "next/link";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
-export default function AssistantPage() {
+export default async function AssistantPage() {
+await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.ARTISTIC_DIRECTOR,
+  ROLES.MANAGER,
+]);
+
   const outils = [
     {
       titre: "Générer un rollout",
@@ -44,6 +53,11 @@ export default function AssistantPage() {
         "Créer un Electronic Press Kit complet.",
       href: "/assistant/epk",
     },
+    {
+  titre: "Assistant IA central",
+  description: "Discuter avec l’assistant LMG pour générer stratégies, textes et plans.",
+  href: "/assistant/chat",
+},
   ];
 
   return (
