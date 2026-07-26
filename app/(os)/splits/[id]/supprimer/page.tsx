@@ -2,16 +2,78 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { ROLES } from "@/lib/roles";
 
 export default function SupprimerSplitPage() {
   const params = useParams();
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const [currentRole, setCurrentRole] = useState<string | null>(null);
+  const [authorized, setAuthorized] = useState(false);
+
+useEffect(() => {
+  async function checkAccess() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("id, role")
+      .eq("id", user.id)
+      .single();
+
+    if (
+      profile?.role !== ROLES.SUPER_ADMIN &&
+      profile?.role !== ROLES.ADMIN &&
+      profile?.role !== ROLES.ARTISTIC_DIRECTOR
+    ) {
+      router.push(`/splits/${params.id}`);
+      return;
+    }
+
+    setCurrentRole(profile.role);
+    setAuthorized(true);
+  }
+
+  checkAccess();
+}, [router, params.id]);
 
   async function handleDelete() {
     setLoading(true);
+
+    if (!authorized || !currentRole) {
+  alert("Accès refusé.");
+  setLoading(false);
+  return;
+}
+
+const {
+  data: { user },
+} = await supabaseBrowser.auth.getUser();
+
+const { data: profile } = await supabaseBrowser
+  .from("profiles")
+  .select("role")
+  .eq("id", user?.id)
+  .single();
+
+if (
+  profile?.role !== ROLES.SUPER_ADMIN &&
+  profile?.role !== ROLES.ADMIN &&
+  profile?.role !== ROLES.ARTISTIC_DIRECTOR
+) {
+  alert("Accès refusé.");
+  setLoading(false);
+  return;
+}
 
     const { error } = await supabaseBrowser
       .from("splits")
@@ -41,7 +103,7 @@ export default function SupprimerSplitPage() {
 
         <button
           onClick={handleDelete}
-          disabled={loading}
+          disabled={loading || !authorized}
           className="mt-8 w-full rounded-xl bg-red-500 px-5 py-4 font-medium text-white hover:bg-red-600 disabled:opacity-50"
         >
           {loading
