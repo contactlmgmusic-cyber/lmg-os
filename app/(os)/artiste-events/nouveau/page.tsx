@@ -37,20 +37,27 @@ export default function NouvelEvenementArtistePage() {
         .single();
 
       if (
-        profile?.role !== ROLES.SUPER_ADMIN &&
-        profile?.role !== ROLES.ADMIN &&
-        profile?.role !== ROLES.MANAGER
-      ) {
+  profile?.role !== ROLES.SUPER_ADMIN &&
+  profile?.role !== ROLES.ADMIN &&
+  profile?.role !== ROLES.ARTISTIC_DIRECTOR &&
+  profile?.role !== ROLES.MANAGER
+) {
         window.location.href = "/";
         return;
       }
 
-      const { data } = await supabaseBrowser
-        .from("artistes")
-        .select("id, nom")
-        .order("nom");
+      let query = supabaseBrowser
+  .from("artistes")
+  .select("id, nom")
+  .order("nom");
 
-      setArtistes(data || []);
+if (profile?.role === ROLES.MANAGER) {
+  query = query.eq("manager_id", user.id);
+}
+
+const { data } = await query;
+
+setArtistes(data || []);
     }
 
     loadData();
@@ -65,6 +72,31 @@ export default function NouvelEvenementArtistePage() {
     }
 
     setLoading(true);
+
+const {
+  data: { user },
+} = await supabaseBrowser.auth.getUser();
+
+const { data: profile } = await supabaseBrowser
+  .from("profiles")
+  .select("id, role")
+  .eq("id", user?.id)
+  .single();
+
+if (profile?.role === ROLES.MANAGER) {
+  const { data: artiste } = await supabaseBrowser
+    .from("artistes")
+    .select("id")
+    .eq("id", artisteId)
+    .eq("manager_id", profile.id)
+    .maybeSingle();
+
+  if (!artiste) {
+    alert("Vous ne pouvez créer des événements que pour vos artistes.");
+    setLoading(false);
+    return;
+  }
+}
 
     const { error } = await supabaseBrowser.from("artiste_events").insert({
   artiste_id: artisteId,
@@ -203,7 +235,8 @@ router.refresh();
         />
 
         <button
-          disabled={loading}
+  type="submit"
+  disabled={loading}
           className="w-full rounded-xl bg-white px-5 py-4 font-semibold text-black disabled:opacity-50"
         >
           {loading ? "Création..." : "Créer l’événement"}
