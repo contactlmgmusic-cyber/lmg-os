@@ -18,16 +18,38 @@ export default async function AnalyticsDashboardPage() {
     ROLES.ADMIN,
   ]);
 
-  const { data: analytics } = await supabase
-    .from("analytics")
-    .select(`
-      *,
-      artistes ( id, nom ),
-      sorties ( id, titre )
-    `)
-    .order("date_snapshot", { ascending: false });
+  const { data: analytics, error: analyticsError } = await supabase
+  .from("analytics")
+  .select(`
+    id,
+    artiste_id,
+    sortie_id,
+    date_snapshot,
+    streams,
+    followers,
+    vues,
+    revenus,
+    artistes (
+      id,
+      nom
+    ),
+    sorties (
+      id,
+      titre
+    )
+  `)
+  .order("date_snapshot", { ascending: false });
 
-  const rows = analytics || [];
+if (analyticsError) {
+  console.error(
+    "Erreur lors du chargement des analytics :",
+    analyticsError
+  );
+
+  throw new Error("Impossible de charger les données analytics.");
+}
+
+const rows = analytics ?? [];
 
   const totalStreams = rows.reduce((acc: number, row: any) => acc + Number(row.streams || 0), 0);
   const totalFollowers = rows.reduce((acc: number, row: any) => acc + Number(row.followers || 0), 0);
