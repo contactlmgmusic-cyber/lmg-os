@@ -27,62 +27,96 @@ export default function AnalyticsGraphsPage() {
 
   useEffect(() => {
     async function loadData() {
-      const {
-        data: { user },
-      } = await supabaseBrowser.auth.getUser();
+  try {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseBrowser.auth.getUser();
 
-      if (!user) {
-        window.location.href = "/login";
-        return;
-      }
+    if (userError || !user) {
+      window.location.href = "/login";
+      return;
+    }
 
-      const { data: profile } = await supabaseBrowser
+    const { data: profile, error: profileError } =
+      await supabaseBrowser
         .from("profiles")
         .select("role")
         .eq("id", user.id)
         .single();
 
-      if (
-        profile?.role !== ROLES.SUPER_ADMIN &&
-        profile?.role !== ROLES.ADMIN
-      ) {
-        window.location.href = "/";
-        return;
-      }
+    if (profileError || !profile) {
+      window.location.href = "/";
+      return;
+    }
 
-      const { data: analytics } = await supabaseBrowser
+    if (
+      profile.role !== ROLES.SUPER_ADMIN &&
+      profile.role !== ROLES.ADMIN
+    ) {
+      window.location.href = "/";
+      return;
+    }
+
+    const { data: analytics, error: analyticsError } =
+      await supabaseBrowser
         .from("analytics")
-        .select("*")
+        .select(`
+          date_snapshot,
+          streams,
+          vues,
+          followers,
+          revenus
+        `)
         .not("date_snapshot", "is", null)
         .order("date_snapshot", { ascending: true });
 
-      const map = new Map<string, GraphRow>();
+    if (analyticsError) {
+      console.error(
+        "Erreur lors du chargement des graphiques analytics :",
+        analyticsError
+      );
 
-      analytics?.forEach((row: any) => {
-        const date = row.date_snapshot;
-        if (!date) return;
-
-        const current =
-          map.get(date) || {
-            date,
-            streams: 0,
-            vues: 0,
-            followers: 0,
-            revenus: 0,
-          };
-
-        current.streams += Number(row.streams || 0);
-        current.vues += Number(row.vues || 0);
-        current.followers += Number(row.followers || 0);
-        current.revenus += Number(row.revenus || 0);
-
-        map.set(date, current);
-      });
-
-      setData(Array.from(map.values()));
-      setLoading(false);
+      alert("Impossible de charger les données analytics.");
+      return;
     }
 
+    const map = new Map<string, GraphRow>();
+
+    analytics?.forEach((row) => {
+      const date = row.date_snapshot;
+
+      if (!date) return;
+
+      const current =
+        map.get(date) || {
+          date,
+          streams: 0,
+          vues: 0,
+          followers: 0,
+          revenus: 0,
+        };
+
+      current.streams += Number(row.streams || 0);
+      current.vues += Number(row.vues || 0);
+      current.followers += Number(row.followers || 0);
+      current.revenus += Number(row.revenus || 0);
+
+      map.set(date, current);
+    });
+
+    setData(Array.from(map.values()));
+  } catch (error) {
+    console.error(
+      "Erreur inattendue lors du chargement des analytics :",
+      error
+    );
+
+    alert("Une erreur inattendue est survenue.");
+  } finally {
+    setLoading(false);
+  }
+}
     loadData();
   }, []);
 
