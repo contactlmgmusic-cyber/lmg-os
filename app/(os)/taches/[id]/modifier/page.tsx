@@ -5,17 +5,12 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function ModifierTachePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+async function getSupabase() {
   const cookieStore = await cookies();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
@@ -25,22 +20,44 @@ export default async function ModifierTachePage({
       },
     }
   );
+}
 
-  const { data: tache } = await supabase
+export default async function ModifierTachePage({
+  params,
+}: {
+  params: {
+    id: string;
+  };
+}) {
+  const { id } = params;
+
+  const supabase = await getSupabase();
+
+  const { data: tache, error: tacheError } = await supabase
     .from("taches")
     .select("*")
     .eq("id", id)
     .single();
 
-  const { data: profils } = await supabase
+  if (tacheError) {
+    console.error("Erreur récupération tâche :", tacheError);
+  }
+
+  const { data: profils, error: profilsError } = await supabase
     .from("profiles")
     .select("id, nom, role")
     .order("nom", { ascending: true });
 
+  if (profilsError) {
+    console.error("Erreur récupération profils :", profilsError);
+  }
+
   if (!tache) {
     return (
       <main className="min-h-screen bg-black p-10 text-white">
-        <p className="text-red-400">Tâche introuvable.</p>
+        <p className="text-red-400">
+          Impossible de charger cette tâche.
+        </p>
       </main>
     );
   }
@@ -48,29 +65,18 @@ export default async function ModifierTachePage({
   async function updateTache(formData: FormData) {
     "use server";
 
-    const cookieStore = await cookies();
+    const supabase = await getSupabase();
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll() {},
-        },
-      }
+    const titre = String(formData.get("titre") || "");
+    const description = String(formData.get("description") || "");
+    const statut = String(formData.get("statut") || "À faire");
+    const priorite = String(formData.get("priorite") || "Basse");
+    const deadline = String(formData.get("deadline") || "");
+    const responsableId = String(
+      formData.get("responsable_id") || ""
     );
 
-    const titre = formData.get("titre") as string;
-    const description = formData.get("description") as string;
-    const statut = formData.get("statut") as string;
-    const priorite = formData.get("priorite") as string;
-    const deadline = formData.get("deadline") as string;
-    const responsableId = formData.get("responsable_id") as string;
-
-    await supabase
+    const { error } = await supabase
       .from("taches")
       .update({
         titre,
@@ -82,160 +88,205 @@ export default async function ModifierTachePage({
       })
       .eq("id", id);
 
+    if (error) {
+      console.error("Erreur modification tâche :", error);
+      throw new Error("Impossible de modifier la tâche");
+    }
+
     redirect(`/taches/${id}`);
   }
 
   async function deleteTache() {
-  "use server";
+    "use server";
 
-  const cookieStore = await cookies();
+    const supabase = await getSupabase();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll() {},
-      },
+    const { error } = await supabase
+      .from("taches")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Erreur suppression tâche :", error);
+      throw new Error("Impossible de supprimer la tâche");
     }
-  );
 
-  await supabase
-    .from("taches")
-    .delete()
-    .eq("id", id);
+    redirect("/taches");
+  }
 
-  redirect("/taches");
-}
+  const deadlineValue = tache.deadline
+    ? new Date(tache.deadline)
+        .toISOString()
+        .split("T")[0]
+    : "";
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
+
       <div className="mb-10">
-        <Link href={`/taches/${id}`} className="text-zinc-400 hover:text-white">
+        <Link
+          href={`/taches/${id}`}
+          className="text-zinc-400 hover:text-white"
+        >
           ← Retour à la tâche
         </Link>
 
-        <h1 className="mt-6 text-5xl font-bold">Modifier la tâche</h1>
+        <h1 className="mt-6 text-5xl font-bold">
+          Modifier la tâche
+        </h1>
       </div>
 
-      <form
-        action={updateTache}
-        className="max-w-3xl space-y-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-8"
-      >
-        <div>
-          <label className="mb-2 block text-sm text-zinc-400">Titre</label>
-          <input
-            name="titre"
-            defaultValue={tache.titre || ""}
-            required
-            className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
-          />
-        </div>
 
-        <div>
-          <label className="mb-2 block text-sm text-zinc-400">
-            Description
-          </label>
-          <textarea
-            name="description"
-            defaultValue={tache.description || ""}
-            rows={5}
-            className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
-          />
-        </div>
+      <div className="max-w-3xl space-y-6">
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-2 block text-sm text-zinc-400">Statut</label>
-            <select
-              name="statut"
-              defaultValue={tache.statut || "À faire"}
-              className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
-            >
-              <option value="À faire">À faire</option>
-              <option value="En cours">En cours</option>
-              <option value="Terminé">Terminé</option>
-            </select>
-          </div>
+        <form
+          action={updateTache}
+          className="space-y-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-8"
+        >
 
           <div>
-            <label className="mb-2 block text-sm text-zinc-400">Priorité</label>
+            <label className="mb-2 block text-sm text-zinc-400">
+              Titre
+            </label>
+
+            <input
+              name="titre"
+              defaultValue={tache.titre || ""}
+              required
+              className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
+            />
+          </div>
+
+
+          <div>
+            <label className="mb-2 block text-sm text-zinc-400">
+              Description
+            </label>
+
+            <textarea
+              name="description"
+              defaultValue={tache.description || ""}
+              rows={5}
+              className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
+            />
+          </div>
+
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+            <div>
+              <label className="mb-2 block text-sm text-zinc-400">
+                Statut
+              </label>
+
+              <select
+                name="statut"
+                defaultValue={tache.statut || "À faire"}
+                className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
+              >
+                <option value="À faire">À faire</option>
+                <option value="En cours">En cours</option>
+                <option value="Terminé">Terminé</option>
+              </select>
+            </div>
+
+
+            <div>
+              <label className="mb-2 block text-sm text-zinc-400">
+                Priorité
+              </label>
+
+              <select
+                name="priorite"
+                defaultValue={tache.priorite || "Basse"}
+                className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
+              >
+                <option value="Basse">Basse</option>
+                <option value="Moyenne">Moyenne</option>
+                <option value="Haute">Haute</option>
+              </select>
+            </div>
+
+          </div>
+
+
+          <div>
+            <label className="mb-2 block text-sm text-zinc-400">
+              Deadline
+            </label>
+
+            <input
+              type="date"
+              name="deadline"
+              defaultValue={deadlineValue}
+              className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
+            />
+          </div>
+
+
+          <div>
+            <label className="mb-2 block text-sm text-zinc-400">
+              Responsable
+            </label>
+
             <select
-              name="priorite"
-              defaultValue={tache.priorite || "Basse"}
+              name="responsable_id"
+              defaultValue={tache.responsable_id || ""}
               className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
             >
-              <option value="Basse">Basse</option>
-              <option value="Moyenne">Moyenne</option>
-              <option value="Haute">Haute</option>
-            </select>
-          </div>
-        </div>
 
-        <div>
-          <label className="mb-2 block text-sm text-zinc-400">Deadline</label>
-          <input
-            type="date"
-            name="deadline"
-            defaultValue={tache.deadline || ""}
-            className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm text-zinc-400">
-            Responsable
-          </label>
-          <select
-            name="responsable_id"
-            defaultValue={tache.responsable_id || ""}
-            className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
-          >
-            <option value="">Non assigné</option>
-
-            {profils?.map((profil) => (
-              <option key={profil.id} value={profil.id}>
-                {profil.nom || "Utilisateur"} — {profil.role || "member"}
+              <option value="">
+                Non assigné
               </option>
-            ))}
-          </select>
-        </div>
 
-        <div className="flex items-center justify-between pt-4">
-  <form action={deleteTache}>
-    <button
-      type="submit"
-      className="rounded-xl border border-red-500 bg-red-500/10 px-5 py-3 text-red-300 hover:bg-red-500/20"
-      onClick={(e) => {
-        if (!confirm("Supprimer définitivement cette tâche ?")) {
-          e.preventDefault();
-        }
-      }}
-    >
-      Supprimer
-    </button>
-  </form>
+              {profils?.map((profil) => (
+                <option
+                  key={profil.id}
+                  value={profil.id}
+                >
+                  {profil.nom || "Utilisateur"} — {profil.role || "member"}
+                </option>
+              ))}
 
-  <div className="flex items-center gap-4">
-    <Link
-      href={`/taches/${id}`}
-      className="rounded-xl border border-zinc-700 px-5 py-3 text-zinc-300 hover:bg-zinc-800"
-    >
-      Annuler
-    </Link>
+            </select>
+          </div>
 
-    <button
-      type="submit"
-      className="rounded-xl bg-white px-5 py-3 font-medium text-black hover:bg-zinc-200"
-    >
-      Enregistrer
-    </button>
-  </div>
-</div>
-      </form>
+
+          <div className="flex justify-end gap-4 pt-4">
+
+            <Link
+              href={`/taches/${id}`}
+              className="rounded-xl border border-zinc-700 px-5 py-3 text-zinc-300 hover:bg-zinc-800"
+            >
+              Annuler
+            </Link>
+
+
+            <button
+              type="submit"
+              className="rounded-xl bg-white px-5 py-3 font-medium text-black hover:bg-zinc-200"
+            >
+              Enregistrer
+            </button>
+
+          </div>
+
+        </form>
+
+
+        <form action={deleteTache}>
+
+          <button
+            type="submit"
+            className="rounded-xl border border-red-500 bg-red-500/10 px-5 py-3 text-red-300 hover:bg-red-500/20"
+          >
+            Supprimer définitivement
+          </button>
+
+        </form>
+
+      </div>
+
     </main>
   );
 }
