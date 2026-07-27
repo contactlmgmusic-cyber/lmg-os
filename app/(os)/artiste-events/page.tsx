@@ -6,22 +6,55 @@ import { ROLES } from "@/lib/roles";
 export const dynamic = "force-dynamic";
 
 export default async function ArtisteEventsPage() {
-  await requireRole([
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.MANAGER,
-  ]);
+ await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.ARTISTIC_DIRECTOR,
+  ROLES.MANAGER,
+]);
 
-  const { data: events } = await supabase
-    .from("artiste_events")
-    .select(`
-      *,
-      artistes (
-        id,
-        nom
-      )
-    `)
-    .order("date_event", { ascending: true });
+  const {
+  data: {
+    user,
+  },
+} = await supabase.auth.getUser();
+
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("id, role")
+  .eq("id", user?.id)
+  .single();
+
+let query = supabase
+  .from("artiste_events")
+  .select(`
+    *,
+    artistes (
+      id,
+      nom
+    )
+  `);
+
+if (profile?.role === ROLES.MANAGER) {
+  const { data: artistes } = await supabase
+    .from("artistes")
+    .select("id")
+    .eq("manager_id", profile.id);
+
+  const artisteIds = (artistes ?? []).map((a) => a.id);
+
+  query = query.in(
+    "artiste_id",
+    artisteIds.length
+      ? artisteIds
+      : ["00000000-0000-0000-0000-000000000000"]
+  );
+}
+
+const { data: events } = await query.order(
+  "date_event",
+  { ascending: true }
+);
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
