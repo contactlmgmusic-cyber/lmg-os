@@ -8,17 +8,15 @@ export const dynamic = "force-dynamic";
 export default async function ModifierTachePage({
   params,
 }: {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = params;
+  const { id } = await params;
 
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
     {
       cookies: {
         getAll() {
@@ -29,7 +27,7 @@ export default async function ModifierTachePage({
     }
   );
 
-  const { data: tache } = await supabase
+  const { data: tache, error } = await supabase
     .from("taches")
     .select("*")
     .eq("id", id)
@@ -39,6 +37,16 @@ export default async function ModifierTachePage({
     .from("profiles")
     .select("id, nom, role")
     .order("nom", { ascending: true });
+
+  if (error || !tache) {
+    return (
+      <main className="min-h-screen bg-black p-10 text-white">
+        <p className="text-red-400">
+          Tâche introuvable.
+        </p>
+      </main>
+    );
+  }
 
 
   if (!tache) {
