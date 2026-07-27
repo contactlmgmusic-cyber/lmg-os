@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import { ROLES } from "@/lib/roles";
 
 const templates: Record<string, any[]> = {
   Single: [
@@ -72,12 +74,75 @@ function getTemplate(type?: string) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const sortieId = body.sortieId;
+    const cookieStore = await cookies();
 
-    if (!sortieId) {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                cookieStore.set(name, value, options);
+              });
+            } catch {
+              // L’écriture des cookies peut être indisponible
+              // dans certains contextes serveur.
+            }
+          },
+        },
+      }
+    );
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
       return NextResponse.json(
-        { error: "sortieId manquant." },
+        { error: "Non authentifié." },
+        { status: 401 }
+      );
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, role")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError || !profile) {
+      return NextResponse.json(
+        { error: "Profil introuvable." },
+        { status: 403 }
+      );
+    }
+
+    const allowedRoles = [
+      ROLES.SUPER_ADMIN,
+      ROLES.ADMIN,
+      ROLES.ARTISTIC_DIRECTOR,
+      ROLES.MANAGER,
+    ];
+
+    if (!allowedRoles.includes(profile.role)) {
+      return NextResponse.json(
+        { error: "Accès refusé." },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json().catch(() => null);
+    const sortieId = body?.sortieId;
+
+    if (typeof sortieId !== "string" || !sortieId.trim()) {
+      return NextResponse.json(
+        { error: "sortieId manquant ou invalide." },
         { status: 400 }
       );
     }
@@ -85,7 +150,7 @@ export async function POST(request: Request) {
     const { data: sortie, error: sortieError } = await supabase
       .from("sorties")
       .select("id, titre, type, date_sortie, projet_id")
-      .eq("id", sortieId)
+      .eq("id", sortieId.trim())
       .single();
 
     if (sortieError || !sortie) {
@@ -95,6 +160,42 @@ export async function POST(request: Request) {
       );
     }
 
+    if (profile.role === ROLES.MANAGER) {
+      if (!sortie.projet_id) {
+        return NextResponse.json(
+          { error: "Cette sortie n’est associée à aucun projet autorisé." },
+          { status: 403 }
+        );
+      }
+
+      const { data: projet } = await supabase
+        .from("projets")
+        .select("artiste_id")
+        .eq("id", sortie.projet_id)
+        .single();
+
+      if (!projet?.artiste_id) {
+        return NextResponse.json(
+          { error: "Projet ou artiste introuvable." },
+          { status: 403 }
+        );
+      }
+
+      const { data: artiste } = await supabase
+        .from("artistes")
+        .select("id")
+        .eq("id", projet.artiste_id)
+        .eq("manager_id", profile.id)
+        .maybeSingle();
+
+      if (!artiste) {
+        return NextResponse.json(
+          { error: "Vous n’êtes pas autorisé à gérer cette sortie." },
+          { status: 403 }
+        );
+      }
+    }
+
     if (!sortie.date_sortie) {
       return NextResponse.json(
         { error: "Date de sortie manquante." },
@@ -102,12 +203,42 @@ export async function POST(request: Request) {
       );
     }
 
+    const { count: existingTasks, error: countError } = await supabase
+      .from("release_tasks")
+      .select("id", { count: "exact", head: true })
+      .eq("sortie_id", sortie.id);
+
+    if (countError) {
+      return NextResponse.json(
+        { error: "Impossible de vérifier la checklist existante." },
+        { status: 500 }
+      );
+    }
+
+    if ((existingTasks || 0) > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Une checklist existe déjà pour cette sortie. Supprime-la ou régénère-la depuis le Release Planner.",
+        },
+        { status: 409 }
+      );
+    }
+
+    const releaseDate = new Date(`${sortie.date_sortie}T12:00:00`);
+
+    if (Number.isNaN(releaseDate.getTime())) {
+      return NextResponse.json(
+        { error: "Date de sortie invalide." },
+        { status: 400 }
+      );
+    }
+
     const selectedTemplate = getTemplate(sortie.type);
-    const releaseDate = new Date(sortie.date_sortie);
 
     const rows = selectedTemplate.map((task) => {
       const datePrevue = new Date(releaseDate);
-      datePrevue.setDate(releaseDate.getDate() - task.jours_avant);
+      datePrevue.setDate(datePrevue.getDate() - task.jours_avant);
 
       return {
         sortie_id: sortie.id,
@@ -119,26 +250,6 @@ export async function POST(request: Request) {
         date_prevue: datePrevue.toISOString().split("T")[0],
       };
     });
-
-    await supabase
-  .from("release_tasks")
-  .delete()
-  .eq("sortie_id", sortie.id);
-
-  const { count: existingTasks } = await supabase
-  .from("release_tasks")
-  .select("*", { count: "exact", head: true })
-  .eq("sortie_id", sortie.id);
-
-if ((existingTasks || 0) > 0) {
-  return NextResponse.json(
-    {
-      error:
-        "Une checklist existe déjà pour cette sortie. Supprime-la ou régénère-la depuis le Release Planner.",
-    },
-    { status: 409 }
-  );
-}
 
     const { error: insertError } = await supabase
       .from("release_tasks")
@@ -157,6 +268,8 @@ if ((existingTasks || 0) > 0) {
       count: rows.length,
     });
   } catch (error) {
+    console.error("Checklist API error:", error);
+
     return NextResponse.json(
       { error: "Erreur génération checklist." },
       { status: 500 }
