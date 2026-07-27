@@ -42,10 +42,11 @@ export default function ModifierEvenementArtistePage() {
         .single();
 
       if (
-        profile?.role !== ROLES.SUPER_ADMIN &&
-        profile?.role !== ROLES.ADMIN &&
-        profile?.role !== ROLES.MANAGER
-      ) {
+  profile?.role !== ROLES.SUPER_ADMIN &&
+  profile?.role !== ROLES.ADMIN &&
+  profile?.role !== ROLES.ARTISTIC_DIRECTOR &&
+  profile?.role !== ROLES.MANAGER
+) {
         window.location.href = "/";
         return;
       }
@@ -62,10 +63,31 @@ export default function ModifierEvenementArtistePage() {
         return;
       }
 
-      const { data: artistesData } = await supabaseBrowser
-        .from("artistes")
-        .select("id, nom")
-        .order("nom");
+if (profile?.role === ROLES.MANAGER) {
+  const { data: artiste } = await supabaseBrowser
+    .from("artistes")
+    .select("id")
+    .eq("id", event.artiste_id)
+    .eq("manager_id", user.id)
+    .maybeSingle();
+
+  if (!artiste) {
+    alert("Accès refusé.");
+    router.push("/artiste-events");
+    return;
+  }
+}
+
+      let query = supabaseBrowser
+  .from("artistes")
+  .select("id, nom")
+  .order("nom");
+
+if (profile?.role === ROLES.MANAGER) {
+  query = query.eq("manager_id", user.id);
+}
+
+const { data: artistesData } = await query;
 
       setArtistes(artistesData || []);
       setArtisteId(event.artiste_id || "");
@@ -91,6 +113,31 @@ export default function ModifierEvenementArtistePage() {
     }
 
     setSaving(true);
+
+const {
+  data: { user },
+} = await supabaseBrowser.auth.getUser();
+
+const { data: profile } = await supabaseBrowser
+  .from("profiles")
+  .select("id, role")
+  .eq("id", user?.id)
+  .single();
+
+if (profile?.role === ROLES.MANAGER) {
+  const { data: artiste } = await supabaseBrowser
+    .from("artistes")
+    .select("id")
+    .eq("id", artisteId)
+    .eq("manager_id", profile.id)
+    .maybeSingle();
+
+  if (!artiste) {
+    alert("Vous ne pouvez modifier que les événements de vos artistes.");
+    setSaving(false);
+    return;
+  }
+}
 
     const { error } = await supabaseBrowser
       .from("artiste_events")
@@ -228,7 +275,8 @@ export default function ModifierEvenementArtistePage() {
 
         <div className="flex flex-col gap-4 md:flex-row">
           <button
-            disabled={saving}
+  type="submit"
+  disabled={saving}
             className="flex-1 rounded-xl bg-white px-5 py-4 font-semibold text-black disabled:opacity-50"
           >
             {saving ? "Enregistrement..." : "Enregistrer"}
