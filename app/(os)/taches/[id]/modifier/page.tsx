@@ -16,7 +16,13 @@ async function getSupabase() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll() {},
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          } catch {}
+        },
       },
     }
   );
@@ -32,6 +38,12 @@ export default async function ModifierTachePage({
   const { id } = params;
 
   const supabase = await getSupabase();
+
+  const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+console.log("USER CONNECTE :", user?.id);
 
   const { data: tache, error: tacheError } = await supabase
     .from("taches")
