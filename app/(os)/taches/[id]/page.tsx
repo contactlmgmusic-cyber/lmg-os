@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import ChecklistEditor from "@/components/ChecklistEditor";
 import TaskComments from "@/components/TaskComments";
@@ -53,6 +54,32 @@ export default async function TacheDetailPage({
       </main>
     );
   }
+
+  async function deleteTache() {
+  "use server";
+
+  const cookieStore = await cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll() {},
+      },
+    }
+  );
+
+  await supabase
+    .from("taches")
+    .delete()
+    .eq("id", id);
+
+  redirect("/taches");
+}
 
   const { data: comments } = await supabase
   .from("task_comments")
@@ -114,17 +141,39 @@ export default async function TacheDetailPage({
   return (
     <main className="min-h-screen bg-black p-10 text-white">
       <div className="mb-10 flex items-center justify-between">
-        <Link href="/taches" className="text-zinc-400 hover:text-white">
-          ← Retour aux tâches
-        </Link>
 
-        <Link
-          href={`/taches/${tache.id}/modifier`}
-          className="rounded-xl bg-white px-5 py-3 font-medium text-black transition hover:bg-zinc-200"
-        >
-          Modifier
-        </Link>
-      </div>
+  <Link 
+    href="/taches" 
+    className="text-zinc-400 hover:text-white"
+  >
+    ← Retour aux tâches
+  </Link>
+
+
+  <div className="flex gap-3">
+
+    <Link
+      href={`/taches/${tache.id}/modifier`}
+      className="rounded-xl bg-white px-5 py-3 font-medium text-black transition hover:bg-zinc-200"
+    >
+      Modifier
+    </Link>
+
+
+    <form action={deleteTache}>
+
+      <button
+        type="submit"
+        className="rounded-xl border border-red-500 bg-red-500/10 px-5 py-3 font-medium text-red-300 transition hover:bg-red-500/20"
+      >
+        Supprimer
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
 
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
         <section className="xl:col-span-2 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
