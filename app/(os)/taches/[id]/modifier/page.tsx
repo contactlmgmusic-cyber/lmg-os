@@ -85,6 +85,32 @@ export default async function ModifierTachePage({
     redirect(`/taches/${id}`);
   }
 
+  async function deleteTache() {
+  "use server";
+
+  const cookieStore = await cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll() {},
+      },
+    }
+  );
+
+  await supabase
+    .from("taches")
+    .delete()
+    .eq("id", id);
+
+  redirect("/taches");
+}
+
   return (
     <main className="min-h-screen bg-black p-10 text-white">
       <div className="mb-10">
@@ -178,21 +204,37 @@ export default async function ModifierTachePage({
           </select>
         </div>
 
-        <div className="flex items-center justify-end gap-4 pt-4">
-          <Link
-            href={`/taches/${id}`}
-            className="rounded-xl border border-zinc-700 px-5 py-3 text-zinc-300 hover:bg-zinc-800"
-          >
-            Annuler
-          </Link>
+        <div className="flex items-center justify-between pt-4">
+  <form action={deleteTache}>
+    <button
+      type="submit"
+      className="rounded-xl border border-red-500 bg-red-500/10 px-5 py-3 text-red-300 hover:bg-red-500/20"
+      onClick={(e) => {
+        if (!confirm("Supprimer définitivement cette tâche ?")) {
+          e.preventDefault();
+        }
+      }}
+    >
+      Supprimer
+    </button>
+  </form>
 
-          <button
-            type="submit"
-            className="rounded-xl bg-white px-5 py-3 font-medium text-black hover:bg-zinc-200"
-          >
-            Enregistrer
-          </button>
-        </div>
+  <div className="flex items-center gap-4">
+    <Link
+      href={`/taches/${id}`}
+      className="rounded-xl border border-zinc-700 px-5 py-3 text-zinc-300 hover:bg-zinc-800"
+    >
+      Annuler
+    </Link>
+
+    <button
+      type="submit"
+      className="rounded-xl bg-white px-5 py-3 font-medium text-black hover:bg-zinc-200"
+    >
+      Enregistrer
+    </button>
+  </div>
+</div>
       </form>
     </main>
   );
