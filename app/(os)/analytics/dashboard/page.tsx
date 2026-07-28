@@ -57,12 +57,17 @@ const supabase = createServerClient(
   .order("date_snapshot", { ascending: false });
 
 if (analyticsError) {
-  console.error(
-    "Erreur lors du chargement des analytics :",
-    analyticsError
-  );
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <h1 className="text-3xl font-bold text-red-400">
+        Erreur Analytics
+      </h1>
 
-  throw new Error("Impossible de charger les données analytics.");
+      <pre className="mt-5 rounded-xl bg-zinc-900 p-5 text-sm text-white">
+        {JSON.stringify(analyticsError, null, 2)}
+      </pre>
+    </main>
+  );
 }
 
 const rows = analytics ?? [];
