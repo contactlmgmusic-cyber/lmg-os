@@ -164,10 +164,6 @@ export default function Sidebar() {
     { href: "/assistant/chat", label: "Assistant IA central" },
     { href: "/assistant/rollout", label: "Générer un rollout" },
     { href: "/assistant/tiktok", label: "Stratégie TikTok" },
-    { href: "/assistant/bio", label: "Bio artiste" },
-    { href: "/assistant/booking", label: "Pitch booking" },
-    { href: "/assistant/communique", label: "Communiqué presse" },
-    { href: "/assistant/epk", label: "EPK" },
   ],
 },
     {
