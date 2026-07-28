@@ -216,7 +216,7 @@ const rows = analytics ?? [];
       data={rows}
     />
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <section className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <Ranking title="Top artistes streams" rows={topArtistesStreams} valueKey="streams" type="number" />
         <Ranking title="Top artistes revenus" rows={topArtistesRevenus} valueKey="revenus" type="euro" />
         <Ranking title="Top sorties streams" rows={topSortiesStreams} valueKey="streams" type="number" labelKey="titre" />
