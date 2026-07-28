@@ -252,10 +252,7 @@ const royaltiesAPayer =
   ) || 0;
 
 const totalFollowersAnalytics =
-  analytics?.reduce(
-    (acc: number, item: any) => acc + Number(item.followers || 0),
-    0
-  ) || 0;
+  analytics?.[0]?.followers || 0;
 
 const totalVuesAnalytics =
   analytics?.reduce(
@@ -270,6 +267,44 @@ const totalRevenusAnalytics =
   ) || 0;
 
 const dernierSnapshotAnalytics = analytics?.[0];
+
+const snapshot30Jours = analytics?.filter((item: any) => {
+  if (!item.date_snapshot) return false;
+
+  const date = new Date(item.date_snapshot);
+  const limite = new Date();
+
+  limite.setDate(limite.getDate() - 30);
+
+  return date >= limite;
+}) || [];
+
+
+const premierSnapshot30Jours =
+  snapshot30Jours[snapshot30Jours.length - 1];
+
+const dernierSnapshot30Jours =
+  snapshot30Jours[0];
+
+
+const evolutionStreams30J =
+  Number(dernierSnapshot30Jours?.streams || 0) -
+  Number(premierSnapshot30Jours?.streams || 0);
+
+
+const evolutionFollowers30J =
+  Number(dernierSnapshot30Jours?.followers || 0) -
+  Number(premierSnapshot30Jours?.followers || 0);
+
+
+const evolutionVues30J =
+  Number(dernierSnapshot30Jours?.vues || 0) -
+  Number(premierSnapshot30Jours?.vues || 0);
+
+
+const evolutionRevenus30J =
+  Number(dernierSnapshot30Jours?.revenus || 0) -
+  Number(premierSnapshot30Jours?.revenus || 0);
 
 const artistPerformanceScore = Math.min(
   100,
@@ -519,6 +554,68 @@ const revenusParProjet = projets
             {dernierSnapshotAnalytics?.date_snapshot || "Aucun"}
           </p>
         </div>
+
+        <section className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="text-3xl font-bold">
+    Évolution 30 jours
+  </h2>
+
+  <p className="mt-2 text-zinc-500">
+    Progression basée sur les derniers snapshots analytics.
+  </p>
+
+
+  <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+
+    <div className="rounded-2xl bg-black p-5">
+      <p className="text-sm text-zinc-500">
+        Streams
+      </p>
+
+      <p className="mt-2 text-2xl font-bold">
+        {evolutionStreams30J > 0 ? "+" : ""}
+        {evolutionStreams30J.toLocaleString("fr-FR")}
+      </p>
+    </div>
+
+
+    <div className="rounded-2xl bg-black p-5">
+      <p className="text-sm text-zinc-500">
+        Followers
+      </p>
+
+      <p className="mt-2 text-2xl font-bold">
+        {evolutionFollowers30J > 0 ? "+" : ""}
+        {evolutionFollowers30J.toLocaleString("fr-FR")}
+      </p>
+    </div>
+
+
+    <div className="rounded-2xl bg-black p-5">
+      <p className="text-sm text-zinc-500">
+        Vues
+      </p>
+
+      <p className="mt-2 text-2xl font-bold">
+        {evolutionVues30J > 0 ? "+" : ""}
+        {evolutionVues30J.toLocaleString("fr-FR")}
+      </p>
+    </div>
+
+
+    <div className="rounded-2xl bg-black p-5">
+      <p className="text-sm text-zinc-500">
+        Revenus
+      </p>
+
+      <p className="mt-2 text-2xl font-bold">
+        {evolutionRevenus30J > 0 ? "+" : ""}
+        {evolutionRevenus30J.toFixed(2)} €
+      </p>
+    </div>
+
+  </div>
+</section>
 
       </div>
     </div>
