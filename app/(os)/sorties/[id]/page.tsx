@@ -2,6 +2,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
+import SortieAnalyticsChart from "@/components/SortieAnalyticsChart";
 
 export const dynamic = "force-dynamic";
 
@@ -184,6 +185,12 @@ const dernierSnapshot = analytics?.[0];
   }
 />
 </div>
+
+{analytics && analytics.length > 1 && (
+  <SortieAnalyticsChart
+    data={analytics}
+  />
+)}
 
 <div className="mt-8 rounded-2xl border border-zinc-800 bg-black p-6">
   <div className="flex items-center justify-between gap-4">
