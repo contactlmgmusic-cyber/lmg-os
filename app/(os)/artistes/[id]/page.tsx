@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
 import { ROLES } from "@/lib/roles";
+import ArtistAnalyticsChart from "@/components/ArtistAnalyticsChart";
 
 export const dynamic = "force-dynamic";
 
@@ -662,6 +663,12 @@ const revenusParProjet = projets
     </div>
 
   </section>
+)}
+
+{canViewInternalArtistData && (
+  <ArtistAnalyticsChart
+    data={analytics || []}
+  />
 )}
 
   {/* FINANCES */}
