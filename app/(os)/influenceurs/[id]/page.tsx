@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import { requireRole } from "@/lib/require-role.server";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,21 @@ export default async function InfluenceurDetailPage({
   const { id } = await params;
 
   await requireRole(["super_admin", "admin", "manager"]);
+
+  const cookieStore = await cookies();
+
+const supabase = createServerClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+  {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll() {},
+    },
+  }
+);
 
   const { data: influenceur, error } = await supabase
     .from("influenceurs")
