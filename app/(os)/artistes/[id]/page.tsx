@@ -373,7 +373,10 @@ const revenusParProjet = projets
 
   return (
     <main className="text-white">
-      <div className="relative h-[460px] overflow-hidden">
+      <section className="mb-8 overflow-hidden rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-black p-8">
+  <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex items-center gap-6">
+      <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-3xl border border-zinc-700 bg-zinc-800">
         {artiste.photo_url ? (
           <img
             src={artiste.photo_url}
@@ -381,66 +384,88 @@ const revenusParProjet = projets
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-500">
-            Aucun visuel
-          </div>
+          <span className="text-5xl font-bold">
+            {artiste.nom?.charAt(0)}
+          </span>
         )}
+      </div>
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/20" />
+      <div>
+        <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
+          Artiste
+        </p>
 
-        <div className="absolute bottom-10 left-10 right-10">
-          <Link
-            href="/artistes"
-            className="mb-5 block text-sm text-zinc-300 hover:text-white"
-          >
-            ← Retour aux artistes
-          </Link>
+        <h1 className="mt-2 text-5xl font-bold">
+          {artiste.nom}
+        </h1>
 
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-400">
-            Profil artiste premium
-          </p>
+        <p className="mt-3 text-lg text-zinc-400">
+          {artiste.style || "Style non renseigné"}
+        </p>
 
-          <h1 className="text-6xl font-bold">{artiste.nom}</h1>
+        <div className="mt-5 flex flex-wrap gap-3">
 
-          <p className="mt-3 text-xl text-zinc-300">
-            {artiste.style || "Style non renseigné"}
-          </p>
+          <span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-sm font-medium text-yellow-300">
+            ⭐ {artistLevel}
+          </span>
 
-          {canViewInternalArtistData && (
-  <div className="mt-4 inline-flex items-center gap-3 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-5 py-3 text-yellow-300">
-    <span>🏆</span>
+          <span className="rounded-full border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm">
+            Score {artistPerformanceScore}/100
+          </span>
 
-    <span className="font-semibold">
-      {artistLevel}
-    </span>
+          <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            {releasedProjects.length} sorties
+          </span>
 
-    <span className="text-sm text-yellow-200/70">
-      {artistPerformanceScore}/100
-    </span>
-  </div>
-)}
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href={`/chat?channel=${artistChannelSlug}`}
-              className="rounded-xl bg-white px-5 py-3 font-semibold text-black hover:bg-zinc-200"
-            >
-              Ouvrir le channel artiste
-            </Link>
-
-            {!isArtistUser && (
-              <Link
-                href={`/artistes/${artiste.id}/modifier`}
-                className="rounded-xl border border-zinc-700 px-5 py-3 text-zinc-300 hover:bg-zinc-800 hover:text-white"
-              >
-                Modifier artiste
-              </Link>
-
-              
-            )}
-          </div>
         </div>
       </div>
+    </div>
+
+    <div className="grid grid-cols-2 gap-4 lg:w-[420px]">
+
+      <div className="rounded-2xl bg-zinc-900 p-5">
+        <p className="text-sm text-zinc-500">
+          Streams
+        </p>
+
+        <p className="mt-2 text-3xl font-bold">
+          {totalStreamsAnalytics.toLocaleString("fr-FR")}
+        </p>
+      </div>
+
+      <div className="rounded-2xl bg-zinc-900 p-5">
+        <p className="text-sm text-zinc-500">
+          Followers
+        </p>
+
+        <p className="mt-2 text-3xl font-bold">
+          {totalFollowersAnalytics.toLocaleString("fr-FR")}
+        </p>
+      </div>
+
+      <div className="rounded-2xl bg-zinc-900 p-5">
+        <p className="text-sm text-zinc-500">
+          Revenus
+        </p>
+
+        <p className="mt-2 text-3xl font-bold">
+          {totalRevenusAnalytics.toLocaleString("fr-FR")} €
+        </p>
+      </div>
+
+      <div className="rounded-2xl bg-zinc-900 p-5">
+        <p className="text-sm text-zinc-500">
+          Projets
+        </p>
+
+        <p className="mt-2 text-3xl font-bold">
+          {projets?.length || 0}
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
 
       <section className="p-10">
 
@@ -620,6 +645,24 @@ const revenusParProjet = projets
       </div>
     </div>
   )}
+
+{/* PERFORMANCE ARTISTE */}
+
+{canViewInternalArtistData && (
+  <section className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+
+    <h2 className="mb-6 text-3xl font-bold">
+      Performance artiste
+    </h2>
+
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+      ...
+      
+    </div>
+
+  </section>
+)}
 
   {/* FINANCES */}
   {canViewInternalArtistData && (
