@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 import AnalyticsGlobalChart from "@/components/AnalyticsGlobalChart";
+import AnalyticsPeriodFilter from "@/components/AnalyticsPeriodFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,26 @@ function formatEuro(value: number) {
   return `${Number(value || 0).toFixed(2)} €`;
 }
 
-export default async function AnalyticsDashboardPage() {
+export default async function AnalyticsDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    period?: string;
+  }>;
+}) {
+  const { period } = await searchParams;
+
+const selectedPeriod = Number(period || 30);
+
+const periodLabel =
+  selectedPeriod === 7
+    ? "7 derniers jours"
+    : selectedPeriod === 30
+    ? "30 derniers jours"
+    : selectedPeriod === 90
+    ? "90 derniers jours"
+    : "12 derniers mois";
+
   await requireRole([
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
@@ -68,10 +88,85 @@ if (analyticsError) {
 
 const rows = analytics ?? [];
 
-  const totalStreams = rows.reduce((acc: number, row: any) => acc + Number(row.streams || 0), 0);
-  const totalFollowers = rows.reduce((acc: number, row: any) => acc + Number(row.followers || 0), 0);
-  const totalVues = rows.reduce((acc: number, row: any) => acc + Number(row.vues || 0), 0);
-  const totalRevenus = rows.reduce((acc: number, row: any) => acc + Number(row.revenus || 0), 0);
+const filteredRows = rows.filter((row: any) => {
+  if (!row.date_snapshot) return false;
+
+  const snapshotDate = new Date(row.date_snapshot);
+
+  const limitDate = new Date();
+  limitDate.setDate(
+    limitDate.getDate() - selectedPeriod
+  );
+
+  return snapshotDate >= limitDate;
+});
+
+  const totalStreams = filteredRows.reduce((acc: number, row: any) => acc + Number(row.streams || 0), 0);
+  const totalFollowers = filteredRows.reduce((acc: number, row: any) => acc + Number(row.followers || 0), 0);
+  const totalVues = filteredRows.reduce((acc: number, row: any) => acc + Number(row.vues || 0), 0);
+  const totalRevenus = filteredRows.reduce((acc: number, row: any) => acc + Number(row.revenus || 0), 0);
+
+  const previousDate = new Date();
+previousDate.setDate(previousDate.getDate() - 60);
+
+const previousRows = rows.filter((row: any) => {
+  if (!row.date_snapshot) return false;
+
+  const date = new Date(row.date_snapshot);
+
+  return date >= previousDate && date < date30;
+});
+
+
+const previousStreams = previousRows.reduce(
+  (acc: number, row: any) => acc + Number(row.streams || 0),
+  0
+);
+
+const previousFollowers = previousRows.reduce(
+  (acc: number, row: any) => acc + Number(row.followers || 0),
+  0
+);
+
+const previousVues = previousRows.reduce(
+  (acc: number, row: any) => acc + Number(row.vues || 0),
+  0
+);
+
+const previousRevenus = previousRows.reduce(
+  (acc: number, row: any) => acc + Number(row.revenus || 0),
+  0
+);
+
+
+function calculateGrowth(current:number, previous:number) {
+  if (!previous) return 0;
+
+  return Math.round(
+    ((current - previous) / previous) * 100
+  );
+}
+
+
+const streamsGrowth = calculateGrowth(
+  totalStreams,
+  previousStreams
+);
+
+const followersGrowth = calculateGrowth(
+  totalFollowers,
+  previousFollowers
+);
+
+const vuesGrowth = calculateGrowth(
+  totalVues,
+  previousVues
+);
+
+const revenusGrowth = calculateGrowth(
+  totalRevenus,
+  previousRevenus
+);
 
   const now = new Date();
   const date30 = new Date();
@@ -86,7 +181,7 @@ const rows = analytics ?? [];
 
   const artistesMap = new Map();
 
-  rows.forEach((row: any) => {
+  filteredRows.forEach((row: any) => {
     if (!row.artistes?.nom) return;
 
     const current = artistesMap.get(row.artistes.nom) || {
@@ -107,7 +202,7 @@ const rows = analytics ?? [];
 
   const sortiesMap = new Map();
 
-  rows.forEach((row: any) => {
+  filteredRows.forEach((row: any) => {
     if (!row.sorties?.titre) return;
 
     const current = sortiesMap.get(row.sorties.titre) || {
@@ -153,6 +248,50 @@ const rows = analytics ?? [];
     ? Math.round(totalStreams / rows.length)
     : 0;
 
+const insights = [];
+
+if (streamsGrowth > 0) {
+  insights.push({
+    type: "success",
+    text: `Les streams progressent de ${streamsGrowth}% sur la période sélectionnée.`,
+  });
+}
+
+if (revenusGrowth > 0) {
+  insights.push({
+    type: "success",
+    text: `Les revenus progressent de ${revenusGrowth}% sur la période sélectionnée.`,
+  });
+}
+
+if (revenusGrowth < 0) {
+  insights.push({
+    type: "warning",
+    text: `Les revenus reculent de ${Math.abs(revenusGrowth)}%.`,
+  });
+}
+
+if (followersGrowth <= 0) {
+  insights.push({
+    type: "warning",
+    text: "La croissance des followers est faible.",
+  });
+}
+
+if (bestArtist) {
+  insights.push({
+    type: "info",
+    text: `${bestArtist.nom} est actuellement l'artiste le plus performant.`,
+  });
+}
+
+if (bestRelease) {
+  insights.push({
+    type: "info",
+    text: `${bestRelease.titre} est actuellement la meilleure sortie.`,
+  });
+}
+
   return (
     <main className="min-h-screen bg-black p-10 text-white">
       <div className="mb-12 rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 via-black to-zinc-900 p-10">
@@ -172,6 +311,39 @@ const rows = analytics ?? [];
       <p className="mt-4 max-w-2xl text-lg text-zinc-400">
         Vue exécutive des performances artistes, sorties et revenus.
       </p>
+
+<div className="mt-6 space-y-3">
+  <AnalyticsPeriodFilter />
+
+  <p className="text-sm text-zinc-500">
+    Analyse sur les {periodLabel}
+  </p>
+</div>
+
+<section className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <h2 className="text-3xl font-bold">
+    Insights automatiques
+  </h2>
+
+  <div className="mt-6 space-y-4">
+
+    {insights.map((item, index) => (
+      <div
+        key={index}
+        className={`rounded-2xl p-5 ${
+          item.type === "success"
+            ? "border border-emerald-500/30 bg-emerald-500/10"
+            : item.type === "warning"
+            ? "border border-yellow-500/30 bg-yellow-500/10"
+            : "border border-blue-500/30 bg-blue-500/10"
+        }`}
+      >
+        <p>{item.text}</p>
+      </div>
+    ))}
+
+  </div>
+</section>
 
     </div>
 
@@ -204,12 +376,39 @@ const rows = analytics ?? [];
 </div>
 
       <section className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
-        <Kpi title="Streams" value={formatNumber(totalStreams)} />
-        <Kpi title="Followers" value={formatNumber(totalFollowers)} />
-        <Kpi title="Vues" value={formatNumber(totalVues)} />
-        <Kpi title="Revenus" value={formatEuro(totalRevenus)} />
-        <Kpi title="Snapshots 30j" value={formatNumber(snapshots30.length)} />
-        <Kpi title="Dernier snapshot" value={dernierSnapshot} />
+        <Kpi 
+  title="Streams"
+  value={formatNumber(totalStreams)}
+  growth={streamsGrowth}
+/>
+
+<Kpi 
+  title="Followers"
+  value={formatNumber(totalFollowers)}
+  growth={followersGrowth}
+/>
+
+<Kpi 
+  title="Vues"
+  value={formatNumber(totalVues)}
+  growth={vuesGrowth}
+/>
+
+<Kpi 
+  title="Revenus"
+  value={formatEuro(totalRevenus)}
+  growth={revenusGrowth}
+/>
+
+<Kpi 
+  title="Snapshots 30j"
+  value={formatNumber(snapshots30.length)}
+/>
+
+<Kpi 
+  title="Dernier snapshot"
+  value={dernierSnapshot}
+/>
       </section>
 
       <AnalyticsGlobalChart
@@ -282,21 +481,37 @@ const rows = analytics ?? [];
 function Kpi({
   title,
   value,
+  growth,
 }: {
-  title: string;
-  value: string;
+  title:string;
+  value:string;
+  growth?:number;
 }) {
-
   return (
-    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6 transition hover:border-zinc-600">
+    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
 
-      <p className="text-sm uppercase tracking-wide text-zinc-500">
+      <p className="text-sm text-zinc-500">
         {title}
       </p>
 
-      <p className="mt-4 text-4xl font-black">
+      <p className="mt-3 text-2xl font-bold">
         {value}
       </p>
+
+      {growth !== undefined && (
+        <p
+          className={`mt-3 text-sm ${
+            growth >= 0
+              ? "text-emerald-400"
+              : "text-red-400"
+          }`}
+        >
+          {growth >= 0 ? "↗" : "↘"} {Math.abs(growth)}%
+          <span className="ml-1 text-zinc-500">
+            vs période précédente
+          </span>
+        </p>
+      )}
 
     </div>
   );
