@@ -624,223 +624,443 @@ const healthTone =
 
   return (
   <main className="min-h-screen bg-black p-10 text-white">
+
+    {/* HEADER */}
+
     <div className="mb-10">
-      <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+      <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
         Legacy Music Group
       </p>
 
-      <h1 className="text-6xl font-bold">Executive P & DG</h1>
+      <h1 className="mt-3 text-6xl font-bold">
+        Executive Dashboard
+      </h1>
 
-      <p className="mt-3 text-zinc-400">
-        Vue globale du label : business, finance, sorties, contrats et opérations.
+      <p className="mt-3 max-w-2xl text-zinc-400">
+        Vue stratégique du label : performance artistique, business,
+        finance et opérations.
       </p>
     </div>
 
-    <section className={`mb-10 rounded-3xl border p-8 ${healthTone}`}>
-      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+
+    {/* EXECUTIVE OVERVIEW */}
+
+    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+
         <div>
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] opacity-70">
-            LMG Health Score
+
+          <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
+            LMG Executive Score
           </p>
 
-          <h2 className="text-5xl font-bold">{healthScore} / 100</h2>
+          <h2 className="mt-3 text-6xl font-bold">
+            {stats.lmgGlobalScore}
+            <span className="text-3xl text-zinc-500">
+              /100
+            </span>
+          </h2>
 
-          <p className="mt-3 text-xl font-semibold">{healthLabel}</p>
+          <p className="mt-3 text-lg text-zinc-400">
+            Performance globale du label
+          </p>
+
         </div>
 
-        <div className="w-full md:w-80">
-          <div className="h-4 overflow-hidden rounded-full bg-black/40">
+
+        <div className="w-full lg:w-[420px]">
+
+          <div className="h-4 overflow-hidden rounded-full bg-black">
+
             <div
-              className="h-full rounded-full bg-current transition-all"
-              style={{ width: `${healthScore}%` }}
+              className="h-full rounded-full bg-white transition-all"
+              style={{
+                width: `${stats.lmgGlobalScore}%`,
+              }}
             />
+
           </div>
 
-          <p className="mt-3 text-sm opacity-80">
-            Score calculé selon les tâches en retard, contrats à signer,
-            royalties dues, sorties urgentes et relances médias.
-          </p>
+
+          <div className="mt-6 grid grid-cols-2 gap-4">
+
+            <MiniStat
+              label="Managers"
+              value={stats.managersActifs}
+            />
+
+            <MiniStat
+              label="Artistes"
+              value={stats.artistes}
+            />
+
+            <MiniStat
+              label="Validations"
+              value={
+                stats.validationsArtisteEnAttente +
+                stats.validationsContratsEnAttente
+              }
+            />
+
+            <MiniStat
+              label="Sorties"
+              value={stats.sortiesMois}
+            />
+
+          </div>
+
         </div>
+
       </div>
+
     </section>
 
-    <section className="mb-10 rounded-3xl border border-cyan-500/30 bg-cyan-500/10 p-8 text-cyan-200">
-  <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-    <div>
-      <p className="mb-2 text-sm uppercase tracking-[0.3em] text-cyan-300">
-        LMG Global Score
-      </p>
 
-      <h2 className="text-5xl font-bold">
-        {stats.lmgGlobalScore} / 100
-      </h2>
+    {/* FINANCE KPI */}
 
-      <p className="mt-3 text-sm text-cyan-100/80">
-        Score global basé sur analytics, revenus, bookings, sorties, contrats,
-        tâches et validations en attente.
-      </p>
-    </div>
+    <section className="mb-10">
 
-    <div className="w-full md:w-80">
-      <div className="h-4 overflow-hidden rounded-full bg-black/40">
-        <div
-          className="h-full rounded-full bg-cyan-300 transition-all"
-          style={{ width: `${stats.lmgGlobalScore}%` }}
-        />
+      <div className="mb-5">
+
+        <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
+          Performance financière
+        </p>
+
+        <h2 className="mt-2 text-3xl font-bold">
+          Business Overview
+        </h2>
+
       </div>
-    </div>
+
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+
+
+        <KpiCard
+          label="CA du mois"
+          value={`${stats.revenusMois.toFixed(2)} €`}
+          tone="green"
+        />
+
+
+        <KpiCard
+          label="Dépenses"
+          value={`${stats.depensesMois.toFixed(2)} €`}
+          tone="red"
+        />
+
+
+        <KpiCard
+          label="Résultat"
+          value={`${stats.resultatMois.toFixed(2)} €`}
+          tone={
+            stats.resultatMois >= 0
+              ? "green"
+              : "red"
+          }
+        />
+
+
+      </div>
+
+    </section>
+
+  
+    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+
+  <div className="mb-6">
+    <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
+      Priorités opérationnelles
+    </p>
+
+    <h2 className="mt-2 text-3xl font-bold">
+      À traiter maintenant
+    </h2>
   </div>
 
-  <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-4">
-    <MiniStat label="Managers actifs" value={stats.managersActifs} />
-    <MiniStat label="Artistes actifs" value={stats.artistes} />
-    <MiniStat label="Validations artistes" value={stats.validationsArtisteEnAttente} />
-    <MiniStat label="Validations contrats" value={stats.validationsContratsEnAttente} />
+
+  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5">
+
+    <AlertCard
+      label="Tâches en retard"
+      value={lateTasks.length}
+      href="/taches"
+      danger={lateTasks.length > 0}
+    />
+
+    <AlertCard
+      label="Contrats à signer"
+      value={stats.contratsASigner}
+      href="/contrats"
+      danger={stats.contratsASigner > 0}
+    />
+
+    <AlertCard
+      label="Sorties J-7"
+      value={urgentReleases.length}
+      href="/projets"
+      danger={urgentReleases.length > 0}
+    />
+
+    <AlertCard
+      label="Royalties dues"
+      value={Math.round(stats.royaltiesDues)}
+      href="/royalties"
+      danger={stats.royaltiesDues > 0}
+    />
+
+    <AlertCard
+      label="Relances médias"
+      value={stats.mediasRelanceAujourdhui}
+      href="/medias/dashboard"
+      danger={stats.mediasRelanceAujourdhui > 0}
+    />
+
   </div>
+
 </section>
 
     <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-      <div className="mb-6">
-        <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-          Alertes critiques
-        </p>
 
-        <h2 className="text-3xl font-bold">À traiter maintenant</h2>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <AlertCard label="Tâches en retard" value={lateTasks.length} href="/taches" danger={lateTasks.length > 0} />
-        <AlertCard label="Contrats à signer" value={stats.contratsASigner} href="/contrats" danger={stats.contratsASigner > 0} />
-        <AlertCard label="Sorties J-7" value={urgentReleases.length} href="/projets" danger={urgentReleases.length > 0} />
-        <AlertCard label="Royalties à payer" value={Math.round(stats.royaltiesDues)} href="/royalties" danger={stats.royaltiesDues > 0} />
-        <AlertCard label="Relances médias" value={stats.mediasRelanceAujourdhui} href="/medias/dashboard" danger={stats.mediasRelanceAujourdhui > 0} />
-      </div>
-    </section>
-
-    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
   <div className="mb-6 flex items-center justify-between">
+
     <div>
-      <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-        Release Planner
+      <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
+        Releases
       </p>
 
-      <h2 className="text-3xl font-bold">Suivi des sorties</h2>
+      <h2 className="mt-2 text-3xl font-bold">
+        Release Performance
+      </h2>
     </div>
 
-    <Link href="/release-planner" className="text-sm text-zinc-400 hover:text-white">
+
+    <Link
+      href="/release-planner"
+      className="text-sm text-zinc-400 hover:text-white"
+    >
       Ouvrir →
     </Link>
+
   </div>
 
-  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-    <MiniStat label="Actions release" value={stats.releaseTasksTotal} />
-    <MiniStat label="Actions terminées" value={stats.releaseTasksDone} />
-    <MiniStat label="Progression moyenne" value={stats.releaseProgressMoyenne} />
+
+  <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+
+    <MiniStat
+      label="Actions release"
+      value={stats.releaseTasksTotal}
+    />
+
+    <MiniStat
+      label="Terminées"
+      value={stats.releaseTasksDone}
+    />
+
+    <MiniStat
+      label="Progression"
+      value={`${stats.releaseProgressMoyenne}%`}
+    />
+
   </div>
+
+</section>
+
+   <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+
+  <div className="mb-6 flex items-center justify-between">
+
+    <div>
+      <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
+        Pipeline artistes
+      </p>
+
+      <h2 className="mt-2 text-3xl font-bold">
+        Candidatures
+      </h2>
+    </div>
+
+
+    <Link
+      href="/dashboard/candidatures"
+      className="text-sm text-zinc-400 hover:text-white"
+    >
+      Voir tout →
+    </Link>
+
+  </div>
+
+
+  <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+
+    <MiniStat
+      label="Nouvelles"
+      value={stats.nouvellesCandidatures}
+    />
+
+    <MiniStat
+      label="En étude"
+      value={stats.candidaturesEnEtude}
+    />
+
+    <MiniStat
+      label="Signées"
+      value={stats.candidaturesSignees}
+    />
+
+  </div>
+
+
+  <div className="space-y-3">
+
+    {latestCandidatures.length === 0 && (
+      <p className="text-zinc-500">
+        Aucune candidature récente.
+      </p>
+    )}
+
+
+    {latestCandidatures.map((candidature:any)=>(
+      
+      <Link
+        key={candidature.id}
+        href={`/dashboard/candidatures/${candidature.id}`}
+        className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black p-5 transition hover:border-zinc-600"
+      >
+
+        <div>
+
+          <h3 className="font-semibold">
+            {candidature.nom_artiste || "Artiste"}
+          </h3>
+
+          <p className="mt-1 text-sm text-zinc-500">
+            {candidature.ville || "Ville inconnue"}
+          </p>
+
+        </div>
+
+
+        <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-400">
+          {candidature.statut}
+        </span>
+
+
+      </Link>
+
+    ))}
+
+  </div>
+
 </section>
 
     <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-            Pipeline artistes
-          </p>
 
-          <h2 className="text-3xl font-bold">Candidatures</h2>
-        </div>
+  <div className="mb-6 flex items-center justify-between">
 
-        <Link href="/dashboard/candidatures" className="text-sm text-zinc-400 hover:text-white">
-          Voir tout →
-        </Link>
-      </div>
+    <div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <MiniStat label="Nouvelles" value={stats.nouvellesCandidatures} />
-        <MiniStat label="En étude" value={stats.candidaturesEnEtude} />
-        <MiniStat label="Signées" value={stats.candidaturesSignees} />
-      </div>
+      <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
+        Releases
+      </p>
 
-      <div className="space-y-4">
-        {latestCandidatures.length === 0 && (
-          <p className="text-zinc-500">Aucune candidature récente.</p>
-        )}
+      <h2 className="mt-2 text-3xl font-bold">
+        Calendrier sorties
+      </h2>
 
-        {latestCandidatures.map((candidature: any) => (
-          <Link
-            key={candidature.id}
-            href={`/dashboard/candidatures/${candidature.id}`}
-            className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
-          >
-            <h3 className="text-xl font-semibold">
-              {candidature.nom_artiste || "Artiste"}
+    </div>
+
+
+    <Link
+      href="/projets"
+      className="text-sm text-zinc-400 hover:text-white"
+    >
+      Voir tout →
+    </Link>
+
+  </div>
+
+
+  {next30Projects.length === 0 && (
+    <p className="text-zinc-500">
+      Aucune sortie prévue dans les 30 prochains jours.
+    </p>
+  )}
+
+
+  <div className="space-y-3">
+
+    {next30Projects.map((project:any)=>{
+
+      const releaseDate = new Date(project.date_sortie);
+      const now = new Date();
+
+      const diffTime =
+        releaseDate.getTime() - now.getTime();
+
+      const diffDays =
+        Math.ceil(
+          diffTime / (1000 * 60 * 60 * 24)
+        );
+
+
+      const urgent = diffDays <= 7;
+
+
+      return (
+
+        <Link
+          key={project.id}
+          href={`/projets/${project.id}`}
+          className={`flex items-center justify-between rounded-2xl border p-5 transition hover:border-zinc-500 ${
+            urgent
+              ? "border-yellow-500/40 bg-yellow-500/10"
+              : "border-zinc-800 bg-black"
+          }`}
+        >
+
+          <div>
+
+            <h3 className="font-semibold">
+              {project.titre}
             </h3>
 
-            <p className="mt-2 text-sm text-zinc-500">
-              {candidature.ville || "Ville non renseignée"} •{" "}
-              {candidature.email || "Email non renseigné"}
+            <p className="mt-1 text-sm text-zinc-500">
+              {project.date_sortie} • {project.statut || "En préparation"}
             </p>
 
-            <p className="mt-2 text-xs text-zinc-600">
-              Statut : {candidature.statut || "nouvelle"}
-            </p>
-          </Link>
-        ))}
-      </div>
-    </section>
+          </div>
 
-    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-            Releases
-          </p>
 
-          <h2 className="text-3xl font-bold">Sorties des 30 prochains jours</h2>
-        </div>
+          <div className="text-right">
 
-        <Link href="/projets" className="text-sm text-zinc-400 hover:text-white">
-          Voir tout →
-        </Link>
-      </div>
-
-      {next30Projects.length === 0 && (
-        <p className="text-zinc-500">
-          Aucune sortie prévue dans les 30 prochains jours.
-        </p>
-      )}
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {next30Projects.map((project: any) => {
-          const releaseDate = new Date(project.date_sortie);
-          const now = new Date();
-          const diffTime = releaseDate.getTime() - now.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          const isUrgent = diffDays <= 7;
-
-          return (
-            <Link
-              key={project.id}
-              href={`/projets/${project.id}`}
-              className={`block rounded-2xl border p-5 transition hover:border-zinc-500 ${
-                isUrgent
-                  ? "border-yellow-500/40 bg-yellow-500/10"
-                  : "border-zinc-800 bg-black"
-              }`}
+            <p
+              className={
+                urgent
+                  ? "text-yellow-300 font-semibold"
+                  : "text-zinc-400"
+              }
             >
-              <p className={isUrgent ? "text-yellow-300" : "text-zinc-500"}>
-                {diffDays <= 0 ? "Sortie imminente" : `J-${diffDays}`}
-              </p>
+              {diffDays <= 0
+                ? "Aujourd'hui"
+                : `J-${diffDays}`
+              }
+            </p>
 
-              <h3 className="mt-2 text-xl font-semibold">{project.titre}</h3>
 
-              <p className="mt-2 text-sm text-zinc-500">
-                {project.date_sortie} • {project.statut || "Statut"}
-              </p>
-            </Link>
-          );
-        })}
-      </div>
-    </section>
+          </div>
+
+
+        </Link>
+
+      );
+
+    })}
+
+  </div>
+
+</section>
 
     <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
       <KpiCard label="CA du mois" value={`${stats.revenusMois.toFixed(2)} €`} tone="green" />
@@ -947,124 +1167,331 @@ const healthTone =
     </div>
 
     <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-      <Panel title="Top artistes rentables" href="/finances">
-        {topArtistes.length === 0 && <p className="text-zinc-500">Aucune donnée artiste.</p>}
 
-        {topArtistes.map((artist) => (
-          <div key={artist.nom} className="rounded-2xl border border-zinc-800 bg-black p-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold">{artist.nom}</h3>
-              <p className={artist.resultat >= 0 ? "text-green-400" : "text-red-400"}>
-                {artist.resultat.toFixed(2)} €
-              </p>
-            </div>
+  <Panel title="Top artistes rentables" href="/finances">
 
-            <p className="mt-2 text-sm text-zinc-500">
-              Revenus : {artist.revenus.toFixed(2)} € • Dépenses : {artist.depenses.toFixed(2)} €
-            </p>
-          </div>
-        ))}
-      </Panel>
-
-      <Panel title="Top projets rentables" href="/finances">
-        {topProjets.length === 0 && <p className="text-zinc-500">Aucune donnée projet.</p>}
-
-        {topProjets.map((project) => (
-          <div key={project.titre} className="rounded-2xl border border-zinc-800 bg-black p-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold">{project.titre}</h3>
-              <p className={project.resultat >= 0 ? "text-green-400" : "text-red-400"}>
-                {project.resultat.toFixed(2)} €
-              </p>
-            </div>
-
-            <p className="mt-2 text-sm text-zinc-500">
-              Revenus : {project.revenus.toFixed(2)} € • Dépenses : {project.depenses.toFixed(2)} €
-            </p>
-          </div>
-        ))}
-      </Panel>
-    </div>
-
-<div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-  <Panel title="Top artistes analytics" href="/analytics">
-    {topArtistesAnalytics.length === 0 && (
-      <p className="text-zinc-500">Aucune donnée analytics artiste.</p>
+    {topArtistes.length === 0 && (
+      <p className="text-zinc-500">
+        Aucune donnée artiste.
+      </p>
     )}
 
-    {topArtistesAnalytics.map((artist) => (
+
+    {topArtistes.map((artist:any, index:number)=>(
+
       <div
         key={artist.nom}
-        className="rounded-2xl border border-zinc-800 bg-black p-5"
+        className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black p-5"
       >
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold">{artist.nom}</h3>
-          <p className="text-green-400">
-            {artist.revenus.toFixed(2)} €
-          </p>
+
+        <div className="flex items-center gap-4">
+
+          <span className="text-2xl font-bold text-zinc-600">
+            #{index + 1}
+          </span>
+
+
+          <div>
+
+            <h3 className="font-semibold">
+              {artist.nom}
+            </h3>
+
+
+            <p className="mt-1 text-sm text-zinc-500">
+              Revenus {artist.revenus.toFixed(2)} €
+            </p>
+
+          </div>
+
         </div>
 
-        <p className="mt-2 text-sm text-zinc-500">
-          Streams : {artist.streams.toLocaleString("fr-FR")} • Vues :{" "}
-          {artist.vues.toLocaleString("fr-FR")} • Followers :{" "}
-          {artist.followers.toLocaleString("fr-FR")}
+
+        <p
+          className={
+            artist.resultat >= 0
+              ? "text-green-400 font-semibold"
+              : "text-red-400 font-semibold"
+          }
+        >
+          {artist.resultat.toFixed(2)} €
         </p>
+
+
       </div>
+
     ))}
+
   </Panel>
 
-  <Panel title="Top sorties analytics" href="/sorties">
-    {topSortiesAnalytics.length === 0 && (
-      <p className="text-zinc-500">Aucune donnée analytics sortie.</p>
+
+
+  <Panel title="Top projets rentables" href="/finances">
+
+    {topProjets.length === 0 && (
+      <p className="text-zinc-500">
+        Aucune donnée projet.
+      </p>
     )}
 
-    {topSortiesAnalytics.map((sortie) => (
+
+    {topProjets.map((project:any,index:number)=>(
+
       <div
-        key={sortie.titre}
-        className="rounded-2xl border border-zinc-800 bg-black p-5"
+        key={project.titre}
+        className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black p-5"
       >
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold">{sortie.titre}</h3>
-          <p className="text-green-400">
-            {sortie.revenus.toFixed(2)} €
-          </p>
+
+        <div className="flex items-center gap-4">
+
+          <span className="text-2xl font-bold text-zinc-600">
+            #{index + 1}
+          </span>
+
+
+          <div>
+
+            <h3 className="font-semibold">
+              {project.titre}
+            </h3>
+
+
+            <p className="mt-1 text-sm text-zinc-500">
+              Revenus {project.revenus.toFixed(2)} €
+            </p>
+
+          </div>
+
         </div>
 
-        <p className="mt-2 text-sm text-zinc-500">
-          Streams : {sortie.streams.toLocaleString("fr-FR")} • Vues :{" "}
-          {sortie.vues.toLocaleString("fr-FR")}
+
+        <p
+          className={
+            project.resultat >= 0
+              ? "text-green-400 font-semibold"
+              : "text-red-400 font-semibold"
+          }
+        >
+          {project.resultat.toFixed(2)} €
         </p>
+
+
       </div>
+
     ))}
+
   </Panel>
+
 </div>
 
-    <section className="mt-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-3xl font-bold">Activité récente</h2>
+<div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
 
-        <Link href="/activity" className="text-sm text-zinc-400 hover:text-white">
-          Voir tout →
-        </Link>
-      </div>
 
-      <div className="space-y-4">
-        {activityLogs.length === 0 && (
-          <p className="text-zinc-500">Aucune activité pour le moment.</p>
-        )}
+  <Panel title="Top artistes analytics" href="/analytics">
 
-        {activityLogs.map((log) => (
-          <div key={log.id} className="rounded-2xl border border-zinc-800 bg-black p-5">
-            <p className="text-sm text-zinc-500">{log.type || "activité"}</p>
-            <h3 className="mt-1 text-lg font-semibold">{log.titre}</h3>
-            <p className="mt-2 text-sm text-zinc-400">{log.description}</p>
-            <p className="mt-3 text-xs text-zinc-600">
-              {new Date(log.created_at).toLocaleString("fr-FR")}
+
+    {topArtistesAnalytics.length === 0 && (
+      <p className="text-zinc-500">
+        Aucune donnée analytics artiste.
+      </p>
+    )}
+
+
+    {topArtistesAnalytics.map((artist:any,index:number)=>(
+
+      <div
+        key={artist.nom}
+        className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black p-5"
+      >
+
+        <div className="flex items-center gap-4">
+
+          <span className="text-2xl font-bold text-zinc-600">
+            #{index + 1}
+          </span>
+
+
+          <div>
+
+            <h3 className="font-semibold">
+              {artist.nom}
+            </h3>
+
+
+            <p className="mt-1 text-sm text-zinc-500">
+              {artist.streams.toLocaleString("fr-FR")} streams
             </p>
+
           </div>
-        ))}
+
+
+        </div>
+
+
+        <div className="text-right">
+
+          <p className="font-semibold text-green-400">
+            {artist.revenus.toFixed(2)} €
+          </p>
+
+
+          <p className="mt-1 text-xs text-zinc-500">
+            {artist.vues.toLocaleString("fr-FR")} vues
+          </p>
+
+        </div>
+
+
       </div>
-    </section>
+
+    ))}
+
+
+  </Panel>
+
+
+
+  <Panel title="Top sorties analytics" href="/sorties">
+
+
+    {topSortiesAnalytics.length === 0 && (
+      <p className="text-zinc-500">
+        Aucune donnée analytics sortie.
+      </p>
+    )}
+
+
+    {topSortiesAnalytics.map((sortie:any,index:number)=>(
+
+      <div
+        key={sortie.titre}
+        className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black p-5"
+      >
+
+
+        <div className="flex items-center gap-4">
+
+          <span className="text-2xl font-bold text-zinc-600">
+            #{index + 1}
+          </span>
+
+
+          <div>
+
+            <h3 className="font-semibold">
+              {sortie.titre}
+            </h3>
+
+
+            <p className="mt-1 text-sm text-zinc-500">
+              {sortie.streams.toLocaleString("fr-FR")} streams
+            </p>
+
+          </div>
+
+
+        </div>
+
+
+
+        <div className="text-right">
+
+          <p className="font-semibold text-green-400">
+            {sortie.revenus.toFixed(2)} €
+          </p>
+
+
+          <p className="mt-1 text-xs text-zinc-500">
+            {sortie.vues.toLocaleString("fr-FR")} vues
+          </p>
+
+        </div>
+
+
+      </div>
+
+    ))}
+
+
+  </Panel>
+
+
+</div>
+
+    <section className="mt-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+
+  <div className="mb-6 flex items-center justify-between">
+
+    <div>
+
+      <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
+        Journal
+      </p>
+
+      <h2 className="mt-2 text-3xl font-bold">
+        Activité récente
+      </h2>
+
+    </div>
+
+
+    <Link
+      href="/activity"
+      className="text-sm text-zinc-400 hover:text-white"
+    >
+      Voir tout →
+    </Link>
+
+  </div>
+
+
+  <div className="space-y-3">
+
+    {activityLogs.length === 0 && (
+      <p className="text-zinc-500">
+        Aucune activité pour le moment.
+      </p>
+    )}
+
+
+    {activityLogs.map((log)=>(
+      
+      <div
+        key={log.id}
+        className="flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-black p-5 md:flex-row md:items-center md:justify-between"
+      >
+
+        <div>
+
+          <p className="text-xs uppercase tracking-wider text-zinc-500">
+            {log.type || "activité"}
+          </p>
+
+
+          <h3 className="mt-1 font-semibold">
+            {log.titre || "Action"}
+          </h3>
+
+
+          <p className="mt-1 text-sm text-zinc-400">
+            {log.description}
+          </p>
+
+        </div>
+
+
+        <p className="text-xs text-zinc-600">
+          {new Date(log.created_at).toLocaleString("fr-FR")}
+        </p>
+
+
+      </div>
+
+    ))}
+
+  </div>
+
+</section>
   </main>
 );
 }
@@ -1157,7 +1584,7 @@ function MiniStat({
   value,
 }: {
   label: string;
-  value: number;
+  value: string | number;
 }) {
   return (
     <div className="rounded-2xl border border-zinc-800 bg-black p-5">
