@@ -96,171 +96,99 @@ export default function Sidebar() {
   }, []);
 
   const superAdminSections: SidebarSection[] = [
-    {
-      title: "Pilotage",
-      links: [
-        { href: "/dashboard", label: "Dashboard CEO" },
-        { href: "/manager/kpi", label: "KPI Manager" },
-        { href: "/analytics/dashboard", label: "Analytics Dashboard" },
-        { href: "/analytics/graphs", label: "Analytics Graphs" },
-        { href: "/analytics", label: "Analytics" },
-      ],
-    },
-    {
-      title: "Artistes",
-      links: [
-        { href: "/artistes", label: "Artistes" },
-        { href: "/artistes/ranking", label: "Ranking Artistes" },
-        { href: "/objectifs-artistes", label: "Objectifs artistes" },
-        { href: "/validations-artiste", label: "Validations artistes" },
-        { href: "/contrats/validations", label: "Validations contrats" },
-        { href: "/dashboard/candidatures", label: "Candidatures" },
-      ],
-    },
-    {
-      title: "Projets & Releases",
-      links: [
-        { href: "/projets", label: "Projets" },
-        { href: "/sorties", label: "Sorties" },
-        { href: "/release-planner", label: "Release Planner" },
-        { href: "/rollout", label: "Rollout" },
-        { href: "/objectifs", label: "Objectifs" },
-      ],
-    },
-    {
-      title: "Business",
-      links: [
-        { href: "/prospects", label: "CRM Prospects" },
-        { href: "/booking", label: "Booking" },
-        { href: "/campagnes", label: "Campagnes" },
-        { href: "/partenaires", label: "CRM Partenaires" },
-        { href: "/influenceurs", label: "CRM Influenceurs" },
-        { href: "/medias", label: "CRM Médias" },
-      ],
-    },
-    {
-      title: "Finance & Juridique",
-      links: [
-        { href: "/contrats", label: "Contrats" },
-        { href: "/splits", label: "Split Sheets" },
-        { href: "/royalties", label: "Royalties" },
-        { href: "/finances", label: "Finances" },
-      ],
-    },
-    {
-      title: "Opérations",
-      links: [
-        { href: "/taches", label: "Tâches" },
-        { href: "/calendrier", label: "Calendrier" },
-        { href: "/calendrier/global", label: "Calendrier global" },
-        { href: "/artiste-events", label: "Événements artistes" },
-        { href: "/drive", label: "Drive" },
-      ],
-    },
-    {
-  title: "LMG AI",
-  links: [
-    { href: "/assistant", label: "Assistant IA" },
-    { href: "/assistant/chat", label: "Assistant IA central" },
-    { href: "/assistant/rollout", label: "Générer un rollout" },
-    { href: "/assistant/tiktok", label: "Stratégie TikTok" },
-  ],
-},
-    {
-      title: "Communication",
-      links: [
-        { href: "/notifications", label: "Notifications" },
-        { href: "/chat", label: "Chat" },
-        { href: "/chat/prive", label: "Messages privés" },
-      ],
-    },
-    {
-      title: "Admin",
-      links: [
-        { href: "/admin", label: "Administration" },
-        { href: "/equipe", label: "Équipe" },
-        { href: "/invitations", label: "Invitations" },
-      ],
-    },
-  ];
+  {
+    title: "Pilotage",
+    links: [
+      { href: "/dashboard", label: "Dashboard CEO" },
+      { href: "/manager/kpi", label: "KPI Manager" },
+      { href: "/analytics/dashboard", label: "Analytics Dashboard" },
+    ],
+  },
 
-  const adminSections = superAdminSections
-    .map((section) => ({
-      ...section,
-      links: section.links.filter(
-        (link) => link.href !== "/admin" && link.href !== "/invitations"
-      ),
-    }))
-    .filter((section) => section.links.length > 0);
+  {
+    title: "Artistes",
+    links: [
+      { href: "/artistes", label: "Artistes" },
+      { href: "/artistes/ranking", label: "Ranking Artistes" },
+      { href: "/objectifs-artistes", label: "Objectifs artistes" },
+      { href: "/validations-artiste", label: "Validations artistes" },
+      { href: "/contrats/validations", label: "Validations contrats" },
+      { href: "/dashboard/candidatures", label: "Candidatures" },
+    ],
+  },
 
-  const managerSections: SidebarSection[] = [
-    {
-      title: "Pilotage",
-      links: [
-        { href: "/manager", label: "Dashboard Manager" },
-        { href: "/manager/kpi", label: "KPI Manager" },
-        { href: "/analytics", label: "Analytics" },
-      ],
-    },
-    {
-      title: "Artistes",
-      links: [
-        { href: "/artistes", label: "Mes artistes" },
-        { href: "/artistes/ranking", label: "Ranking Artistes" },
-        { href: "/objectifs-artistes", label: "Objectifs artistes" },
-        { href: "/validations-artiste", label: "Validations artistes" },
-        { href: "/contrats/validations", label: "Validations contrats" },
-      ],
-    },
-    {
-      title: "Projets & Releases",
-      links: [
-        { href: "/projets", label: "Projets" },
-        { href: "/sorties", label: "Sorties" },
-        { href: "/release-planner", label: "Release Planner" },
-        { href: "/rollout", label: "Rollout" },
-        { href: "/objectifs", label: "Objectifs" },
-      ],
-    },
-    {
-      title: "Business",
-      links: [
-        { href: "/booking", label: "Booking" },
-        { href: "/prospects", label: "CRM Prospects" },
-        { href: "/campagnes", label: "Campagnes" },
-        { href: "/influenceurs", label: "CRM Influenceurs" },
-        { href: "/medias", label: "CRM Médias" },
-      ],
-    },
-    {
-      title: "Finance & Juridique",
-      links: [
-        { href: "/contrats", label: "Contrats" },
-        { href: "/splits", label: "Split Sheets" },
-        { href: "/royalties", label: "Royalties" },
-      ],
-    },
-    {
-      title: "Opérations",
-      links: [
-        { href: "/taches", label: "Tâches" },
-        { href: "/mes-taches", label: "Mes tâches" },
-        { href: "/calendrier", label: "Calendrier" },
-        { href: "/calendrier/global", label: "Calendrier global" },
-        { href: "/artiste-events", label: "Événements artistes" },
-        { href: "/artiste-events/nouveau", label: "Nouvel événement artiste" },
-        { href: "/drive", label: "Drive" },
-      ],
-    },
-    {
-      title: "Communication",
-      links: [
-        { href: "/notifications", label: "Notifications" },
-        { href: "/chat", label: "Chat" },
-        { href: "/chat/prive", label: "Messages privés" },
-      ],
-    },
-  ];
+  {
+    title: "Projets & Releases",
+    links: [
+      { href: "/projets", label: "Projets" },
+      { href: "/sorties", label: "Sorties" },
+      { href: "/release-planner", label: "Release Planner" },
+      { href: "/rollout", label: "Rollout" },
+      { href: "/objectifs", label: "Objectifs" },
+    ],
+  },
+
+  {
+    title: "Business",
+    links: [
+      { href: "/prospects", label: "CRM Prospects" },
+      { href: "/booking", label: "Booking" },
+      { href: "/campagnes", label: "Campagnes Marketing" },
+      { href: "/partenaires", label: "CRM Partenaires" },
+      { href: "/influenceurs", label: "CRM Influenceurs" },
+      { href: "/medias", label: "CRM Médias" },
+    ],
+  },
+
+  {
+    title: "Finance & Juridique",
+    links: [
+      { href: "/finance/dashboard", label: "Finance Dashboard" },
+      { href: "/finances", label: "Transactions" },
+      { href: "/royalties", label: "Royalties" },
+      { href: "/contrats", label: "Contrats" },
+      { href: "/splits", label: "Split Sheets" },
+    ],
+  },
+
+  {
+    title: "Opérations",
+    links: [
+      { href: "/taches", label: "Tâches" },
+      { href: "/calendrier/global", label: "Calendrier global" },
+      { href: "/artiste-events", label: "Événements artistes" },
+      { href: "/drive", label: "Drive" },
+    ],
+  },
+
+  {
+    title: "LMG AI",
+    links: [
+      { href: "/assistant", label: "Assistant IA" },
+      { href: "/assistant/chat", label: "Assistant IA central" },
+      { href: "/assistant/rollout", label: "Générer un rollout" },
+      { href: "/assistant/tiktok", label: "Stratégie TikTok" },
+    ],
+  },
+
+  {
+    title: "Communication",
+    links: [
+      { href: "/notifications", label: "Notifications" },
+      { href: "/chat", label: "Chat équipe" },
+      { href: "/chat/prive", label: "Messages privés" },
+    ],
+  },
+
+  {
+    title: "Administration",
+    links: [
+      { href: "/admin", label: "Administration" },
+      { href: "/equipe", label: "Équipe" },
+      { href: "/invitations", label: "Invitations" },
+    ],
+  },
+];
 
 const artisticDirectorSections: SidebarSection[] = [
   {
@@ -365,7 +293,103 @@ const artisticDirectorSections: SidebarSection[] = [
     },
   ];
 
-  const sections =
+  const managerSections: SidebarSection[] = [
+  {
+    title: "Pilotage",
+    links: [
+      { href: "/dashboard", label: "Dashboard Manager" },
+      { href: "/manager/kpi", label: "Mes KPI" },
+    ],
+  },
+
+  {
+    title: "Artistes",
+    links: [
+      { href: "/artistes", label: "Artistes" },
+      { href: "/artistes/ranking", label: "Ranking Artistes" },
+      { href: "/objectifs-artistes", label: "Objectifs artistes" },
+    ],
+  },
+
+  {
+    title: "Projets & Releases",
+    links: [
+      { href: "/projets", label: "Projets" },
+      { href: "/sorties", label: "Sorties" },
+      { href: "/release-planner", label: "Release Planner" },
+      { href: "/rollout", label: "Rollout" },
+    ],
+  },
+
+  {
+    title: "Business",
+    links: [
+      { href: "/booking", label: "Booking" },
+      { href: "/campagnes", label: "Campagnes" },
+      { href: "/medias", label: "CRM Médias" },
+      { href: "/influenceurs", label: "CRM Influenceurs" },
+    ],
+  },
+
+  {
+    title: "Finance",
+    links: [
+      { href: "/royalties", label: "Royalties" },
+      { href: "/contrats", label: "Contrats" },
+    ],
+  },
+
+  {
+    title: "Communication",
+    links: [
+      { href: "/notifications", label: "Notifications" },
+      { href: "/chat", label: "Chat" },
+      { href: "/chat/prive", label: "Messages privés" },
+    ],
+  },
+];
+
+
+const adminSections: SidebarSection[] = [
+  {
+    title: "Administration",
+    links: [
+      { href: "/admin", label: "Administration" },
+      { href: "/equipe", label: "Équipe" },
+      { href: "/invitations", label: "Invitations" },
+    ],
+  },
+
+  {
+    title: "Pilotage",
+    links: [
+      { href: "/dashboard", label: "Dashboard CEO" },
+      { href: "/analytics/dashboard", label: "Analytics Dashboard" },
+    ],
+  },
+
+  {
+    title: "Finance",
+    links: [
+      { href: "/finance/dashboard", label: "Finance Dashboard" },
+      { href: "/finances", label: "Transactions" },
+      { href: "/royalties", label: "Royalties" },
+      { href: "/contrats", label: "Contrats" },
+    ],
+  },
+
+  {
+    title: "Communication",
+    links: [
+      { href: "/notifications", label: "Notifications" },
+      { href: "/chat", label: "Chat" },
+      { href: "/chat/prive", label: "Messages privés" },
+    ],
+  },
+];
+
+
+const sections =
   role === ROLES.ARTISTE
     ? artisteSections
     : role === ROLES.MANAGER
