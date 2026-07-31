@@ -143,7 +143,7 @@ export default function Sidebar() {
   {
   title: "Finance & Juridique",
   links: [
-    { href: "/finance/dashboard", label: "Finance Dashboard" },
+    { href: "/finances/dashboard", label: "Finance Dashboard" },
     { href: "/finances", label: "Transactions" },
     { href: "/royalties", label: "Royalties" },
     { href: "/contrats", label: "Contrats" },
