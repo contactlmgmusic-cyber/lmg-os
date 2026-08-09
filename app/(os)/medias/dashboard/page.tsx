@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +15,12 @@ function isToday(date?: string | null) {
 }
 
 export default async function MediasDashboardPage() {
+
+await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+]);
+
   const { data: medias } = await supabase
     .from("medias")
     .select(`
@@ -38,9 +46,40 @@ export default async function MediasDashboardPage() {
   const publies = allMedias.filter((m: any) => m.statut === "Publié").length;
   const refuses = allMedias.filter((m: any) => m.statut === "Refusé").length;
 
-  const relancesAujourdhui = allMedias.filter((m: any) =>
-    isToday(m.prochaine_relance)
-  );
+  const statutsTermines = ["Publié", "Refusé"];
+
+const relancesAujourdhui = allMedias.filter(
+  (media: any) =>
+    isToday(media.prochaine_relance) &&
+    !statutsTermines.includes(media.statut)
+);
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const relancesEnRetard = allMedias
+  .filter((media: any) => {
+    if (
+      !media.prochaine_relance ||
+      statutsTermines.includes(media.statut)
+    ) {
+      return false;
+    }
+
+    const followUpDate = new Date(
+      media.prochaine_relance
+    );
+
+    followUpDate.setHours(0, 0, 0, 0);
+
+    return followUpDate < today;
+  })
+  .sort(
+    (a: any, b: any) =>
+      new Date(a.prochaine_relance).getTime() -
+      new Date(b.prochaine_relance).getTime()
+  )
+  .slice(0, 5);
 
   const mediasContactes = allMedias.filter((m: any) =>
     ["Contacté", "Relancé", "Intéressé", "Publié", "Refusé"].includes(m.statut)
@@ -55,8 +94,31 @@ export default async function MediasDashboardPage() {
     .slice(0, 5);
 
   const hautePriorite = allMedias
-    .filter((m: any) => m.priorite === "Haute" || m.priorite === "Critique")
-    .slice(0, 5);
+  .filter(
+    (media: any) =>
+      ["Haute", "Critique"].includes(
+        media.priorite
+      ) &&
+      !statutsTermines.includes(media.statut)
+  )
+  .sort((a: any, b: any) => {
+    if (
+      a.priorite === "Critique" &&
+      b.priorite !== "Critique"
+    ) {
+      return -1;
+    }
+
+    if (
+      b.priorite === "Critique" &&
+      a.priorite !== "Critique"
+    ) {
+      return 1;
+    }
+
+    return 0;
+  })
+  .slice(0, 5);
 
   const kpis = [
     { label: "Total médias", value: total, className: "border-zinc-700 bg-zinc-900 text-zinc-300" },
@@ -66,6 +128,7 @@ export default async function MediasDashboardPage() {
     { label: "Intéressés", value: interesses, className: "border-green-500/30 bg-green-500/10 text-green-300" },
     { label: "Publiés", value: publies, className: "border-violet-500/30 bg-violet-500/10 text-violet-300" },
     { label: "Refusés", value: refuses, className: "border-red-500/30 bg-red-500/10 text-red-300" },
+    { label: "Relances en retard", value: relancesEnRetard.length, className: relancesEnRetard.length > 0 ? "border-red-500/30 bg-red-500/10 text-red-300" : "border-zinc-700 bg-zinc-900 text-zinc-300" },
     { label: "Conversion", value: `${tauxConversion}%`, className: "border-cyan-500/30 bg-cyan-500/10 text-cyan-300" },
   ];
 
@@ -92,7 +155,7 @@ export default async function MediasDashboardPage() {
         </Link>
       </div>
 
-      <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-8">
+      <section className="grid grid-cols-1 gap-6 md:grid-cols-3 xl:grid-cols-5">
         {kpis.map((kpi) => (
           <div
             key={kpi.label}
@@ -104,7 +167,67 @@ export default async function MediasDashboardPage() {
         ))}
       </section>
 
-      <section className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <section className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-8">
+  <h2 className="mb-6 text-3xl font-bold text-red-200">
+    Relances en retard
+  </h2>
+
+  <div className="space-y-4">
+    {relancesEnRetard.length === 0 && (
+      <p className="text-red-200/60">
+        Aucune relance en retard.
+      </p>
+    )}
+
+    {relancesEnRetard.map((media: any) => {
+      const followUpDate = new Date(
+        media.prochaine_relance
+      );
+
+      followUpDate.setHours(0, 0, 0, 0);
+
+      const lateDays = Math.max(
+        1,
+        Math.ceil(
+          (today.getTime() - followUpDate.getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      );
+
+      return (
+        <Link
+          key={media.id}
+          href={`/medias/${media.id}`}
+          className="block rounded-2xl border border-red-500/30 bg-black/30 p-5 transition hover:border-red-400"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-semibold">
+                {media.nom}
+              </h3>
+
+              <p className="mt-1 text-sm text-red-200/70">
+                {media.contact_nom ||
+                  "Contact non renseigné"}
+              </p>
+            </div>
+
+            <span className="rounded-full border border-red-500/40 px-3 py-1 text-xs font-bold text-red-300">
+              +{lateDays} j
+            </span>
+          </div>
+
+          <p className="mt-3 text-sm text-zinc-400">
+            {media.projets?.titre ||
+              media.artistes?.nom ||
+              "Aucun lien"}
+          </p>
+        </Link>
+      );
+    })}
+  </div>
+</div>
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
           <h2 className="mb-6 text-3xl font-bold">Relances aujourd'hui</h2>
 
