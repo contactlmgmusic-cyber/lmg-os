@@ -77,6 +77,14 @@ export default function DashboardPage() {
 
   const start = monthStart();
 
+  const sixMonthsAgo = new Date();
+sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+sixMonthsAgo.setDate(1);
+
+const sixMonthsStart = sixMonthsAgo
+  .toISOString()
+  .split("T")[0];
+
   const today = new Date().toISOString().split("T")[0];
 
   const in30Days = new Date();
@@ -197,15 +205,22 @@ export default function DashboardPage() {
     artistes ( id, nom ),
     projets ( id, titre )
   `)
-  .gte("date_operation", start);
+  .gte("date_operation", sixMonthsStart);
+
+  const currentMonthFinances =
+  finances?.filter((finance: any) => {
+    if (!finance.date_operation) return false;
+
+    return finance.date_operation >= start;
+  }) || [];
 
     const revenus =
-      finances
-        ?.filter((f: any) => f.type === "Revenu")
+      currentMonthFinances
+  .filter((f: any) => f.type === "Revenu")
         .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
 
     const depenses =
-      finances
+      currentMonthFinances
         ?.filter((f: any) => f.type === "Dépense")
         .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
 
@@ -440,17 +455,25 @@ const artisteAnalyticsRanking = Array.from(byArtisteAnalytics.values())
   .sort((a: any, b: any) => b.streams + b.vues - (a.streams + a.vues))
   .slice(0, 5);
 
+const projectsWithBudget = projectRanking.filter(
+  (projet: any) => Number(projet.depenses || 0) > 0
+);
+
 const roiMoyen =
-  topProjets.length > 0
+  projectsWithBudget.length > 0
     ? Math.round(
-        topProjets.reduce((acc: number, projet: any) => {
-          const budget = Number(projet.depenses || 0);
-          const revenusProjet = Number(projet.revenus || 0);
+        projectsWithBudget.reduce(
+          (total: number, projet: any) => {
+            const budget = Number(projet.depenses || 0);
+            const revenusProjet = Number(projet.revenus || 0);
 
-          if (budget <= 0) return acc;
-
-          return acc + ((revenusProjet - budget) / budget) * 100;
-        }, 0) / topProjets.length
+            return (
+              total +
+              ((revenusProjet - budget) / budget) * 100
+            );
+          },
+          0
+        ) / projectsWithBudget.length
       )
     : 0;
 
@@ -566,6 +589,14 @@ useEffect(() => {
       return;
     }
 
+if (
+  profile?.role !== ROLES.SUPER_ADMIN &&
+  profile?.role !== ROLES.ADMIN
+) {
+  router.push("/login");
+  return;
+}
+
     setCheckingAccess(false);
   }
 
@@ -573,23 +604,29 @@ useEffect(() => {
 }, [router]);
 
   useEffect(() => {
-    loadDashboard();
+  if (checkingAccess) return;
 
-    const channel = supabaseBrowser
-      .channel("dashboard-realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "activity_logs" },
-        async () => {
-          await loadDashboard();
-        }
-      )
-      .subscribe();
+  loadDashboard();
 
-    return () => {
-      supabaseBrowser.removeChannel(channel);
-    };
-  }, []);
+  const channel = supabaseBrowser
+    .channel("dashboard-realtime")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "activity_logs",
+      },
+      async () => {
+        await loadDashboard();
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabaseBrowser.removeChannel(channel);
+  };
+}, [checkingAccess]);
 
 if (checkingAccess) {
   return (
@@ -665,6 +702,18 @@ const healthTone =
           <p className="mt-3 text-lg text-zinc-400">
             Performance globale du label
           </p>
+
+          <div
+  className={`mt-6 inline-flex items-center gap-3 rounded-full border px-4 py-2 ${healthTone}`}
+>
+  <span className="text-sm font-semibold">
+    Santé opérationnelle : {healthLabel}
+  </span>
+
+  <span className="text-sm font-black">
+    {healthScore}/100
+  </span>
+</div>
 
         </div>
 
@@ -1061,12 +1110,6 @@ const healthTone =
   </div>
 
 </section>
-
-    <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-      <KpiCard label="CA du mois" value={`${stats.revenusMois.toFixed(2)} €`} tone="green" />
-      <KpiCard label="Dépenses du mois" value={`${stats.depensesMois.toFixed(2)} €`} tone="red" />
-      <KpiCard label="Résultat du mois" value={`${stats.resultatMois.toFixed(2)} €`} />
-    </div>
 
     <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
       <KpiCard label="Royalties à payer" value={`${stats.royaltiesDues.toFixed(2)} €`} tone="red" />
