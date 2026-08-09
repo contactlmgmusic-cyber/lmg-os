@@ -88,65 +88,92 @@ if (analyticsError) {
 
 const rows = analytics ?? [];
 
+const now = new Date();
+
+const currentStartDate = new Date(now);
+currentStartDate.setDate(now.getDate() - selectedPeriod);
+
+const previousStartDate = new Date(currentStartDate);
+previousStartDate.setDate(
+  currentStartDate.getDate() - selectedPeriod
+);
+
 const filteredRows = rows.filter((row: any) => {
   if (!row.date_snapshot) return false;
 
   const snapshotDate = new Date(row.date_snapshot);
 
-  const limitDate = new Date();
-  limitDate.setDate(
-    limitDate.getDate() - selectedPeriod
-  );
-
-  return snapshotDate >= limitDate;
+  return snapshotDate >= currentStartDate && snapshotDate <= now;
 });
-
-  const totalStreams = filteredRows.reduce((acc: number, row: any) => acc + Number(row.streams || 0), 0);
-  const totalFollowers = filteredRows.reduce((acc: number, row: any) => acc + Number(row.followers || 0), 0);
-  const totalVues = filteredRows.reduce((acc: number, row: any) => acc + Number(row.vues || 0), 0);
-  const totalRevenus = filteredRows.reduce((acc: number, row: any) => acc + Number(row.revenus || 0), 0);
-
-  const previousDate = new Date();
-previousDate.setDate(previousDate.getDate() - 60);
 
 const previousRows = rows.filter((row: any) => {
   if (!row.date_snapshot) return false;
 
-  const date = new Date(row.date_snapshot);
+  const snapshotDate = new Date(row.date_snapshot);
 
-  return date >= previousDate && date < date30;
+  return (
+    snapshotDate >= previousStartDate &&
+    snapshotDate < currentStartDate
+  );
 });
 
+const totalStreams = filteredRows.reduce(
+  (acc: number, row: any) =>
+    acc + Number(row.streams || 0),
+  0
+);
+
+const totalFollowers = filteredRows.reduce(
+  (acc: number, row: any) =>
+    acc + Number(row.followers || 0),
+  0
+);
+
+const totalVues = filteredRows.reduce(
+  (acc: number, row: any) =>
+    acc + Number(row.vues || 0),
+  0
+);
+
+const totalRevenus = filteredRows.reduce(
+  (acc: number, row: any) =>
+    acc + Number(row.revenus || 0),
+  0
+);
 
 const previousStreams = previousRows.reduce(
-  (acc: number, row: any) => acc + Number(row.streams || 0),
+  (acc: number, row: any) =>
+    acc + Number(row.streams || 0),
   0
 );
 
 const previousFollowers = previousRows.reduce(
-  (acc: number, row: any) => acc + Number(row.followers || 0),
+  (acc: number, row: any) =>
+    acc + Number(row.followers || 0),
   0
 );
 
 const previousVues = previousRows.reduce(
-  (acc: number, row: any) => acc + Number(row.vues || 0),
+  (acc: number, row: any) =>
+    acc + Number(row.vues || 0),
   0
 );
 
 const previousRevenus = previousRows.reduce(
-  (acc: number, row: any) => acc + Number(row.revenus || 0),
+  (acc: number, row: any) =>
+    acc + Number(row.revenus || 0),
   0
 );
 
-
-function calculateGrowth(current:number, previous:number) {
-  if (!previous) return 0;
+function calculateGrowth(current: number, previous: number) {
+  if (previous === 0) {
+    return current > 0 ? 100 : 0;
+  }
 
   return Math.round(
     ((current - previous) / previous) * 100
   );
 }
-
 
 const streamsGrowth = calculateGrowth(
   totalStreams,
@@ -168,14 +195,14 @@ const revenusGrowth = calculateGrowth(
   previousRevenus
 );
 
-  const now = new Date();
-  const date30 = new Date();
-  date30.setDate(now.getDate() - 30);
+const date30 = new Date(now);
+date30.setDate(now.getDate() - 30);
 
-  const snapshots30 = rows.filter((row: any) => {
-    if (!row.date_snapshot) return false;
-    return new Date(row.date_snapshot) >= date30;
-  });
+const snapshots30 = rows.filter((row: any) => {
+  if (!row.date_snapshot) return false;
+
+  return new Date(row.date_snapshot) >= date30;
+});
 
   const dernierSnapshot = rows[0]?.date_snapshot || "Aucun";
 
@@ -412,7 +439,7 @@ if (bestRelease) {
       </section>
 
       <AnalyticsGlobalChart
-      data={rows}
+      data={filteredRows}
     />
 
       <section className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -421,59 +448,6 @@ if (bestRelease) {
         <Ranking title="Top sorties streams" rows={topSortiesStreams} valueKey="streams" type="number" labelKey="titre" />
         <Ranking title="Top sorties revenus" rows={topSortiesRevenus} valueKey="revenus" type="euro" labelKey="titre" />
       </section>
-
-      <section className="mt-12 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-
-  <h2 className="text-3xl font-bold">
-    Insights automatiques
-  </h2>
-
-  <div className="mt-8 space-y-5">
-
-    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5">
-      <p className="font-semibold text-emerald-300">
-        🚀 Meilleur artiste
-      </p>
-
-      <p className="mt-2 text-zinc-300">
-        <strong>{bestArtist?.nom || "Aucun"}</strong> domine actuellement avec{" "}
-        <strong>{formatNumber(bestArtist?.streams || 0)}</strong> streams.
-      </p>
-    </div>
-
-    <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 p-5">
-      <p className="font-semibold text-blue-300">
-        🎵 Meilleure sortie
-      </p>
-
-      <p className="mt-2 text-zinc-300">
-        <strong>{bestRelease?.titre || "Aucune"}</strong> est la sortie la plus performante.
-      </p>
-    </div>
-
-    <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/10 p-5">
-      <p className="font-semibold text-yellow-300">
-        💰 Revenu moyen
-      </p>
-
-      <p className="mt-2 text-zinc-300">
-        {formatEuro(averageRevenue)} par snapshot Analytics.
-      </p>
-    </div>
-
-    <div className="rounded-2xl border border-purple-500/20 bg-purple-500/10 p-5">
-      <p className="font-semibold text-purple-300">
-        📈 Streams moyens
-      </p>
-
-      <p className="mt-2 text-zinc-300">
-        {formatNumber(averageStreams)} streams par snapshot.
-      </p>
-    </div>
-
-  </div>
-
-</section>
     </main>
   );
 }
