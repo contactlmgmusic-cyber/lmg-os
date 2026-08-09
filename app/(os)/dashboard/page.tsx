@@ -230,27 +230,38 @@ finances?.forEach((f: any) => {
   const date = f.date_operation ? new Date(f.date_operation) : null;
   if (!date) return;
 
-  const mois = date.toLocaleDateString("fr-FR", {
-    month: "short",
-    year: "numeric",
-  });
+  const monthKey = `${date.getFullYear()}-${String(
+  date.getMonth() + 1
+).padStart(2, "0")}`;
 
-  const current = monthlyMap.get(mois) || {
-    mois,
-    revenus: 0,
-    depenses: 0,
-    resultat: 0,
-  };
+const mois = date.toLocaleDateString("fr-FR", {
+  month: "short",
+  year: "numeric",
+});
+
+const current = monthlyMap.get(monthKey) || {
+  monthKey,
+  mois,
+  revenus: 0,
+  depenses: 0,
+  resultat: 0,
+};
 
   if (f.type === "Revenu") current.revenus += Number(f.montant || 0);
   if (f.type === "Dépense") current.depenses += Number(f.montant || 0);
 
   current.resultat = current.revenus - current.depenses;
 
-  monthlyMap.set(mois, current);
+  monthlyMap.set(monthKey, current);
 });
 
-const chartData = Array.from(monthlyMap.values()).slice(-6);
+const chartData = Array.from(
+  monthlyMap.values()
+)
+  .sort((a: any, b: any) =>
+    a.monthKey.localeCompare(b.monthKey)
+  )
+  .slice(-6);
 
 const byArtist = new Map();
 
@@ -308,6 +319,7 @@ const projectRanking = Array.from(byProject.entries())
       .from("projets")
       .select("id, titre, date_sortie, statut")
       .not("date_sortie", "is", null)
+      .gte("date_sortie", today)
       .order("date_sortie", { ascending: true })
       .limit(5);
 
@@ -346,15 +358,15 @@ const { data: urgentReleasesData } = await supabaseBrowser
       .from("bookings")
       .select("id, evenement, prochaine_relance, statut")
       .not("prochaine_relance", "is", null)
+      .lte("prochaine_relance", today)
       .order("prochaine_relance", { ascending: true })
-      .limit(5);
 
       const { data: mediaRelances } = await supabaseBrowser
   .from("medias")
   .select("id, nom, contact_nom, prochaine_relance, statut, priorite")
   .not("prochaine_relance", "is", null)
+  .lte("prochaine_relance", today)
   .order("prochaine_relance", { ascending: true })
-  .limit(5);
 
     const { data: logs } = await supabaseBrowser
       .from("activity_logs")
@@ -542,8 +554,27 @@ const releaseProgressMoyenne =
 
     setUpcomingProjects(projects || []);
     setUrgentTasks(tasks || []);
-    setFollowUps(relances || []);
-    setMediaFollowUps(mediaRelances || []);
+    setFollowUps(
+  (relances || [])
+    .filter(
+      (booking: any) =>
+        !["Confirmé", "Annulé"].includes(
+          booking.statut
+        )
+    )
+    .slice(0, 5)
+);
+
+setMediaFollowUps(
+  (mediaRelances || [])
+    .filter(
+      (media: any) =>
+        !["Publié", "Refusé"].includes(
+          media.statut
+        )
+    )
+    .slice(0, 5)
+);
     setTopArtistes(artistRanking);
     setTopProjets(projectRanking);
     setRevenueChartData(chartData);
