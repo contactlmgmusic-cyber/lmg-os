@@ -9,61 +9,74 @@ import {
   Legend,
 } from "recharts";
 
+const COLORS = [
+  "#22c55e",
+  "#06b6d4",
+  "#a855f7",
+  "#f59e0b",
+  "#ec4899",
+  "#3b82f6",
+];
+
+function formatEuro(value: number) {
+  return `${Number(value || 0).toFixed(2)} €`;
+}
 
 export default function BudgetAllocationChart({
   data,
 }: {
   data: any[];
 }) {
+  const chartData = data.filter(
+    (item: any) => Number(item.value || 0) > 0
+  );
+
+  if (chartData.length === 0) {
+    return (
+      <div className="flex h-[280px] items-center justify-center rounded-2xl border border-zinc-800 bg-black">
+        <p className="text-zinc-500">
+          Aucun budget enregistré.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+    <div className="h-[350px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={chartData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="45%"
+            innerRadius={70}
+            outerRadius={120}
+            paddingAngle={3}
+          >
+            {chartData.map((entry: any, index: number) => (
+              <Cell
+                key={`${entry.name}-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
 
-      <div className="mb-6">
-        <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-          Investissements
-        </p>
+          <Tooltip
+            formatter={(value) =>
+              formatEuro(Number(value || 0))
+            }
+            contentStyle={{
+              backgroundColor: "#09090b",
+              border: "1px solid #3f3f46",
+              borderRadius: "12px",
+            }}
+          />
 
-        <h2 className="mt-2 text-3xl font-bold">
-          Répartition des budgets
-        </h2>
-      </div>
-
-
-      <div className="h-[350px]">
-
-        <ResponsiveContainer width="100%" height="100%">
-
-          <PieChart>
-
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              innerRadius={70}
-              outerRadius={120}
-              paddingAngle={3}
-            >
-
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} />
-              ))}
-
-            </Pie>
-
-
-            <Tooltip />
-
-            <Legend />
-
-          </PieChart>
-
-        </ResponsiveContainer>
-
-      </div>
-
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
     </div>
   );
 }
