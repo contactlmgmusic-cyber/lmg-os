@@ -60,6 +60,34 @@ export default async function ManagerKpiPage() {
   const bookingsConfirmes =
     bookings?.filter((booking: any) => booking.statut === "Confirmé").length || 0;
 
+    const bookingsTotal = bookings?.length || 0;
+
+const tauxConfirmation =
+  bookingsTotal > 0
+    ? Math.round(
+        (bookingsConfirmes / bookingsTotal) * 100
+      )
+    : 0;
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const in30Days = new Date(today);
+in30Days.setDate(today.getDate() + 30);
+
+const sortiesAVenir =
+  sorties?.filter((sortie: any) => {
+    if (!sortie.date_sortie) return false;
+
+    const releaseDate = new Date(sortie.date_sortie);
+    releaseDate.setHours(0, 0, 0, 0);
+
+    return (
+      releaseDate >= today &&
+      releaseDate <= in30Days
+    );
+  }).length || 0;
+
   const sortiesCount = sorties?.length || 0;
 
   const managerScore = Math.min(
@@ -72,6 +100,33 @@ export default async function ManagerKpiPage() {
         Math.min(bookingsConfirmes / 20, 1) * 20
     )
   );
+
+  const managerLevel =
+  managerScore >= 80
+    ? "Excellent"
+    : managerScore >= 60
+    ? "Performant"
+    : managerScore >= 40
+    ? "En progression"
+    : "À développer";
+
+const managerTone =
+  managerScore >= 80
+    ? "text-emerald-300"
+    : managerScore >= 60
+    ? "text-blue-300"
+    : managerScore >= 40
+    ? "text-yellow-300"
+    : "text-red-300";
+
+const managerBarColor =
+  managerScore >= 80
+    ? "bg-emerald-500"
+    : managerScore >= 60
+    ? "bg-blue-500"
+    : managerScore >= 40
+    ? "bg-yellow-500"
+    : "bg-red-500";
 
   const topArtistes = visibleArtistes
     .map((artiste: any) => {
@@ -88,10 +143,25 @@ export default async function ManagerKpiPage() {
         0
       );
 
+      const artisteBookings =
+  bookings?.filter(
+    (booking: any) =>
+      booking.artiste_id === artiste.id &&
+      booking.statut === "Confirmé"
+  ).length || 0;
+
+const artisteSorties =
+  sorties?.filter(
+    (sortie: any) =>
+      sortie.artiste_id === artiste.id
+  ).length || 0;
+
       return {
         ...artiste,
         streams,
         revenus,
+        bookingsConfirmes: artisteBookings,
+        sortiesCount: artisteSorties,
       };
     })
     .sort((a: any, b: any) => b.streams - a.streams)
@@ -120,6 +190,10 @@ export default async function ManagerKpiPage() {
 
             <h2 className="text-6xl font-bold">{managerScore} / 100</h2>
 
+            <p className={`mt-3 text-lg font-semibold ${managerTone}`}>
+  Niveau : {managerLevel}
+</p>
+
             <p className="mt-3 text-zinc-400">
               Score calculé selon artistes gérés, streams, followers, revenus et bookings.
             </p>
@@ -128,7 +202,7 @@ export default async function ManagerKpiPage() {
           <div className="w-full xl:w-96">
             <div className="h-4 overflow-hidden rounded-full bg-black">
               <div
-                className="h-full rounded-full bg-white"
+                className={`h-full rounded-full transition-all ${managerBarColor}`}
                 style={{ width: `${managerScore}%` }}
               />
             </div>
@@ -136,12 +210,14 @@ export default async function ManagerKpiPage() {
         </div>
       </section>
 
-      <section className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
+      <section className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <Kpi label="Artistes gérés" value={formatNumber(visibleArtistes.length)} />
         <Kpi label="Streams" value={formatNumber(totalStreams)} />
         <Kpi label="Followers" value={formatNumber(totalFollowers)} />
         <Kpi label="Revenus" value={formatEuro(totalRevenus)} />
         <Kpi label="Bookings confirmés" value={formatNumber(bookingsConfirmes)} />
+        <Kpi label="Taux de confirmation" value={`${tauxConfirmation}%`} />
+        <Kpi label="Sorties dans les 30 jours" value={formatNumber(sortiesAVenir)} />
         <Kpi label="Sorties" value={formatNumber(sortiesCount)} />
       </section>
 
@@ -185,17 +261,47 @@ export default async function ManagerKpiPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-6 text-sm">
-                  <div>
-                    <p className="text-zinc-500">Streams</p>
-                    <p className="font-semibold">{formatNumber(artiste.streams)}</p>
-                  </div>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm md:grid-cols-4">
+  <div>
+    <p className="text-zinc-500">
+      Streams
+    </p>
 
-                  <div>
-                    <p className="text-zinc-500">Revenus</p>
-                    <p className="font-semibold">{formatEuro(artiste.revenus)}</p>
-                  </div>
-                </div>
+    <p className="font-semibold">
+      {formatNumber(artiste.streams)}
+    </p>
+  </div>
+
+  <div>
+    <p className="text-zinc-500">
+      Revenus
+    </p>
+
+    <p className="font-semibold">
+      {formatEuro(artiste.revenus)}
+    </p>
+  </div>
+
+  <div>
+    <p className="text-zinc-500">
+      Bookings
+    </p>
+
+    <p className="font-semibold">
+      {formatNumber(artiste.bookingsConfirmes)}
+    </p>
+  </div>
+
+  <div>
+    <p className="text-zinc-500">
+      Sorties
+    </p>
+
+    <p className="font-semibold">
+      {formatNumber(artiste.sortiesCount)}
+    </p>
+  </div>
+</div>
               </div>
             </Link>
           ))}
