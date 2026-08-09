@@ -431,19 +431,6 @@ const budgetChartData = [
 </section>
 
 <section className="mt-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-
-  <div className="mb-6">
-    <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-      Investissements
-    </p>
-
-    <h2 className="mt-2 text-3xl font-bold">
-      Allocation des budgets
-    </h2>
-  </div>
-
-<section className="mt-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-
   <div className="mb-6">
     <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
       Rentabilité
@@ -454,13 +441,9 @@ const budgetChartData = [
     </h2>
   </div>
 
-<FinanceChart data={financeChartData} />
+  <FinanceChart data={financeChartData} />
 
-<BudgetAllocationChart data={budgetChartData} />
-
-  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-
-
+  <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
     <div className="rounded-2xl border border-green-500/30 bg-green-500/10 p-5">
       <p className="text-sm text-green-300">
         ROI global
@@ -470,7 +453,6 @@ const budgetChartData = [
         {roiGlobal}%
       </p>
     </div>
-
 
     <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-5">
       <p className="text-sm text-cyan-300">
@@ -482,7 +464,6 @@ const budgetChartData = [
       </p>
     </div>
 
-
     <div className="rounded-2xl border border-purple-500/30 bg-purple-500/10 p-5">
       <p className="text-sm text-purple-300">
         Ratio revenus / dépenses
@@ -493,7 +474,6 @@ const budgetChartData = [
       </p>
     </div>
 
-
     <div className="rounded-2xl border border-zinc-700 bg-black p-5">
       <p className="text-sm text-zinc-400">
         Projets rentables
@@ -503,47 +483,53 @@ const budgetChartData = [
         {projetsRentablesPourcentage}%
       </p>
     </div>
-
-
   </div>
-
 </section>
 
-  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+<section className="mt-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div className="mb-6">
+    <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
+      Investissements
+    </p>
 
+    <h2 className="mt-2 text-3xl font-bold">
+      Répartition des budgets
+    </h2>
+  </div>
 
+  <BudgetAllocationChart data={budgetChartData} />
+
+  <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
     {[
       {
-        label:"Clips",
-        value:budgetAllocation.clip,
+        label: "Clips",
+        value: budgetAllocation.clip,
       },
       {
-        label:"Promotion",
-        value:budgetAllocation.promo,
+        label: "Promotion",
+        value: budgetAllocation.promo,
       },
       {
-        label:"Studio",
-        value:budgetAllocation.studio,
+        label: "Studio",
+        value: budgetAllocation.studio,
       },
       {
-        label:"Influence",
-        value:budgetAllocation.influence,
+        label: "Influence",
+        value: budgetAllocation.influence,
       },
       {
-        label:"Relations presse",
-        value:budgetAllocation.rp,
+        label: "Relations presse",
+        value: budgetAllocation.rp,
       },
       {
-        label:"Cover",
-        value:budgetAllocation.cover,
+        label: "Cover",
+        value: budgetAllocation.cover,
       },
-    ].map((item)=>(
-      
+    ].map((item) => (
       <div
         key={item.label}
         className="rounded-2xl border border-zinc-800 bg-black p-5"
       >
-
         <p className="text-sm text-zinc-500">
           {item.label}
         </p>
@@ -551,14 +537,9 @@ const budgetChartData = [
         <p className="mt-3 text-3xl font-bold">
           {formatEuro(item.value)}
         </p>
-
       </div>
-
     ))}
-
-
   </div>
-
 </section>
 
       <section className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
