@@ -430,7 +430,9 @@ const budgetChartData = [
 
 </section>
 
-<section className="mt-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+<div className="mt-10 flex flex-col gap-10">
+
+<section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
   <div className="mb-6">
     <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
       Rentabilité
@@ -486,7 +488,7 @@ const budgetChartData = [
   </div>
 </section>
 
-<section className="mt-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+<section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
   <div className="mb-6">
     <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
       Investissements
@@ -541,7 +543,7 @@ const budgetChartData = [
     ))}
   </div>
 </section>
-
+</div>
       <section className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
 
   {/* TOP PROJETS */}
