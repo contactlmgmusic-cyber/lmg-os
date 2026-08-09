@@ -3,6 +3,8 @@ import { supabase } from "@/lib/supabase";
 import RevenueChart from "@/components/RevenueChart";
 import FinanceChart from "@/components/FinanceChart";
 import BudgetAllocationChart from "@/components/BudgetAllocationChart";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +13,12 @@ function formatEuro(value: number) {
 }
 
 export default async function FinancesDashboardPage() {
+
+await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+]);
+
   const { data: finances } = await supabase.from("finances").select(`
     *,
     projets ( id, titre )
@@ -52,18 +60,21 @@ export default async function FinancesDashboardPage() {
   const monthlyFinanceMap = new Map();
 
 allFinances.forEach((item: any) => {
-  const date = item.date_operation
-    ? new Date(item.date_operation)
-    : null;
+  if (!item.date_operation) return;
 
-  if (!date) return;
+  const date = new Date(item.date_operation);
+
+  const monthKey = `${date.getFullYear()}-${String(
+    date.getMonth() + 1
+  ).padStart(2, "0")}`;
 
   const mois = date.toLocaleDateString("fr-FR", {
     month: "short",
     year: "numeric",
   });
 
-  const current = monthlyFinanceMap.get(mois) || {
+  const current = monthlyFinanceMap.get(monthKey) || {
+    monthKey,
     mois,
     revenus: 0,
     depenses: 0,
@@ -81,13 +92,16 @@ allFinances.forEach((item: any) => {
   current.resultat =
     current.revenus - current.depenses;
 
-  monthlyFinanceMap.set(mois, current);
+  monthlyFinanceMap.set(monthKey, current);
 });
-
 
 const financeChartData = Array.from(
   monthlyFinanceMap.values()
-).slice(-6);
+)
+  .sort((a: any, b: any) =>
+    a.monthKey.localeCompare(b.monthKey)
+  )
+  .slice(-6);
 
   const roiGlobal =
   depenses > 0
@@ -104,47 +118,6 @@ const ratioInvestissement =
   depenses > 0
     ? Number((revenus / depenses).toFixed(2))
     : 0;
-
-
-  const monthlyMap = new Map();
-
-allFinances.forEach((item:any)=>{
-
-  if(!item.date_operation) return;
-
-  const date = new Date(item.date_operation);
-
-  const mois = date.toLocaleDateString("fr-FR", {
-    month:"short",
-    year:"numeric",
-  });
-
-
-  const current = monthlyMap.get(mois) || {
-    mois,
-    revenus:0,
-    depenses:0,
-    resultat:0,
-  };
-
-
-  if(item.type === "Revenu"){
-    current.revenus += Number(item.montant || 0);
-  }
-
-
-  if(item.type === "Dépense"){
-    current.depenses += Number(item.montant || 0);
-  }
-
-
-  current.resultat =
-    current.revenus - current.depenses;
-
-
-  monthlyMap.set(mois,current);
-
-});
 
 
   const royaltiesPayees = allRoyalties
@@ -181,6 +154,32 @@ allFinances.forEach((item:any)=>{
   rp: 0,
 };
 
+allProjets.forEach((projet: any) => {
+  budgetAllocation.clip += Number(
+    projet.budget_clip || 0
+  );
+
+  budgetAllocation.cover += Number(
+    projet.budget_cover || 0
+  );
+
+  budgetAllocation.promo += Number(
+    projet.budget_promo || 0
+  );
+
+  budgetAllocation.studio += Number(
+    projet.budget_studio || 0
+  );
+
+  budgetAllocation.influence += Number(
+    projet.budget_influence || 0
+  );
+
+  budgetAllocation.rp += Number(
+    projet.budget_rp || 0
+  );
+});
+
 const budgetChartData = [
   {
     name: "Clips",
@@ -207,15 +206,6 @@ const budgetChartData = [
     value: budgetAllocation.cover,
   },
 ];
-
-allProjets.forEach((projet:any)=>{
-  budgetAllocation.clip += Number(projet.budget_clip || 0);
-  budgetAllocation.cover += Number(projet.budget_cover || 0);
-  budgetAllocation.promo += Number(projet.budget_promo || 0);
-  budgetAllocation.studio += Number(projet.budget_studio || 0);
-  budgetAllocation.influence += Number(projet.budget_influence || 0);
-  budgetAllocation.rp += Number(projet.budget_rp || 0);
-});
 
   const contratsSignes = allContrats.filter(
     (contrat: any) => contrat.statut === "Signé"
@@ -386,98 +376,6 @@ allProjets.forEach((projet:any)=>{
     </div>
 
   </div>
-
-</section>
-
-<section className="mb-10 rounded-3xl border border-cyan-500/30 bg-cyan-500/10 p-8 text-cyan-200">
-
-<div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-
-<div>
-
-<p className="text-sm uppercase tracking-[0.3em] text-cyan-300">
-LMG Finance Score
-</p>
-
-<h2 className="mt-3 text-6xl font-bold">
-{Math.min(
-100,
-Math.max(
-0,
-Math.round(
-50 +
-(resultat > 0 ? 20 : 0) +
-(Math.min(revenus / 10000,1) * 15) -
-(Math.min(royaltiesAPayer / 5000,1) * 15)
-)
-)
-)}
-<span className="text-3xl text-cyan-100/50">
-/100
-</span>
-</h2>
-
-<p className="mt-3 text-lg text-cyan-100/70">
-Santé financière globale du label
-</p>
-
-</div>
-
-
-<div className="w-full lg:w-[420px]">
-
-<div className="h-4 overflow-hidden rounded-full bg-black/40">
-
-<div
-className="h-full rounded-full bg-cyan-300 transition-all"
-style={{
-width:`${
-Math.min(
-100,
-Math.max(
-0,
-Math.round(
-50 +
-(resultat > 0 ? 20 : 0) +
-(Math.min(revenus / 10000,1) * 15) -
-(Math.min(royaltiesAPayer / 5000,1) * 15)
-)
-)
-)
-}%`
-}}
-/>
-
-</div>
-
-
-<div className="mt-6 grid grid-cols-2 gap-4">
-
-<MiniStat
-label="CA global"
-value={formatEuro(revenus)}
-/>
-
-<MiniStat
-label="Résultat"
-value={formatEuro(resultat)}
-/>
-
-<MiniStat
-label="Royalties dues"
-value={formatEuro(royaltiesAPayer)}
-/>
-
-<MiniStat
-label="Projets"
-value={allProjets.length}
-/>
-
-</div>
-
-</div>
-
-</div>
 
 </section>
 
