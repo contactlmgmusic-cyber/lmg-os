@@ -1,34 +1,30 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
+function formatEuro(value: number) {
+  return `${Number(value || 0).toLocaleString(
+    "fr-FR",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }
+  )} €`;
+}
 
 export default async function ManagerPage() {
-  const cookieStore = await cookies();
+  const profile = await requireRole([
+  ROLES.MANAGER,
+]);
 
-  const supabaseAuth = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll() {},
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabaseAuth.auth.getUser();
+const managerId = (profile as any).id;
 
   const { data: artistes } = await supabase
     .from("artistes")
     .select("*")
-    .eq("manager_id", user?.id);
+    .eq("manager_id", managerId);
 
   const artisteIds = artistes?.map((a: any) => a.id) || [];
 
@@ -69,11 +65,19 @@ const { data: taches } =
     ? await supabase.from("taches").select("*").in("projet_id", projetIds)
     : { data: [] };
 
-  const projetsActifs =
-    projets?.filter((p: any) => p.statut !== "Sorti").length || 0;
+  const activeProjects =
+  projets?.filter(
+    (projet: any) => projet.statut !== "Sorti"
+  ) || [];
+
+const projetsActifs = activeProjects.length;
 
   const bookingsNegociation =
-    bookings?.filter((b: any) => b.statut === "En négociation").length || 0;
+  bookings?.filter((booking: any) =>
+    ["Négociation", "En négociation"].includes(
+      booking.statut
+    )
+  ).length || 0;
 
   const bookingsConfirmes =
     bookings?.filter((b: any) => b.statut === "Confirmé").length || 0;
@@ -115,6 +119,7 @@ const tachesOuvertes =
   taches?.filter((t: any) => t.statut !== "Terminé").length || 0;
 
   const today = new Date();
+today.setHours(0, 0, 0, 0);
 
 const sortiesAVenir =
   projets
@@ -171,8 +176,8 @@ const bookingsEnNegociation =
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <Card label="Mes artistes" value={artistes?.length || 0} />
 <Card label="Projets actifs" value={projetsActifs} />
-<Card label="CA généré (€)" value={Math.round(chiffreAffaires)} />
-<Card label="Royalties à payer (€)" value={Math.round(royaltiesAPayer)} />
+<Card label="CA généré (€)" value={formatEuro(chiffreAffaires)} />
+<Card label="Royalties à payer (€)" value={formatEuro(royaltiesAPayer)} />
 <Card label="Bookings confirmés" value={bookingsConfirmes} />
 <Card label="Tâches ouvertes" value={tachesOuvertes} />
 <Card label="Contrats à signer" value={contratsASigner} />
@@ -214,14 +219,13 @@ const bookingsEnNegociation =
         </Panel>
 
         <Panel title="Projets actifs" href="/projets">
-          {(!projets || projets.length === 0) && (
+          {activeProjects.length === 0 && (
             <p className="text-zinc-500">Aucun projet actif.</p>
           )}
 
-          {projets
-            ?.filter((p: any) => p.statut !== "Sorti")
-            .slice(0, 6)
-            .map((projet: any) => (
+          {activeProjects
+  .slice(0, 6)
+  .map((projet: any) => (
               <Link
                 key={projet.id}
                 href={`/projets/${projet.id}`}
@@ -312,7 +316,13 @@ const bookingsEnNegociation =
   );
 }
 
-function Card({ label, value }: { label: string; value: number }) {
+function Card({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
   return (
     <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
       <p className="text-sm text-zinc-500">{label}</p>
@@ -321,7 +331,7 @@ function Card({ label, value }: { label: string; value: number }) {
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: number }) {
+function MiniStat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-2xl border border-zinc-800 bg-black p-5">
       <p className="text-sm text-zinc-500">{label}</p>
