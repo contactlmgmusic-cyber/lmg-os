@@ -19,11 +19,13 @@ export function createGoogleCalendarOAuthClient(
   const clientSecret =
     process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
 
-  if (!clientId || !clientSecret) {
-    throw new Error(
-      "Identifiants Google Calendar manquants."
-    );
-  }
+  if (!clientId) {
+  throw new Error("Variable GOOGLE_CALENDAR_CLIENT_ID manquante.");
+}
+
+if (!clientSecret) {
+  throw new Error("Variable GOOGLE_CALENDAR_CLIENT_SECRET manquante.");
+}
 
   return new google.auth.OAuth2(
     clientId,
