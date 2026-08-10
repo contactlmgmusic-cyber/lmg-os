@@ -234,33 +234,64 @@ export default function DrivePage() {
       );
     }
 
-    const uploadResponse = await fetch(
-      startResult.uploadUrl,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type":
-            selectedFile.type ||
-            "application/octet-stream",
-        },
-        body: selectedFile,
-      }
-    );
+    const chunkSize =
+  3 * 1024 * 1024;
 
-    if (!uploadResponse.ok) {
-      throw new Error(
+let offset = 0;
+let googleFile: any = null;
+
+while (offset < selectedFile.size) {
+  const end = Math.min(
+    offset + chunkSize,
+    selectedFile.size
+  );
+
+  const chunk =
+    selectedFile.slice(offset, end);
+
+  const chunkResponse = await fetch(
+    "/api/google-drive/upload/chunk",
+    {
+      method: "PUT",
+      headers: {
+        Authorization:
+          `Bearer ${accessToken}`,
+        "Content-Type":
+          "application/octet-stream",
+        "X-Google-Upload-Url":
+          startResult.uploadUrl,
+        "X-File-Content-Type":
+          selectedFile.type ||
+          "application/octet-stream",
+        "Content-Range":
+          `bytes ${offset}-${end - 1}/${selectedFile.size}`,
+      },
+      body: chunk,
+    }
+  );
+
+  const chunkResult =
+    await chunkResponse.json();
+
+  if (!chunkResponse.ok) {
+    throw new Error(
+      chunkResult.error ||
         "L’envoi du fichier vers Google Drive a échoué."
-      );
-    }
+    );
+  }
 
-    const googleFile =
-      await uploadResponse.json();
+  if (chunkResult.complete) {
+    googleFile = chunkResult.file;
+  }
 
-    if (!googleFile.id) {
-      throw new Error(
-        "Google Drive n’a pas retourné l’identifiant du fichier."
-      );
-    }
+  offset = end;
+}
+
+if (!googleFile?.id) {
+  throw new Error(
+    "Google Drive n’a pas retourné l’identifiant du fichier."
+  );
+}
 
     const finishResponse = await fetch(
       "/api/google-drive/upload/finish",
