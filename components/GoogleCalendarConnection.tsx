@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 
 export default function GoogleCalendarConnection() {
   const [loading, setLoading] = useState(true);
@@ -56,10 +57,60 @@ export default function GoogleCalendarConnection() {
     loadStatus();
   }, []);
 
-  function connectGoogleCalendar() {
-    window.location.href =
-      "/api/google-calendar/connect";
+  async function connectGoogleCalendar() {
+  setLoading(true);
+  setStatusMessage("");
+
+  const {
+    data: { session },
+  } = await supabaseBrowser.auth.getSession();
+
+  const accessToken =
+    session?.access_token;
+
+  if (!accessToken) {
+    setStatusMessage(
+      "Ta session a expiré. Reconnecte-toi à LMG OS."
+    );
+    setLoading(false);
+    return;
   }
+
+  try {
+    const response = await fetch(
+      "/api/google-calendar/connect",
+      {
+        method: "POST",
+        headers: {
+          Authorization:
+            `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const result = await response.json();
+
+    if (
+      !response.ok ||
+      !result.authorizationUrl
+    ) {
+      setStatusMessage(
+        result.error ||
+          "Impossible de démarrer la connexion Google."
+      );
+      setLoading(false);
+      return;
+    }
+
+    window.location.href =
+      result.authorizationUrl;
+  } catch {
+    setStatusMessage(
+      "Impossible de contacter Google Calendar."
+    );
+    setLoading(false);
+  }
+}
 
   return (
     <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">

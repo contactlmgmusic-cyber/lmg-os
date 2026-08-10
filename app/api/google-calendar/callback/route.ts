@@ -1,8 +1,9 @@
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
-import { createGoogleCalendarOAuthClient } from "@/lib/google-calendar.server";
+import {
+  createGoogleCalendarOAuthClient,
+  verifySignedGoogleOAuthState,
+} from "@/lib/google-calendar.server";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
@@ -11,21 +12,17 @@ function redirectWithStatus(
   request: NextRequest,
   status: string
 ) {
-  const response = NextResponse.redirect(
+  return NextResponse.redirect(
     new URL(
       `/calendrier/global?google=${status}`,
       request.url
     )
   );
-
-  response.cookies.delete(
-    "google_calendar_oauth_state"
-  );
-
-  return response;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest
+) {
   try {
     const code =
       request.nextUrl.searchParams.get("code");
@@ -36,86 +33,20 @@ export async function GET(request: NextRequest) {
     const oauthError =
       request.nextUrl.searchParams.get("error");
 
-    const cookieStore = await cookies();
-
-    const storedState = cookieStore.get(
-      "google_calendar_oauth_state"
-    )?.value;
-
-    if (
-      oauthError ||
-      !code ||
-      !state ||
-      !storedState ||
-      state !== storedState
-    ) {
+    if (oauthError || !code || !state) {
       return redirectWithStatus(
         request,
         "connection-error"
       );
     }
 
-    const supabaseAuth = createServerClient(
-      process.env
-        .NEXT_PUBLIC_SUPABASE_URL as string,
-      process.env
-        .NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll() {},
-        },
-      }
-    );
+    const verifiedState =
+      verifySignedGoogleOAuthState(state);
 
-    const {
-      data: { user },
-    } = await supabaseAuth.auth.getUser();
-
-    if (!user) {
-      return NextResponse.redirect(
-        new URL("/login", request.url)
-      );
-    }
-
-    const { data: profile } =
-      await supabaseAuth
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-
-    if (
-      profile?.role !== ROLES.SUPER_ADMIN &&
-      profile?.role !== ROLES.ADMIN
-    ) {
-      return NextResponse.redirect(
-        new URL("/dashboard", request.url)
-      );
-    }
-
-    const origin = new URL(request.url).origin;
-
-    const redirectUri =
-      `${origin}/api/google-calendar/callback`;
-
-    const oauthClient =
-      createGoogleCalendarOAuthClient(
-        redirectUri
-      );
-
-    const { tokens } =
-      await oauthClient.getToken(code);
-
-    if (
-      !tokens.access_token ||
-      !tokens.refresh_token
-    ) {
+    if (!verifiedState) {
       return redirectWithStatus(
         request,
-        "token-error"
+        "invalid-state"
       );
     }
 
@@ -132,6 +63,63 @@ export async function GET(request: NextRequest) {
       }
     );
 
+    const { data: profile } =
+      await supabaseAdmin
+        .from("profiles")
+        .select("role")
+        .eq("id", verifiedState.userId)
+        .single();
+
+    if (
+      profile?.role !== ROLES.SUPER_ADMIN &&
+      profile?.role !== ROLES.ADMIN
+    ) {
+      return redirectWithStatus(
+        request,
+        "unauthorized"
+      );
+    }
+
+    const origin =
+      new URL(request.url).origin;
+
+    const redirectUri =
+      `${origin}/api/google-calendar/callback`;
+
+    const oauthClient =
+      createGoogleCalendarOAuthClient(
+        redirectUri
+      );
+
+    const { tokens } =
+      await oauthClient.getToken(code);
+
+    const { data: existingConnection } =
+      await supabaseAdmin
+        .from(
+          "google_calendar_connections"
+        )
+        .select("refresh_token")
+        .eq(
+          "user_id",
+          verifiedState.userId
+        )
+        .maybeSingle();
+
+    const refreshToken =
+      tokens.refresh_token ||
+      existingConnection?.refresh_token;
+
+    if (
+      !tokens.access_token ||
+      !refreshToken
+    ) {
+      return redirectWithStatus(
+        request,
+        "token-error"
+      );
+    }
+
     const { error: saveError } =
       await supabaseAdmin
         .from(
@@ -139,11 +127,10 @@ export async function GET(request: NextRequest) {
         )
         .upsert(
           {
-            user_id: user.id,
+            user_id: verifiedState.userId,
             access_token:
               tokens.access_token,
-            refresh_token:
-              tokens.refresh_token,
+            refresh_token: refreshToken,
             expiry_date:
               tokens.expiry_date || null,
             scope: tokens.scope || null,
