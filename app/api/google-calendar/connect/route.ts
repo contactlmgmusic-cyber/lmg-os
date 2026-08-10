@@ -124,19 +124,14 @@ export async function POST(
       authorizationUrl,
     });
   } catch (error) {
-    console.error(
-      "Erreur connexion Google Calendar :",
-      error
-    );
+  const message =
+    error instanceof Error ? error.message : "Erreur inconnue";
 
-    return NextResponse.json(
-      {
-        error:
-          "Impossible de démarrer la connexion Google Calendar.",
-      },
-      {
-        status: 500,
-      }
-    );
-  }
+  console.error("Erreur connexion Google Calendar :", error);
+
+  return NextResponse.json(
+    { error: message },
+    { status: 500 }
+  );
 }
+  }
