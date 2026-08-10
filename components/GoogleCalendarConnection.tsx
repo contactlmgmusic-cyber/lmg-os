@@ -1,0 +1,123 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+export default function GoogleCalendarConnection() {
+  const [loading, setLoading] = useState(true);
+  const [connected, setConnected] =
+    useState(false);
+  const [statusMessage, setStatusMessage] =
+    useState("");
+
+  useEffect(() => {
+    async function loadStatus() {
+      const params = new URLSearchParams(
+        window.location.search
+      );
+
+      const googleStatus =
+        params.get("google");
+
+      if (googleStatus === "connected") {
+        setStatusMessage(
+          "Google Calendar a été connecté avec succès."
+        );
+      }
+
+      if (
+        googleStatus &&
+        googleStatus !== "connected"
+      ) {
+        setStatusMessage(
+          "La connexion Google Calendar a échoué."
+        );
+      }
+
+      try {
+        const response = await fetch(
+          "/api/google-calendar/status",
+          {
+            cache: "no-store",
+          }
+        );
+
+        const result = await response.json();
+
+        setConnected(
+          Boolean(result.connected)
+        );
+      } catch {
+        setConnected(false);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStatus();
+  }, []);
+
+  function connectGoogleCalendar() {
+    window.location.href =
+      "/api/google-calendar/connect";
+  }
+
+  return (
+    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
+            Connexion externe
+          </p>
+
+          <h2 className="mt-2 text-3xl font-bold">
+            Google Calendar
+          </h2>
+
+          <p className="mt-3 max-w-2xl text-zinc-400">
+            Connecte le calendrier LMG pour synchroniser les sorties,
+            bookings, relances et échéances importantes.
+          </p>
+
+          {!loading && (
+            <div
+              className={`mt-5 inline-flex rounded-full border px-4 py-2 text-sm font-semibold ${
+                connected
+                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                  : "border-yellow-500/30 bg-yellow-500/10 text-yellow-300"
+              }`}
+            >
+              {connected
+                ? "Connecté"
+                : "Non connecté"}
+            </div>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={connectGoogleCalendar}
+          disabled={loading}
+          className="rounded-2xl bg-white px-6 py-4 font-bold text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {loading
+            ? "Vérification..."
+            : connected
+            ? "Reconnecter Google Calendar"
+            : "Connecter Google Calendar"}
+        </button>
+      </div>
+
+      {statusMessage && (
+        <p
+          className={`mt-6 rounded-2xl border p-4 ${
+            connected
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+              : "border-red-500/30 bg-red-500/10 text-red-300"
+          }`}
+        >
+          {statusMessage}
+        </p>
+      )}
+    </section>
+  );
+}

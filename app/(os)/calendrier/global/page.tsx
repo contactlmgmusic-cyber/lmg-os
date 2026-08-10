@@ -2,6 +2,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
+import GoogleCalendarConnection from "@/components/GoogleCalendarConnection";
 
 export const dynamic = "force-dynamic";
 
@@ -207,6 +208,8 @@ const next7Days = upcoming.filter((item) => {
         </p>
 
         <h1 className="text-5xl font-bold">Calendrier global</h1>
+
+        <GoogleCalendarConnection />
 
         <p className="mt-3 text-zinc-400">
           Rollout, bookings, relances médias, influenceurs et deadlines tâches.
