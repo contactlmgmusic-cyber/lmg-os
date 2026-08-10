@@ -161,14 +161,14 @@ export async function GET(
       "connected"
     );
   } catch (error) {
-    console.error(
-      "Erreur callback Google Calendar :",
-      error
-    );
+  const message =
+    error instanceof Error ? error.message : "Erreur inconnue";
 
-    return redirectWithStatus(
-      request,
-      "connection-error"
-    );
+  console.error("Erreur callback Google Calendar :", error);
+
+  return NextResponse.json(
+    { error: message },
+    { status: 500 }
+  );
   }
 }
