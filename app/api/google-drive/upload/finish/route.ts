@@ -272,12 +272,12 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json(
-        {
-          error:
-            "Impossible d’enregistrer le fichier dans LMG OS.",
-        },
-        { status: 500 }
-      );
+  {
+    error:
+      `Erreur Supabase ${saveError.code}: ${saveError.message}`,
+  },
+  { status: 500 }
+);
     }
 
     return NextResponse.json({
