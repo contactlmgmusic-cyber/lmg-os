@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,10 @@ export default async function MonEspaceArtistePage() {
       </main>
     );
   }
+
+  if (profile?.role !== ROLES.ARTISTE) {
+  redirect("/dashboard");
+}
 
   const { data: artiste } = await supabase
     .from("artistes")
@@ -133,12 +138,15 @@ const { data: driveFiles } = await supabase
   .eq("artiste_id", profile.artiste_id)
   .order("ordre", { ascending: true });
 
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
   const prochainesSorties =
   projets
     ?.filter(
       (projet: any) =>
         projet.date_sortie &&
-        new Date(projet.date_sortie) >= new Date()
+        new Date(projet.date_sortie) >= today
     )
     .sort(
       (a: any, b: any) =>
@@ -176,7 +184,11 @@ const { data: driveFiles } = await supabase
       href: `/booking/${booking.id}`,
     })),
 ]
-  .filter((event: any) => event.date)
+  .filter(
+  (event: any) =>
+    event.date &&
+    new Date(event.date) >= today
+)
   .sort(
     (a: any, b: any) =>
       new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -325,8 +337,7 @@ const badges = [
 ];
 
 const prochainEvenement =
-  artisteTimeline?.find((event: any) => new Date(event.date) >= new Date()) ||
-  null;
+  artisteTimeline[0] || null;
 
 const prochaineTache =
   taches
@@ -338,10 +349,16 @@ const prochaineTache =
 
 const prochainBooking =
   bookings
-    ?.filter((booking: any) => booking.date_event)
+    ?.filter(
+      (booking: any) =>
+        booking.date_event &&
+        new Date(booking.date_event) >= today &&
+        booking.statut !== "Annulé"
+    )
     .sort(
       (a: any, b: any) =>
-        new Date(a.date_event).getTime() - new Date(b.date_event).getTime()
+        new Date(a.date_event).getTime() -
+        new Date(b.date_event).getTime()
     )[0] || null;
 
   return (
@@ -401,7 +418,8 @@ const prochainBooking =
     <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
       <p className="text-sm text-zinc-500">Documents</p>
       <p className="mt-2 text-4xl font-bold">
-        {driveFiles?.length || assets?.length || 0}
+        {(driveFiles?.length || 0) +
+  (assets?.length || 0)}
       </p>
     </div>
 
