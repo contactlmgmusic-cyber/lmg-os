@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,10 @@ function formatDate(date: string) {
 }
 
 export default async function GlobalCalendarPage() {
-  await requireRole(["super_admin", "admin"]);
+  await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+]);
 
   const { data: rolloutEvents } = await supabase
     .from("rollout_events")
@@ -133,8 +137,67 @@ export default async function GlobalCalendarPage() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const upcoming = items.filter((item) => new Date(item.date) >= today);
-  const late = items.filter((item) => new Date(item.date) < today);
+  const resolvedPastStatuses = [
+  "Terminé",
+  "Publié",
+  "Refusé",
+  "Confirmé",
+  "Annulé",
+  "Signé",
+  "Payé",
+  "Sorti",
+  "Réalisé",
+];
+
+const excludedUpcomingStatuses = [
+  "Terminé",
+  "Annulé",
+  "Refusé",
+];
+
+const upcoming = items.filter((item) => {
+  const eventDate = new Date(item.date);
+  eventDate.setHours(0, 0, 0, 0);
+
+  return (
+    eventDate >= today &&
+    !excludedUpcomingStatuses.includes(
+      item.statut || ""
+    )
+  );
+});
+
+const late = items.filter((item) => {
+  const eventDate = new Date(item.date);
+  eventDate.setHours(0, 0, 0, 0);
+
+  return (
+    eventDate < today &&
+    !resolvedPastStatuses.includes(
+      item.statut || ""
+    )
+  );
+});
+
+const in7Days = new Date(today);
+in7Days.setDate(today.getDate() + 7);
+
+const todayItems = upcoming.filter((item) => {
+  const eventDate = new Date(item.date);
+  eventDate.setHours(0, 0, 0, 0);
+
+  return eventDate.getTime() === today.getTime();
+});
+
+const next7Days = upcoming.filter((item) => {
+  const eventDate = new Date(item.date);
+  eventDate.setHours(0, 0, 0, 0);
+
+  return (
+    eventDate >= today &&
+    eventDate <= in7Days
+  );
+});
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -150,7 +213,16 @@ export default async function GlobalCalendarPage() {
         </p>
       </div>
 
-      <section className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <section className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5">
+        <KpiCard
+  label="Aujourd’hui"
+  value={todayItems.length}
+/>
+
+<KpiCard
+  label="Dans les 7 jours"
+  value={next7Days.length}
+/>
         <KpiCard label="Événements à venir" value={upcoming.length} />
         <KpiCard label="En retard" value={late.length} danger />
         <KpiCard label="Total calendrier" value={items.length} />
@@ -221,6 +293,23 @@ function CalendarCard({
   item: CalendarItem;
   danger?: boolean;
 }) {
+
+const eventDate = new Date(item.date);
+eventDate.setHours(0, 0, 0, 0);
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const lateDays = danger
+  ? Math.max(
+      1,
+      Math.ceil(
+        (today.getTime() - eventDate.getTime()) /
+          (1000 * 60 * 60 * 24)
+      )
+    )
+  : 0;
+
   return (
     <Link
       href={item.link}
@@ -250,9 +339,17 @@ function CalendarCard({
         </span>
       </div>
 
-      <p className="mt-4 text-sm text-zinc-400">
-        {formatDate(item.date)}
-      </p>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+  <p className="text-sm text-zinc-400">
+    {formatDate(item.date)}
+  </p>
+
+  {danger && (
+    <span className="rounded-full border border-red-500/40 bg-red-500/10 px-3 py-1 text-xs font-bold text-red-300">
+      +{lateDays} jour{lateDays > 1 ? "s" : ""}
+    </span>
+  )}
+</div>
     </Link>
   );
 }
