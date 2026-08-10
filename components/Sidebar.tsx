@@ -24,6 +24,8 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const [role, setRole] = useState<string | null>(null);
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [unreadChatNotifications, setUnreadChatNotifications] = useState(0);
   const [newCandidatures, setNewCandidatures] = useState(0);
@@ -36,13 +38,22 @@ export default function Sidebar() {
 
       if (!user) return;
 
+      setUserEmail(user.email || "");
+
       const { data: profile } = await supabaseBrowser
         .from("profiles")
-        .select("role")
+        .select("role, nom")
         .eq("id", user.id)
         .single();
 
       setRole(profile?.role || null);
+      setUserName(
+  profile?.nom ||
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email?.split("@")[0] ||
+    "Utilisateur"
+);
 
       async function loadCounts(userId: string) {
         const { count: notificationsCount } = await supabaseBrowser
@@ -411,6 +422,27 @@ const sections =
     return pathname === href || pathname.startsWith(`${href}/`);
   }
 
+const roleLabels: Record<string, string> = {
+  [ROLES.SUPER_ADMIN]: "Super Admin",
+  [ROLES.ADMIN]: "Administrateur",
+  [ROLES.MANAGER]: "Manager",
+  [ROLES.ARTISTIC_DIRECTOR]: "Direction artistique",
+  [ROLES.ARTISTE]: "Artiste",
+  [ROLES.PRESTATAIRE]: "Prestataire",
+};
+
+const roleLabel = role
+  ? roleLabels[role] || role
+  : "Chargement...";
+
+const userInitials = userName
+  .split(" ")
+  .filter(Boolean)
+  .map((part) => part[0])
+  .join("")
+  .slice(0, 2)
+  .toUpperCase() || "LM";
+
   return (
     <aside className="fixed left-0 top-0 z-50 flex h-screen w-72 flex-col overflow-y-auto border-r border-zinc-900 bg-black p-6 text-white">
       <div className="mb-8 flex items-center gap-4">
@@ -507,6 +539,59 @@ const sections =
           ))}
         </div>
       </nav>
+
+      <div className="mt-6 shrink-0 border-t border-zinc-900 pt-5">
+  <p className="mb-3 px-2 text-xs font-semibold uppercase tracking-[0.25em] text-zinc-600">
+    Mon compte
+  </p>
+
+  <Link
+    href="/profil"
+    className={`block rounded-2xl border p-4 transition ${
+      pathname === "/profil"
+        ? "border-white bg-white text-black"
+        : "border-zinc-800 bg-zinc-950 hover:border-zinc-600 hover:bg-zinc-900"
+    }`}
+  >
+    <div className="flex items-center gap-3">
+      <div
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-black ${
+          pathname === "/profil"
+            ? "bg-black text-white"
+            : "bg-white text-black"
+        }`}
+      >
+        {userInitials}
+      </div>
+
+      <div className="min-w-0">
+        <p className="truncate font-semibold">
+          {userName || "Utilisateur"}
+        </p>
+
+        <p
+          className={`mt-1 truncate text-xs ${
+            pathname === "/profil"
+              ? "text-zinc-600"
+              : "text-zinc-500"
+          }`}
+        >
+          {userEmail}
+        </p>
+      </div>
+    </div>
+
+    <div
+      className={`mt-3 rounded-full border px-3 py-1 text-center text-xs font-semibold ${
+        pathname === "/profil"
+          ? "border-zinc-300 text-zinc-700"
+          : "border-zinc-700 text-zinc-400"
+      }`}
+    >
+      {roleLabel}
+    </div>
+  </Link>
+</div>
 
       {canUseGlobalTools && (
         <div className="mb-4 shrink-0">
