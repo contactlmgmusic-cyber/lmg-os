@@ -21,6 +21,17 @@ type GraphRow = {
   revenus: number;
 };
 
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString(
+    "fr-FR",
+    {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    }
+  );
+}
+
 export default function AnalyticsGraphsPage() {
   const [data, setData] = useState<GraphRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,9 +95,11 @@ export default function AnalyticsGraphsPage() {
     const map = new Map<string, GraphRow>();
 
     analytics?.forEach((row) => {
-      const date = row.date_snapshot;
+      const rawDate = row.date_snapshot;
 
-      if (!date) return;
+if (!rawDate) return;
+
+const date = rawDate.slice(0, 10);
 
       const current =
         map.get(date) || {
@@ -105,12 +118,13 @@ export default function AnalyticsGraphsPage() {
       map.set(date, current);
     });
 
-    setData(Array.from(map.values()));
-  } catch (error) {
-    console.error(
-      "Erreur inattendue lors du chargement des analytics :",
-      error
-    );
+    setData(
+  Array.from(map.values()).sort(
+    (a, b) =>
+      new Date(a.date).getTime() -
+      new Date(b.date).getTime()
+  )
+);
 
     alert("Une erreur inattendue est survenue.");
   } finally {
@@ -161,6 +175,17 @@ function ChartCard({
   dataKey: keyof GraphRow;
   data: GraphRow[];
 }) {
+
+const chartColors: Record<keyof GraphRow, string> = {
+  date: "#ffffff",
+  streams: "#22c55e",
+  vues: "#3b82f6",
+  followers: "#a855f7",
+  revenus: "#f59e0b",
+};
+
+const chartColor = chartColors[dataKey];
+
   return (
     <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
       <h2 className="mb-6 text-3xl font-bold">{title}</h2>
@@ -172,20 +197,34 @@ function ChartCard({
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-              <XAxis dataKey="date" stroke="#71717a" />
+              <XAxis
+  dataKey="date"
+  stroke="#71717a"
+  tickFormatter={formatDate}
+  minTickGap={30}
+/>
               <YAxis stroke="#71717a" />
               <Tooltip
-                contentStyle={{
-                  background: "#09090b",
-                  border: "1px solid #27272a",
-                  borderRadius: "12px",
-                  color: "white",
-                }}
-              />
+  labelFormatter={(value) =>
+    formatDate(String(value))
+  }
+  formatter={(value) => [
+    dataKey === "revenus"
+      ? `${Number(value || 0).toFixed(2)} €`
+      : Number(value || 0).toLocaleString("fr-FR"),
+    title,
+  ]}
+  contentStyle={{
+    background: "#09090b",
+    border: "1px solid #27272a",
+    borderRadius: "12px",
+    color: "white",
+  }}
+/>
               <Line
                 type="monotone"
                 dataKey={dataKey}
-                stroke="#ffffff"
+                stroke={chartColor}
                 strokeWidth={3}
                 dot={false}
               />
