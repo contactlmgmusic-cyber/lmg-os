@@ -81,6 +81,53 @@ export async function syncGoogleCalendarForUser(
 
   const calendar = createGoogleCalendarApi(oauthClient);
 
+    const { data: profile, error: profileError } =
+    await supabaseAdmin
+      .from("profiles")
+      .select("artiste_id")
+      .eq("id", userId)
+      .maybeSingle();
+
+  if (profileError) {
+    throw profileError;
+  }
+
+  const { data: managedArtistes, error: artistesError } =
+    await supabaseAdmin
+      .from("artistes")
+      .select("id")
+      .eq("manager_id", userId);
+
+  if (artistesError) {
+    throw artistesError;
+  }
+
+  const artisteIds = Array.from(
+    new Set([
+      ...(managedArtistes || []).map((artiste) => artiste.id),
+      ...(profile?.artiste_id ? [profile.artiste_id] : []),
+    ])
+  );
+
+  const { data: linkedProjects, error: projectsError } =
+    artisteIds.length > 0
+      ? await supabaseAdmin
+          .from("projets")
+          .select("id")
+          .in("artiste_id", artisteIds)
+      : { data: [], error: null };
+
+  if (projectsError) {
+    throw projectsError;
+  }
+
+  const projectIds = (linkedProjects || []).map(
+    (project) => project.id
+  );
+
+  const artisteIdSet = new Set(artisteIds);
+  const projectIdSet = new Set(projectIds);
+
   const [
     { data: bookings, error: bookingsError },
     { data: rolloutEvents, error: rolloutError },
@@ -92,37 +139,37 @@ export async function syncGoogleCalendarForUser(
   ] = await Promise.all([
     supabaseAdmin
       .from("bookings")
-      .select("id, evenement, date_event, statut, ville")
+      .select("id, evenement, date_event, statut, ville, artiste_id")
       .not("date_event", "is", null),
 
     supabaseAdmin
       .from("rollout_events")
-      .select("id, titre, date_event, statut, type")
+      .select("id, titre, date_event, statut, type, projet_id")
       .not("date_event", "is", null),
 
     supabaseAdmin
       .from("medias")
-      .select("id, nom, prochaine_relance, statut")
+      .select("id, nom, prochaine_relance, statut, artiste_id, projet_id")
       .not("prochaine_relance", "is", null),
 
     supabaseAdmin
       .from("influenceurs")
-      .select("id, nom, prochaine_relance, statut")
+      .select("id, nom, prochaine_relance, statut, artiste_id, projet_id")
       .not("prochaine_relance", "is", null),
 
     supabaseAdmin
       .from("taches")
-      .select("id, titre, deadline, statut")
+      .select("id, titre, deadline, statut, responsable_id")
       .not("deadline", "is", null),
 
     supabaseAdmin
       .from("partenaires")
-      .select("id, nom, prochaine_relance, statut")
+      .select("id, nom, prochaine_relance, statut, artiste_id, projet_id")
       .not("prochaine_relance", "is", null),
 
     supabaseAdmin
       .from("release_tasks")
-      .select("id, titre, date_prevue, statut")
+      .select("id, titre, date_prevue, statut, responsable_id")
       .not("date_prevue", "is", null),
   ]);
 
@@ -140,7 +187,9 @@ export async function syncGoogleCalendarForUser(
   }
 
   const calendarItems: LmgCalendarItem[] = [
-    ...(bookings || []).map((item) => ({
+    ...(bookings || [])
+  .filter((item) => artisteIdSet.has(item.artiste_id))
+  .map((item) => ({
       id: item.id,
       sourceType: "booking",
       title: `LMG Booking — ${item.evenement}`,
@@ -150,7 +199,9 @@ export async function syncGoogleCalendarForUser(
       location: item.ville,
     })),
 
-    ...(rolloutEvents || []).map((item) => ({
+    ...(rolloutEvents || [])
+  .filter((item) => projectIdSet.has(item.projet_id))
+  .map((item) => ({
       id: item.id,
       sourceType: "rollout",
       title: `LMG Rollout — ${item.titre}`,
@@ -159,7 +210,13 @@ export async function syncGoogleCalendarForUser(
       description: item.type || "Action rollout",
     })),
 
-    ...(medias || []).map((item) => ({
+    ...(medias || [])
+  .filter(
+    (item) =>
+      artisteIdSet.has(item.artiste_id) ||
+      projectIdSet.has(item.projet_id)
+  )
+  .map((item) => ({
       id: item.id,
       sourceType: "media",
       title: `LMG Relance média — ${item.nom}`,
@@ -168,7 +225,13 @@ export async function syncGoogleCalendarForUser(
       description: "Relance CRM médias",
     })),
 
-    ...(influenceurs || []).map((item) => ({
+    ...(influenceurs || [])
+  .filter(
+    (item) =>
+      artisteIdSet.has(item.artiste_id) ||
+      projectIdSet.has(item.projet_id)
+  )
+  .map((item) => ({
       id: item.id,
       sourceType: "influenceur",
       title: `LMG Relance influenceur — ${item.nom}`,
@@ -177,7 +240,9 @@ export async function syncGoogleCalendarForUser(
       description: "Relance CRM influenceurs",
     })),
 
-    ...(taches || []).map((item) => ({
+    ...(taches || [])
+  .filter((item) => item.responsable_id === userId)
+  .map((item) => ({
       id: item.id,
       sourceType: "tache",
       title: `LMG Tâche — ${item.titre}`,
@@ -186,7 +251,13 @@ export async function syncGoogleCalendarForUser(
       description: "Deadline tâche",
     })),
 
-    ...(partenaires || []).map((item) => ({
+    ...(partenaires || [])
+  .filter(
+    (item) =>
+      artisteIdSet.has(item.artiste_id) ||
+      projectIdSet.has(item.projet_id)
+  )
+  .map((item) => ({
       id: item.id,
       sourceType: "partenaire",
       title: `LMG Relance partenaire — ${item.nom}`,
@@ -195,7 +266,9 @@ export async function syncGoogleCalendarForUser(
       description: "Relance CRM partenaires",
     })),
 
-    ...(releaseTasks || []).map((item) => ({
+    ...(releaseTasks || [])
+  .filter((item) => item.responsable_id === userId)
+  .map((item) => ({
       id: item.id,
       sourceType: "release-task",
       title: `LMG Release — ${item.titre}`,
