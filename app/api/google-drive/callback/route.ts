@@ -106,11 +106,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const redirectUri =
-      `${request.nextUrl.origin}/api/google-drive/callback`;
-
     const oauth2Client =
-      createGoogleDriveOAuthClient(redirectUri);
+  createGoogleDriveOAuthClient(
+    request.nextUrl.origin
+  );
 
     const { tokens } =
       await oauth2Client.getToken(code);
