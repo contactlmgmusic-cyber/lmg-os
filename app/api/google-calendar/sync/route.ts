@@ -368,16 +368,21 @@ let created = 0;
       total: calendarItems.length,
     });
   } catch (error) {
-    console.error("Erreur synchronisation Google Calendar :", error);
+  const message =
+    error instanceof Error
+      ? error.message
+      : JSON.stringify(error);
 
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "La synchronisation Google Calendar a échoué.",
-      },
-      { status: 500 }
-    );
-  }
+  console.error("Erreur synchronisation Google Calendar :", error);
+
+  return NextResponse.json(
+    {
+      error:
+        message && message !== "{}"
+          ? message
+          : "La synchronisation Google Calendar a échoué.",
+    },
+    { status: 500 }
+  );
+}
 }
