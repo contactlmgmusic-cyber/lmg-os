@@ -139,72 +139,160 @@ export default function DrivePage() {
     loadData();
   }, []);
 
-  async function uploadFile(e: React.FormEvent) {
-    e.preventDefault();
+  async function uploadFile(
+  e: React.FormEvent
+) {
+  e.preventDefault();
 
-    if (!selectedFile) {
-      alert("Ajoute un fichier.");
-      return;
-    }
-
-if (!currentUserId || !currentRole) {
-  alert("Impossible de vérifier ton accès.");
-  return;
-}
-
-if (currentRole === ROLES.MANAGER) {
-  const artisteAutorise =
-    !artisteId ||
-    artistes.some((artiste: any) => artiste.id === artisteId);
-
-  const projetAutorise =
-    !projetId ||
-    projets.some((projet: any) => projet.id === projetId);
-
-  if (!artisteAutorise || !projetAutorise) {
-    alert("Tu ne peux pas associer ce fichier à cet artiste ou ce projet.");
+  if (!selectedFile) {
+    alert("Ajoute un fichier.");
     return;
   }
-}
 
-    setLoading(true);
+  if (!currentUserId || !currentRole) {
+    alert(
+      "Impossible de vérifier ton accès."
+    );
+    return;
+  }
 
-    const {
-      data: { user },
-    } = await supabaseBrowser.auth.getUser();
+  if (currentRole === ROLES.MANAGER) {
+    const artisteAutorise =
+      !artisteId ||
+      artistes.some(
+        (artiste: any) =>
+          artiste.id === artisteId
+      );
 
-    const filePath = `${Date.now()}-${selectedFile.name}`;
+    const projetAutorise =
+      !projetId ||
+      projets.some(
+        (projet: any) =>
+          projet.id === projetId
+      );
 
-    const { error: uploadError } = await supabaseBrowser.storage
-      .from("lmg-drive")
-      .upload(filePath, selectedFile);
-
-    if (uploadError) {
-      alert(uploadError.message);
-      setLoading(false);
+    if (
+      !artisteAutorise ||
+      !projetAutorise
+    ) {
+      alert(
+        "Tu ne peux pas associer ce fichier à cet artiste ou ce projet."
+      );
       return;
     }
+  }
 
-    const { data: signedData } = await supabaseBrowser.storage
-      .from("lmg-drive")
-      .createSignedUrl(filePath, 60 * 60 * 24 * 7);
+  setLoading(true);
 
-    const { error } = await supabaseBrowser.from("drive_files").insert({
-      nom: nom || selectedFile.name,
-      type: selectedFile.type || null,
-      categorie,
-      artiste_id: artisteId || null,
-      projet_id: projetId || null,
-      fichier_url: signedData?.signedUrl || filePath,
-      taille: selectedFile.size,
-      uploaded_by: user?.id || null,
-    });
+  try {
+    const {
+      data: { session },
+    } =
+      await supabaseBrowser.auth.getSession();
 
-    setLoading(false);
+    const accessToken =
+      session?.access_token;
 
-    if (error) {
-      alert(error.message);
-      return;
+    if (!accessToken) {
+      throw new Error(
+        "Session utilisateur introuvable."
+      );
+    }
+
+    const startResponse = await fetch(
+      "/api/google-drive/upload/start",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+          Authorization:
+            `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          fileName: selectedFile.name,
+          mimeType:
+            selectedFile.type ||
+            "application/octet-stream",
+          fileSize: selectedFile.size,
+          artisteId,
+          projetId,
+        }),
+      }
+    );
+
+    const startResult =
+      await startResponse.json();
+
+    if (
+      !startResponse.ok ||
+      !startResult.uploadUrl
+    ) {
+      throw new Error(
+        startResult.error ||
+          "Impossible de préparer l’upload."
+      );
+    }
+
+    const uploadResponse = await fetch(
+      startResult.uploadUrl,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type":
+            selectedFile.type ||
+            "application/octet-stream",
+        },
+        body: selectedFile,
+      }
+    );
+
+    if (!uploadResponse.ok) {
+      throw new Error(
+        "L’envoi du fichier vers Google Drive a échoué."
+      );
+    }
+
+    const googleFile =
+      await uploadResponse.json();
+
+    if (!googleFile.id) {
+      throw new Error(
+        "Google Drive n’a pas retourné l’identifiant du fichier."
+      );
+    }
+
+    const finishResponse = await fetch(
+      "/api/google-drive/upload/finish",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+          Authorization:
+            `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          googleDriveFileId:
+            googleFile.id,
+          nom:
+            nom.trim() ||
+            selectedFile.name,
+          categorie,
+          artisteId,
+          projetId,
+        }),
+      }
+    );
+
+    const finishResult =
+      await finishResponse.json();
+
+    if (!finishResponse.ok) {
+      throw new Error(
+        finishResult.error ||
+          "Impossible d’enregistrer le fichier dans LMG OS."
+      );
     }
 
     setNom("");
@@ -214,41 +302,116 @@ if (currentRole === ROLES.MANAGER) {
     setSelectedFile(null);
 
     await loadData();
+
+    alert(
+      "Fichier ajouté au Drive central LMG."
+    );
+  } catch (error) {
+    console.error(
+      "Erreur upload Google Drive :",
+      error
+    );
+
+    alert(
+      error instanceof Error
+        ? error.message
+        : "L’upload a échoué."
+    );
+  } finally {
+    setLoading(false);
   }
-
-  async function deleteFile(file: any) {
-    if (!confirm("Supprimer ce fichier ?")) return;
-
-    if (
-  currentRole !== ROLES.SUPER_ADMIN &&
-  currentRole !== ROLES.ADMIN &&
-  currentRole !== ROLES.ARTISTIC_DIRECTOR &&
-  !(currentRole === ROLES.MANAGER && file.uploaded_by === currentUserId)
-) {
-  alert("Tu n’as pas l’autorisation de supprimer ce fichier.");
-  return;
 }
 
-    const path = file.fichier_url?.includes("lmg-drive/")
-      ? file.fichier_url.split("lmg-drive/")[1]?.split("?")[0]
-      : null;
+  async function deleteFile(file: any) {
+  if (!confirm("Supprimer ce fichier ?")) {
+    return;
+  }
 
-    if (path) {
-      await supabaseBrowser.storage.from("lmg-drive").remove([path]);
-    }
+  if (
+    currentRole !== ROLES.SUPER_ADMIN &&
+    currentRole !== ROLES.ADMIN &&
+    currentRole !==
+      ROLES.ARTISTIC_DIRECTOR &&
+    !(
+      currentRole === ROLES.MANAGER &&
+      file.uploaded_by ===
+        currentUserId
+    )
+  ) {
+    alert(
+      "Tu n’as pas l’autorisation de supprimer ce fichier."
+    );
+    return;
+  }
 
-    const { error } = await supabaseBrowser
-      .from("drive_files")
-      .delete()
-      .eq("id", file.id);
+  try {
+    if (
+      file.storage_provider ===
+        "google_drive" &&
+      file.google_drive_file_id
+    ) {
+      const response = await fetch(
+        `/api/google-drive/files/${file.google_drive_file_id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-    if (error) {
-      alert(error.message);
-      return;
+      const result =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ||
+            "Impossible de supprimer ce fichier."
+        );
+      }
+    } else {
+      const path =
+        file.fichier_url?.includes(
+          "lmg-drive/"
+        )
+          ? file.fichier_url
+              .split("lmg-drive/")[1]
+              ?.split("?")[0]
+          : null;
+
+      if (path) {
+        const { error: storageError } =
+          await supabaseBrowser.storage
+            .from("lmg-drive")
+            .remove([path]);
+
+        if (storageError) {
+          throw storageError;
+        }
+      }
+
+      const { error: deleteError } =
+        await supabaseBrowser
+          .from("drive_files")
+          .delete()
+          .eq("id", file.id);
+
+      if (deleteError) {
+        throw deleteError;
+      }
     }
 
     await loadData();
+  } catch (error) {
+    console.error(
+      "Erreur suppression fichier :",
+      error
+    );
+
+    alert(
+      error instanceof Error
+        ? error.message
+        : "Impossible de supprimer ce fichier."
+    );
   }
+}
 
   const filteredFiles =
     filter === "Tous"
