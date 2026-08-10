@@ -19,20 +19,8 @@ export function createGoogleCalendarOAuthClient(
   const clientSecret =
     process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
 
-  if (!clientId) {
-  const detectedKeys = Object.keys(process.env)
-    .filter((key) => key.includes("GOOGLE"))
-    .join(", ");
-
-  throw new Error(
-    `GOOGLE_CALENDAR_CLIENT_ID absente. Variables Google détectées : ${
-      detectedKeys || "aucune"
-    }`
-  );
-}
-
-if (!clientSecret) {
-  throw new Error("Variable GOOGLE_CALENDAR_CLIENT_SECRET manquante.");
+ if (!clientId || !clientSecret) {
+  throw new Error("Configuration Google Calendar indisponible.");
 }
 
   return new google.auth.OAuth2(

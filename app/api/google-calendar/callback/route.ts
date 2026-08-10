@@ -145,9 +145,8 @@ export async function GET(
         );
 
     if (saveError) {
-  throw new Error(
-    `Erreur Supabase : ${saveError.message}`
-  );
+  console.error("Erreur sauvegarde Google Calendar :", saveError);
+  return redirectWithStatus(request, "save-error");
 }
 
     return redirectWithStatus(
@@ -155,14 +154,7 @@ export async function GET(
       "connected"
     );
   } catch (error) {
-  const message =
-    error instanceof Error ? error.message : "Erreur inconnue";
-
   console.error("Erreur callback Google Calendar :", error);
-
-  return NextResponse.json(
-    { error: message },
-    { status: 500 }
-  );
-  }
+  return redirectWithStatus(request, "connection-error");
+}
 }
