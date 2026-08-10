@@ -147,8 +147,8 @@ async function syncGoogleCalendar() {
     }
 
     setSyncMessage(
-      `Synchronisation terminée : ${result.created} créé(s), ${result.updated} mis à jour.`
-    );
+  `Synchronisation terminée : ${result.created} créé(s), ${result.updated} mis à jour, ${result.deleted || 0} supprimé(s).`
+);
   } catch {
     setSyncMessage("Impossible de synchroniser Google Calendar.");
   } finally {

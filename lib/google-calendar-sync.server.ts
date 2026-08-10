@@ -206,7 +206,8 @@ export async function syncGoogleCalendarForUser(
   ];
 
     let created = 0;
-  let updated = 0;
+    let updated = 0;
+    let deleted = 0;
 
   for (const item of calendarItems) {
     const event = {
@@ -286,6 +287,73 @@ export async function syncGoogleCalendarForUser(
     }
   }
 
+    const activeKeys = new Set(
+    calendarItems.map(
+      (item) => `${item.sourceType}:${item.id}`
+    )
+  );
+
+  const managedSourceTypes = [
+    "booking",
+    "rollout",
+    "media",
+    "influenceur",
+    "tache",
+    "partenaire",
+    "release-task",
+  ];
+
+  const { data: syncedEvents, error: syncedEventsError } =
+    await supabaseAdmin
+      .from("google_calendar_event_syncs")
+      .select("id, source_type, source_id, google_event_id")
+      .eq("user_id", userId)
+      .in("source_type", managedSourceTypes);
+
+  if (syncedEventsError) {
+    throw syncedEventsError;
+  }
+
+  for (const syncedEvent of syncedEvents || []) {
+    const key = `${syncedEvent.source_type}:${syncedEvent.source_id}`;
+
+    if (activeKeys.has(key)) {
+      continue;
+    }
+
+    try {
+      await calendar.events.delete({
+        calendarId: "primary",
+        eventId: syncedEvent.google_event_id,
+      });
+    } catch (error) {
+      const googleError = error as {
+        code?: number;
+        response?: {
+          status?: number;
+        };
+      };
+
+      const status =
+        googleError.response?.status || googleError.code;
+
+      if (status !== 404 && status !== 410) {
+        throw error;
+      }
+    }
+
+    const { error: deleteSyncError } = await supabaseAdmin
+      .from("google_calendar_event_syncs")
+      .delete()
+      .eq("id", syncedEvent.id);
+
+    if (deleteSyncError) {
+      throw deleteSyncError;
+    }
+
+    deleted += 1;
+  }
+
   const refreshedCredentials = oauthClient.credentials;
 
   await supabaseAdmin
@@ -302,6 +370,7 @@ export async function syncGoogleCalendarForUser(
   return {
     created,
     updated,
+    deleted,
     total: calendarItems.length,
   };
 }
