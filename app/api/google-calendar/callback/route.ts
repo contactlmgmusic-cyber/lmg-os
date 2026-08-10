@@ -145,16 +145,10 @@ export async function GET(
         );
 
     if (saveError) {
-      console.error(
-        "Erreur sauvegarde Google Calendar :",
-        saveError
-      );
-
-      return redirectWithStatus(
-        request,
-        "save-error"
-      );
-    }
+  throw new Error(
+    `Erreur Supabase : ${saveError.message}`
+  );
+}
 
     return redirectWithStatus(
       request,
