@@ -20,7 +20,15 @@ export function createGoogleCalendarOAuthClient(
     process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
 
   if (!clientId) {
-  throw new Error("Variable GOOGLE_CALENDAR_CLIENT_ID manquante.");
+  const detectedKeys = Object.keys(process.env)
+    .filter((key) => key.includes("GOOGLE"))
+    .join(", ");
+
+  throw new Error(
+    `GOOGLE_CALENDAR_CLIENT_ID absente. Variables Google détectées : ${
+      detectedKeys || "aucune"
+    }`
+  );
 }
 
 if (!clientSecret) {
