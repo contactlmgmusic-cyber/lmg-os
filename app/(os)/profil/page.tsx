@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { ROLES } from "@/lib/roles";
+import GoogleCalendarConnection from "@/components/GoogleCalendarConnection";
 
 const roleLabels: Record<string, string> = {
   [ROLES.SUPER_ADMIN]: "Super Admin",
@@ -413,6 +414,9 @@ async function handleAvatarUpload(
             </button>
           </form>
         </section>
+
+        <GoogleCalendarConnection />
+        
         <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8 xl:col-start-2">
   <h2 className="text-3xl font-bold">
     Sécurité

@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { syncGoogleCalendarForUser } from "@/lib/google-calendar-sync.server";
-import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
-    const authorization = request.headers.get("authorization");
-    const accessToken = authorization?.startsWith("Bearer ")
-      ? authorization.slice(7)
-      : null;
+    const authorization =
+      request.headers.get("authorization");
+
+    const accessToken =
+      authorization?.startsWith("Bearer ")
+        ? authorization.slice(7)
+        : null;
 
     if (!accessToken) {
       return NextResponse.json(
@@ -43,39 +45,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-      process.env.SUPABASE_SERVICE_ROLE_KEY as string,
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-        },
-      }
-    );
-
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (
-      profile?.role !== ROLES.SUPER_ADMIN &&
-      profile?.role !== ROLES.ADMIN
-    ) {
-      return NextResponse.json(
-        { error: "Accès refusé." },
-        { status: 403 }
-      );
-    }
-
     const origin = new URL(request.url).origin;
 
-    const result = await syncGoogleCalendarForUser(
-      user.id,
-      origin
-    );
+    const result =
+      await syncGoogleCalendarForUser(
+        user.id,
+        origin
+      );
 
     return NextResponse.json({
       success: true,
@@ -87,7 +63,10 @@ export async function POST(request: NextRequest) {
         ? error.message
         : JSON.stringify(error);
 
-    console.error("Erreur synchronisation Google Calendar :", error);
+    console.error(
+      "Erreur synchronisation Google Calendar :",
+      error
+    );
 
     return NextResponse.json(
       {

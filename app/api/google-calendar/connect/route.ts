@@ -5,38 +5,28 @@ import {
   createSignedGoogleOAuthState,
   GOOGLE_CALENDAR_SCOPES,
 } from "@/lib/google-calendar.server";
-import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-export async function POST(
-  request: NextRequest
-) {
+export async function POST(request: NextRequest) {
   try {
-    const authorization =
-      request.headers.get("authorization");
+    const authorization = request.headers.get("authorization");
 
-    const accessToken =
-      authorization?.startsWith("Bearer ")
-        ? authorization.slice(7)
-        : null;
+    const accessToken = authorization?.startsWith("Bearer ")
+      ? authorization.slice(7)
+      : null;
 
     if (!accessToken) {
       return NextResponse.json(
-        {
-          error: "Session manquante.",
-        },
-        {
-          status: 401,
-        }
+        { error: "Session manquante." },
+        { status: 401 }
       );
     }
 
     const supabaseAuth = createClient(
-      process.env
-        .NEXT_PUBLIC_SUPABASE_URL as string,
-      process.env
-        .NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+      process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
       {
         auth: {
           persistSession: false,
@@ -48,65 +38,21 @@ export async function POST(
     const {
       data: { user },
       error: userError,
-    } = await supabaseAuth.auth.getUser(
-      accessToken
-    );
+    } = await supabaseAuth.auth.getUser(accessToken);
 
     if (userError || !user) {
       return NextResponse.json(
-        {
-          error: "Session invalide.",
-        },
-        {
-          status: 401,
-        }
+        { error: "Session invalide." },
+        { status: 401 }
       );
     }
 
-    const supabaseAdmin = createClient(
-      process.env
-        .NEXT_PUBLIC_SUPABASE_URL as string,
-      process.env
-        .SUPABASE_SERVICE_ROLE_KEY as string,
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-        },
-      }
-    );
-
-    const { data: profile } =
-      await supabaseAdmin
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-
-    if (
-      profile?.role !== ROLES.SUPER_ADMIN &&
-      profile?.role !== ROLES.ADMIN
-    ) {
-      return NextResponse.json(
-        {
-          error: "Accès refusé.",
-        },
-        {
-          status: 403,
-        }
-      );
-    }
-
-    const origin =
-      new URL(request.url).origin;
-
+    const origin = new URL(request.url).origin;
     const redirectUri =
       `${origin}/api/google-calendar/callback`;
 
     const oauthClient =
-      createGoogleCalendarOAuthClient(
-        redirectUri
-      );
+      createGoogleCalendarOAuthClient(redirectUri);
 
     const state =
       createSignedGoogleOAuthState(user.id);
@@ -124,14 +70,17 @@ export async function POST(
       authorizationUrl,
     });
   } catch (error) {
-  const message =
-    error instanceof Error ? error.message : "Erreur inconnue";
+    console.error(
+      "Erreur connexion Google Calendar :",
+      error
+    );
 
-  console.error("Erreur connexion Google Calendar :", error);
-
-  return NextResponse.json(
-    { error: message },
-    { status: 500 }
-  );
-}
+    return NextResponse.json(
+      {
+        error:
+          "Impossible de démarrer la connexion Google Calendar.",
+      },
+      { status: 500 }
+    );
   }
+}

@@ -4,9 +4,9 @@ import {
   createGoogleCalendarOAuthClient,
   verifySignedGoogleOAuthState,
 } from "@/lib/google-calendar.server";
-import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 function redirectWithStatus(
   request: NextRequest,
@@ -14,15 +14,13 @@ function redirectWithStatus(
 ) {
   return NextResponse.redirect(
     new URL(
-      `/calendrier/global?google=${status}`,
+      `/profil?google=${status}`,
       request.url
     )
   );
 }
 
-export async function GET(
-  request: NextRequest
-) {
+export async function GET(request: NextRequest) {
   try {
     const code =
       request.nextUrl.searchParams.get("code");
@@ -51,10 +49,8 @@ export async function GET(
     }
 
     const supabaseAdmin = createClient(
-      process.env
-        .NEXT_PUBLIC_SUPABASE_URL as string,
-      process.env
-        .SUPABASE_SERVICE_ROLE_KEY as string,
+      process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+      process.env.SUPABASE_SERVICE_ROLE_KEY as string,
       {
         auth: {
           persistSession: false,
@@ -63,57 +59,29 @@ export async function GET(
       }
     );
 
-    const { data: profile } =
-      await supabaseAdmin
-        .from("profiles")
-        .select("role")
-        .eq("id", verifiedState.userId)
-        .single();
-
-    if (
-      profile?.role !== ROLES.SUPER_ADMIN &&
-      profile?.role !== ROLES.ADMIN
-    ) {
-      return redirectWithStatus(
-        request,
-        "unauthorized"
-      );
-    }
-
-    const origin =
-      new URL(request.url).origin;
+    const origin = new URL(request.url).origin;
 
     const redirectUri =
       `${origin}/api/google-calendar/callback`;
 
     const oauthClient =
-      createGoogleCalendarOAuthClient(
-        redirectUri
-      );
+      createGoogleCalendarOAuthClient(redirectUri);
 
     const { tokens } =
       await oauthClient.getToken(code);
 
     const { data: existingConnection } =
       await supabaseAdmin
-        .from(
-          "google_calendar_connections"
-        )
+        .from("google_calendar_connections")
         .select("refresh_token")
-        .eq(
-          "user_id",
-          verifiedState.userId
-        )
+        .eq("user_id", verifiedState.userId)
         .maybeSingle();
 
     const refreshToken =
       tokens.refresh_token ||
       existingConnection?.refresh_token;
 
-    if (
-      !tokens.access_token ||
-      !refreshToken
-    ) {
+    if (!tokens.access_token || !refreshToken) {
       return redirectWithStatus(
         request,
         "token-error"
@@ -122,14 +90,11 @@ export async function GET(
 
     const { error: saveError } =
       await supabaseAdmin
-        .from(
-          "google_calendar_connections"
-        )
+        .from("google_calendar_connections")
         .upsert(
           {
             user_id: verifiedState.userId,
-            access_token:
-              tokens.access_token,
+            access_token: tokens.access_token,
             refresh_token: refreshToken,
             expiry_date:
               tokens.expiry_date || null,
@@ -145,16 +110,30 @@ export async function GET(
         );
 
     if (saveError) {
-  console.error("Erreur sauvegarde Google Calendar :", saveError);
-  return redirectWithStatus(request, "save-error");
-}
+      console.error(
+        "Erreur sauvegarde Google Calendar :",
+        saveError
+      );
+
+      return redirectWithStatus(
+        request,
+        "save-error"
+      );
+    }
 
     return redirectWithStatus(
       request,
       "connected"
     );
   } catch (error) {
-  console.error("Erreur callback Google Calendar :", error);
-  return redirectWithStatus(request, "connection-error");
-}
+    console.error(
+      "Erreur callback Google Calendar :",
+      error
+    );
+
+    return redirectWithStatus(
+      request,
+      "connection-error"
+    );
+  }
 }
