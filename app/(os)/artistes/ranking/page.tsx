@@ -22,20 +22,60 @@ function formatEuro(value: number) {
 }
 
 export default async function ArtistRankingPage() {
-  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER]);
+  const profile = await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.MANAGER,
+]);
+
+const isManager =
+  profile?.role === ROLES.MANAGER;
 
   const { data: artistes } = await supabase
     .from("artistes")
-    .select("id, nom, style, photo_url, statut")
+    .select(
+  "id, nom, style, photo_url, statut, manager_id"
+)
     .order("nom");
 
-  const { data: analytics } = await supabase.from("analytics").select("*");
-  const { data: bookings } = await supabase.from("bookings").select("*");
-  const { data: sorties } = await supabase.from("sorties").select("*");
+    const visibleArtistes = isManager
+  ? artistes?.filter(
+      (artiste: any) =>
+        artiste.manager_id === (profile as any).id
+    ) || []
+  : artistes || [];
+
+const artisteIds = visibleArtistes.map(
+  (artiste: any) => artiste.id
+);
+
+  const { data: analytics } =
+  artisteIds.length > 0
+    ? await supabase
+        .from("analytics")
+        .select("*")
+        .in("artiste_id", artisteIds)
+    : { data: [] };
+
+const { data: bookings } =
+  artisteIds.length > 0
+    ? await supabase
+        .from("bookings")
+        .select("*")
+        .in("artiste_id", artisteIds)
+    : { data: [] };
+
+const { data: sorties } =
+  artisteIds.length > 0
+    ? await supabase
+        .from("sorties")
+        .select("*")
+        .in("artiste_id", artisteIds)
+    : { data: [] };
 
   const ranking =
-    artistes
-      ?.map((artiste: any) => {
+    visibleArtistes
+  .map((artiste: any) => {
         const artistAnalytics =
           analytics?.filter((item: any) => item.artiste_id === artiste.id) || [];
 
@@ -88,7 +128,32 @@ export default async function ArtistRankingPage() {
           level: getLevel(score),
         };
       })
-      .sort((a: any, b: any) => b.score - a.score) || [];
+      .sort((a: any, b: any) => b.score - a.score);
+
+      const totalRankingStreams = ranking.reduce(
+  (total: number, artiste: any) =>
+    total + artiste.streams,
+  0
+);
+
+const totalRankingRevenus = ranking.reduce(
+  (total: number, artiste: any) =>
+    total + artiste.revenus,
+  0
+);
+
+const averageScore =
+  ranking.length > 0
+    ? Math.round(
+        ranking.reduce(
+          (total: number, artiste: any) =>
+            total + artiste.score,
+          0
+        ) / ranking.length
+      )
+    : 0;
+
+const topArtist = ranking[0] || null;
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -104,6 +169,52 @@ export default async function ArtistRankingPage() {
           sorties.
         </p>
       </div>
+
+      <section className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+    <p className="text-sm text-zinc-500">
+      Artistes classés
+    </p>
+
+    <p className="mt-3 text-3xl font-bold">
+      {ranking.length}
+    </p>
+  </div>
+
+  <div className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-6">
+    <p className="text-sm text-blue-300">
+      Score moyen
+    </p>
+
+    <p className="mt-3 text-3xl font-bold">
+      {averageScore}/100
+    </p>
+  </div>
+
+  <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-6">
+    <p className="text-sm text-emerald-300">
+      Streams cumulés
+    </p>
+
+    <p className="mt-3 text-3xl font-bold">
+      {formatNumber(totalRankingStreams)}
+    </p>
+  </div>
+
+  <div className="rounded-3xl border border-yellow-500/30 bg-yellow-500/10 p-6">
+    <p className="text-sm text-yellow-300">
+      Artiste leader
+    </p>
+
+    <p className="mt-3 truncate text-3xl font-bold">
+      {topArtist?.nom || "Aucun"}
+    </p>
+
+    <p className="mt-2 text-sm text-yellow-200/70">
+      {formatEuro(totalRankingRevenus)} générés au total
+    </p>
+  </div>
+</section>
 
       <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6 xl:p-8">
         {ranking.length === 0 && (
