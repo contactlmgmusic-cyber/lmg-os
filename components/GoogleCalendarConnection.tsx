@@ -9,6 +9,8 @@ export default function GoogleCalendarConnection() {
     useState(false);
   const [statusMessage, setStatusMessage] =
     useState("");
+    const [syncing, setSyncing] = useState(false);
+const [syncMessage, setSyncMessage] = useState("");
 
   useEffect(() => {
     async function loadStatus() {
@@ -112,6 +114,48 @@ export default function GoogleCalendarConnection() {
   }
 }
 
+async function syncGoogleCalendar() {
+  setSyncing(true);
+  setSyncMessage("");
+
+  try {
+    const {
+      data: { session },
+    } = await supabaseBrowser.auth.getSession();
+
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      setSyncMessage("Ta session a expiré. Reconnecte-toi à LMG OS.");
+      return;
+    }
+
+    const response = await fetch("/api/google-calendar/sync", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      setSyncMessage(
+        result.error || "La synchronisation a échoué."
+      );
+      return;
+    }
+
+    setSyncMessage(
+      `Synchronisation terminée : ${result.created} créé(s), ${result.updated} mis à jour.`
+    );
+  } catch {
+    setSyncMessage("Impossible de synchroniser Google Calendar.");
+  } finally {
+    setSyncing(false);
+  }
+}
+
   return (
     <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -156,6 +200,19 @@ export default function GoogleCalendarConnection() {
             ? "Reconnecter Google Calendar"
             : "Connecter Google Calendar"}
         </button>
+
+        {connected && (
+  <button
+    type="button"
+    onClick={syncGoogleCalendar}
+    disabled={syncing}
+    className="rounded-2xl border border-zinc-700 bg-black px-6 py-4 font-semibold text-white transition hover:border-zinc-500 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    {syncing
+      ? "Synchronisation..."
+      : "Synchroniser maintenant"}
+  </button>
+)}
       </div>
 
       {statusMessage && (
@@ -169,6 +226,12 @@ export default function GoogleCalendarConnection() {
           {statusMessage}
         </p>
       )}
+
+      {syncMessage && (
+  <p className="mt-5 rounded-2xl border border-zinc-700 bg-black p-4 text-sm text-zinc-300">
+    {syncMessage}
+  </p>
+)}
     </section>
   );
 }
