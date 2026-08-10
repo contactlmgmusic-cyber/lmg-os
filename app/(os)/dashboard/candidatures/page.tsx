@@ -8,6 +8,8 @@ import {
   Draggable,
 } from "@hello-pangea/dnd";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { useRouter } from "next/navigation";
+import { ROLES } from "@/lib/roles";
 
 type Candidature = {
   id: string;
@@ -49,6 +51,42 @@ function normalizeStatus(status?: string | null) {
   if (lower === "signé") return "Signé";
   if (lower === "refusée") return "Refusé";
   if (lower === "refusé") return "Refusé";
+if (
+  lower === "en etude" ||
+  lower === "étude"
+) {
+  return "En étude";
+}
+
+if (
+  lower === "call prevu" ||
+  lower === "appel prévu" ||
+  lower === "appel prevu"
+) {
+  return "Call prévu";
+}
+
+if (
+  lower === "negociation" ||
+  lower === "négociation"
+) {
+  return "Négociation";
+}
+
+if (
+  lower === "acceptee" ||
+  lower === "accepte" ||
+  lower === "accepté"
+) {
+  return "Signé";
+}
+
+if (
+  lower === "refusee" ||
+  lower === "refuse"
+) {
+  return "Refusé";
+}
 
   return status;
 }
@@ -62,9 +100,32 @@ function getPriorityTone(priority?: string | null) {
   return "border-yellow-500/40 text-yellow-300";
 }
 
+function isOverdueFollowUp(
+  date?: string | null,
+  status?: string | null
+) {
+  if (
+    !date ||
+    ["Signé", "Refusé"].includes(
+      normalizeStatus(status)
+    )
+  ) {
+    return false;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const followUpDate = new Date(date);
+  followUpDate.setHours(0, 0, 0, 0);
+
+  return followUpDate < today;
+}
+
 export default function CandidaturesPage() {
   const [candidatures, setCandidatures] = useState<Candidature[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   async function loadCandidatures() {
     const { data, error } = await supabaseBrowser
@@ -121,8 +182,35 @@ export default function CandidaturesPage() {
   }
 
   useEffect(() => {
-    loadCandidatures();
-  }, []);
+  async function checkAccessAndLoad() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (
+      profile?.role !== ROLES.SUPER_ADMIN &&
+      profile?.role !== ROLES.ADMIN
+    ) {
+      router.push("/dashboard");
+      return;
+    }
+
+    await loadCandidatures();
+  }
+
+  checkAccessAndLoad();
+}, [router]);
 
   const columns = Object.fromEntries(
     statuses.map((status) => [
@@ -142,6 +230,40 @@ export default function CandidaturesPage() {
   const signees = columns["Signé"]?.length || 0;
   const refusees = columns["Refusé"]?.length || 0;
 
+  const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const relancesEnRetard = candidatures.filter(
+  (candidature) => {
+    if (
+      !candidature.prochaine_relance ||
+      ["Signé", "Refusé"].includes(
+        normalizeStatus(candidature.statut)
+      )
+    ) {
+      return false;
+    }
+
+    const followUpDate = new Date(
+      candidature.prochaine_relance
+    );
+
+    followUpDate.setHours(0, 0, 0, 0);
+
+    return followUpDate < today;
+  }
+).length;
+
+const candidaturesTraitees =
+  signees + refusees;
+
+const tauxSignature =
+  candidaturesTraitees > 0
+    ? Math.round(
+        (signees / candidaturesTraitees) * 100
+      )
+    : 0;
+
   return (
     <main className="min-h-screen bg-black p-10 text-white">
       <div className="mb-10">
@@ -158,11 +280,13 @@ export default function CandidaturesPage() {
         </p>
       </div>
 
-      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-6">
         <MiniStat label="Nouvelles" value={nouvelles} />
         <MiniStat label="En cours" value={enCours} />
         <MiniStat label="Signées" value={signees} />
         <MiniStat label="Refusées" value={refusees} />
+        <MiniStat label="Relances en retard" value={relancesEnRetard} />
+        <MiniStat label="Taux de signature" value={`${tauxSignature}%`} />
       </div>
 
       {loading && (
@@ -264,11 +388,25 @@ export default function CandidaturesPage() {
                                 )}
 
                                 {candidature.prochaine_relance && (
-                                  <p className="mt-3 text-sm text-yellow-300">
-                                    Relance :{" "}
-                                    {candidature.prochaine_relance}
-                                  </p>
-                                )}
+  <p
+    className={`mt-3 rounded-xl border px-3 py-2 text-sm ${
+      isOverdueFollowUp(
+        candidature.prochaine_relance,
+        candidature.statut
+      )
+        ? "border-red-500/30 bg-red-500/10 text-red-300"
+        : "border-yellow-500/30 bg-yellow-500/10 text-yellow-300"
+    }`}
+  >
+    {isOverdueFollowUp(
+      candidature.prochaine_relance,
+      candidature.statut
+    )
+      ? "Relance en retard"
+      : "Relance prévue"}{" "}
+    : {candidature.prochaine_relance}
+  </p>
+)}
 
                                 <div className="mt-4 grid gap-3">
                                   <select
@@ -369,7 +507,7 @@ function MiniStat({
   value,
 }: {
   label: string;
-  value: number;
+  value: string | number;
 }) {
   return (
     <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
