@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
 import { ROLES } from "@/lib/roles";
+import { Suspense } from "react";
+import GoogleDriveConnection from "@/components/GoogleDriveConnection";
 
 export const dynamic = "force-dynamic";
 
@@ -35,9 +37,10 @@ export default async function ManagerDashboardPage() {
     : { data: null };
 
   if (
-    currentProfile?.role !== ROLES.MANAGER &&
-    currentProfile?.role !== ROLES.ADMIN
-  ) {
+  currentProfile?.role !== ROLES.MANAGER &&
+  currentProfile?.role !== ROLES.ADMIN &&
+  currentProfile?.role !== ROLES.SUPER_ADMIN
+) {
     return (
       <main className="p-10 text-white">
         <p className="text-red-400">
@@ -120,6 +123,23 @@ export default async function ManagerDashboardPage() {
           projets et opérations.
         </p>
       </div>
+
+{(
+  currentProfile?.role === ROLES.ADMIN ||
+  currentProfile?.role === ROLES.SUPER_ADMIN
+) && (
+  <div className="mb-10">
+    <Suspense
+      fallback={
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8 text-zinc-500">
+          Chargement de Google Drive...
+        </div>
+      }
+    >
+      <GoogleDriveConnection />
+    </Suspense>
+  </div>
+)}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
