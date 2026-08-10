@@ -26,6 +26,7 @@ export default function Sidebar() {
   const [role, setRole] = useState<string | null>(null);
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [unreadChatNotifications, setUnreadChatNotifications] = useState(0);
   const [newCandidatures, setNewCandidatures] = useState(0);
@@ -39,6 +40,9 @@ export default function Sidebar() {
       if (!user) return;
 
       setUserEmail(user.email || "");
+      setAvatarUrl(
+  user.user_metadata?.avatar_url || ""
+);
 
       const { data: profile } = await supabaseBrowser
         .from("profiles")
@@ -555,14 +559,30 @@ const userInitials = userName
   >
     <div className="flex items-center gap-3">
       <div
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-black ${
-          pathname === "/profil"
-            ? "bg-black text-white"
-            : "bg-white text-black"
-        }`}
-      >
-        {userInitials}
-      </div>
+  className={`h-11 w-11 shrink-0 overflow-hidden rounded-full border ${
+    pathname === "/profil"
+      ? "border-black bg-black"
+      : "border-zinc-700 bg-white"
+  }`}
+>
+  {avatarUrl ? (
+    <img
+      src={avatarUrl}
+      alt={userName || "Photo de profil"}
+      className="h-full w-full object-cover"
+    />
+  ) : (
+    <div
+      className={`flex h-full w-full items-center justify-center text-sm font-black ${
+        pathname === "/profil"
+          ? "text-white"
+          : "text-black"
+      }`}
+    >
+      {userInitials}
+    </div>
+  )}
+</div>
 
       <div className="min-w-0">
         <p className="truncate font-semibold">
