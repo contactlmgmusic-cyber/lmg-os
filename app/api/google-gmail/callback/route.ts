@@ -7,7 +7,6 @@ import {
   verifySignedGoogleOAuthState,
 } from "@/lib/google-calendar.server";
 import {
-  createGoogleGmailApi,
   createGoogleGmailOAuthClient,
 } from "@/lib/google-gmail.server";
 import { ROLES } from "@/lib/roles";
@@ -137,15 +136,6 @@ export async function GET(
 
     oauth2Client.setCredentials(tokens);
 
-    const gmail =
-      createGoogleGmailApi(
-        oauth2Client
-      );
-
-    const gmailProfile =
-      await gmail.users.getProfile({
-        userId: "me",
-      });
 
     const { data: existing } =
       await supabaseAdmin
@@ -181,8 +171,7 @@ export async function GET(
             connected_by:
               verifiedState.userId,
             google_email:
-              gmailProfile.data
-                .emailAddress || null,
+  "contactlmgmusic@gmail.com",
             access_token:
               tokens.access_token,
             refresh_token:
