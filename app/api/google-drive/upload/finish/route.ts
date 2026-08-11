@@ -125,11 +125,6 @@ export async function POST(
         ? body.googleDriveFileId.trim()
         : "";
 
-    const folderId =
-      typeof body.folderId === "string"
-        ? body.folderId.trim()
-        : "";
-
     const nom =
       typeof body.nom === "string"
         ? body.nom.trim()
@@ -153,10 +148,7 @@ export async function POST(
         ? body.projetId
         : null;
 
-    if (
-      !googleDriveFileId ||
-      !folderId
-    ) {
+    if (!googleDriveFileId) {
       return NextResponse.json(
         {
           error:
@@ -245,12 +237,13 @@ export async function POST(
           "id,name,mimeType,size,parents,trashed",
       });
 
+      const folderId =
+  googleFile.parents?.[0] || null;
+
     if (
-      googleFile.trashed ||
-      !googleFile.parents?.includes(
-        folderId
-      )
-    ) {
+  googleFile.trashed ||
+  !folderId
+) {
       return NextResponse.json(
         {
           error:
@@ -279,24 +272,31 @@ export async function POST(
         break;
       }
 
-      const { data: folder } =
-        await drive.files.get({
-          fileId:
-            currentFolderId,
-          fields:
-            "id,mimeType,parents,trashed",
-        });
+      const folderResponse =
+  await drive.files.get({
+    fileId:
+      currentFolderId,
+    fields:
+      "id,mimeType,parents,trashed",
+  });
 
-      if (
-        folder.trashed ||
-        folder.mimeType !==
-          "application/vnd.google-apps.folder"
-      ) {
-        break;
-      }
+const folderData:
+  {
+    trashed?: boolean | null;
+    mimeType?: string | null;
+    parents?: string[] | null;
+  } = folderResponse.data;
 
-      currentFolderId =
-        folder.parents?.[0] || null;
+if (
+  folderData.trashed ||
+  folderData.mimeType !==
+    "application/vnd.google-apps.folder"
+) {
+  break;
+}
+
+currentFolderId =
+  folderData.parents?.[0] || null;
     }
 
     if (!folderInsideRoot) {
