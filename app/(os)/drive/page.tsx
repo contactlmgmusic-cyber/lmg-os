@@ -215,6 +215,7 @@ export default function DrivePage() {
             selectedFile.type ||
             "application/octet-stream",
           fileSize: selectedFile.size,
+          categorie,
           artisteId,
           projetId,
         }),
@@ -306,6 +307,7 @@ if (!googleFile?.id) {
         body: JSON.stringify({
           googleDriveFileId:
             googleFile.id,
+            folderId: startResult.folderId,
           nom:
             nom.trim() ||
             selectedFile.name,

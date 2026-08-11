@@ -1,4 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getCentralGoogleDrive } from "@/lib/google-drive-central.server";
 import { ROLES } from "@/lib/roles";
@@ -41,31 +44,42 @@ function createSupabaseAdmin() {
   );
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest
+) {
   try {
     const authorization =
-      request.headers.get("authorization");
+      request.headers.get(
+        "authorization"
+      );
 
     const sessionToken =
-      authorization?.startsWith("Bearer ")
+      authorization?.startsWith(
+        "Bearer "
+      )
         ? authorization.slice(7)
         : null;
 
     if (!sessionToken) {
       return NextResponse.json(
-        { error: "Authentification requise." },
+        {
+          error:
+            "Authentification requise.",
+        },
         { status: 401 }
       );
     }
 
-    const supabaseAdmin = createSupabaseAdmin();
+    const supabaseAdmin =
+      createSupabaseAdmin();
 
     const {
       data: { user },
       error: userError,
-    } = await supabaseAdmin.auth.getUser(
-      sessionToken
-    );
+    } =
+      await supabaseAdmin.auth.getUser(
+        sessionToken
+      );
 
     if (userError || !user) {
       return NextResponse.json(
@@ -90,7 +104,9 @@ export async function POST(request: NextRequest) {
 
     if (
       !profile ||
-      !allowedRoles.includes(profile.role)
+      !allowedRoles.includes(
+        profile.role
+      )
     ) {
       return NextResponse.json(
         {
@@ -104,8 +120,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const googleDriveFileId =
-      typeof body.googleDriveFileId === "string"
+      typeof body.googleDriveFileId ===
+        "string"
         ? body.googleDriveFileId.trim()
+        : "";
+
+    const folderId =
+      typeof body.folderId === "string"
+        ? body.folderId.trim()
         : "";
 
     const nom =
@@ -114,34 +136,40 @@ export async function POST(request: NextRequest) {
         : "";
 
     const categorie =
-      typeof body.categorie === "string"
+      typeof body.categorie ===
+        "string"
         ? body.categorie
         : "Autre";
 
     const artisteId =
-      typeof body.artisteId === "string" &&
-      body.artisteId
+      typeof body.artisteId ===
+        "string" && body.artisteId
         ? body.artisteId
         : null;
 
     const projetId =
-      typeof body.projetId === "string" &&
-      body.projetId
+      typeof body.projetId ===
+        "string" && body.projetId
         ? body.projetId
         : null;
 
-    if (!googleDriveFileId) {
+    if (
+      !googleDriveFileId ||
+      !folderId
+    ) {
       return NextResponse.json(
         {
           error:
-            "Identifiant Google Drive manquant.",
+            "Identifiants Google Drive manquants.",
         },
         { status: 400 }
       );
     }
 
     if (
-      !allowedCategories.includes(categorie)
+      !allowedCategories.includes(
+        categorie
+      )
     ) {
       return NextResponse.json(
         { error: "Catégorie invalide." },
@@ -149,14 +177,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (profile.role === ROLES.MANAGER) {
+    if (
+      profile.role === ROLES.MANAGER
+    ) {
       if (artisteId) {
         const { data: artiste } =
           await supabaseAdmin
             .from("artistes")
             .select("id")
             .eq("id", artisteId)
-            .eq("manager_id", user.id)
+            .eq(
+              "manager_id",
+              user.id
+            )
             .maybeSingle();
 
         if (!artiste) {
@@ -199,13 +232,15 @@ export async function POST(request: NextRequest) {
     const {
       drive,
       rootFolderId,
-    } = await getCentralGoogleDrive(
-      request.nextUrl.origin
-    );
+    } =
+      await getCentralGoogleDrive(
+        request.nextUrl.origin
+      );
 
     const { data: googleFile } =
       await drive.files.get({
-        fileId: googleDriveFileId,
+        fileId:
+          googleDriveFileId,
         fields:
           "id,name,mimeType,size,parents,trashed",
       });
@@ -213,46 +248,102 @@ export async function POST(request: NextRequest) {
     if (
       googleFile.trashed ||
       !googleFile.parents?.includes(
-        rootFolderId
+        folderId
       )
     ) {
       return NextResponse.json(
         {
           error:
-            "Ce fichier n’appartient pas au Drive LMG.",
+            "Le fichier n’appartient pas au dossier attendu.",
         },
         { status: 403 }
       );
     }
 
-    const { data: savedFile, error: saveError } =
-      await supabaseAdmin
-        .from("drive_files")
-        .insert({
-          nom: nom || googleFile.name,
-          type: googleFile.mimeType || null,
-          categorie,
-          artiste_id: artisteId,
-          projet_id: projetId,
-          fichier_url:
-            `/api/google-drive/files/${googleDriveFileId}`,
-          taille: Number(
-            googleFile.size || 0
-          ),
-          uploaded_by: user.id,
-          storage_provider:
-            "google_drive",
-          google_drive_file_id:
-            googleDriveFileId,
-          google_drive_folder_id:
-            rootFolderId,
-        })
-        .select(`
-          *,
-          artistes ( id, nom ),
-          projets ( id, titre )
-        `)
-        .single();
+    let currentFolderId:
+      | string
+      | null = folderId;
+
+    let folderInsideRoot = false;
+
+    for (
+      let depth = 0;
+      depth < 20 && currentFolderId;
+      depth += 1
+    ) {
+      if (
+        currentFolderId ===
+        rootFolderId
+      ) {
+        folderInsideRoot = true;
+        break;
+      }
+
+      const { data: folder } =
+        await drive.files.get({
+          fileId:
+            currentFolderId,
+          fields:
+            "id,mimeType,parents,trashed",
+        });
+
+      if (
+        folder.trashed ||
+        folder.mimeType !==
+          "application/vnd.google-apps.folder"
+      ) {
+        break;
+      }
+
+      currentFolderId =
+        folder.parents?.[0] || null;
+    }
+
+    if (!folderInsideRoot) {
+      return NextResponse.json(
+        {
+          error:
+            "Le dossier n’appartient pas au Drive central LMG.",
+        },
+        { status: 403 }
+      );
+    }
+
+    const {
+      data: savedFile,
+      error: saveError,
+    } = await supabaseAdmin
+      .from("drive_files")
+      .insert({
+        nom:
+          nom ||
+          googleFile.name ||
+          "Fichier",
+        type:
+          googleFile.mimeType ||
+          null,
+        categorie,
+        artiste_id: artisteId,
+        projet_id: projetId,
+        fichier_url:
+          `/api/google-drive/files/${googleDriveFileId}`,
+        taille: Number(
+          googleFile.size || 0
+        ),
+        uploaded_by: user.id,
+        storage_provider:
+          "google_drive",
+        google_drive_file_id:
+          googleDriveFileId,
+        google_drive_folder_id:
+          folderId,
+      })
+      .select(`
+        *,
+        artistes ( id, nom ),
+        projets ( id, titre )
+      `)
+      .single();
 
     if (saveError) {
       console.error(
@@ -262,7 +353,8 @@ export async function POST(request: NextRequest) {
 
       try {
         await drive.files.delete({
-          fileId: googleDriveFileId,
+          fileId:
+            googleDriveFileId,
         });
       } catch (deleteError) {
         console.error(
@@ -272,12 +364,12 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json(
-  {
-    error:
-      `Erreur Supabase ${saveError.code}: ${saveError.message}`,
-  },
-  { status: 500 }
-);
+        {
+          error:
+            `Erreur Supabase ${saveError.code}: ${saveError.message}`,
+        },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({

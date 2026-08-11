@@ -1,9 +1,8 @@
 import "server-only";
+
 import { createClient } from "@supabase/supabase-js";
-import {
-  createGoogleDriveOAuthClient,
-} from "@/lib/google-drive.server";
-import { google } from "googleapis";
+import { drive_v3, google } from "googleapis";
+import { createGoogleDriveOAuthClient } from "@/lib/google-drive.server";
 
 function createSupabaseAdmin() {
   const supabaseUrl =
@@ -33,7 +32,8 @@ function createSupabaseAdmin() {
 export async function getCentralGoogleDrive(
   origin: string
 ) {
-  const supabaseAdmin = createSupabaseAdmin();
+  const supabaseAdmin =
+    createSupabaseAdmin();
 
   const { data: connection, error } =
     await supabaseAdmin
@@ -64,21 +64,26 @@ export async function getCentralGoogleDrive(
     createGoogleDriveOAuthClient(origin);
 
   oauth2Client.setCredentials({
-    access_token: connection.access_token,
-    refresh_token: connection.refresh_token,
-    expiry_date: connection.token_expiry
-      ? new Date(
-          connection.token_expiry
-        ).getTime()
-      : undefined,
+    access_token:
+      connection.access_token,
+    refresh_token:
+      connection.refresh_token,
+    expiry_date:
+      connection.token_expiry
+        ? new Date(
+            connection.token_expiry
+          ).getTime()
+        : undefined,
   });
 
   oauth2Client.on(
     "tokens",
     async (tokens) => {
-      const update: Record<string, unknown> = {
-        updated_at: new Date().toISOString(),
-      };
+      const update:
+        Record<string, unknown> = {
+          updated_at:
+            new Date().toISOString(),
+        };
 
       if (tokens.access_token) {
         update.access_token =
@@ -99,7 +104,9 @@ export async function getCentralGoogleDrive(
 
       const { error: updateError } =
         await supabaseAdmin
-          .from("google_drive_connections")
+          .from(
+            "google_drive_connections"
+          )
           .update(update)
           .eq("id", "lmg-central");
 
@@ -120,10 +127,92 @@ export async function getCentralGoogleDrive(
   });
 
   return {
+    drive,
+    oauth2Client,
+    rootFolderId:
+      connection.root_folder_id as string,
+    supabaseAdmin,
+  };
+}
+
+function cleanFolderName(
+  value: string
+) {
+  return value
+    .replace(/[\/\\]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+}
+
+function escapeDriveQuery(
+  value: string
+) {
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'");
+}
+
+export async function getOrCreateDriveFolder({
   drive,
-  oauth2Client,
-  rootFolderId:
-    connection.root_folder_id as string,
-  supabaseAdmin,
-};
+  name,
+  parentId,
+}: {
+  drive: drive_v3.Drive;
+  name: string;
+  parentId: string;
+}) {
+  const folderName =
+    cleanFolderName(name);
+
+  if (!folderName) {
+    throw new Error(
+      "Nom de dossier invalide."
+    );
+  }
+
+  const escapedName =
+    escapeDriveQuery(folderName);
+
+  const escapedParent =
+    escapeDriveQuery(parentId);
+
+  const { data: result } =
+    await drive.files.list({
+      q: [
+        `name = '${escapedName}'`,
+        `mimeType = 'application/vnd.google-apps.folder'`,
+        `'${escapedParent}' in parents`,
+        "trashed = false",
+      ].join(" and "),
+      spaces: "drive",
+      fields: "files(id,name)",
+      pageSize: 1,
+    });
+
+  const existingFolderId =
+    result.files?.[0]?.id;
+
+  if (existingFolderId) {
+    return existingFolderId;
+  }
+
+  const { data: folder } =
+    await drive.files.create({
+      requestBody: {
+        name: folderName,
+        mimeType:
+          "application/vnd.google-apps.folder",
+        parents: [parentId],
+      },
+      fields: "id",
+    });
+
+  if (!folder.id) {
+    throw new Error(
+      `Impossible de créer le dossier ${folderName}.`
+    );
+  }
+
+  return folder.id;
 }
