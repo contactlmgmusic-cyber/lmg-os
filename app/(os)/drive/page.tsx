@@ -43,7 +43,7 @@ export default function DrivePage() {
 
   const { data: profile } = await supabaseBrowser
     .from("profiles")
-    .select("id, role")
+    .select("id, role, artiste_id")
     .eq("id", user.id)
     .single();
 
@@ -51,7 +51,8 @@ export default function DrivePage() {
     profile?.role !== ROLES.SUPER_ADMIN &&
     profile?.role !== ROLES.ADMIN &&
     profile?.role !== ROLES.ARTISTIC_DIRECTOR &&
-    profile?.role !== ROLES.MANAGER
+    profile?.role !== ROLES.MANAGER &&
+    profile?.role !== ROLES.ARTISTE
   ) {
     window.location.href = "/";
     return;
@@ -59,6 +60,84 @@ export default function DrivePage() {
 
   setCurrentUserId(user.id);
   setCurrentRole(profile.role);
+
+  if (
+  profile.role === ROLES.ARTISTE
+) {
+  if (!profile.artiste_id) {
+    setFiles([]);
+    setArtistes([]);
+    setProjets([]);
+    return;
+  }
+
+  const { data: artisteData } =
+    await supabaseBrowser
+      .from("artistes")
+      .select("id, nom")
+      .eq(
+        "id",
+        profile.artiste_id
+      )
+      .single();
+
+  const { data: projetsData } =
+    await supabaseBrowser
+      .from("projets")
+      .select(
+        "id, titre, artiste_id"
+      )
+      .eq(
+        "artiste_id",
+        profile.artiste_id
+      )
+      .order("titre");
+
+  const projetIds =
+    (projetsData || []).map(
+      (projet: any) =>
+        projet.id
+    );
+
+  const driveFilters = [
+    `artiste_id.eq.${profile.artiste_id}`,
+  ];
+
+  if (projetIds.length > 0) {
+    driveFilters.push(
+      `projet_id.in.(${projetIds.join(
+        ","
+      )})`
+    );
+  }
+
+  const { data: filesData } =
+    await supabaseBrowser
+      .from("drive_files")
+      .select(`
+        *,
+        artistes ( id, nom ),
+        projets ( id, titre )
+      `)
+      .or(
+        driveFilters.join(",")
+      )
+      .order("created_at", {
+        ascending: false,
+      });
+
+  setFiles(filesData || []);
+  setArtistes(
+    artisteData
+      ? [artisteData]
+      : []
+  );
+  setProjets(
+    projetsData || []
+  );
+
+  return;
+}
 
   if (profile.role === ROLES.MANAGER) {
     const { data: artistesData } = await supabaseBrowser
@@ -465,6 +544,9 @@ if (!googleFile?.id) {
         </p>
       </div>
 
+{currentRole &&
+  currentRole !== ROLES.ARTISTE && (
+
       <form
         onSubmit={uploadFile}
         className="mb-10 grid grid-cols-1 gap-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-8 xl:grid-cols-2"
@@ -525,6 +607,7 @@ if (!googleFile?.id) {
           {loading ? "Upload..." : "Uploader dans le Drive"}
         </button>
       </form>
+      )}
 
       <div className="mb-8 flex flex-wrap gap-3">
         {categories.map((cat) => (

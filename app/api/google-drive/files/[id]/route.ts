@@ -77,7 +77,7 @@ export async function GET(
     const { data: profile } =
       await supabaseAdmin
         .from("profiles")
-        .select("id, role")
+        .select("id, role, artiste_id")
         .eq("id", user.id)
         .single();
 
@@ -151,6 +151,37 @@ export async function GET(
         allowed = Boolean(projet);
       }
     }
+
+    if (
+  !allowed &&
+  profile.role === ROLES.ARTISTE &&
+  profile.artiste_id
+) {
+  allowed =
+    file.artiste_id ===
+    profile.artiste_id;
+
+  if (
+    !allowed &&
+    file.projet_id
+  ) {
+    const { data: projet } =
+      await supabaseAdmin
+        .from("projets")
+        .select("id")
+        .eq(
+          "id",
+          file.projet_id
+        )
+        .eq(
+          "artiste_id",
+          profile.artiste_id
+        )
+        .maybeSingle();
+
+    allowed = Boolean(projet);
+  }
+}
 
     if (!allowed) {
       return NextResponse.json(
