@@ -223,18 +223,13 @@ export default function CrmEmailPanel({
 
     try {
       const response = await fetch(
-        "/api/google-gmail/schedule",
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            id: scheduledEmailId,
-          }),
-        }
-      );
+  `/api/google-gmail/schedule?id=${encodeURIComponent(
+    scheduledEmailId
+  )}`,
+  {
+    method: "DELETE",
+  }
+);
 
       const result =
         await response.json();
