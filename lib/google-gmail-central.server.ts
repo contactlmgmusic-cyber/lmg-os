@@ -1,4 +1,5 @@
 import "server-only";
+
 import { createClient } from "@supabase/supabase-js";
 import {
   createGoogleGmailApi,
@@ -28,6 +29,28 @@ function createSupabaseAdmin() {
       },
     }
   );
+}
+
+function encodeBase64Url(
+  value: string
+) {
+  return Buffer.from(
+    value,
+    "utf8"
+  )
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+
+function encodeHeader(
+  value: string
+) {
+  return `=?UTF-8?B?${Buffer.from(
+    value,
+    "utf8"
+  ).toString("base64")}?=`;
 }
 
 export async function getCentralGoogleGmail(
@@ -133,5 +156,73 @@ export async function getCentralGoogleGmail(
     googleEmail:
       connection.google_email,
     supabaseAdmin,
+  };
+}
+
+export async function sendCentralGmail({
+  origin,
+  to,
+  subject,
+  message,
+}: {
+  origin: string;
+  to: string;
+  subject: string;
+  message: string;
+}) {
+  const cleanTo = to.trim();
+  const cleanSubject =
+    subject.trim();
+  const cleanMessage =
+    message.trim();
+
+  if (
+    !cleanTo ||
+    !cleanSubject ||
+    !cleanMessage
+  ) {
+    throw new Error(
+      "Le destinataire, l’objet et le message sont obligatoires."
+    );
+  }
+
+  const { gmail } =
+    await getCentralGoogleGmail(
+      origin
+    );
+
+  const rawMessage = [
+    "From: Legacy Music Group <contact@legacymusicgroup.fr>",
+    "Reply-To: contact@legacymusicgroup.fr",
+    `To: ${cleanTo}`,
+    `Subject: ${encodeHeader(
+      cleanSubject
+    )}`,
+    "MIME-Version: 1.0",
+    'Content-Type: text/plain; charset="UTF-8"',
+    "Content-Transfer-Encoding: base64",
+    "",
+    Buffer.from(
+      cleanMessage,
+      "utf8"
+    ).toString("base64"),
+  ].join("\r\n");
+
+  const response =
+    await gmail.users.messages.send({
+      userId: "me",
+      requestBody: {
+        raw: encodeBase64Url(
+          rawMessage
+        ),
+      },
+    });
+
+  return {
+    gmailMessageId:
+      response.data.id || null,
+    gmailThreadId:
+      response.data.threadId ||
+      null,
   };
 }

@@ -26,6 +26,7 @@ export default function GmailComposer({
   entityType,
   entityId,
   onSent,
+  onScheduled,
 }: {
   defaultTo?: string;
   defaultSubject?: string;
@@ -33,6 +34,7 @@ export default function GmailComposer({
   entityType?: EntityType;
   entityId?: string;
   onSent?: () => void;
+  onScheduled?: () => void;
 }) {
   const [to, setTo] =
     useState(defaultTo);
@@ -42,6 +44,11 @@ export default function GmailComposer({
 
   const [message, setMessage] =
     useState("");
+
+  const [
+    scheduledFor,
+    setScheduledFor,
+  ] = useState("");
 
   const [templates, setTemplates] =
     useState<EmailTemplate[]>([]);
@@ -57,6 +64,9 @@ export default function GmailComposer({
   ] = useState(false);
 
   const [sending, setSending] =
+    useState(false);
+
+  const [scheduling, setScheduling] =
     useState(false);
 
   const [status, setStatus] =
@@ -234,6 +244,96 @@ export default function GmailComposer({
     }
   }
 
+  async function scheduleEmail() {
+    if (
+      !entityType ||
+      !entityId
+    ) {
+      setSuccess(false);
+
+      setStatus(
+        "La programmation est disponible uniquement depuis une fiche CRM."
+      );
+
+      return;
+    }
+
+    if (
+      !to ||
+      !subject ||
+      !message ||
+      !scheduledFor
+    ) {
+      setSuccess(false);
+
+      setStatus(
+        "Complète le destinataire, l’objet, le message et la date de relance."
+      );
+
+      return;
+    }
+
+    setScheduling(true);
+    setStatus("");
+    setSuccess(false);
+
+    try {
+      const response = await fetch(
+        "/api/google-gmail/schedule",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            recipientEmail: to,
+            subject,
+            message,
+            entityType,
+            entityId,
+            scheduledFor:
+              new Date(
+                scheduledFor
+              ).toISOString(),
+          }),
+        }
+      );
+
+      const result =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ||
+            "Impossible de programmer la relance."
+        );
+      }
+
+      setSuccess(true);
+
+      setStatus(
+        "La relance a bien été programmée."
+      );
+
+      setMessage("");
+      setScheduledFor("");
+      setSelectedTemplate("");
+
+      onScheduled?.();
+    } catch (error) {
+      setSuccess(false);
+
+      setStatus(
+        error instanceof Error
+          ? error.message
+          : "La programmation a échoué."
+      );
+    } finally {
+      setScheduling(false);
+    }
+  }
+
   return (
     <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6 xl:p-8">
       <div className="mb-6">
@@ -369,15 +469,73 @@ export default function GmailComposer({
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={sending}
-          className="w-full rounded-2xl bg-white px-6 py-4 font-semibold text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
-        >
-          {sending
-            ? "Envoi en cours..."
-            : "Envoyer avec Gmail"}
-        </button>
+        {entityType && entityId && (
+          <div>
+            <label
+              htmlFor="gmail-scheduled-for"
+              className="mb-2 block text-sm text-zinc-400"
+            >
+              Date et heure de la relance
+            </label>
+
+            <input
+              id="gmail-scheduled-for"
+              type="datetime-local"
+              value={scheduledFor}
+              onChange={(event) =>
+                setScheduledFor(
+                  event.target.value
+                )
+              }
+              min={new Date(
+                Date.now() +
+                  60 * 60 * 1000
+              )
+                .toISOString()
+                .slice(0, 16)}
+              className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white outline-none transition focus:border-zinc-600"
+            />
+
+            <p className="mt-2 text-xs text-zinc-500">
+              Sur le plan Vercel Hobby,
+              les relances sont traitées
+              une fois par jour.
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3 md:flex-row">
+          <button
+            type="submit"
+            disabled={
+              sending || scheduling
+            }
+            className="w-full rounded-2xl bg-white px-6 py-4 font-semibold text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
+          >
+            {sending
+              ? "Envoi en cours..."
+              : "Envoyer maintenant"}
+          </button>
+
+          {entityType &&
+            entityId && (
+              <button
+                type="button"
+                onClick={
+                  scheduleEmail
+                }
+                disabled={
+                  sending ||
+                  scheduling
+                }
+                className="w-full rounded-2xl border border-zinc-700 bg-black px-6 py-4 font-semibold text-white transition hover:border-zinc-500 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
+              >
+                {scheduling
+                  ? "Programmation..."
+                  : "Programmer la relance"}
+              </button>
+            )}
+        </div>
       </form>
 
       {status && (
