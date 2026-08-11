@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
 import { ROLES } from "@/lib/roles";
+import { Suspense } from "react";
+import GoogleGmailConnection from "@/components/GoogleGmailConnection";
 
 export const dynamic = "force-dynamic";
 
@@ -80,6 +82,16 @@ if (
           Gestion des utilisateurs, rôles, invitations et accès LMG OS.
         </p>
       </div>
+
+      <Suspense
+  fallback={
+    <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8 text-zinc-500">
+      Chargement de la connexion Gmail...
+    </section>
+  }
+>
+  <GoogleGmailConnection />
+</Suspense>
 
       <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-4">
         <Card label="Utilisateurs" value={usersCount} />
