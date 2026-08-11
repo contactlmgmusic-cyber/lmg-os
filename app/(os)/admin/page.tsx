@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { ROLES } from "@/lib/roles";
 import { Suspense } from "react";
 import GoogleGmailConnection from "@/components/GoogleGmailConnection";
+import GmailComposer from "@/components/GmailComposer";
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +93,14 @@ if (
 >
   <GoogleGmailConnection />
 </Suspense>
+
+<div className="mt-8">
+  <GmailComposer
+    defaultTo="contactlmgmusic@gmail.com"
+    defaultSubject="Test Gmail — LMG OS"
+    contactName="la boîte centrale LMG"
+  />
+</div>
 
       <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-4">
         <Card label="Utilisateurs" value={usersCount} />
