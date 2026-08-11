@@ -9,10 +9,20 @@ export default function GmailComposer({
   defaultTo = "",
   defaultSubject = "",
   contactName = "",
+  entityType,
+  entityId,
+  onSent,
 }: {
   defaultTo?: string;
   defaultSubject?: string;
   contactName?: string;
+  entityType?:
+    | "media"
+    | "influenceur"
+    | "partenaire"
+    | "prospect";
+  entityId?: string;
+  onSent?: () => void;
 }) {
   const [to, setTo] =
     useState(defaultTo);
@@ -59,10 +69,12 @@ export default function GmailComposer({
               "application/json",
           },
           body: JSON.stringify({
-            to,
-            subject,
-            message,
-          }),
+  to,
+  subject,
+  message,
+  entityType,
+  entityId,
+}),
         }
       );
 
@@ -82,6 +94,7 @@ export default function GmailComposer({
       );
 
       setMessage("");
+      onSent?.();
     } catch (error) {
       setSuccess(false);
       setStatus(

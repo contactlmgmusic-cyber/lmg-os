@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { redirect } from "next/navigation";
 import { ROLES } from "@/lib/roles";
+import CrmEmailPanel from "@/components/CrmEmailPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -160,6 +161,17 @@ export default async function PartenaireDetailPage({
           </div>
         </aside>
       </div>
+      <section className="mt-10">
+  <CrmEmailPanel
+    entityType="partenaire"
+    entityId={partenaire.id}
+    defaultTo={
+      partenaire.email || ""
+    }
+    defaultSubject={`Legacy Music Group — ${partenaire.nom}`}
+    contactName={partenaire.nom}
+  />
+</section>
     </main>
   );
 }

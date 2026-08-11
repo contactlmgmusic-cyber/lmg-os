@@ -12,6 +12,16 @@ import { ROLES } from "@/lib/roles";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const ENTITY_TYPES = [
+  "media",
+  "influenceur",
+  "partenaire",
+  "prospect",
+] as const;
+
+type EntityType =
+  (typeof ENTITY_TYPES)[number];
+
 function createSupabaseAdmin() {
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -75,6 +85,22 @@ function createRawEmail({
 export async function POST(
   request: NextRequest
 ) {
+  let authenticatedUserId:
+    | string
+    | null = null;
+
+  let logRecipient = "";
+  let logSubject = "";
+  let logMessage = "";
+
+  let logEntityType:
+    | EntityType
+    | null = null;
+
+  let logEntityId:
+    | string
+    | null = null;
+
   try {
     const supabaseAuth =
       createServerClient(
@@ -105,6 +131,8 @@ export async function POST(
         { status: 401 }
       );
     }
+
+    authenticatedUserId = user.id;
 
     const supabaseAdmin =
       createSupabaseAdmin();
@@ -153,6 +181,20 @@ export async function POST(
         body.message || ""
       ).trim();
 
+    const requestedEntityType =
+      body.entityType
+        ? String(body.entityType)
+        : null;
+
+    const requestedEntityId =
+      body.entityId
+        ? String(body.entityId)
+        : null;
+
+    logRecipient = to;
+    logSubject = subject;
+    logMessage = message;
+
     const validEmail =
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
         to
@@ -185,6 +227,42 @@ export async function POST(
       );
     }
 
+    if (
+      requestedEntityType ||
+      requestedEntityId
+    ) {
+      const validEntityType =
+        requestedEntityType &&
+        ENTITY_TYPES.includes(
+          requestedEntityType as EntityType
+        );
+
+      const validEntityId =
+        requestedEntityId &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          requestedEntityId
+        );
+
+      if (
+        !validEntityType ||
+        !validEntityId
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Contexte CRM invalide.",
+          },
+          { status: 400 }
+        );
+      }
+
+      logEntityType =
+        requestedEntityType as EntityType;
+
+      logEntityId =
+        requestedEntityId;
+    }
+
     const { gmail } =
       await getCentralGoogleGmail(
         request.nextUrl.origin
@@ -202,18 +280,86 @@ export async function POST(
         },
       });
 
+    const { error: logError } =
+      await supabaseAdmin
+        .from("crm_email_logs")
+        .insert({
+          sent_by: user.id,
+          recipient_email: to,
+          subject,
+          message,
+          entity_type:
+            logEntityType,
+          entity_id:
+            logEntityId,
+          gmail_message_id:
+            result.data.id || null,
+          gmail_thread_id:
+            result.data.threadId ||
+            null,
+          status: "sent",
+          sent_at:
+            new Date().toISOString(),
+        });
+
+    if (logError) {
+      console.error(
+        "Erreur historique e-mail :",
+        logError
+      );
+    }
+
     return NextResponse.json({
       success: true,
       messageId:
         result.data.id || null,
       threadId:
         result.data.threadId || null,
+      historySaved: !logError,
     });
   } catch (error) {
     console.error(
       "Erreur envoi Gmail :",
       error
     );
+
+    if (
+      authenticatedUserId &&
+      logRecipient &&
+      logSubject &&
+      logMessage
+    ) {
+      try {
+        const supabaseAdmin =
+          createSupabaseAdmin();
+
+        await supabaseAdmin
+          .from("crm_email_logs")
+          .insert({
+            sent_by:
+              authenticatedUserId,
+            recipient_email:
+              logRecipient,
+            subject: logSubject,
+            message: logMessage,
+            entity_type:
+              logEntityType,
+            entity_id: logEntityId,
+            status: "failed",
+            error_message:
+              error instanceof Error
+                ? error.message
+                : "Erreur inconnue",
+            sent_at:
+              new Date().toISOString(),
+          });
+      } catch (logFailureError) {
+        console.error(
+          "Impossible d’enregistrer l’échec de l’e-mail :",
+          logFailureError
+        );
+      }
+    }
 
     return NextResponse.json(
       {

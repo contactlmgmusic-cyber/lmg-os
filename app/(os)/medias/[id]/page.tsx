@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import MediaRelances from "@/components/MediaRelances";
 import DeleteMediaButton from "@/components/DeleteMediaButton";
 import { requireRole } from "@/lib/require-role.server";
+import CrmEmailPanel from "@/components/CrmEmailPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -296,6 +297,18 @@ export default async function MediaDetailPage({
           </div>
         </aside>
       </div>
+      <section className="mt-10">
+  <CrmEmailPanel
+    entityType="media"
+    entityId={media.id}
+    defaultTo={media.email || ""}
+    defaultSubject={`Legacy Music Group — ${media.nom}`}
+    contactName={
+      media.contact_nom ||
+      media.nom
+    }
+  />
+</section>
     </main>
   );
 }

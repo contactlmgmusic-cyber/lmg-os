@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import CrmEmailPanel from "@/components/CrmEmailPanel";
 
 const statuts = [
   "À contacter",
@@ -260,6 +261,20 @@ export default function ProspectDetailClient() {
       >
         {saving ? "Sauvegarde..." : "Enregistrer"}
       </button>
+      <section className="mt-10">
+  <CrmEmailPanel
+    entityType="prospect"
+    entityId={prospectId}
+    defaultTo={
+      prospect.email || ""
+    }
+    defaultSubject={`Legacy Music Group — ${prospect.nom}`}
+    contactName={
+      prospect.contact_nom ||
+      prospect.nom
+    }
+  />
+</section>
     </main>
   );
 }
