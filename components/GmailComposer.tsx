@@ -5,6 +5,20 @@ import {
   useState,
 } from "react";
 
+type EntityType =
+  | "media"
+  | "influenceur"
+  | "partenaire"
+  | "prospect";
+
+type EmailTemplate = {
+  id: string;
+  name: string;
+  entity_type: EntityType | null;
+  subject: string;
+  message: string;
+};
+
 export default function GmailComposer({
   defaultTo = "",
   defaultSubject = "",
@@ -16,11 +30,7 @@ export default function GmailComposer({
   defaultTo?: string;
   defaultSubject?: string;
   contactName?: string;
-  entityType?:
-    | "media"
-    | "influenceur"
-    | "partenaire"
-    | "prospect";
+  entityType?: EntityType;
   entityId?: string;
   onSent?: () => void;
 }) {
@@ -32,6 +42,19 @@ export default function GmailComposer({
 
   const [message, setMessage] =
     useState("");
+
+  const [templates, setTemplates] =
+    useState<EmailTemplate[]>([]);
+
+  const [
+    selectedTemplate,
+    setSelectedTemplate,
+  ] = useState("");
+
+  const [
+    templatesLoading,
+    setTemplatesLoading,
+  ] = useState(false);
 
   const [sending, setSending] =
     useState(false);
@@ -49,6 +72,106 @@ export default function GmailComposer({
   useEffect(() => {
     setSubject(defaultSubject);
   }, [defaultSubject]);
+
+  useEffect(() => {
+    if (!entityType) {
+      setTemplates([]);
+      return;
+    }
+
+    async function loadTemplates() {
+      setTemplatesLoading(true);
+
+      try {
+        const params =
+          new URLSearchParams({
+            entityType:
+              entityType as string,
+          });
+
+        const response = await fetch(
+          `/api/google-gmail/templates?${params.toString()}`,
+          {
+            cache: "no-store",
+          }
+        );
+
+        const result =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.error ||
+              "Impossible de charger les modèles."
+          );
+        }
+
+        setTemplates(
+          result.templates || []
+        );
+      } catch (error) {
+        console.error(
+          "Erreur chargement modèles :",
+          error
+        );
+
+        setTemplates([]);
+      } finally {
+        setTemplatesLoading(false);
+      }
+    }
+
+    loadTemplates();
+  }, [entityType]);
+
+  function applyTemplate(
+    templateId: string
+  ) {
+    setSelectedTemplate(
+      templateId
+    );
+
+    const template =
+      templates.find(
+        (item) =>
+          item.id === templateId
+      );
+
+    if (!template) {
+      return;
+    }
+
+    const contact =
+      contactName ||
+      "Madame, Monsieur";
+
+    const replaceVariables = (
+      value: string
+    ) =>
+      value
+        .replaceAll(
+          "{{contact}}",
+          contact
+        )
+        .replaceAll(
+          "{{nom}}",
+          contact
+        );
+
+    setSubject(
+      replaceVariables(
+        template.subject
+      )
+    );
+
+    setMessage(
+      replaceVariables(
+        template.message
+      )
+    );
+
+    setStatus("");
+  }
 
   async function sendEmail(
     event: React.FormEvent
@@ -69,12 +192,12 @@ export default function GmailComposer({
               "application/json",
           },
           body: JSON.stringify({
-  to,
-  subject,
-  message,
-  entityType,
-  entityId,
-}),
+            to,
+            subject,
+            message,
+            entityType,
+            entityId,
+          }),
         }
       );
 
@@ -89,14 +212,18 @@ export default function GmailComposer({
       }
 
       setSuccess(true);
+
       setStatus(
         "L’e-mail a bien été envoyé depuis Gmail LMG."
       );
 
       setMessage("");
+      setSelectedTemplate("");
+
       onSent?.();
     } catch (error) {
       setSuccess(false);
+
       setStatus(
         error instanceof Error
           ? error.message
@@ -131,6 +258,48 @@ export default function GmailComposer({
         onSubmit={sendEmail}
         className="space-y-5"
       >
+        {entityType && (
+          <div>
+            <label
+              htmlFor="gmail-template"
+              className="mb-2 block text-sm text-zinc-400"
+            >
+              Modèle d’e-mail
+            </label>
+
+            <select
+              id="gmail-template"
+              value={selectedTemplate}
+              onChange={(event) =>
+                applyTemplate(
+                  event.target.value
+                )
+              }
+              disabled={
+                templatesLoading
+              }
+              className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white outline-none transition focus:border-zinc-600 disabled:opacity-50"
+            >
+              <option value="">
+                {templatesLoading
+                  ? "Chargement des modèles..."
+                  : "Sélectionner un modèle"}
+              </option>
+
+              {templates.map(
+                (template) => (
+                  <option
+                    key={template.id}
+                    value={template.id}
+                  >
+                    {template.name}
+                  </option>
+                )
+              )}
+            </select>
+          </div>
+        )}
+
         <div>
           <label
             htmlFor="gmail-to"
@@ -193,7 +362,7 @@ export default function GmailComposer({
               )
             }
             placeholder="Écris ton message..."
-            rows={10}
+            rows={12}
             maxLength={50000}
             required
             className="w-full resize-y rounded-2xl border border-zinc-800 bg-black p-4 text-white outline-none transition focus:border-zinc-600"
