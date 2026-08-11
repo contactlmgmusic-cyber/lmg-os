@@ -1,9 +1,26 @@
-import { NextRequest, NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { getCentralGoogleDrive } from "@/lib/google-drive-central.server";
+import {
+  getCentralGoogleDrive,
+  getOrCreateDriveFolder,
+} from "@/lib/google-drive-central.server";
 import { ROLES } from "@/lib/roles";
 
 export const runtime = "nodejs";
+
+const allowedCategories = [
+  "Master",
+  "Cover",
+  "Clip",
+  "Photo presse",
+  "EPK",
+  "Contrat",
+  "Document interne",
+  "Autre",
+];
 
 function createSupabaseAdmin() {
   const supabaseUrl =
@@ -30,31 +47,42 @@ function createSupabaseAdmin() {
   );
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest
+) {
   try {
     const authorization =
-      request.headers.get("authorization");
+      request.headers.get(
+        "authorization"
+      );
 
     const sessionToken =
-      authorization?.startsWith("Bearer ")
+      authorization?.startsWith(
+        "Bearer "
+      )
         ? authorization.slice(7)
         : null;
 
     if (!sessionToken) {
       return NextResponse.json(
-        { error: "Authentification requise." },
+        {
+          error:
+            "Authentification requise.",
+        },
         { status: 401 }
       );
     }
 
-    const supabaseAdmin = createSupabaseAdmin();
+    const supabaseAdmin =
+      createSupabaseAdmin();
 
     const {
       data: { user },
       error: userError,
-    } = await supabaseAdmin.auth.getUser(
-      sessionToken
-    );
+    } =
+      await supabaseAdmin.auth.getUser(
+        sessionToken
+      );
 
     if (userError || !user) {
       return NextResponse.json(
@@ -79,7 +107,9 @@ export async function POST(request: NextRequest) {
 
     if (
       !profile ||
-      !allowedRoles.includes(profile.role)
+      !allowedRoles.includes(
+        profile.role
+      )
     ) {
       return NextResponse.json(
         {
@@ -98,22 +128,33 @@ export async function POST(request: NextRequest) {
         : "";
 
     const mimeType =
-      typeof body.mimeType === "string" &&
-      body.mimeType
+      typeof body.mimeType ===
+        "string" && body.mimeType
         ? body.mimeType
         : "application/octet-stream";
 
-    const fileSize = Number(body.fileSize);
+    const fileSize = Number(
+      body.fileSize
+    );
+
+    const categorie =
+      typeof body.categorie ===
+        "string" &&
+      allowedCategories.includes(
+        body.categorie
+      )
+        ? body.categorie
+        : "Autre";
 
     const artisteId =
-      typeof body.artisteId === "string" &&
-      body.artisteId
+      typeof body.artisteId ===
+        "string" && body.artisteId
         ? body.artisteId
         : null;
 
     const projetId =
-      typeof body.projetId === "string" &&
-      body.projetId
+      typeof body.projetId ===
+        "string" && body.projetId
         ? body.projetId
         : null;
 
@@ -128,14 +169,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (profile.role === ROLES.MANAGER) {
+    if (
+      profile.role === ROLES.MANAGER
+    ) {
       if (artisteId) {
         const { data: artiste } =
           await supabaseAdmin
             .from("artistes")
             .select("id")
             .eq("id", artisteId)
-            .eq("manager_id", user.id)
+            .eq(
+              "manager_id",
+              user.id
+            )
             .maybeSingle();
 
         if (!artiste) {
@@ -176,13 +222,159 @@ export async function POST(request: NextRequest) {
     }
 
     const {
+      drive,
       oauth2Client,
       rootFolderId,
-    } = await getCentralGoogleDrive(
-      request.nextUrl.origin
-    );
+    } =
+      await getCentralGoogleDrive(
+        request.nextUrl.origin
+      );
 
-    const { token: googleAccessToken } =
+    let targetFolderId =
+      rootFolderId;
+
+    let linkedArtistId:
+      string | null = artisteId;
+
+    let artistName:
+      string | null = null;
+
+    let projectName:
+      string | null = null;
+
+    if (projetId) {
+      const { data: project } =
+        await supabaseAdmin
+          .from("projets")
+          .select(
+            "id, titre, artiste_id"
+          )
+          .eq("id", projetId)
+          .single();
+
+      if (!project) {
+        return NextResponse.json(
+          {
+            error:
+              "Projet introuvable.",
+          },
+          { status: 404 }
+        );
+      }
+
+      projectName =
+        project.titre || "Projet";
+
+      if (
+        linkedArtistId &&
+        project.artiste_id &&
+        linkedArtistId !==
+          project.artiste_id
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Ce projet n’appartient pas à l’artiste sélectionné.",
+          },
+          { status: 400 }
+        );
+      }
+
+      linkedArtistId =
+        linkedArtistId ||
+        project.artiste_id ||
+        null;
+    }
+
+    if (linkedArtistId) {
+      const { data: artist } =
+        await supabaseAdmin
+          .from("artistes")
+          .select("id, nom")
+          .eq(
+            "id",
+            linkedArtistId
+          )
+          .single();
+
+      if (!artist) {
+        return NextResponse.json(
+          {
+            error:
+              "Artiste introuvable.",
+          },
+          { status: 404 }
+        );
+      }
+
+      artistName =
+        artist.nom || "Artiste";
+    }
+
+    if (artistName) {
+      const artistsFolderId =
+        await getOrCreateDriveFolder({
+          drive,
+          name: "Artistes",
+          parentId: rootFolderId,
+        });
+
+      targetFolderId =
+        await getOrCreateDriveFolder({
+          drive,
+          name: artistName,
+          parentId:
+            artistsFolderId,
+        });
+    }
+
+    if (projectName) {
+      const projectsFolderId =
+        await getOrCreateDriveFolder({
+          drive,
+          name: "Projets",
+          parentId: artistName
+            ? targetFolderId
+            : rootFolderId,
+        });
+
+      targetFolderId =
+        await getOrCreateDriveFolder({
+          drive,
+          name: projectName,
+          parentId:
+            projectsFolderId,
+        });
+    }
+
+    const categoryFolderNames:
+      Record<string, string> = {
+        Master: "Masters",
+        Cover: "Covers",
+        Clip: "Clips",
+        "Photo presse":
+          "Photos presse",
+        EPK: "EPK",
+        Contrat: "Contrats",
+        "Document interne":
+          "Documents internes",
+        Autre: "Autres",
+      };
+
+    targetFolderId =
+      await getOrCreateDriveFolder({
+        drive,
+        name:
+          categoryFolderNames[
+            categorie
+          ] || "Autres",
+        parentId:
+          targetFolderId,
+      });
+
+    const {
+      token: googleAccessToken,
+    } =
       await oauth2Client.getAccessToken();
 
     if (!googleAccessToken) {
@@ -191,27 +383,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const googleResponse = await fetch(
-      "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name,mimeType,size,parents",
-      {
-        method: "POST",
-        headers: {
-          Authorization:
-            `Bearer ${googleAccessToken}`,
-          "Content-Type":
-            "application/json; charset=UTF-8",
-          "X-Upload-Content-Type":
+    const googleResponse =
+      await fetch(
+        "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name,mimeType,size,parents",
+        {
+          method: "POST",
+          headers: {
+            Authorization:
+              `Bearer ${googleAccessToken}`,
+            "Content-Type":
+              "application/json; charset=UTF-8",
+            "X-Upload-Content-Type":
+              mimeType,
+            "X-Upload-Content-Length":
+              String(fileSize),
+          },
+          body: JSON.stringify({
+            name: fileName,
             mimeType,
-          "X-Upload-Content-Length":
-            String(fileSize),
-        },
-        body: JSON.stringify({
-          name: fileName,
-          mimeType,
-          parents: [rootFolderId],
-        }),
-      }
-    );
+            parents: [
+              targetFolderId,
+            ],
+          }),
+        }
+      );
 
     if (!googleResponse.ok) {
       const googleError =
@@ -228,7 +423,9 @@ export async function POST(request: NextRequest) {
     }
 
     const uploadUrl =
-      googleResponse.headers.get("location");
+      googleResponse.headers.get(
+        "location"
+      );
 
     if (!uploadUrl) {
       throw new Error(
@@ -238,6 +435,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       uploadUrl,
+      folderId: targetFolderId,
     });
   } catch (error) {
     console.error(
