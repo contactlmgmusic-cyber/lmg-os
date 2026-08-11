@@ -54,7 +54,8 @@ function createRawEmail({
   message: string;
 }) {
   const email = [
-    "From: Legacy Music Group <contactlmgmusic@gmail.com>",
+    "From: Legacy Music Group <contact@legacymusicgroup.fr>",
+    "Reply-To: contact@legacymusicgroup.fr",
     `To: ${to}`,
     `Subject: ${encodeSubject(subject)}`,
     "MIME-Version: 1.0",
