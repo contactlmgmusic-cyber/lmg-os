@@ -41,6 +41,7 @@ type ScheduledEmail = {
   error_message: string | null;
   sent_at: string | null;
   created_at: string;
+  attempts: number;
 };
 
 function formatDate(date?: string | null) {
@@ -121,6 +122,11 @@ export default function CrmEmailPanel({
     cancellingId,
     setCancellingId,
   ] = useState<string | null>(null);
+
+  const [
+  retryingId,
+  setRetryingId,
+] = useState<string | null>(null);
 
   const [refreshKey, setRefreshKey] =
     useState(0);
@@ -209,6 +215,50 @@ export default function CrmEmailPanel({
     entityId,
     refreshKey,
   ]);
+
+  async function retryScheduledEmail(
+  scheduledEmailId: string
+) {
+  setRetryingId(
+    scheduledEmailId
+  );
+
+  try {
+    const response = await fetch(
+      "/api/google-gmail/schedule",
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          id: scheduledEmailId,
+        }),
+      }
+    );
+
+    const result =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error ||
+          "Impossible de réessayer cette relance."
+      );
+    }
+
+    refreshPanel();
+  } catch (retryError) {
+    alert(
+      retryError instanceof Error
+        ? retryError.message
+        : "Impossible de réessayer cette relance."
+    );
+  } finally {
+    setRetryingId(null);
+  }
+}
 
   async function cancelScheduledEmail(
     scheduledEmailId: string
@@ -370,6 +420,29 @@ export default function CrmEmailPanel({
                           : "Annuler la relance"}
                       </button>
                     )}
+
+{email.status ===
+  "failed" &&
+  email.error_message &&
+  Number(email.attempts || 0) < 3 && (
+    <button
+      type="button"
+      onClick={() =>
+        retryScheduledEmail(
+          email.id
+        )
+      }
+      disabled={
+        retryingId === email.id
+      }
+      className="mt-5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-300 transition hover:border-amber-400 hover:bg-amber-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {retryingId === email.id
+        ? "Nouvelle tentative..."
+        : "Réessayer l’envoi"}
+    </button>
+)}
+
                   </article>
                 )
               )}

@@ -92,6 +92,52 @@ export async function GET(
     const now =
       new Date().toISOString();
 
+      const processingTimeout =
+  new Date(
+    Date.now() -
+      3 * 60 * 60 * 1000
+  ).toISOString();
+
+const {
+  error: recoverableError,
+} = await supabaseAdmin
+  .from("crm_scheduled_emails")
+  .update({
+    status: "pending",
+    error_message:
+      "Traitement interrompu. Nouvelle tentative automatique.",
+    updated_at: now,
+  })
+  .eq("status", "processing")
+  .lt("updated_at", processingTimeout)
+  .lt("attempts", 3);
+
+if (recoverableError) {
+  throw new Error(
+    `Impossible de récupérer les relances bloquées : ${recoverableError.message}`
+  );
+}
+
+const {
+  error: exhaustedError,
+} = await supabaseAdmin
+  .from("crm_scheduled_emails")
+  .update({
+    status: "failed",
+    error_message:
+      "Échec définitif après 3 tentatives interrompues.",
+    updated_at: now,
+  })
+  .eq("status", "processing")
+  .lt("updated_at", processingTimeout)
+  .gte("attempts", 3);
+
+if (exhaustedError) {
+  throw new Error(
+    `Impossible de clôturer les relances bloquées : ${exhaustedError.message}`
+  );
+}
+
     const {
       data: scheduledEmails,
       error: scheduledError,
@@ -259,21 +305,30 @@ export async function GET(
             : "Erreur inconnue pendant l’envoi.";
 
         const failedAt =
-          new Date().toISOString();
+  new Date().toISOString();
 
-        const {
-          error: failedUpdateError,
-        } = await supabaseAdmin
-          .from(
-            "crm_scheduled_emails"
-          )
-          .update({
-            status: "failed",
-            error_message:
-              errorMessage,
-            updated_at: failedAt,
-          })
-          .eq("id", email.id);
+const attemptNumber =
+  Number(email.attempts || 0) + 1;
+
+const shouldRetry =
+  attemptNumber < 3;
+
+const {
+  error: failedUpdateError,
+} = await supabaseAdmin
+  .from(
+    "crm_scheduled_emails"
+  )
+  .update({
+    status: shouldRetry
+      ? "pending"
+      : "failed",
+    error_message:
+      errorMessage,
+    updated_at: failedAt,
+  })
+  .eq("id", email.id)
+  .eq("status", "processing");
 
         if (failedUpdateError) {
           console.error(

@@ -363,6 +363,167 @@ export async function POST(
   }
 }
 
+export async function PATCH(
+  request: NextRequest
+) {
+  try {
+    const auth =
+      await authenticate(request);
+
+    if (!auth) {
+      return NextResponse.json(
+        {
+          error:
+            "Authentification ou autorisation requise.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const body =
+      await request.json();
+
+    const id = String(
+      body.id || ""
+    ).trim();
+
+    if (!validUuid(id)) {
+      return NextResponse.json(
+        {
+          error:
+            "Relance invalide.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const {
+      data: scheduledEmail,
+      error: readError,
+    } = await auth.supabaseAdmin
+      .from("crm_scheduled_emails")
+      .select(
+        "id, created_by, status, attempts"
+      )
+      .eq("id", id)
+      .single();
+
+    if (
+      readError ||
+      !scheduledEmail
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Relance introuvable.",
+        },
+        { status: 404 }
+      );
+    }
+
+    const canRetryAll =
+      auth.role ===
+        ROLES.SUPER_ADMIN ||
+      auth.role ===
+        ROLES.ADMIN ||
+      auth.role ===
+        ROLES.ARTISTIC_DIRECTOR;
+
+    if (
+      !canRetryAll &&
+      scheduledEmail.created_by !==
+        auth.userId
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Tu ne peux pas relancer cet e-mail.",
+        },
+        { status: 403 }
+      );
+    }
+
+    if (
+      scheduledEmail.status !==
+      "failed"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Seules les relances en échec peuvent être réessayées.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (
+      Number(
+        scheduledEmail.attempts || 0
+      ) >= 3
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Le nombre maximal de 3 tentatives est atteint.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const retryDate =
+      new Date().toISOString();
+
+    const {
+      data: retriedEmail,
+      error: updateError,
+    } = await auth.supabaseAdmin
+      .from("crm_scheduled_emails")
+      .update({
+        status: "pending",
+        scheduled_for: retryDate,
+        error_message: null,
+        updated_at: retryDate,
+      })
+      .eq("id", id)
+      .eq("status", "failed")
+      .select(
+        "id, status, attempts, scheduled_for"
+      )
+      .single();
+
+    if (
+      updateError ||
+      !retriedEmail
+    ) {
+      throw (
+        updateError ||
+        new Error(
+          "La relance n’a pas pu être réactivée."
+        )
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      scheduledEmail:
+        retriedEmail,
+    });
+  } catch (error) {
+    console.error(
+      "Erreur nouvelle tentative de relance :",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "Impossible de réessayer cette relance.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: NextRequest
 ) {
