@@ -26,52 +26,123 @@ export default function NewTaskForm({
   const [priorite, setPriorite] = useState("Moyenne");
   const [deadline, setDeadline] = useState("");
   const [responsableId, setResponsableId] = useState("");
+  const [participantIds, setParticipantIds] = useState<string[]>([]);
   const [projetId, setProjetId] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  function toggleParticipant(profileId: string) {
+    setParticipantIds((current) =>
+      current.includes(profileId)
+        ? current.filter((id) => id !== profileId)
+        : [...current, profileId]
+    );
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-   const { data: newTask, error } = await supabaseBrowser
-  .from("taches")
-  .insert({
-    titre,
-    description,
-    statut,
-    priorite,
-    deadline: deadline || null,
-    responsable_id: responsableId || null,
-    projet_id: projetId || null,
-  })
-  .select()
-  .single();
+    if (saving) return;
 
-    if (error) {
-      alert(error.message);
-      return;
+    setSaving(true);
+
+    try {
+      const { data: newTask, error: taskError } =
+        await supabaseBrowser
+          .from("taches")
+          .insert({
+            titre: titre.trim(),
+            description: description.trim(),
+            statut,
+            priorite,
+            deadline: deadline || null,
+            responsable_id: responsableId || null,
+            projet_id: projetId || null,
+          })
+          .select("id")
+          .single();
+
+      if (taskError || !newTask) {
+        throw new Error(
+          taskError?.message || "Impossible de créer la tâche."
+        );
+      }
+
+      const allAssigneeIds = Array.from(
+        new Set([
+          ...participantIds,
+          ...(responsableId ? [responsableId] : []),
+        ])
+      );
+
+      if (allAssigneeIds.length > 0) {
+        const { error: assigneesError } =
+          await supabaseBrowser.from("task_assignees").insert(
+            allAssigneeIds.map((userId) => ({
+              task_id: newTask.id,
+              user_id: userId,
+            }))
+          );
+
+        if (assigneesError) {
+          await supabaseBrowser
+            .from("taches")
+            .delete()
+            .eq("id", newTask.id);
+
+          throw new Error(
+            `Impossible d’ajouter les participants : ${assigneesError.message}`
+          );
+        }
+
+        const { error: notificationsError } =
+          await supabaseBrowser.from("notifications").insert(
+            allAssigneeIds.map((userId) => ({
+              user_id: userId,
+              type: "tache",
+              titre: "Nouvelle tâche assignée",
+              description: titre.trim(),
+              link: `/taches/${newTask.id}`,
+            }))
+          );
+
+        if (notificationsError) {
+          console.error(
+            "Erreur création des notifications :",
+            notificationsError
+          );
+        }
+      }
+
+      const { error: activityError } =
+        await supabaseBrowser.from("activity_logs").insert({
+          type: "Tâche",
+          titre: "Nouvelle tâche créée",
+          description: titre.trim(),
+        });
+
+      if (activityError) {
+        console.error(
+          "Erreur création du journal d’activité :",
+          activityError
+        );
+      }
+
+      window.location.href = "/taches";
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Impossible de créer la tâche."
+      );
+
+      setSaving(false);
     }
-
-    if (responsableId) {
-  await supabaseBrowser.from("notifications").insert({
-    user_id: responsableId,
-    type: "tache",
-    titre: "Nouvelle tâche assignée",
-    description: titre,
-    link: `/taches/${newTask.id}`,
-  });
-}
-    await supabaseBrowser.from("activity_logs").insert({
-      type: "Tâche",
-      titre: "Nouvelle tâche créée",
-      description: titre,
-    });
-
-    window.location.href = "/taches";
   }
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-8"
+      className="space-y-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-6 xl:p-8"
     >
       <input
         value={titre}
@@ -117,39 +188,123 @@ export default function NewTaskForm({
         />
       </div>
 
-      <select
-        value={responsableId}
-        onChange={(e) => setResponsableId(e.target.value)}
-        className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
-      >
-        <option value="">Aucun responsable</option>
+      <div>
+        <label
+          htmlFor="responsable"
+          className="mb-2 block text-sm font-medium text-zinc-400"
+        >
+          Responsable principal
+        </label>
 
-        {profiles.map((profile) => (
-          <option key={profile.id} value={profile.id}>
-            {profile.nom || "Membre LMG"}
-          </option>
-        ))}
-      </select>
+        <select
+          id="responsable"
+          value={responsableId}
+          onChange={(e) => setResponsableId(e.target.value)}
+          className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
+        >
+          <option value="">Aucun responsable principal</option>
 
-      <select
-        value={projetId}
-        onChange={(e) => setProjetId(e.target.value)}
-        className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
-      >
-        <option value="">Aucun projet lié</option>
+          {profiles.map((profile) => (
+            <option key={profile.id} value={profile.id}>
+              {profile.nom || "Membre LMG"}
+            </option>
+          ))}
+        </select>
 
-        {projets.map((projet) => (
-          <option key={projet.id} value={projet.id}>
-            {projet.titre || "Projet sans titre"}
-          </option>
-        ))}
-      </select>
+        <p className="mt-2 text-xs text-zinc-500">
+          Le responsable principal sera automatiquement ajouté aux
+          participants.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-zinc-800 bg-black p-5">
+        <div className="mb-4">
+          <p className="font-semibold text-white">
+            Participants concernés
+          </p>
+
+          <p className="mt-1 text-sm text-zinc-500">
+            Sélectionne toutes les personnes qui doivent recevoir cette tâche
+            et la retrouver dans leur calendrier.
+          </p>
+        </div>
+
+        {profiles.length === 0 ? (
+          <p className="text-sm text-zinc-500">
+            Aucun membre disponible.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {profiles.map((profile) => {
+              const isResponsible = responsableId === profile.id;
+              const isSelected =
+                participantIds.includes(profile.id) || isResponsible;
+
+              return (
+                <label
+                  key={profile.id}
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition ${
+                    isSelected
+                      ? "border-white bg-white/10"
+                      : "border-zinc-800 bg-zinc-950 hover:border-zinc-600"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    disabled={isResponsible}
+                    onChange={() => toggleParticipant(profile.id)}
+                    className="h-5 w-5 accent-white"
+                  />
+
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium text-white">
+                      {profile.nom || "Membre LMG"}
+                    </span>
+
+                    {isResponsible && (
+                      <span className="mt-1 block text-xs text-zinc-500">
+                        Responsable principal
+                      </span>
+                    )}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <label
+          htmlFor="projet"
+          className="mb-2 block text-sm font-medium text-zinc-400"
+        >
+          Projet lié
+        </label>
+
+        <select
+          id="projet"
+          value={projetId}
+          onChange={(e) => setProjetId(e.target.value)}
+          className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
+        >
+          <option value="">Aucun projet lié</option>
+
+          {projets.map((projet) => (
+            <option key={projet.id} value={projet.id}>
+              {projet.titre || "Projet sans titre"}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <button
         type="submit"
-        className="w-full rounded-2xl bg-white px-5 py-4 font-semibold text-black transition hover:bg-zinc-200"
+        disabled={saving}
+        className="w-full rounded-2xl bg-white px-5 py-4 font-semibold text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Créer la tâche
+        {saving ? "Création..." : "Créer la tâche"}
       </button>
     </form>
   );
