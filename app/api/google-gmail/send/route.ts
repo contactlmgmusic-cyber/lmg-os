@@ -6,6 +6,9 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { sendCentralGmail } from "@/lib/google-gmail-central.server";
 import { ROLES } from "@/lib/roles";
+import {
+  canAccessCrmEmailEntity,
+} from "@/lib/crm-email-access.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -243,6 +246,27 @@ export async function POST(
 
       logEntityId =
         requestedEntityId;
+
+        const canAccess =
+  await canAccessCrmEmailEntity({
+    supabaseAdmin,
+    userId: user.id,
+    role: profile.role,
+    entityType:
+      logEntityType,
+    entityId:
+      logEntityId,
+  });
+
+if (!canAccess) {
+  return NextResponse.json(
+    {
+      error:
+        "Tu n’as pas accès à cette fiche CRM.",
+    },
+    { status: 403 }
+  );
+}
     }
 
     const gmailResult =

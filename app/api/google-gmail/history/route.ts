@@ -5,6 +5,10 @@ import {
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { ROLES } from "@/lib/roles";
+import {
+  canAccessCrmEmailEntity,
+  type CrmEmailEntityType,
+} from "@/lib/crm-email-access.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -123,21 +127,26 @@ export async function GET(
         entityId
       );
 
-    if (
-      !entityType ||
-      !ENTITY_TYPES.includes(
-        entityType
-      ) ||
-      !validEntityId
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Contexte CRM invalide.",
-        },
-        { status: 400 }
-      );
-    }
+    const canAccess =
+  await canAccessCrmEmailEntity({
+    supabaseAdmin,
+    userId: user.id,
+    role: profile.role,
+    entityType:
+      entityType as CrmEmailEntityType,
+    entityId:
+      entityId as string,
+  });
+
+if (!canAccess) {
+  return NextResponse.json(
+    {
+      error:
+        "Tu n’as pas accès à l’historique de cette fiche.",
+    },
+    { status: 403 }
+  );
+}
 
     const {
       data: emails,

@@ -8,6 +8,9 @@ import {
   SupabaseClient,
 } from "@supabase/supabase-js";
 import { ROLES } from "@/lib/roles";
+import {
+  canAccessCrmEmailEntity,
+} from "@/lib/crm-email-access.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -167,6 +170,26 @@ export async function GET(
       );
     }
 
+    const canAccess =
+  await canAccessCrmEmailEntity({
+    supabaseAdmin:
+      auth.supabaseAdmin,
+    userId: auth.userId,
+    role: auth.role,
+    entityType,
+    entityId,
+  });
+
+if (!canAccess) {
+  return NextResponse.json(
+    {
+      error:
+        "Tu n’as pas accès aux relances de cette fiche.",
+    },
+    { status: 403 }
+  );
+}
+
     const {
       data: scheduledEmails,
       error,
@@ -278,6 +301,26 @@ export async function POST(
         { status: 400 }
       );
     }
+
+    const canAccess =
+  await canAccessCrmEmailEntity({
+    supabaseAdmin:
+      auth.supabaseAdmin,
+    userId: auth.userId,
+    role: auth.role,
+    entityType,
+    entityId,
+  });
+
+if (!canAccess) {
+  return NextResponse.json(
+    {
+      error:
+        "Tu n’as pas accès à cette fiche CRM.",
+    },
+    { status: 403 }
+  );
+}
 
     const now = Date.now();
 
@@ -398,28 +441,67 @@ export async function PATCH(
     }
 
     const {
-      data: scheduledEmail,
-      error: readError,
-    } = await auth.supabaseAdmin
-      .from("crm_scheduled_emails")
-      .select(
-        "id, created_by, status, attempts"
-      )
-      .eq("id", id)
-      .single();
+  data: scheduledEmail,
+  error: readError,
+} = await auth.supabaseAdmin
+  .from("crm_scheduled_emails")
+  .select(
+    "id, created_by, status, attempts, entity_type, entity_id"
+  )
+  .eq("id", id)
+  .single();
 
-    if (
-      readError ||
-      !scheduledEmail
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Relance introuvable.",
-        },
-        { status: 404 }
-      );
-    }
+if (
+  readError ||
+  !scheduledEmail
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Relance introuvable.",
+    },
+    { status: 404 }
+  );
+}
+
+if (
+  !validEntityType(
+    scheduledEmail.entity_type
+  ) ||
+  !validUuid(
+    scheduledEmail.entity_id
+  )
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Contexte CRM de la relance invalide.",
+    },
+    { status: 400 }
+  );
+}
+
+const canAccess =
+  await canAccessCrmEmailEntity({
+    supabaseAdmin:
+      auth.supabaseAdmin,
+    userId: auth.userId,
+    role: auth.role,
+    entityType:
+      scheduledEmail.entity_type,
+    entityId:
+      scheduledEmail.entity_id,
+  });
+
+if (!canAccess) {
+  return NextResponse.json(
+    {
+      error:
+        "Tu n’as pas accès à cette relance.",
+    },
+    { status: 403 }
+  );
+}
 
     const canRetryAll =
       auth.role ===
@@ -557,24 +639,67 @@ export async function DELETE(
     }
 
     const {
-      data: scheduledEmail,
-    } = await auth.supabaseAdmin
-      .from("crm_scheduled_emails")
-      .select(
-        "id, created_by, status"
-      )
-      .eq("id", id)
-      .single();
+  data: scheduledEmail,
+  error: readError,
+} = await auth.supabaseAdmin
+  .from("crm_scheduled_emails")
+  .select(
+    "id, created_by, status, entity_type, entity_id"
+  )
+  .eq("id", id)
+  .single();
 
-    if (!scheduledEmail) {
-      return NextResponse.json(
-        {
-          error:
-            "Relance introuvable.",
-        },
-        { status: 404 }
-      );
-    }
+if (
+  readError ||
+  !scheduledEmail
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Relance introuvable.",
+    },
+    { status: 404 }
+  );
+}
+
+if (
+  !validEntityType(
+    scheduledEmail.entity_type
+  ) ||
+  !validUuid(
+    scheduledEmail.entity_id
+  )
+) {
+  return NextResponse.json(
+    {
+      error:
+        "Contexte CRM de la relance invalide.",
+    },
+    { status: 400 }
+  );
+}
+
+const canAccess =
+  await canAccessCrmEmailEntity({
+    supabaseAdmin:
+      auth.supabaseAdmin,
+    userId: auth.userId,
+    role: auth.role,
+    entityType:
+      scheduledEmail.entity_type,
+    entityId:
+      scheduledEmail.entity_id,
+  });
+
+if (!canAccess) {
+  return NextResponse.json(
+    {
+      error:
+        "Tu n’as pas accès à cette relance.",
+    },
+    { status: 403 }
+  );
+}
 
     const canCancelAll =
       auth.role ===
