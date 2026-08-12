@@ -121,13 +121,63 @@ export default function NewTaskForm({
         });
 
       if (activityError) {
-        console.error(
-          "Erreur création du journal d’activité :",
-          activityError
-        );
-      }
+  console.error(
+    "Erreur création du journal d’activité :",
+    activityError
+  );
+}
 
-      window.location.href = "/taches";
+/*
+ * Synchronise immédiatement le calendrier du responsable
+ * et de tous les participants ayant connecté Google Calendar.
+ * Une erreur de synchronisation ne supprime pas la tâche.
+ */
+try {
+  const {
+    data: { session },
+  } = await supabaseBrowser.auth.getSession();
+
+  if (!session?.access_token) {
+    console.error(
+      "Synchronisation Calendar ignorée : session absente."
+    );
+  } else {
+    const syncResponse = await fetch(
+      "/api/google-calendar/sync",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          taskId: newTask.id,
+        }),
+      }
+    );
+
+    const syncResult = await syncResponse.json();
+
+    if (!syncResponse.ok) {
+      console.error(
+        "Erreur synchronisation automatique Calendar :",
+        syncResult
+      );
+    } else {
+      console.log(
+        "Synchronisation Calendar terminée :",
+        syncResult
+      );
+    }
+  }
+} catch (syncError) {
+  console.error(
+    "Impossible de lancer la synchronisation Calendar :",
+    syncError
+  );
+}
+
+window.location.href = "/taches";
     } catch (error) {
       alert(
         error instanceof Error
