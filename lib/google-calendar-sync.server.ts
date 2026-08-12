@@ -134,6 +134,7 @@ export async function syncGoogleCalendarForUser(
     { data: medias, error: mediasError },
     { data: influenceurs, error: influenceursError },
     { data: taches, error: tachesError },
+    { data: taskAssignees, error: taskAssigneesError },
     { data: partenaires, error: partenairesError },
     { data: releaseTasks, error: releaseTasksError },
   ] = await Promise.all([
@@ -162,6 +163,11 @@ export async function syncGoogleCalendarForUser(
       .select("id, titre, deadline, statut, responsable_id")
       .not("deadline", "is", null),
 
+      supabaseAdmin
+  .from("task_assignees")
+  .select("task_id, user_id")
+  .eq("user_id", userId),
+
     supabaseAdmin
       .from("partenaires")
       .select("id, nom, prochaine_relance, statut, artiste_id, projet_id")
@@ -179,12 +185,19 @@ export async function syncGoogleCalendarForUser(
     mediasError ||
     influenceursError ||
     tachesError ||
+    taskAssigneesError ||
     partenairesError ||
     releaseTasksError;
 
   if (loadError) {
     throw loadError;
   }
+
+  const assignedTaskIds = new Set(
+  (taskAssignees || []).map(
+    (assignment) => assignment.task_id
+  )
+);
 
   const calendarItems: LmgCalendarItem[] = [
     ...(bookings || [])
@@ -241,15 +254,19 @@ export async function syncGoogleCalendarForUser(
     })),
 
     ...(taches || [])
-  .filter((item) => item.responsable_id === userId)
+  .filter(
+    (item) =>
+      item.responsable_id === userId ||
+      assignedTaskIds.has(item.id)
+  )
   .map((item) => ({
-      id: item.id,
-      sourceType: "tache",
-      title: `LMG Tâche — ${item.titre}`,
-      date: item.deadline,
-      status: item.statut,
-      description: "Deadline tâche",
-    })),
+    id: item.id,
+    sourceType: "tache",
+    title: `LMG Tâche — ${item.titre}`,
+    date: item.deadline,
+    status: item.statut,
+    description: "Deadline tâche",
+  })),
 
     ...(partenaires || [])
   .filter(
