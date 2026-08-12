@@ -187,13 +187,26 @@ export default function Sidebar() {
   },
 
   {
-    title: "Communication",
-    links: [
-      { href: "/notifications", label: "Notifications" },
-      { href: "/chat", label: "Chat équipe" },
-      { href: "/chat/prive", label: "Messages privés" },
-    ],
-  },
+  title: "Communication",
+  links: [
+    {
+      href: "/communication",
+      label: "Centre de communication",
+    },
+    {
+      href: "/notifications",
+      label: "Notifications",
+    },
+    {
+      href: "/chat",
+      label: "Chat équipe",
+    },
+    {
+      href: "/chat/prive",
+      label: "Messages privés",
+    },
+  ],
+},
 
   {
     title: "Administration",
