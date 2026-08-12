@@ -4,9 +4,7 @@ import {
 } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
-import {
-  getCentralGoogleGmail,
-} from "@/lib/google-gmail-central.server";
+import { sendCentralGmail } from "@/lib/google-gmail-central.server";
 import { ROLES } from "@/lib/roles";
 
 export const runtime = "nodejs";
@@ -47,39 +45,10 @@ function createSupabaseAdmin() {
   );
 }
 
-function encodeSubject(subject: string) {
-  return `=?UTF-8?B?${Buffer.from(
-    subject,
-    "utf8"
-  ).toString("base64")}?=`;
-}
-
-function createRawEmail({
-  to,
-  subject,
-  message,
-}: {
-  to: string;
-  subject: string;
-  message: string;
-}) {
-  const email = [
-    "From: Legacy Music Group <contact@legacymusicgroup.fr>",
-    "Reply-To: contact@legacymusicgroup.fr",
-    `To: ${to}`,
-    `Subject: ${encodeSubject(subject)}`,
-    "MIME-Version: 1.0",
-    'Content-Type: text/plain; charset="UTF-8"',
-    "Content-Transfer-Encoding: base64",
-    "",
-    Buffer.from(
-      message,
-      "utf8"
-    ).toString("base64"),
-  ].join("\r\n");
-
-  return Buffer.from(email)
-    .toString("base64url");
+function validUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value
+  );
 }
 
 export async function POST(
@@ -120,7 +89,8 @@ export async function POST(
 
     const {
       data: { user },
-    } = await supabaseAuth.auth.getUser();
+    } =
+      await supabaseAuth.auth.getUser();
 
     if (!user) {
       return NextResponse.json(
@@ -128,7 +98,9 @@ export async function POST(
           error:
             "Authentification requise.",
         },
-        { status: 401 }
+        {
+          status: 401,
+        }
       );
     }
 
@@ -162,28 +134,32 @@ export async function POST(
           error:
             "Tu n’as pas l’autorisation d’envoyer des e-mails.",
         },
-        { status: 403 }
+        {
+          status: 403,
+        }
       );
     }
 
-    const body = await request.json();
+    const body =
+      await request.json();
 
-    const to =
-      String(body.to || "").trim();
+    const to = String(
+      body.to || ""
+    ).trim();
 
-    const subject =
-      String(
-        body.subject || ""
-      ).trim();
+    const subject = String(
+      body.subject || ""
+    ).trim();
 
-    const message =
-      String(
-        body.message || ""
-      ).trim();
+    const message = String(
+      body.message || ""
+    ).trim();
 
     const requestedEntityType =
       body.entityType
-        ? String(body.entityType)
+        ? String(
+            body.entityType
+          )
         : null;
 
     const requestedEntityId =
@@ -210,7 +186,9 @@ export async function POST(
           error:
             "Destinataire, objet ou message invalide.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
@@ -223,7 +201,9 @@ export async function POST(
           error:
             "Le contenu de l’e-mail est trop long.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
@@ -239,7 +219,7 @@ export async function POST(
 
       const validEntityId =
         requestedEntityId &&
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        validUuid(
           requestedEntityId
         );
 
@@ -252,7 +232,9 @@ export async function POST(
             error:
               "Contexte CRM invalide.",
           },
-          { status: 400 }
+          {
+            status: 400,
+          }
         );
       }
 
@@ -263,22 +245,17 @@ export async function POST(
         requestedEntityId;
     }
 
-    const { gmail } =
-      await getCentralGoogleGmail(
-        request.nextUrl.origin
-      );
-
-    const result =
-      await gmail.users.messages.send({
-        userId: "me",
-        requestBody: {
-          raw: createRawEmail({
-            to,
-            subject,
-            message,
-          }),
-        },
+    const gmailResult =
+      await sendCentralGmail({
+        origin:
+          request.nextUrl.origin,
+        to,
+        subject,
+        message,
       });
+
+    const sentAt =
+      new Date().toISOString();
 
     const { error: logError } =
       await supabaseAdmin
@@ -293,13 +270,12 @@ export async function POST(
           entity_id:
             logEntityId,
           gmail_message_id:
-            result.data.id || null,
+            gmailResult.gmailMessageId,
           gmail_thread_id:
-            result.data.threadId ||
-            null,
+            gmailResult.gmailThreadId,
           status: "sent",
-          sent_at:
-            new Date().toISOString(),
+          error_message: null,
+          sent_at: sentAt,
         });
 
     if (logError) {
@@ -312,9 +288,9 @@ export async function POST(
     return NextResponse.json({
       success: true,
       messageId:
-        result.data.id || null,
+        gmailResult.gmailMessageId,
       threadId:
-        result.data.threadId || null,
+        gmailResult.gmailThreadId,
       historySaved: !logError,
     });
   } catch (error) {
@@ -344,7 +320,10 @@ export async function POST(
             message: logMessage,
             entity_type:
               logEntityType,
-            entity_id: logEntityId,
+            entity_id:
+              logEntityId,
+            gmail_message_id: null,
+            gmail_thread_id: null,
             status: "failed",
             error_message:
               error instanceof Error
@@ -353,7 +332,9 @@ export async function POST(
             sent_at:
               new Date().toISOString(),
           });
-      } catch (logFailureError) {
+      } catch (
+        logFailureError
+      ) {
         console.error(
           "Impossible d’enregistrer l’échec de l’e-mail :",
           logFailureError
@@ -364,9 +345,13 @@ export async function POST(
     return NextResponse.json(
       {
         error:
-          "Impossible d’envoyer l’e-mail.",
+          error instanceof Error
+            ? error.message
+            : "Impossible d’envoyer l’e-mail.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
