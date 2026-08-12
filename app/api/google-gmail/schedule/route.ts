@@ -120,6 +120,12 @@ function validUuid(value: string) {
   );
 }
 
+function containsHeaderInjection(
+  value: string
+) {
+  return /[\r\n]/.test(value);
+}
+
 function validEntityType(
   value: string
 ): value is EntityType {
@@ -284,15 +290,21 @@ export async function POST(
       );
 
     if (
-      !validEmail ||
-      !subject ||
-      !message ||
-      !validEntityType(entityType) ||
-      !validUuid(entityId) ||
-      Number.isNaN(
-        scheduledFor.getTime()
-      )
-    ) {
+  !validEmail ||
+  !subject ||
+  !message ||
+  containsHeaderInjection(
+    recipientEmail
+  ) ||
+  containsHeaderInjection(
+    subject
+  ) ||
+  !validEntityType(entityType) ||
+  !validUuid(entityId) ||
+  Number.isNaN(
+    scheduledFor.getTime()
+  )
+) {
       return NextResponse.json(
         {
           error:

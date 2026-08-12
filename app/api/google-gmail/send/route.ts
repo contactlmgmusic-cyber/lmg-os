@@ -54,6 +54,12 @@ function validUuid(value: string) {
   );
 }
 
+function containsHeaderInjection(
+  value: string
+) {
+  return /[\r\n]/.test(value);
+}
+
 export async function POST(
   request: NextRequest
 ) {
@@ -180,10 +186,12 @@ export async function POST(
       );
 
     if (
-      !validEmail ||
-      !subject ||
-      !message
-    ) {
+  !validEmail ||
+  !subject ||
+  !message ||
+  containsHeaderInjection(to) ||
+  containsHeaderInjection(subject)
+) {
       return NextResponse.json(
         {
           error:
