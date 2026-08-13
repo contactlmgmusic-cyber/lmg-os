@@ -291,17 +291,26 @@ export default function CrmEmailPanel({
             0
         );
 
-      setSyncMessage(
-        importedCount > 0
-          ? `${importedCount} nouvelle${
-              importedCount > 1 ? "s" : ""
-            } réponse${
-              importedCount > 1 ? "s" : ""
-            } récupérée${
-              importedCount > 1 ? "s" : ""
-            }.`
-          : "Aucune nouvelle réponse détectée."
-      );
+      const scannedCount =
+  Number(result.scanned || 0);
+
+const matchedCount =
+  Number(result.matched || 0);
+
+const ignoredCount =
+  Number(result.ignored || 0);
+
+setSyncMessage(
+  importedCount > 0
+    ? `${importedCount} nouvelle${
+        importedCount > 1 ? "s" : ""
+      } réponse${
+        importedCount > 1 ? "s" : ""
+      } récupérée${
+        importedCount > 1 ? "s" : ""
+      }.`
+    : `Aucune nouvelle réponse détectée — ${scannedCount} message(s) analysé(s), ${matchedCount} rapproché(s), ${ignoredCount} ignoré(s).`
+);
 
       refreshPanel();
     } catch (syncFailure) {
