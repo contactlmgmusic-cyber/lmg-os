@@ -18,7 +18,7 @@ const ENTITY_TYPES = [
   "influenceur",
   "partenaire",
   "prospect",
-];
+] as const;
 
 function createSupabaseAdmin() {
   const supabaseUrl =
@@ -45,6 +45,20 @@ function createSupabaseAdmin() {
   );
 }
 
+function isValidUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value
+  );
+}
+
+function isValidEntityType(
+  value: string
+): value is CrmEmailEntityType {
+  return ENTITY_TYPES.includes(
+    value as CrmEmailEntityType
+  );
+}
+
 export async function GET(
   request: NextRequest
 ) {
@@ -67,7 +81,8 @@ export async function GET(
 
     const {
       data: { user },
-    } = await supabaseAuth.auth.getUser();
+    } =
+      await supabaseAuth.auth.getUser();
 
     if (!user) {
       return NextResponse.json(
@@ -75,7 +90,9 @@ export async function GET(
           error:
             "Authentification requise.",
         },
-        { status: 401 }
+        {
+          status: 401,
+        }
       );
     }
 
@@ -89,7 +106,7 @@ export async function GET(
         .eq("id", user.id)
         .single();
 
-    const allowedRoles = [
+    const allowedRoles: string[] = [
       ROLES.SUPER_ADMIN,
       ROLES.ADMIN,
       ROLES.MANAGER,
@@ -104,10 +121,11 @@ export async function GET(
     ) {
       return NextResponse.json(
         {
-          error:
-            "Accès refusé.",
+          error: "Accès refusé.",
         },
-        { status: 403 }
+        {
+          status: 403,
+        }
       );
     }
 
@@ -121,56 +139,153 @@ export async function GET(
         "entityId"
       );
 
-    const validEntityId =
-      entityId &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-        entityId
+    if (
+      !entityType ||
+      !isValidEntityType(entityType) ||
+      !entityId ||
+      !isValidUuid(entityId)
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Contexte CRM invalide.",
+        },
+        {
+          status: 400,
+        }
       );
-
-    const canAccess =
-  await canAccessCrmEmailEntity({
-    supabaseAdmin,
-    userId: user.id,
-    role: profile.role,
-    entityType:
-      entityType as CrmEmailEntityType,
-    entityId:
-      entityId as string,
-  });
-
-if (!canAccess) {
-  return NextResponse.json(
-    {
-      error:
-        "Tu n’as pas accès à l’historique de cette fiche.",
-    },
-    { status: 403 }
-  );
-}
-
-    const {
-      data: emails,
-      error,
-    } = await supabaseAdmin
-      .from("crm_email_logs")
-      .select(
-        "id, recipient_email, subject, message, status, error_message, sent_by, sent_at"
-      )
-      .eq(
-        "entity_type",
-        entityType
-      )
-      .eq("entity_id", entityId)
-      .order("sent_at", {
-        ascending: false,
-      });
-
-    if (error) {
-      throw error;
     }
 
+    const canAccess =
+      await canAccessCrmEmailEntity({
+        supabaseAdmin,
+        userId: user.id,
+        role: profile.role,
+        entityType,
+        entityId,
+      });
+
+    if (!canAccess) {
+      return NextResponse.json(
+        {
+          error:
+            "Tu n’as pas accès à l’historique de cette fiche.",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
+    const [
+      {
+        data: emails,
+        error: emailsError,
+      },
+      {
+        data: replies,
+        error: repliesError,
+      },
+    ] = await Promise.all([
+      supabaseAdmin
+        .from("crm_email_logs")
+        .select(
+          `
+            id,
+            recipient_email,
+            subject,
+            message,
+            status,
+            error_message,
+            sent_by,
+            sent_at,
+            rfc_message_id
+          `
+        )
+        .eq(
+          "entity_type",
+          entityType
+        )
+        .eq("entity_id", entityId)
+        .order("sent_at", {
+          ascending: false,
+        }),
+
+      supabaseAdmin
+        .from("crm_email_replies")
+        .select(
+          `
+            id,
+            email_log_id,
+            message_id,
+            in_reply_to,
+            sender_email,
+            sender_name,
+            recipient_email,
+            subject,
+            message_text,
+            received_at
+          `
+        )
+        .eq(
+          "entity_type",
+          entityType
+        )
+        .eq("entity_id", entityId)
+        .order("received_at", {
+          ascending: true,
+        }),
+    ]);
+
+    if (emailsError) {
+      throw emailsError;
+    }
+
+    if (repliesError) {
+      throw repliesError;
+    }
+
+    const repliesByEmailLogId =
+      (replies || []).reduce<
+        Record<
+          string,
+          typeof replies
+        >
+      >((groups, reply) => {
+        if (!reply.email_log_id) {
+          return groups;
+        }
+
+        if (
+          !groups[reply.email_log_id]
+        ) {
+          groups[reply.email_log_id] =
+            [];
+        }
+
+        groups[
+          reply.email_log_id
+        ]?.push(reply);
+
+        return groups;
+      }, {});
+
+    const emailsWithReplies =
+      (emails || []).map(
+        (email) => ({
+          ...email,
+          replies:
+            repliesByEmailLogId[
+              email.id
+            ] || [],
+        })
+      );
+
     return NextResponse.json({
-      emails: emails || [],
+      emails: emailsWithReplies,
+      replies: replies || [],
+      repliesCount:
+        replies?.length || 0,
     });
   } catch (error) {
     console.error(
@@ -181,9 +296,13 @@ if (!canAccess) {
     return NextResponse.json(
       {
         error:
-          "Impossible de charger l’historique des e-mails.",
+          error instanceof Error
+            ? error.message
+            : "Impossible de charger l’historique des e-mails.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
