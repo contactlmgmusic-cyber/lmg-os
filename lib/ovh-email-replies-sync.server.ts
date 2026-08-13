@@ -233,74 +233,168 @@ export async function syncOvhEmailReplies() {
           continue;
         }
 
-        const referencedIds =
-          getReferencedMessageIds({
-            inReplyTo:
-              parsed.inReplyTo,
-
-            references:
-              parsed.references,
-          });
-
-        if (
-          referencedIds.length === 0
-        ) {
-          ignored += 1;
-          continue;
-        }
-
-        const {
-          data: originalEmail,
-          error: originalEmailError,
-        } = await supabaseAdmin
-          .from("crm_email_logs")
-          .select(
-            `
-              id,
-              entity_type,
-              entity_id,
-              rfc_message_id
-            `
-          )
-          .in(
-            "rfc_message_id",
-            referencedIds
-          )
-          .eq("status", "sent")
-          .order("sent_at", {
-            ascending: false,
-          })
-          .limit(1)
-          .maybeSingle();
-
-        if (
-          originalEmailError ||
-          !originalEmail
-        ) {
-          ignored += 1;
-          continue;
-        }
-
-        matched += 1;
-
         const sender =
-          getFirstAddress(
-            parsed.from
+  getFirstAddress(
+    parsed.from
+  );
+
+const recipient =
+  getFirstAddress(
+    parsed.to
+  );
+
+const senderEmail =
+  sender?.address?.trim() || "";
+
+if (!senderEmail) {
+  ignored += 1;
+  continue;
+}
+
+const referencedIds =
+  getReferencedMessageIds({
+    inReplyTo:
+      parsed.inReplyTo,
+
+    references:
+      parsed.references,
+  });
+
+type OriginalEmail = {
+  id: string;
+  entity_type: string;
+  entity_id: string;
+  rfc_message_id: string | null;
+};
+
+let originalEmail:
+  | OriginalEmail
+  | null = null;
+
+/*
+ * Recherche principale :
+ * correspondance avec In-Reply-To
+ * ou References.
+ */
+if (referencedIds.length > 0) {
+  const {
+    data,
+    error:
+      originalEmailError,
+  } = await supabaseAdmin
+    .from("crm_email_logs")
+    .select(
+      `
+        id,
+        entity_type,
+        entity_id,
+        rfc_message_id
+      `
+    )
+    .in(
+      "rfc_message_id",
+      referencedIds
+    )
+    .eq("status", "sent")
+    .order("sent_at", {
+      ascending: false,
+    })
+    .limit(1)
+    .maybeSingle();
+
+  if (originalEmailError) {
+    console.error(
+      "Erreur recherche Message-ID :",
+      originalEmailError
+    );
+  }
+
+  originalEmail =
+    data as OriginalEmail | null;
+}
+
+/*
+ * Recherche de secours :
+ * même destinataire et même objet.
+ *
+ * Utile lorsque Gmail remplace le
+ * Message-ID personnalisé pendant
+ * l’envoi.
+ */
+if (!originalEmail) {
+  const normalizedSubject =
+    String(
+      parsed.subject || ""
+    )
+      .replace(
+        /^(?:(?:re|ré|fw|fwd)\s*:\s*)+/gi,
+        ""
+      )
+      .trim();
+
+  if (normalizedSubject) {
+    const receivedAtValue =
+      parsed.date ||
+      fetchedMessage.internalDate ||
+      new Date();
+
+    const replyReceivedAt =
+      receivedAtValue instanceof Date
+        ? receivedAtValue
+        : new Date(
+            receivedAtValue
           );
 
-        const recipient =
-          getFirstAddress(
-            parsed.to
-          );
+    const {
+      data: fallbackEmail,
+      error: fallbackError,
+    } = await supabaseAdmin
+      .from("crm_email_logs")
+      .select(
+        `
+          id,
+          entity_type,
+          entity_id,
+          rfc_message_id
+        `
+      )
+      .eq(
+        "recipient_email",
+        senderEmail
+      )
+      .eq(
+        "subject",
+        normalizedSubject
+      )
+      .eq("status", "sent")
+      .lt(
+        "sent_at",
+        replyReceivedAt.toISOString()
+      )
+      .order("sent_at", {
+        ascending: false,
+      })
+      .limit(1)
+      .maybeSingle();
 
-        const senderEmail =
-          sender?.address?.trim() ||
-          "";
+    if (fallbackError) {
+      console.error(
+        "Erreur rapprochement de secours :",
+        fallbackError
+      );
+    }
 
-        if (!senderEmail) {
-          ignored += 1;
-          continue;
-        }
+    originalEmail =
+      fallbackEmail as OriginalEmail | null;
+  }
+}
+
+if (!originalEmail) {
+  ignored += 1;
+  continue;
+}
+
+matched += 1;
 
         /*
          * Sécurité supplémentaire :
