@@ -276,10 +276,12 @@ if (exhaustedError) {
             entity_id:
               email.entity_id,
             gmail_message_id:
-              gmailResult.gmailMessageId,
-            gmail_thread_id:
-              gmailResult.gmailThreadId,
-            status: "sent",
+  gmailResult.gmailMessageId,
+gmail_thread_id:
+  gmailResult.gmailThreadId,
+rfc_message_id:
+  gmailResult.rfcMessageId,
+status: "sent",
             error_message: null,
             sent_at: sentAt,
           });

@@ -305,6 +305,10 @@ if (!canAccess) {
             gmailResult.gmailMessageId,
           gmail_thread_id:
             gmailResult.gmailThreadId,
+            rfcMessageId:
+  gmailResult.rfcMessageId,
+            rfc_message_id:
+  gmailResult.rfcMessageId,
           status: "sent",
           error_message: null,
           sent_at: sentAt,

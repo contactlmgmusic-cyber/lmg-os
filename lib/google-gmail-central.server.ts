@@ -54,6 +54,12 @@ function encodeHeader(
   ).toString("base64")}?=`;
 }
 
+function containsHeaderInjection(
+  value: string
+) {
+  return /[\r\n]/.test(value);
+}
+
 function encodeMimePart(
   value: string
 ) {
@@ -473,15 +479,20 @@ export async function sendCentralGmail({
   const cleanMessage =
     message.trim();
 
+    const rfcMessageId =
+  `<${randomUUID()}@legacymusicgroup.fr>`;
+
   if (
-    !cleanTo ||
-    !cleanSubject ||
-    !cleanMessage
-  ) {
-    throw new Error(
-      "Le destinataire, l’objet et le message sont obligatoires."
-    );
-  }
+  !cleanTo ||
+  !cleanSubject ||
+  !cleanMessage ||
+  containsHeaderInjection(cleanTo) ||
+  containsHeaderInjection(cleanSubject)
+) {
+  throw new Error(
+    "Le destinataire ou l’objet de l’e-mail est invalide."
+  );
+}
 
   const { gmail } =
     await getCentralGoogleGmail(
@@ -503,8 +514,9 @@ export async function sendCentralGmail({
 
   const rawMessage = [
     "From: Legacy Music Group <contact@legacymusicgroup.fr>",
-    "Reply-To: contact@legacymusicgroup.fr",
-    `To: ${cleanTo}`,
+"Reply-To: contact@legacymusicgroup.fr",
+`Message-ID: ${rfcMessageId}`,
+`To: ${cleanTo}`,
     `Subject: ${encodeHeader(
       cleanSubject
     )}`,
@@ -541,10 +553,13 @@ export async function sendCentralGmail({
     });
 
   return {
-    gmailMessageId:
-      response.data.id || null,
-    gmailThreadId:
-      response.data.threadId ||
-      null,
-  };
+  gmailMessageId:
+    response.data.id || null,
+
+  gmailThreadId:
+    response.data.threadId ||
+    null,
+
+  rfcMessageId,
+};
 }
