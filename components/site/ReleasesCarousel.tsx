@@ -12,22 +12,24 @@ export default function ReleasesCarousel() {
   useEffect(() => {
     async function loadReleases() {
       const { data } = await supabaseBrowser
-        .from("projets")
-        .select(`
-  id,
-  titre,
-  slug,
-  type,
-  cover_url,
-  hero_image_url,
-  date_sortie,
-  artistes (
-    nom
-  )
-`)
-        .not("slug", "is", null)
-        .order("date_sortie", { ascending: false })
-        .limit(6);
+  .from("projets")
+  .select(`
+    id,
+    titre,
+    slug,
+    type,
+    cover_url,
+    hero_image_url,
+    date_sortie,
+    artistes (
+      nom
+    )
+  `)
+  .eq("is_public", true)
+  .eq("featured", true)
+  .not("slug", "is", null)
+  .order("date_sortie", { ascending: false })
+  .limit(6);
 
       setReleases(data || []);
     }
