@@ -38,7 +38,6 @@ export async function generateMetadata({
   return {
     title: `${artiste.nom} | Legacy Music Group`,
     description,
-
     openGraph: {
       title: `${artiste.nom} | Legacy Music Group`,
       description,
@@ -61,10 +60,6 @@ export default async function ArtistPage({
 }) {
   const { slug } = await params;
 
-  // ─────────────────────────────────────
-  // ARTISTE PUBLIC
-  // ─────────────────────────────────────
-
   const { data: artisteData } = await supabase
     .from("artistes")
     .select("*")
@@ -78,7 +73,6 @@ export default async function ArtistPage({
     notFound();
   }
 
-  // Priorité aux données synchronisées LMG OS
   const spotifyLink = artiste.spotify_url || artiste.spotify;
   const youtubeLink = artiste.youtube_url || artiste.youtube;
 
@@ -86,10 +80,6 @@ export default async function ArtistPage({
     artiste.photo_url ||
     artiste.spotify_image_url ||
     artiste.youtube_image_url;
-
-  // ─────────────────────────────────────
-  // RELEASES PUBLIQUES UNIQUEMENT
-  // ─────────────────────────────────────
 
   const { data: projets } = await supabase
     .from("projets")
@@ -113,7 +103,7 @@ export default async function ArtistPage({
     .order("date_sortie", { ascending: false });
 
   const latestProject = projets?.[0];
-  const otherProjects = projets?.slice(1) || [];
+  const discography = projets || [];
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -136,7 +126,6 @@ export default async function ArtistPage({
 
         <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl items-center px-6 pb-20 pt-32 md:px-8">
           <div className="grid w-full gap-12 lg:grid-cols-[48%_52%] lg:items-center">
-            {/* PHOTO */}
             <div className="relative mx-auto aspect-[4/5] w-full max-w-[520px] overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-900 shadow-2xl">
               {artistImage ? (
                 <Image
@@ -153,7 +142,6 @@ export default async function ArtistPage({
               )}
             </div>
 
-            {/* INFOS */}
             <div>
               <Link
                 href="/site#artists"
@@ -178,7 +166,6 @@ export default async function ArtistPage({
                 </p>
               )}
 
-              {/* PLATEFORMES */}
               <div className="mt-10 flex flex-wrap gap-3">
                 {spotifyLink && (
                   <a
@@ -251,29 +238,6 @@ export default async function ArtistPage({
         </div>
       </section>
 
-      {/* BIOGRAPHIE */}
-      <section className="border-t border-zinc-900 px-6 py-28 md:px-8">
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[30%_70%]">
-          <div>
-            <p className="text-sm uppercase tracking-[0.35em] text-yellow-500">
-              Biography
-            </p>
-
-            <h2 className="mt-4 text-4xl font-black uppercase md:text-5xl">
-              L'artiste
-            </h2>
-          </div>
-
-          <div>
-            <p className="whitespace-pre-line text-lg leading-9 text-zinc-300 md:text-xl">
-              {artiste.bio ||
-                artiste.notes ||
-                "Artiste accompagné par Legacy Music Group."}
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* DERNIÈRE SORTIE */}
       {latestProject && (
         <section className="border-t border-zinc-900 bg-zinc-950 px-6 py-28 md:px-8">
@@ -292,13 +256,9 @@ export default async function ArtistPage({
               href={`/site/projets/${latestProject.slug}`}
               className="group relative block min-h-[560px] overflow-hidden rounded-[2rem] border border-zinc-800 bg-black"
             >
-              {latestProject.hero_image_url ||
-              latestProject.cover_url ? (
+              {latestProject.hero_image_url || latestProject.cover_url ? (
                 <Image
-                  src={
-                    latestProject.hero_image_url ||
-                    latestProject.cover_url
-                  }
+                  src={latestProject.hero_image_url || latestProject.cover_url}
                   alt={latestProject.titre || "Release LMG"}
                   fill
                   className="object-cover object-center transition duration-700 group-hover:scale-[1.03]"
@@ -337,7 +297,7 @@ export default async function ArtistPage({
       )}
 
       {/* DISCOGRAPHIE */}
-      {otherProjects.length > 0 && (
+      {discography.length > 0 && (
         <section className="border-t border-zinc-900 px-6 py-28 md:px-8">
           <div className="mx-auto max-w-7xl">
             <p className="text-sm uppercase tracking-[0.35em] text-yellow-500">
@@ -349,7 +309,7 @@ export default async function ArtistPage({
             </h2>
 
             <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {otherProjects.map((project) => (
+              {discography.map((project) => (
                 <Link
                   key={project.id}
                   href={`/site/projets/${project.slug}`}
@@ -395,6 +355,29 @@ export default async function ArtistPage({
           </div>
         </section>
       )}
+
+      {/* BIOGRAPHIE */}
+      <section className="border-t border-zinc-900 px-6 py-28 md:px-8">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[30%_70%]">
+          <div>
+            <p className="text-sm uppercase tracking-[0.35em] text-yellow-500">
+              Biography
+            </p>
+
+            <h2 className="mt-4 text-4xl font-black uppercase md:text-5xl">
+              L&apos;artiste
+            </h2>
+          </div>
+
+          <div>
+            <p className="whitespace-pre-line text-lg leading-9 text-zinc-300 md:text-xl">
+              {artiste.bio ||
+                artiste.notes ||
+                "Artiste accompagné par Legacy Music Group."}
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* BOOKING / CONTACT */}
       <section className="border-t border-zinc-900 bg-zinc-950 px-6 py-28 text-center md:px-8">
