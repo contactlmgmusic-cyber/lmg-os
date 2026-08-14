@@ -4,6 +4,20 @@ import { simpleParser } from "mailparser";
 import { createClient } from "@supabase/supabase-js";
 import { createOvhImapClient } from "@/lib/ovh-imap.server";
 
+type OriginalEmail = {
+  id: string;
+  entity_type:
+    | "media"
+    | "influenceur"
+    | "partenaire"
+    | "prospect";
+  entity_id: string;
+  rfc_message_id: string | null;
+  recipient_email: string;
+  subject: string;
+  sent_at: string;
+};
+
 function createSupabaseAdmin() {
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -32,31 +46,43 @@ function createSupabaseAdmin() {
 function normalizeMessageId(
   value?: string | null
 ) {
-  if (!value) return null;
+  const cleanValue =
+    String(value || "").trim();
 
-  const cleaned = value.trim();
+  if (!cleanValue) {
+    return null;
+  }
 
-  if (!cleaned) return null;
+  const match =
+    cleanValue.match(
+      /<[^<>]+>/
+    );
 
-  return cleaned.startsWith("<")
-    ? cleaned
-    : `<${cleaned.replace(
-        /^<|>$/g,
-        ""
-      )}>`;
+  return (
+    match?.[0] ||
+    cleanValue
+  ).toLowerCase();
 }
 
 function getReferencedMessageIds({
   inReplyTo,
   references,
 }: {
-  inReplyTo?: string | null;
-  references?: string[] | string | null;
+  inReplyTo?:
+    | string
+    | string[]
+    | null;
+  references?:
+    | string
+    | string[]
+    | null;
 }) {
   const values = [
-    ...(inReplyTo
-      ? [inReplyTo]
-      : []),
+    ...(Array.isArray(inReplyTo)
+      ? inReplyTo
+      : inReplyTo
+        ? [inReplyTo]
+        : []),
 
     ...(Array.isArray(references)
       ? references
@@ -65,19 +91,23 @@ function getReferencedMessageIds({
         : []),
   ];
 
+  const messageIds =
+    values.flatMap((value) => {
+      const matches =
+        String(value).match(
+          /<[^<>]+>/g
+        );
+
+      if (matches?.length) {
+        return matches;
+      }
+
+      return [String(value)];
+    });
+
   return Array.from(
     new Set(
-      values
-        .flatMap((value) => {
-          const matches =
-            value.match(
-              /<[^<>]+>/g
-            );
-
-          return matches?.length
-            ? matches
-            : [value];
-        })
+      messageIds
         .map(normalizeMessageId)
         .filter(
           (
@@ -89,32 +119,228 @@ function getReferencedMessageIds({
   );
 }
 
+function normalizeEmail(
+  value?: string | null
+) {
+  return String(value || "")
+    .trim()
+    .toLowerCase();
+}
+
+function normalizeSubject(
+  value?: string | null
+) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .replace(
+      /^(?:(?:re|ré|fw|fwd|tr)\s*:\s*)+/gi,
+      ""
+    )
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
 function getFirstAddress(
-  address:
+  addressObject:
     | {
         value?: Array<{
-          address?: string;
           name?: string;
+          address?: string;
         }>;
       }
-    | Array<{
-        value?: Array<{
-          address?: string;
-          name?: string;
-        }>;
-      }>
-    | null
     | undefined
+    | null
 ) {
-  const addressObject =
-    Array.isArray(address)
-      ? address[0]
-      : address;
-
   return (
     addressObject?.value?.[0] ||
     null
   );
+}
+
+function getSafeDate(
+  value:
+    | Date
+    | string
+    | number
+    | undefined
+    | null
+) {
+  const date =
+    value instanceof Date
+      ? value
+      : new Date(
+          value || Date.now()
+        );
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return new Date();
+  }
+
+  return date;
+}
+
+async function findOriginalEmail({
+  supabaseAdmin,
+  referencedIds,
+  senderEmail,
+  replySubject,
+  replyReceivedAt,
+}: {
+  supabaseAdmin: ReturnType<
+    typeof createSupabaseAdmin
+  >;
+  referencedIds: string[];
+  senderEmail: string;
+  replySubject: string;
+  replyReceivedAt: Date;
+}): Promise<OriginalEmail | null> {
+  /*
+   * Première recherche :
+   * correspondance directe avec
+   * In-Reply-To ou References.
+   */
+  if (referencedIds.length > 0) {
+    const {
+      data: directCandidates,
+      error: directError,
+    } = await supabaseAdmin
+      .from("crm_email_logs")
+      .select(
+        `
+          id,
+          entity_type,
+          entity_id,
+          rfc_message_id,
+          recipient_email,
+          subject,
+          sent_at
+        `
+      )
+      .eq("status", "sent")
+      .not(
+        "rfc_message_id",
+        "is",
+        null
+      )
+      .order("sent_at", {
+        ascending: false,
+      })
+      .limit(250);
+
+    if (directError) {
+      console.error(
+        "Erreur recherche Message-ID :",
+        directError
+      );
+    } else {
+      const directMatch =
+        (
+          directCandidates || []
+        ).find((candidate) => {
+          const candidateMessageId =
+            normalizeMessageId(
+              candidate.rfc_message_id
+            );
+
+          return (
+            candidateMessageId &&
+            referencedIds.includes(
+              candidateMessageId
+            )
+          );
+        });
+
+      if (directMatch) {
+        return (
+          directMatch as OriginalEmail
+        );
+      }
+    }
+  }
+
+  /*
+   * Recherche de secours :
+   * même expéditeur, même objet
+   * normalisé et envoi antérieur
+   * à la réponse.
+   */
+  if (
+    !senderEmail ||
+    !replySubject
+  ) {
+    return null;
+  }
+
+  const {
+    data: fallbackCandidates,
+    error: fallbackError,
+  } = await supabaseAdmin
+    .from("crm_email_logs")
+    .select(
+      `
+        id,
+        entity_type,
+        entity_id,
+        rfc_message_id,
+        recipient_email,
+        subject,
+        sent_at
+      `
+    )
+    .eq("status", "sent")
+    .lt(
+      "sent_at",
+      replyReceivedAt.toISOString()
+    )
+    .order("sent_at", {
+      ascending: false,
+    })
+    .limit(250);
+
+  if (fallbackError) {
+    console.error(
+      "Erreur rapprochement de secours :",
+      fallbackError
+    );
+
+    return null;
+  }
+
+  const normalizedSender =
+    normalizeEmail(senderEmail);
+
+  const matchingCandidate =
+    (
+      fallbackCandidates || []
+    ).find((candidate) => {
+      const sameRecipient =
+        normalizeEmail(
+          candidate.recipient_email
+        ) === normalizedSender;
+
+      const sameSubject =
+        normalizeSubject(
+          candidate.subject
+        ) === replySubject;
+
+      return (
+        sameRecipient &&
+        sameSubject
+      );
+    });
+
+  return matchingCandidate
+    ? (matchingCandidate as OriginalEmail)
+    : null;
 }
 
 export async function syncOvhEmailReplies() {
@@ -138,13 +364,6 @@ export async function syncOvhEmailReplies() {
       );
 
     try {
-      /*
-       * On analyse les messages reçus durant
-       * les 30 derniers jours.
-       *
-       * La contrainte unique sur message_id
-       * empêche tout doublon.
-       */
       const since = new Date();
 
       since.setDate(
@@ -161,16 +380,14 @@ export async function syncOvhEmailReplies() {
           }
         );
 
-      /*
-       * On limite chaque exécution aux
-       * 250 messages les plus récents.
-       */
       const recentUids =
-  Array.isArray(messageUids)
-    ? messageUids.slice(-250)
-    : [];
+        Array.isArray(messageUids)
+          ? messageUids.slice(-250)
+          : [];
 
-      if (recentUids.length === 0) {
+      if (
+        recentUids.length === 0
+      ) {
         return {
           scanned,
           matched,
@@ -180,8 +397,7 @@ export async function syncOvhEmailReplies() {
       }
 
       for await (
-        const fetchedMessage of
-        imapClient.fetch(
+        const fetchedMessage of imapClient.fetch(
           recentUids,
           {
             uid: true,
@@ -200,10 +416,21 @@ export async function syncOvhEmailReplies() {
           continue;
         }
 
-        const parsed =
-          await simpleParser(
+        let parsed;
+
+        try {
+          parsed = await simpleParser(
             fetchedMessage.source
           );
+        } catch (parseError) {
+          console.error(
+            "Erreur lecture e-mail OVH :",
+            parseError
+          );
+
+          ignored += 1;
+          continue;
+        }
 
         const messageId =
           normalizeMessageId(
@@ -215,8 +442,14 @@ export async function syncOvhEmailReplies() {
           continue;
         }
 
+        /*
+         * Évite d’importer deux fois
+         * la même réponse.
+         */
         const {
           data: existingReply,
+          error:
+            existingReplyError,
         } = await supabaseAdmin
           .from(
             "crm_email_replies"
@@ -228,196 +461,94 @@ export async function syncOvhEmailReplies() {
           )
           .maybeSingle();
 
+        if (
+          existingReplyError
+        ) {
+          console.error(
+            "Erreur vérification réponse existante :",
+            existingReplyError
+          );
+
+          ignored += 1;
+          continue;
+        }
+
         if (existingReply) {
           ignored += 1;
           continue;
         }
 
         const sender =
-  getFirstAddress(
-    parsed.from
-  );
-
-const recipient =
-  getFirstAddress(
-    parsed.to
-  );
-
-const senderEmail =
-  sender?.address?.trim() || "";
-
-if (!senderEmail) {
-  ignored += 1;
-  continue;
-}
-
-const referencedIds =
-  getReferencedMessageIds({
-    inReplyTo:
-      parsed.inReplyTo,
-
-    references:
-      parsed.references,
-  });
-
-type OriginalEmail = {
-  id: string;
-  entity_type: string;
-  entity_id: string;
-  rfc_message_id: string | null;
-};
-
-let originalEmail:
-  | OriginalEmail
-  | null = null;
-
-/*
- * Recherche principale :
- * correspondance avec In-Reply-To
- * ou References.
- */
-if (referencedIds.length > 0) {
-  const {
-    data,
-    error:
-      originalEmailError,
-  } = await supabaseAdmin
-    .from("crm_email_logs")
-    .select(
-      `
-        id,
-        entity_type,
-        entity_id,
-        rfc_message_id
-      `
-    )
-    .in(
-      "rfc_message_id",
-      referencedIds
-    )
-    .eq("status", "sent")
-    .order("sent_at", {
-      ascending: false,
-    })
-    .limit(1)
-    .maybeSingle();
-
-  if (originalEmailError) {
-    console.error(
-      "Erreur recherche Message-ID :",
-      originalEmailError
-    );
-  }
-
-  originalEmail =
-    data as OriginalEmail | null;
-}
-
-/*
- * Recherche de secours :
- * même destinataire et même objet.
- *
- * Utile lorsque Gmail remplace le
- * Message-ID personnalisé pendant
- * l’envoi.
- */
-if (!originalEmail) {
-  const normalizedSubject =
-    String(
-      parsed.subject || ""
-    )
-      .replace(
-        /^(?:(?:re|ré|fw|fwd)\s*:\s*)+/gi,
-        ""
-      )
-      .trim();
-
-  if (normalizedSubject) {
-    const receivedAtValue =
-      parsed.date ||
-      fetchedMessage.internalDate ||
-      new Date();
-
-    const replyReceivedAt =
-      receivedAtValue instanceof Date
-        ? receivedAtValue
-        : new Date(
-            receivedAtValue
+          getFirstAddress(
+            parsed.from
           );
 
-    const {
-      data: fallbackEmail,
-      error: fallbackError,
-    } = await supabaseAdmin
-      .from("crm_email_logs")
-      .select(
-        `
-          id,
-          entity_type,
-          entity_id,
-          rfc_message_id
-        `
-      )
-      .eq(
-        "recipient_email",
-        senderEmail
-      )
-      .eq(
-        "subject",
-        normalizedSubject
-      )
-      .eq("status", "sent")
-      .lt(
-        "sent_at",
-        replyReceivedAt.toISOString()
-      )
-      .order("sent_at", {
-        ascending: false,
-      })
-      .limit(1)
-      .maybeSingle();
+        const recipient =
+  getFirstAddress(
+    Array.isArray(parsed.to)
+      ? parsed.to[0]
+      : parsed.to
+  );
 
-    if (fallbackError) {
-      console.error(
-        "Erreur rapprochement de secours :",
-        fallbackError
-      );
-    }
+        const senderEmail =
+          normalizeEmail(
+            sender?.address
+          );
 
-    originalEmail =
-      fallbackEmail as OriginalEmail | null;
-  }
-}
-
-if (!originalEmail) {
-  ignored += 1;
-  continue;
-}
-
-matched += 1;
+        if (!senderEmail) {
+          ignored += 1;
+          continue;
+        }
 
         /*
-         * Sécurité supplémentaire :
-         * on n’enregistre pas nos propres
-         * messages comme des réponses.
+         * Ne pas enregistrer les
+         * messages envoyés par LMG
+         * comme des réponses reçues.
          */
         if (
-          senderEmail.toLowerCase() ===
+          senderEmail ===
           "contact@legacymusicgroup.fr"
         ) {
           ignored += 1;
           continue;
         }
 
-        const receivedAtValue =
-  parsed.date ||
-  fetchedMessage.internalDate ||
-  new Date();
+        const receivedAt =
+          getSafeDate(
+            parsed.date ||
+              fetchedMessage.internalDate
+          );
 
-const receivedAt =
-  receivedAtValue instanceof Date
-    ? receivedAtValue
-    : new Date(receivedAtValue);
+        const referencedIds =
+          getReferencedMessageIds({
+            inReplyTo:
+              parsed.inReplyTo,
+
+            references:
+              parsed.references,
+          });
+
+        const replySubject =
+          normalizeSubject(
+            parsed.subject
+          );
+
+        const originalEmail =
+          await findOriginalEmail({
+            supabaseAdmin,
+            referencedIds,
+            senderEmail,
+            replySubject,
+            replyReceivedAt:
+              receivedAt,
+          });
+
+        if (!originalEmail) {
+          ignored += 1;
+          continue;
+        }
+
+        matched += 1;
 
         const {
           error: insertError,
@@ -439,12 +570,16 @@ const receivedAt =
               messageId,
 
             in_reply_to:
-              normalizeMessageId(
-                parsed.inReplyTo
-              ),
+              referencedIds[0] ||
+              null,
 
             references_header:
-              referencedIds.join(" "),
+              referencedIds.length >
+              0
+                ? referencedIds.join(
+                    " "
+                  )
+                : null,
 
             sender_email:
               senderEmail,
@@ -454,8 +589,9 @@ const receivedAt =
               null,
 
             recipient_email:
-              recipient?.address?.trim() ||
-              null,
+              normalizeEmail(
+                recipient?.address
+              ) || null,
 
             subject:
               parsed.subject?.trim() ||
@@ -477,8 +613,8 @@ const receivedAt =
 
         if (insertError) {
           /*
-           * Le code 23505 correspond à un
-           * message déjà enregistré.
+           * Le message a déjà pu être
+           * importé par un autre cron.
            */
           if (
             insertError.code ===
@@ -488,7 +624,13 @@ const receivedAt =
             continue;
           }
 
-          throw insertError;
+          console.error(
+            "Erreur enregistrement réponse CRM :",
+            insertError
+          );
+
+          ignored += 1;
+          continue;
         }
 
         created += 1;
@@ -504,10 +646,13 @@ const receivedAt =
       ignored,
     };
   } finally {
-    if (
-      imapClient.usable
-    ) {
+    try {
       await imapClient.logout();
+    } catch (logoutError) {
+      console.error(
+        "Erreur fermeture IMAP OVH :",
+        logoutError
+      );
     }
   }
 }
