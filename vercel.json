@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/cron/spotify-artistes",
+      "schedule": "0 5 * * *"
+    },
+    {
       "path": "/api/cron/google-calendar",
       "schedule": "0 6 * * *"
     },
