@@ -199,23 +199,31 @@ const { data: royalties } = await supabase
     .order("created_at", { ascending: false })
     .limit(10);
     
-const { data: spotifyReleases } = await supabase
-  .from("spotify_releases")
-  .select(`
-    id,
-    spotify_release_id,
-    spotify_url,
-    titre,
-    release_type,
-    release_date,
-    release_date_precision,
-    cover_url,
-    total_tracks
-  `)
-  .eq("artiste_id", id)
-  .order("release_date", {
-    ascending: false,
-  });
+const { data: spotifyReleases, error: spotifyReleasesError } =
+  await supabaseAuth
+    .from("spotify_releases")
+    .select(`
+      id,
+      spotify_release_id,
+      spotify_url,
+      titre,
+      release_type,
+      release_date,
+      release_date_precision,
+      cover_url,
+      total_tracks
+    `)
+    .eq("artiste_id", id)
+    .order("release_date", {
+      ascending: false,
+    });
+
+if (spotifyReleasesError) {
+  console.error(
+    "Erreur chargement sorties Spotify :",
+    spotifyReleasesError
+  );
+}
 
   const visibleProjects =
     isArtistUser && !isOwnArtistProfile
