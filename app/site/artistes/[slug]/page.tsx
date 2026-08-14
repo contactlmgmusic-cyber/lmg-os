@@ -15,9 +15,15 @@ export async function generateMetadata({
     .from("artistes")
     .select("nom, bio, photo_url")
     .eq("slug", slug)
+    .eq("is_public", true)
     .limit(1);
+    
 
   const artiste = data?.[0];
+
+  if (!artiste) {
+  notFound();
+}
 
   if (!artiste) {
     return {
