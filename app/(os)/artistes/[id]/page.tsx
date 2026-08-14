@@ -227,6 +227,36 @@ if (spotifyReleasesError) {
   );
 }
 
+const {
+  data: latestYouTubeVideos,
+  error: youtubeVideosError,
+} = await supabaseAuth
+  .from("youtube_videos")
+  .select(`
+    id,
+    youtube_video_id,
+    titre,
+    published_at,
+    thumbnail_url,
+    youtube_url,
+    view_count,
+    like_count,
+    comment_count,
+    duration
+  `)
+  .eq("artiste_id", id)
+  .order("published_at", {
+    ascending: false,
+  })
+  .limit(3);
+
+if (youtubeVideosError) {
+  console.error(
+    "Erreur chargement vidéos YouTube :",
+    youtubeVideosError
+  );
+}
+
   const visibleProjects =
     isArtistUser && !isOwnArtistProfile
       ? projets?.filter((projet: any) => projet.statut === "Sorti") || []
@@ -547,6 +577,114 @@ const revenusParProjet = projets
     }}
   />
 )}
+
+{latestYouTubeVideos &&
+  latestYouTubeVideos.length > 0 && (
+    <section className="mb-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-6 xl:p-8">
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-sm uppercase tracking-[0.3em] text-red-400">
+            YouTube
+          </p>
+
+          <h2 className="mt-2 text-3xl font-bold">
+            Dernières vidéos
+          </h2>
+        </div>
+
+        {artiste.youtube_url && (
+          <a
+            href={artiste.youtube_url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm text-zinc-400 transition hover:text-white"
+          >
+            Voir la chaîne YouTube →
+          </a>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {latestYouTubeVideos.map(
+          (video: any) => (
+            <a
+              key={video.id}
+              href={
+                video.youtube_url ||
+                `https://www.youtube.com/watch?v=${video.youtube_video_id}`
+              }
+              target="_blank"
+              rel="noreferrer"
+              className="group overflow-hidden rounded-2xl border border-zinc-800 bg-black transition hover:border-red-500/60"
+            >
+              <div className="relative aspect-video overflow-hidden bg-zinc-950">
+                {video.thumbnail_url ? (
+                  <img
+                    src={
+                      video.thumbnail_url
+                    }
+                    alt={video.titre}
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-4xl text-red-500">
+                    ▶
+                  </div>
+                )}
+
+                <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition group-hover:bg-black/30">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-xl text-white shadow-xl">
+                    ▶
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-5">
+                <h3 className="line-clamp-2 text-lg font-semibold">
+                  {video.titre}
+                </h3>
+
+                <div className="mt-4 flex flex-wrap gap-4 text-xs text-zinc-500">
+                  <span>
+                    {Number(
+                      video.view_count || 0
+                    ).toLocaleString(
+                      "fr-FR"
+                    )}{" "}
+                    vues
+                  </span>
+
+                  <span>
+                    {Number(
+                      video.like_count || 0
+                    ).toLocaleString(
+                      "fr-FR"
+                    )}{" "}
+                    j’aime
+                  </span>
+                </div>
+
+                {video.published_at && (
+                  <p className="mt-3 text-xs text-zinc-600">
+                    {new Date(
+                      video.published_at
+                    ).toLocaleDateString(
+                      "fr-FR",
+                      {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      }
+                    )}
+                  </p>
+                )}
+              </div>
+            </a>
+          )
+        )}
+      </div>
+    </section>
+  )}
 
 {spotifyReleases && spotifyReleases.length > 0 && (
   <section className="mb-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-6 xl:p-8">
