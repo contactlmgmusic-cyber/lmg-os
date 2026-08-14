@@ -198,6 +198,24 @@ const { data: royalties } = await supabase
     .eq("artiste_id", id)
     .order("created_at", { ascending: false })
     .limit(10);
+    
+const { data: spotifyReleases } = await supabase
+  .from("spotify_releases")
+  .select(`
+    id,
+    spotify_release_id,
+    spotify_url,
+    titre,
+    release_type,
+    release_date,
+    release_date_precision,
+    cover_url,
+    total_tracks
+  `)
+  .eq("artiste_id", id)
+  .order("release_date", {
+    ascending: false,
+  });
 
   const visibleProjects =
     isArtistUser && !isOwnArtistProfile
@@ -487,7 +505,84 @@ const revenusParProjet = projets
   </div>
 )}
 
-      <section className="p-10">
+{spotifyReleases && spotifyReleases.length > 0 && (
+  <section className="mb-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-6 xl:p-8">
+    <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p className="text-sm uppercase tracking-[0.3em] text-green-400">
+          Spotify
+        </p>
+
+        <h2 className="mt-2 text-3xl font-bold">
+          Sorties Spotify
+        </h2>
+      </div>
+
+      <p className="text-sm text-zinc-500">
+        {spotifyReleases.length} sortie
+        {spotifyReleases.length > 1 ? "s" : ""} synchronisée
+        {spotifyReleases.length > 1 ? "s" : ""}
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+      {spotifyReleases.map((release: any) => (
+        <article
+          key={release.id}
+          className="overflow-hidden rounded-2xl border border-zinc-800 bg-black"
+        >
+          <div className="aspect-square bg-zinc-950">
+            {release.cover_url ? (
+              <img
+                src={release.cover_url}
+                alt={`Pochette de ${release.titre}`}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-5xl">
+                🎵
+              </div>
+            )}
+          </div>
+
+          <div className="p-5">
+            <p className="text-xs uppercase tracking-wider text-green-400">
+              {release.release_type || "Sortie"}
+            </p>
+
+            <h3 className="mt-2 line-clamp-2 text-xl font-semibold">
+              {release.titre}
+            </h3>
+
+            <div className="mt-4 space-y-1 text-sm text-zinc-500">
+              <p>
+                Date : {release.release_date || "Non renseignée"}
+              </p>
+
+              <p>
+                {release.total_tracks || 0} titre
+                {Number(release.total_tracks || 0) > 1 ? "s" : ""}
+              </p>
+            </div>
+
+            {release.spotify_url && (
+              <a
+                href={release.spotify_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 inline-flex rounded-xl bg-green-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-green-400"
+              >
+                Ouvrir sur Spotify
+              </a>
+            )}
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+)}
+
+<section className="p-10">
 
   {/* KPI PRINCIPAUX */}
   <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
