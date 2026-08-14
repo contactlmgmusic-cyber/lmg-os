@@ -4,6 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import { supabase } from "@/lib/supabase";
 import { ROLES } from "@/lib/roles";
 import ArtistAnalyticsChart from "@/components/ArtistAnalyticsChart";
+import SpotifyArtistSyncCard from "@/components/SpotifyArtistSyncCard";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,12 @@ export default async function ArtisteProfilPage({
     isArtistUser && currentProfile?.artiste_id === id;
 
   const canViewInternalArtistData = !isArtistUser || isOwnArtistProfile;
+
+  const canManageSpotify =
+  currentProfile?.role === ROLES.SUPER_ADMIN ||
+  currentProfile?.role === ROLES.ADMIN ||
+  currentProfile?.role === ROLES.ARTISTIC_DIRECTOR ||
+  currentProfile?.role === ROLES.MANAGER;
 
   const { data: artiste, error } = await supabase
     .from("artistes")
@@ -467,6 +474,18 @@ const revenusParProjet = projets
     </div>
   </div>
 </section>
+
+{canManageSpotify && (
+  <div className="mb-8">
+    <SpotifyArtistSyncCard
+      artisteId={artiste.id}
+      initialSpotifyArtistId={artiste.spotify_artist_id}
+      initialSpotifyUrl={artiste.spotify_url}
+      initialSpotifyImageUrl={artiste.spotify_image_url}
+      initialLastSyncedAt={artiste.spotify_last_synced_at}
+    />
+  </div>
+)}
 
       <section className="p-10">
 
