@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { ROLES } from "@/lib/roles";
 import ArtistAnalyticsChart from "@/components/ArtistAnalyticsChart";
 import SpotifyArtistSyncCard from "@/components/SpotifyArtistSyncCard";
+import SpotifyAnalyticsImportCard from "@/components/SpotifyAnalyticsImportCard";
 
 export const dynamic = "force-dynamic";
 
@@ -502,7 +503,7 @@ const revenusParProjet = projets
 </section>
 
 {canManageSpotify && (
-  <div className="mb-8">
+  <div className="mb-8 space-y-6">
     <SpotifyArtistSyncCard
       artisteId={artiste.id}
       initialSpotifyArtistId={artiste.spotify_artist_id}
@@ -510,6 +511,15 @@ const revenusParProjet = projets
       initialSpotifyImageUrl={artiste.spotify_image_url}
       initialLastSyncedAt={artiste.spotify_last_synced_at}
     />
+
+    {artiste.spotify_artist_id && (
+      <SpotifyAnalyticsImportCard
+        artisteId={artiste.id}
+        artisteName={
+          artiste.nom || "Artiste"
+        }
+      />
+    )}
   </div>
 )}
 
