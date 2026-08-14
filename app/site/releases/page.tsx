@@ -5,8 +5,52 @@ import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 
-export default async function ReleasesPage() {
-  const { data: releases } = await supabase
+type SearchParams = Promise<{
+  artist?: string;
+  year?: string;
+  type?: string;
+}>;
+
+function getArtist(artistes: any) {
+  if (Array.isArray(artistes)) {
+    return artistes[0];
+  }
+
+  return artistes;
+}
+
+function buildFilterUrl({
+  artist,
+  year,
+  type,
+}: {
+  artist?: string;
+  year?: string;
+  type?: string;
+}) {
+  const params = new URLSearchParams();
+
+  if (artist) params.set("artist", artist);
+  if (year) params.set("year", year);
+  if (type) params.set("type", type);
+
+  const query = params.toString();
+
+  return query ? `/site/releases?${query}` : "/site/releases";
+}
+
+export default async function ReleasesPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const filters = await searchParams;
+
+  const selectedArtist = filters.artist;
+  const selectedYear = filters.year;
+  const selectedType = filters.type;
+
+  const { data } = await supabase
     .from("projets")
     .select(`
       id,
@@ -16,6 +60,7 @@ export default async function ReleasesPage() {
       cover_url,
       hero_image_url,
       date_sortie,
+      featured,
       artistes (
         nom,
         slug
@@ -25,13 +70,135 @@ export default async function ReleasesPage() {
     .not("slug", "is", null)
     .order("date_sortie", { ascending: false });
 
-    const getArtist = (artistes: any) => {
-  if (Array.isArray(artistes)) {
-    return artistes[0];
-  }
+  const releases = data || [];
 
-  return artistes;
-};
+  // ─────────────────────────────────────
+  // OPTIONS DE FILTRES
+  // ─────────────────────────────────────
+
+  const artistsMap = new Map<string, string>();
+
+  releases.forEach((release) => {
+    const artist = getArtist(release.artistes);
+
+    if (artist?.slug && artist?.nom) {
+      artistsMap.set(artist.slug, artist.nom);
+    }
+  });
+
+  const artists = Array.from(artistsMap.entries()).map(
+    ([slug, nom]) => ({
+      slug,
+      nom,
+    })
+  );
+
+  const years = Array.from(
+    new Set(
+      releases
+        .map((release) =>
+          release.date_sortie
+            ? new Date(release.date_sortie).getFullYear()
+            : null
+        )
+        .filter(Boolean)
+    )
+  ).sort((a, b) => Number(b) - Number(a));
+
+  const types = Array.from(
+    new Set(
+      releases
+        .map((release) => release.type)
+        .filter(Boolean)
+    )
+  );
+
+  // ─────────────────────────────────────
+  // FILTRAGE
+  // ─────────────────────────────────────
+
+  const filteredReleases = releases.filter((release) => {
+    const artist = getArtist(release.artistes);
+
+    const releaseYear = release.date_sortie
+      ? String(new Date(release.date_sortie).getFullYear())
+      : null;
+
+    if (
+      selectedArtist &&
+      artist?.slug !== selectedArtist
+    ) {
+      return false;
+    }
+
+    if (
+      selectedYear &&
+      releaseYear !== selectedYear
+    ) {
+      return false;
+    }
+
+    if (
+      selectedType &&
+      release.type !== selectedType
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const hasActiveFilters =
+    selectedArtist ||
+    selectedYear ||
+    selectedType;
+
+  // ─────────────────────────────────────
+  // FEATURED
+  // ─────────────────────────────────────
+
+  const featuredRelease = !hasActiveFilters
+    ? filteredReleases.find(
+        (release) => release.featured === true
+      )
+    : null;
+
+  // ─────────────────────────────────────
+  // GROUPES PAR ANNÉE
+  // ─────────────────────────────────────
+
+  const releasesByYear = filteredReleases.reduce(
+    (
+      groups: Record<string, typeof filteredReleases>,
+      release
+    ) => {
+      const year = release.date_sortie
+        ? String(
+            new Date(
+              release.date_sortie
+            ).getFullYear()
+          )
+        : "À venir";
+
+      if (!groups[year]) {
+        groups[year] = [];
+      }
+
+      groups[year].push(release);
+
+      return groups;
+    },
+    {}
+  );
+
+  const groupedYears = Object.keys(
+    releasesByYear
+  ).sort((a, b) => {
+    if (a === "À venir") return -1;
+    if (b === "À venir") return 1;
+
+    return Number(b) - Number(a);
+  });
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -56,90 +223,241 @@ export default async function ReleasesPage() {
           </h1>
 
           <p className="mt-8 max-w-2xl text-lg leading-8 text-zinc-400">
-            Découvrez les sorties des artistes accompagnés par Legacy Music Group.
+            Découvrez les sorties des artistes accompagnés
+            par Legacy Music Group.
           </p>
+        </div>
+      </section>
+
+      {/* FEATURED RELEASE */}
+      {featuredRelease && (
+        <section className="border-b border-zinc-900 bg-zinc-950 px-6 py-20 md:px-8">
+          <div className="mx-auto max-w-7xl">
+            <p className="mb-8 text-sm uppercase tracking-[0.35em] text-yellow-500">
+              Featured Release
+            </p>
+
+            <Link
+              href={`/site/projets/${featuredRelease.slug}`}
+              className="group relative block min-h-[520px] overflow-hidden rounded-[2rem] border border-zinc-800 bg-black"
+            >
+              {featuredRelease.hero_image_url ||
+              featuredRelease.cover_url ? (
+                <Image
+                  src={
+                    featuredRelease.hero_image_url ||
+                    featuredRelease.cover_url
+                  }
+                  alt={
+                    featuredRelease.titre ||
+                    "Release LMG"
+                  }
+                  fill
+                  priority
+                  className="object-cover object-center transition duration-700 group-hover:scale-[1.02]"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-zinc-900" />
+              )}
+
+              <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/45 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/10" />
+
+              <div className="relative z-10 flex min-h-[520px] max-w-3xl flex-col justify-end p-8 md:p-14">
+                <p className="text-sm uppercase tracking-[0.35em] text-yellow-500">
+                  {featuredRelease.type || "Release"}
+                </p>
+
+                <h2 className="mt-4 text-5xl font-black uppercase leading-none md:text-7xl">
+                  {featuredRelease.titre}
+                </h2>
+
+                <p className="mt-5 text-xl text-zinc-300">
+                  {getArtist(
+                    featuredRelease.artistes
+                  )?.nom || "Legacy Music Group"}
+                </p>
+
+                <span className="mt-8 font-semibold">
+                  Découvrir la sortie →
+                </span>
+              </div>
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* FILTRES */}
+      <section className="border-b border-zinc-900 px-6 py-10 md:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/site/releases"
+              className={`rounded-full border px-5 py-2 text-sm transition ${
+                !hasActiveFilters
+                  ? "border-yellow-500 bg-yellow-500 text-black"
+                  : "border-zinc-700 text-zinc-300 hover:border-yellow-500"
+              }`}
+            >
+              Toutes
+            </Link>
+
+            {artists.map((artist) => (
+              <Link
+                key={artist.slug}
+                href={buildFilterUrl({
+                  artist:
+                    selectedArtist === artist.slug
+                      ? undefined
+                      : artist.slug,
+                  year: selectedYear,
+                  type: selectedType,
+                })}
+                className={`rounded-full border px-5 py-2 text-sm transition ${
+                  selectedArtist === artist.slug
+                    ? "border-yellow-500 bg-yellow-500 text-black"
+                    : "border-zinc-700 text-zinc-300 hover:border-yellow-500"
+                }`}
+              >
+                {artist.nom}
+              </Link>
+            ))}
+
+            {years.map((year) => (
+              <Link
+                key={String(year)}
+                href={buildFilterUrl({
+                  artist: selectedArtist,
+                  year:
+                    selectedYear === String(year)
+                      ? undefined
+                      : String(year),
+                  type: selectedType,
+                })}
+                className={`rounded-full border px-5 py-2 text-sm transition ${
+                  selectedYear === String(year)
+                    ? "border-yellow-500 bg-yellow-500 text-black"
+                    : "border-zinc-700 text-zinc-300 hover:border-yellow-500"
+                }`}
+              >
+                {year}
+              </Link>
+            ))}
+
+            {types.map((type) => (
+              <Link
+                key={type}
+                href={buildFilterUrl({
+                  artist: selectedArtist,
+                  year: selectedYear,
+                  type:
+                    selectedType === type
+                      ? undefined
+                      : type,
+                })}
+                className={`rounded-full border px-5 py-2 text-sm transition ${
+                  selectedType === type
+                    ? "border-yellow-500 bg-yellow-500 text-black"
+                    : "border-zinc-700 text-zinc-300 hover:border-yellow-500"
+                }`}
+              >
+                {type}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* CATALOGUE */}
       <section className="px-6 py-24 md:px-8 md:py-28">
         <div className="mx-auto max-w-7xl">
-          {releases && releases.length > 0 ? (
-            <div className="grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-              {releases.map((release) => (
-                <Link
-                  key={release.id}
-                  href={`/site/projets/${release.slug}`}
-                  className="group"
-                >
-                  <div className="relative aspect-square overflow-hidden rounded-[1.5rem] bg-zinc-900">
-                    {release.cover_url ? (
-                      <Image
-                        src={release.cover_url}
-                        alt={release.titre || "Release LMG"}
-                        fill
-                        className="object-cover transition duration-700 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-zinc-600">
-                        No Cover
-                      </div>
-                    )}
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70" />
-                  </div>
-
-                  <div className="pt-5">
-                    <div className="flex items-center justify-between gap-4">
-                      <p className="text-xs uppercase tracking-[0.3em] text-yellow-500">
-                        {release.type || "Release"}
-                      </p>
-
-                      {release.date_sortie && (
-                        <p className="text-sm text-zinc-600">
-                          {new Date(release.date_sortie).getFullYear()}
-                        </p>
-                      )}
-                    </div>
-
-                    <h2 className="mt-3 text-3xl font-black uppercase transition group-hover:text-yellow-500">
-                      {release.titre}
+          {filteredReleases.length > 0 ? (
+            <div className="space-y-28">
+              {groupedYears.map((year) => (
+                <section key={year}>
+                  <div className="mb-12 flex items-end justify-between border-b border-zinc-900 pb-6">
+                    <h2 className="text-5xl font-black uppercase md:text-7xl">
+                      {year}
                     </h2>
 
-                    <p className="mt-2 text-zinc-400">
-  {getArtist(release.artistes)?.nom || "Legacy Music Group"}
-</p>
+                    <p className="text-sm text-zinc-500">
+                      {releasesByYear[year].length}{" "}
+                      {releasesByYear[year].length > 1
+                        ? "sorties"
+                        : "sortie"}
+                    </p>
                   </div>
-                </Link>
+
+                  <div className="grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+                    {releasesByYear[year].map(
+                      (release) => {
+                        const artist = getArtist(
+                          release.artistes
+                        );
+
+                        return (
+                          <Link
+                            key={release.id}
+                            href={`/site/projets/${release.slug}`}
+                            className="group"
+                          >
+                            <div className="relative aspect-square overflow-hidden rounded-[1.5rem] bg-zinc-900">
+                              {release.cover_url ? (
+                                <Image
+                                  src={release.cover_url}
+                                  alt={
+                                    release.titre ||
+                                    "Release LMG"
+                                  }
+                                  fill
+                                  className="object-cover transition duration-700 group-hover:scale-105"
+                                />
+                              ) : (
+                                <div className="flex h-full items-center justify-center text-zinc-600">
+                                  No Cover
+                                </div>
+                              )}
+
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70" />
+                            </div>
+
+                            <div className="pt-5">
+                              <p className="text-xs uppercase tracking-[0.3em] text-yellow-500">
+                                {release.type ||
+                                  "Release"}
+                              </p>
+
+                              <h3 className="mt-3 text-3xl font-black uppercase transition group-hover:text-yellow-500">
+                                {release.titre}
+                              </h3>
+
+                              <p className="mt-2 text-zinc-400">
+                                {artist?.nom ||
+                                  "Legacy Music Group"}
+                              </p>
+                            </div>
+                          </Link>
+                        );
+                      }
+                    )}
+                  </div>
+                </section>
               ))}
             </div>
           ) : (
             <div className="py-24 text-center">
-              <p className="text-zinc-500">
-                Aucune sortie publique pour le moment.
+              <p className="text-xl text-zinc-400">
+                Aucune sortie ne correspond à ces filtres.
               </p>
+
+              <Link
+                href="/site/releases"
+                className="mt-8 inline-block text-yellow-500 hover:text-yellow-400"
+              >
+                Réinitialiser les filtres
+              </Link>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="border-t border-zinc-900 bg-zinc-950 px-6 py-24 text-center md:px-8">
-        <div className="mx-auto max-w-4xl">
-          <p className="text-sm uppercase tracking-[0.35em] text-yellow-500">
-            Build Your Legacy
-          </p>
-
-          <h2 className="mt-5 text-4xl font-black uppercase md:text-6xl">
-            Découvrir les artistes LMG
-          </h2>
-
-          <Link
-            href="/site#artists"
-            className="mt-10 inline-block rounded-full bg-yellow-500 px-8 py-4 font-bold text-black transition hover:bg-yellow-400"
-          >
-            Voir les artistes
-          </Link>
         </div>
       </section>
 
