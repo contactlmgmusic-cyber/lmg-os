@@ -15,9 +15,14 @@ export async function generateMetadata({
     .from("projets")
     .select("titre, description, cover_url")
     .eq("slug", slug)
+    .eq("is_public", true)
     .limit(1);
 
   const projet = data?.[0];
+
+  if (!projet) {
+  notFound();
+}
 
   if (!projet) {
     return {
