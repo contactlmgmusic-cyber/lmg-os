@@ -93,49 +93,126 @@ export default function ReleasePlannerDetailPage() {
   const [generating, setGenerating] = useState(false);
 
   async function loadData() {
-    const {
-      data: { user },
-    } = await supabaseBrowser.auth.getUser();
+  setLoading(true);
 
-    if (!user) {
-      router.push("/login");
-      return;
-    }
+  const {
+    data: { user },
+  } = await supabaseBrowser.auth.getUser();
 
-    const { data: profile } = await supabaseBrowser
+  if (!user) {
+    router.replace("/login");
+    return;
+  }
+
+  const { data: profile, error: profileError } =
+    await supabaseBrowser
       .from("profiles")
-      .select("role")
+      .select("id, role")
       .eq("id", user.id)
       .single();
 
-    if (
-      profile?.role !== ROLES.SUPER_ADMIN &&
-      profile?.role !== ROLES.ADMIN
-    ) {
-      router.push("/");
-      return;
-    }
-
-    const { data: sortieData } = await supabaseBrowser
-      .from("sorties")
-      .select(`
-        *,
-        artistes ( id, nom ),
-        projets ( id, titre )
-      `)
-      .eq("id", sortieId)
-      .single();
-
-    const { data: tasksData } = await supabaseBrowser
-      .from("release_tasks")
-      .select("*")
-      .eq("sortie_id", sortieId)
-      .order("jours_avant", { ascending: false });
-
-    setSortie(sortieData);
-    setTasks(tasksData || []);
-    setLoading(false);
+  if (profileError || !profile) {
+    router.replace("/dashboard");
+    return;
   }
+
+  const allowedRoles = [
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.ARTISTIC_DIRECTOR,
+    ROLES.MANAGER,
+  ];
+
+  if (!allowedRoles.includes(profile.role)) {
+    router.replace("/dashboard");
+    return;
+  }
+
+  const isManager =
+    profile.role === ROLES.MANAGER;
+
+  /*
+   * Le manager doit obligatoirement correspondre au
+   * manager_id de l’artiste lié à la sortie.
+   */
+  let sortieQuery = supabaseBrowser
+    .from("sorties")
+    .select(
+      isManager
+        ? `
+          *,
+          artistes!inner (
+            id,
+            nom,
+            manager_id
+          ),
+          projets (
+            id,
+            titre
+          )
+        `
+        : `
+          *,
+          artistes (
+            id,
+            nom
+          ),
+          projets (
+            id,
+            titre
+          )
+        `
+    )
+    .eq("id", sortieId);
+
+  if (isManager) {
+    sortieQuery = sortieQuery.eq(
+      "artistes.manager_id",
+      profile.id
+    );
+  }
+
+  const {
+    data: sortieData,
+    error: sortieError,
+  } = await sortieQuery.maybeSingle();
+
+  /*
+   * Si la sortie appartient à un autre manager,
+   * elle est considérée comme introuvable.
+   */
+  if (sortieError || !sortieData) {
+    setSortie(null);
+    setTasks([]);
+    setLoading(false);
+    return;
+  }
+
+  /*
+   * Les tâches ne sont récupérées qu’après avoir
+   * vérifié l’accès du manager à la sortie.
+   */
+  const {
+    data: tasksData,
+    error: tasksError,
+  } = await supabaseBrowser
+    .from("release_tasks")
+    .select("*")
+    .eq("sortie_id", sortieData.id)
+    .order("jours_avant", {
+      ascending: false,
+    });
+
+  if (tasksError) {
+    alert(tasksError.message);
+    setTasks([]);
+  } else {
+    setTasks(tasksData || []);
+  }
+
+  setSortie(sortieData);
+  setLoading(false);
+}
 
   useEffect(() => {
     if (sortieId) loadData();
@@ -258,7 +335,7 @@ const categoryProgress = categories.map((categorie) => {
   if (!sortie) {
     return (
       <main className="min-h-screen bg-black p-10 text-white">
-        Sortie introuvable.
+        Sortie introuvable ou accès non autorisé.
       </main>
     );
   }

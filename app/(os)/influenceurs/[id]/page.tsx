@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { requireRole } from "@/lib/require-role.server";
 import CrmEmailPanel from "@/components/CrmEmailPanel";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,14 @@ export default async function InfluenceurDetailPage({
 }) {
   const { id } = await params;
 
-  await requireRole(["super_admin", "admin", "manager"]);
+  const profile = await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.MANAGER,
+]);
+
+const isManager =
+  profile.role === ROLES.MANAGER;
 
   const cookieStore = await cookies();
 
@@ -38,33 +46,74 @@ const supabase = createServerClient(
   }
 );
 
-  const { data: influenceur, error } = await supabase
-    .from("influenceurs")
-    .select(`
-      *,
-      artistes (
-        id,
-        nom,
-        style,
-        photo_url
-      ),
-      projets (
-        id,
-        titre,
-        type,
-        statut
-      )
-    `)
-    .eq("id", id)
-    .single();
+  let influenceurQuery = supabase
+  .from("influenceurs")
+  .select(
+    isManager
+      ? `
+        *,
+        artistes!inner (
+          id,
+          nom,
+          style,
+          photo_url,
+          manager_id
+        ),
+        projets (
+          id,
+          titre,
+          type,
+          statut
+        )
+      `
+      : `
+        *,
+        artistes (
+          id,
+          nom,
+          style,
+          photo_url,
+          manager_id
+        ),
+        projets (
+          id,
+          titre,
+          type,
+          statut
+        )
+      `
+  )
+  .eq("id", id);
 
-  if (error || !influenceur) {
-    return (
-      <main className="min-h-screen bg-black p-10 text-white">
-        <p className="text-red-400">Influenceur introuvable.</p>
-      </main>
+if (isManager) {
+  influenceurQuery =
+    influenceurQuery.eq(
+      "artistes.manager_id",
+      profile.id
     );
-  }
+}
+
+const {
+  data: influenceur,
+  error,
+} = await influenceurQuery.maybeSingle();
+
+if (error || !influenceur) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <Link
+        href="/influenceurs"
+        className="text-sm text-zinc-400 hover:text-white"
+      >
+        ← Retour CRM Influenceurs
+      </Link>
+
+      <p className="mt-8 text-red-400">
+        Influenceur introuvable ou accès non autorisé.
+      </p>
+    </main>
+  );
+}
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -122,12 +171,17 @@ const supabase = createServerClient(
               </p>
             </div>
 
-            <div className="rounded-2xl border border-zinc-800 bg-black p-5">
-              <p className="text-sm text-zinc-500">Email</p>
-              <p className="mt-2 text-xl font-semibold break-all">
-                {influenceur.email || "Non renseigné"}
-              </p>
-            </div>
+            {!isManager && (
+  <div className="rounded-2xl border border-zinc-800 bg-black p-5">
+    <p className="text-sm text-zinc-500">
+      Email
+    </p>
+
+    <p className="mt-2 break-all text-xl font-semibold">
+      {influenceur.email || "Non renseigné"}
+    </p>
+  </div>
+)}
 
             <div className="rounded-2xl border border-zinc-800 bg-black p-5">
               <p className="text-sm text-zinc-500">Téléphone</p>
@@ -220,7 +274,7 @@ const supabase = createServerClient(
             <h2 className="text-3xl font-bold">Actions</h2>
 
             <div className="mt-6 space-y-3">
-              {influenceur.email && (
+              {!isManager && influenceur.email && (
                 <a
                   href={`mailto:${influenceur.email}`}
                   className="block rounded-xl bg-white px-5 py-4 text-center font-medium text-black hover:bg-zinc-200"
@@ -254,20 +308,22 @@ const supabase = createServerClient(
           </div>
         </aside>
       </div>
-      <section className="mt-10">
-  <CrmEmailPanel
-    entityType="influenceur"
-    entityId={influenceur.id}
-    defaultTo={
-      influenceur.email || ""
-    }
-    defaultSubject={`Legacy Music Group — ${influenceur.nom}`}
-    contactName={
-      influenceur.nom ||
-      influenceur.pseudo
-    }
-  />
-</section>
+      {!isManager && (
+  <section className="mt-10">
+    <CrmEmailPanel
+      entityType="influenceur"
+      entityId={influenceur.id}
+      defaultTo={
+        influenceur.email || ""
+      }
+      defaultSubject={`Legacy Music Group — ${influenceur.nom}`}
+      contactName={
+        influenceur.nom ||
+        influenceur.pseudo
+      }
+    />
+  </section>
+)}
     </main>
   );
 }

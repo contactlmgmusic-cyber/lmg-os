@@ -16,27 +16,83 @@ function isToday(date?: string | null) {
 
 export default async function MediasDashboardPage() {
 
-await requireRole([
+const profile = await requireRole([
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
+  ROLES.ARTISTIC_DIRECTOR,
+  ROLES.MANAGER,
 ]);
 
-  const { data: medias } = await supabase
-    .from("medias")
-    .select(`
-      *,
-      artistes (
-        id,
-        nom
-      ),
-      projets (
-        id,
-        titre
-      )
-    `)
-    .order("created_at", { ascending: false });
+const isManager =
+  profile.role === ROLES.MANAGER;
 
-  const allMedias = medias || [];
+let mediasQuery = supabase
+  .from("medias")
+  .select(
+    isManager
+      ? `
+        *,
+        artistes!inner (
+          id,
+          nom,
+          manager_id
+        ),
+        projets (
+          id,
+          titre
+        )
+      `
+      : `
+        *,
+        artistes (
+          id,
+          nom,
+          manager_id
+        ),
+        projets (
+          id,
+          titre
+        )
+      `
+  )
+  .order("created_at", {
+    ascending: false,
+  });
+
+if (isManager) {
+  mediasQuery = mediasQuery.eq(
+    "artistes.manager_id",
+    profile.id
+  );
+}
+
+const {
+  data: medias,
+  error: mediasError,
+} = await mediasQuery;
+
+if (mediasError) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <Link
+        href="/medias"
+        className="text-sm text-zinc-400 hover:text-white"
+      >
+        ← Retour au CRM Médias
+      </Link>
+
+      <p className="mt-8 text-red-400">
+        Impossible de charger le dashboard Médias.
+      </p>
+
+      <p className="mt-2 text-sm text-zinc-500">
+        {mediasError.message}
+      </p>
+    </main>
+  );
+}
+
+const allMedias = medias || [];
 
   const total = allMedias.length;
   const aContacter = allMedias.filter((m: any) => !m.statut || m.statut === "À contacter").length;
@@ -143,8 +199,10 @@ const relancesEnRetard = allMedias
           <h1 className="text-5xl font-bold">Dashboard Médias</h1>
 
           <p className="mt-3 text-zinc-400">
-            Vue globale du pipeline médias, relances et opportunités promo.
-          </p>
+            {isManager
+    ? "Pipeline médias, relances et opportunités liés à mes artistes."
+    : "Vue globale du pipeline médias, relances et opportunités promo."}
+</p>
         </div>
 
         <Link

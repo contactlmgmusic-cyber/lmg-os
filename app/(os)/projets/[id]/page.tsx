@@ -35,37 +35,149 @@ export default async function ProjetDetailPage({
     data: { user },
   } = await supabaseAuth.auth.getUser();
 
-  const { data: currentProfile } = user
-    ? await supabase
-        .from("profiles")
-        .select("role, artiste_id")
-        .eq("id", user.id)
-        .single()
-    : { data: null };
+  if (!user) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <p className="text-red-400">
+        Vous devez être connecté pour accéder à ce projet.
+      </p>
 
-  const { data: projet, error } = await supabase
-    .from("projets")
-    .select(`
-      *,
-      artistes (
-        id,
-        nom,
-        style,
-        photo_url
-      )
-    `)
-    .eq("id", id)
-    .single();
+      <Link
+        href="/login"
+        className="mt-5 inline-block rounded-xl bg-white px-5 py-3 font-medium text-black"
+      >
+        Se connecter
+      </Link>
+    </main>
+  );
+}
 
-  if (error || !projet) {
+const {
+  data: currentProfile,
+  error: profileError,
+} = await supabase
+  .from("profiles")
+  .select("id, role, artiste_id")
+  .eq("id", user.id)
+  .single();
+
+if (profileError || !currentProfile) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <p className="text-red-400">
+        Profil utilisateur introuvable.
+      </p>
+    </main>
+  );
+}
+
+if (currentProfile.role === ROLES.PRESTATAIRE) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <h1 className="text-3xl font-bold text-red-400">
+        Accès refusé
+      </h1>
+
+      <p className="mt-3 text-zinc-500">
+        Vous n&apos;avez pas accès aux projets du label.
+      </p>
+
+      <Link
+        href="/mes-taches"
+        className="mt-6 inline-block rounded-xl border border-zinc-700 px-5 py-3 text-zinc-300"
+      >
+        Retour à mes tâches
+      </Link>
+    </main>
+  );
+}
+
+const isManager =
+  currentProfile.role === ROLES.MANAGER;
+
+const isArtistUser =
+  currentProfile.role === ROLES.ARTISTE;
+
+let projetQuery = supabase
+  .from("projets")
+  .select(
+    isManager
+      ? `
+        *,
+        artistes!inner (
+          id,
+          nom,
+          style,
+          photo_url,
+          manager_id
+        )
+      `
+      : `
+        *,
+        artistes (
+          id,
+          nom,
+          style,
+          photo_url,
+          manager_id
+        )
+      `
+  )
+  .eq("id", id);
+
+/*
+ * Un manager ne peut récupérer que le projet
+ * d’un artiste qui lui est attribué.
+ */
+if (isManager) {
+  projetQuery = projetQuery.eq(
+    "artistes.manager_id",
+    currentProfile.id
+  );
+}
+
+/*
+ * Un artiste ne peut récupérer que ses propres projets.
+ */
+if (isArtistUser) {
+  if (!currentProfile.artiste_id) {
     return (
-      <main className="p-10 text-white">
-        <p className="text-red-400">Projet introuvable.</p>
+      <main className="min-h-screen bg-black p-10 text-white">
+        <p className="text-red-400">
+          Aucun artiste n&apos;est lié à votre profil.
+        </p>
       </main>
     );
   }
 
-  const isArtistUser = currentProfile?.role === ROLES.ARTISTE;
+  projetQuery = projetQuery.eq(
+    "artiste_id",
+    currentProfile.artiste_id
+  );
+}
+
+const {
+  data: projet,
+  error,
+} = await projetQuery.maybeSingle();
+
+if (error || !projet) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <Link
+        href="/projets"
+        className="text-sm text-zinc-400 hover:text-white"
+      >
+        ← Retour aux projets
+      </Link>
+
+      <p className="mt-8 text-red-400">
+        Projet introuvable ou accès non autorisé.
+      </p>
+    </main>
+  );
+}
+  
   const isOwnProject = currentProfile?.artiste_id === projet.artiste_id;
   const canViewInternalProjectData = !isArtistUser || isOwnProject;
 

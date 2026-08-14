@@ -4,6 +4,7 @@ import MediaRelances from "@/components/MediaRelances";
 import DeleteMediaButton from "@/components/DeleteMediaButton";
 import { requireRole } from "@/lib/require-role.server";
 import CrmEmailPanel from "@/components/CrmEmailPanel";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -14,41 +15,98 @@ export default async function MediaDetailPage({
 }) {
   const { id } = await params;
 
-  await requireRole(["super_admin", "admin", "manager"]);
+  const profile = await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.MANAGER,
+]);
 
-  const { data: media, error } = await supabase
-    .from("medias")
-    .select(`
-      *,
-      artistes (
-        id,
-        nom,
-        style,
-        photo_url
-      ),
-      projets (
-        id,
-        titre,
-        type,
-        statut
-      )
-    `)
-    .eq("id", id)
-    .single();
+const isManager =
+  profile.role === ROLES.MANAGER;
 
-  if (error || !media) {
-    return (
-      <main className="p-10 text-white">
-        <p className="text-red-400">Contact média introuvable.</p>
-      </main>
-    );
-  }
+let mediaQuery = supabase
+  .from("medias")
+  .select(
+    isManager
+      ? `
+        *,
+        artistes!inner (
+          id,
+          nom,
+          style,
+          photo_url,
+          manager_id
+        ),
+        projets (
+          id,
+          titre,
+          type,
+          statut
+        )
+      `
+      : `
+        *,
+        artistes (
+          id,
+          nom,
+          style,
+          photo_url,
+          manager_id
+        ),
+        projets (
+          id,
+          titre,
+          type,
+          statut
+        )
+      `
+  )
+  .eq("id", id);
+
+if (isManager) {
+  mediaQuery = mediaQuery.eq(
+    "artistes.manager_id",
+    profile.id
+  );
+}
+
+const {
+  data: media,
+  error,
+} = await mediaQuery.maybeSingle();
+
+if (error || !media) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <Link
+        href="/medias"
+        className="text-sm text-zinc-400 hover:text-white"
+      >
+        ← Retour CRM Médias
+      </Link>
+
+      <p className="mt-8 text-red-400">
+        Contact média introuvable ou accès non autorisé.
+      </p>
+    </main>
+  );
+}
 
   const { data: relances } = await supabase
   .from("media_relances")
   .select("id, type, contenu, date_relance, created_at")
   .eq("media_id", media.id)
   .order("date_relance", { ascending: false });
+
+  const visibleRelances = isManager
+  ? (relances || []).filter((relance: any) => {
+      const type = String(
+        relance.type || ""
+      ).toLowerCase();
+
+      return !type.includes("mail");
+    })
+  : relances || [];
 
   return (
     <main className="min-h-screen bg-black p-10 text-white">
@@ -83,12 +141,17 @@ export default async function MediaDetailPage({
               </p>
             </div>
 
-            <div className="rounded-2xl border border-zinc-800 bg-black p-5">
-              <p className="text-sm text-zinc-500">Email</p>
-              <p className="mt-2 text-xl font-semibold">
-                {media.email || "Non renseigné"}
-              </p>
-            </div>
+            {!isManager && (
+  <div className="rounded-2xl border border-zinc-800 bg-black p-5">
+    <p className="text-sm text-zinc-500">
+      Email
+    </p>
+
+    <p className="mt-2 text-xl font-semibold">
+      {media.email || "Non renseigné"}
+    </p>
+  </div>
+)}
 
             <div className="rounded-2xl border border-zinc-800 bg-black p-5">
               <p className="text-sm text-zinc-500">Instagram</p>
@@ -156,7 +219,7 @@ export default async function MediaDetailPage({
 
 <MediaRelances
   mediaId={media.id}
-  initialRelances={(relances || []) as any}
+  initialRelances={visibleRelances as any}
 />
 
         </section>
@@ -253,7 +316,7 @@ export default async function MediaDetailPage({
             <h2 className="text-3xl font-bold">Actions</h2>
 
             <div className="mt-6 space-y-3">
-              {media.email && (
+              {!isManager && media.email && (
                 <a
                   href={`mailto:${media.email}`}
                   className="block rounded-xl bg-white px-5 py-4 text-center font-medium text-black hover:bg-zinc-200"
@@ -297,18 +360,20 @@ export default async function MediaDetailPage({
           </div>
         </aside>
       </div>
-      <section className="mt-10">
-  <CrmEmailPanel
-    entityType="media"
-    entityId={media.id}
-    defaultTo={media.email || ""}
-    defaultSubject={`Legacy Music Group — ${media.nom}`}
-    contactName={
-      media.contact_nom ||
-      media.nom
-    }
-  />
-</section>
+      {!isManager && (
+  <section className="mt-10">
+    <CrmEmailPanel
+      entityType="media"
+      entityId={media.id}
+      defaultTo={media.email || ""}
+      defaultSubject={`Legacy Music Group — ${media.nom}`}
+      contactName={
+        media.contact_nom ||
+        media.nom
+      }
+    />
+  </section>
+)}
     </main>
   );
 }

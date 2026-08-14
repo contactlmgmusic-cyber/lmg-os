@@ -48,27 +48,55 @@ export default async function ProjetsPage() {
   );
 }
 
-  let query = supabase
-    .from("projets")
-    .select(`
-      *,
-      artistes (
-        id,
-        nom,
-        manager_id
-      )
-    `)
-    .order("created_at", { ascending: false });
+  const isManager =
+  currentProfile?.role === ROLES.MANAGER;
 
-if (currentProfile?.role === ROLES.MANAGER) {
-  query = query.eq("artistes.manager_id", user?.id);
+let query = supabase
+  .from("projets")
+  .select(
+    isManager
+      ? `
+        *,
+        artistes!inner (
+          id,
+          nom,
+          manager_id
+        )
+      `
+      : `
+        *,
+        artistes (
+          id,
+          nom,
+          manager_id
+        )
+      `
+  )
+  .order("created_at", {
+    ascending: false,
+  });
+
+if (isManager && user) {
+  query = query.eq(
+    "artistes.manager_id",
+    user.id
+  );
 }
 
-if (currentProfile?.role === ROLES.ARTISTE && currentProfile?.artiste_id) {
-  query = query.eq("artiste_id", currentProfile.artiste_id);
+if (
+  currentProfile?.role === ROLES.ARTISTE &&
+  currentProfile.artiste_id
+) {
+  query = query.eq(
+    "artiste_id",
+    currentProfile.artiste_id
+  );
 }
 
-  const { data: projets, error } = await query;
+const {
+  data: projets,
+  error,
+} = await query;
 
   if (error) {
     return (

@@ -6,20 +6,47 @@ import { ROLES } from "@/lib/roles";
 export const dynamic = "force-dynamic";
 
 export default async function SortiesPage() {
-  await requireRole([
-  ROLES.SUPER_ADMIN,
-  ROLES.ADMIN,
-  ROLES.ARTISTIC_DIRECTOR,
-]);
+  const profile = await requireRole([
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.ARTISTIC_DIRECTOR,
+    ROLES.MANAGER,
+  ]);
 
-  const { data: sorties, error } = await supabase
+  const isManager = profile.role === ROLES.MANAGER;
+
+  /*
+   * Pour un manager, la relation artistes doit obligatoirement
+   * correspondre à un artiste dont il est le manager.
+   *
+   * Le !inner évite de récupérer les sorties des autres artistes
+   * avec simplement une relation artistes vide.
+   */
+  let sortiesQuery = supabase
     .from("sorties")
-    .select(`
-      *,
-      artistes ( id, nom ),
-      projets ( id, titre )
-    `)
+    .select(
+      isManager
+        ? `
+          *,
+          artistes!inner ( id, nom, manager_id ),
+          projets ( id, titre )
+        `
+        : `
+          *,
+          artistes ( id, nom ),
+          projets ( id, titre )
+        `
+    )
     .order("date_sortie", { ascending: false });
+
+  if (isManager) {
+    sortiesQuery = sortiesQuery.eq(
+      "artistes.manager_id",
+      profile.id
+    );
+  }
+
+  const { data: sorties, error } = await sortiesQuery;
 
   if (error) {
     return (
@@ -37,10 +64,13 @@ export default async function SortiesPage() {
             LMG Releases
           </p>
 
-          <h1 className="text-5xl font-bold">Gestion des sorties</h1>
+          <h1 className="text-5xl font-bold">
+            Gestion des sorties
+          </h1>
 
           <p className="mt-3 text-zinc-400">
-            Singles, EP, albums, clips, liens DSP, UPC, ISRC et distribution.
+            Singles, EP, albums, clips, liens DSP, UPC, ISRC et
+            distribution.
           </p>
         </div>
 
@@ -54,7 +84,9 @@ export default async function SortiesPage() {
 
       <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         {(!sorties || sorties.length === 0) && (
-          <p className="text-zinc-500">Aucune sortie créée.</p>
+          <p className="text-zinc-500">
+            Aucune sortie créée.
+          </p>
         )}
 
         {sorties?.map((sortie: any) => (
@@ -82,7 +114,9 @@ export default async function SortiesPage() {
                 {sortie.type || "Single"}
               </p>
 
-              <h2 className="mt-2 text-2xl font-bold">{sortie.titre}</h2>
+              <h2 className="mt-2 text-2xl font-bold">
+                {sortie.titre}
+              </h2>
 
               <p className="mt-2 text-zinc-400">
                 {sortie.artistes?.nom || "Artiste non lié"}
@@ -94,7 +128,8 @@ export default async function SortiesPage() {
                 </span>
 
                 <span className="text-sm text-zinc-500">
-                  {sortie.date_sortie || "Date non renseignée"}
+                  {sortie.date_sortie ||
+                    "Date non renseignée"}
                 </span>
               </div>
             </div>

@@ -15,6 +15,10 @@ const isMaintenanceAllowed =
   path.startsWith("/admin") ||
   path.startsWith("/artistes") ||
   path.startsWith("/projets") ||
+  path.startsWith("/projets") ||
+  path.startsWith("/sorties") ||
+  path.startsWith("/release-planner") ||
+  path.startsWith("/booking") ||
   path.startsWith("/booking") ||
   path.startsWith("/medias") ||
   path.startsWith("/influenceurs") ||

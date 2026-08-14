@@ -88,7 +88,6 @@ export async function GET(
     const allowedRoles = [
       ROLES.SUPER_ADMIN,
       ROLES.ADMIN,
-      ROLES.MANAGER,
       ROLES.ARTISTIC_DIRECTOR,
     ];
 

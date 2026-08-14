@@ -128,7 +128,6 @@ export async function POST(
     const allowedRoles = [
       ROLES.SUPER_ADMIN,
       ROLES.ADMIN,
-      ROLES.MANAGER,
       ROLES.ARTISTIC_DIRECTOR,
     ];
 

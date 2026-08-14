@@ -18,20 +18,72 @@ function getProgressLabel(progress: number) {
 }
 
 export default async function ReleasePlannerPage() {
-  await requireRole([
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.MANAGER,
-  ]);
+  const profile = await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.MANAGER,
+]);
 
-  const { data: sorties } = await supabase
-    .from("sorties")
-    .select(`
-      *,
-      artistes ( id, nom ),
-      projets ( id, titre )
-    `)
-    .order("date_sortie", { ascending: true });
+const isManager =
+  profile.role === ROLES.MANAGER;
+
+let sortiesQuery = supabase
+  .from("sorties")
+  .select(
+    isManager
+      ? `
+        *,
+        artistes!inner (
+          id,
+          nom,
+          manager_id
+        ),
+        projets (
+          id,
+          titre
+        )
+      `
+      : `
+        *,
+        artistes (
+          id,
+          nom
+        ),
+        projets (
+          id,
+          titre
+        )
+      `
+  )
+  .order("date_sortie", {
+    ascending: true,
+  });
+
+if (isManager) {
+  sortiesQuery = sortiesQuery.eq(
+    "artistes.manager_id",
+    profile.id
+  );
+}
+
+const {
+  data: sorties,
+  error: sortiesError,
+} = await sortiesQuery;
+
+if (sortiesError) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <p className="text-red-400">
+        Impossible de charger le Release Planner.
+      </p>
+
+      <p className="mt-2 text-sm text-zinc-500">
+        {sortiesError.message}
+      </p>
+    </main>
+  );
+}
 
   const sortieIds = sorties?.map((sortie: any) => sortie.id) || [];
 

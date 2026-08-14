@@ -13,94 +13,207 @@ export default async function SortieDetailPage({
 }) {
   const { id } = await params;
 
-  await requireRole([
+  const profile = await requireRole([
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
+  ROLES.ARTISTIC_DIRECTOR,
+  ROLES.MANAGER,
 ]);
 
-  const { data: sortie, error } = await supabase
-    .from("sorties")
-    .select(`
-      *,
-      artistes ( id, nom ),
-      projets (
-  id,
-  titre,
-  budget_clip,
-  budget_cover,
-  budget_promo,
-  budget_studio,
-  budget_influence,
-  budget_rp
-)
-    `)
-    .eq("id", id)
-    .single();
+const isManager = profile.role === ROLES.MANAGER;
 
-  const links = [
-    { label: "Spotify", url: sortie.spotify_url },
-    { label: "Apple Music", url: sortie.apple_music_url },
-    { label: "Deezer", url: sortie.deezer_url },
-    { label: "YouTube", url: sortie.youtube_url },
-    { label: "SoundCloud", url: sortie.soundcloud_url },
-  ].filter((item) => item.url);
+let sortieQuery = supabase
+  .from("sorties")
+  .select(
+    isManager
+      ? `
+        *,
+        artistes!inner (
+          id,
+          nom,
+          manager_id
+        ),
+        projets (
+          id,
+          titre,
+          budget_clip,
+          budget_cover,
+          budget_promo,
+          budget_studio,
+          budget_influence,
+          budget_rp
+        )
+      `
+      : `
+        *,
+        artistes (
+          id,
+          nom
+        ),
+        projets (
+          id,
+          titre,
+          budget_clip,
+          budget_cover,
+          budget_promo,
+          budget_studio,
+          budget_influence,
+          budget_rp
+        )
+      `
+  )
+  .eq("id", id);
 
-const { data: analytics } = await supabase
-  .from("analytics")
-  .select("*")
-  .eq("sortie_id", id)
-  .order("date_snapshot", { ascending: false });
+if (isManager) {
+  sortieQuery = sortieQuery.eq(
+    "artistes.manager_id",
+    profile.id
+  );
+}
 
-  const { data: releaseTasks } = await supabase
-  .from("release_tasks")
-  .select("*")
-  .eq("sortie_id", id);
+const {
+  data: sortie,
+  error,
+} = await sortieQuery.maybeSingle();
 
-const releaseTotal = releaseTasks?.length || 0;
-
-const releaseDone =
-  releaseTasks?.filter((task: any) => task.statut === "Terminé").length || 0;
-
-const releaseProgress =
-  releaseTotal > 0 ? Math.round((releaseDone / releaseTotal) * 100) : 0;
-
-  const budgetSortie =
-  Number(sortie?.projets?.budget_clip || 0) +
-  Number(sortie?.projets?.budget_cover || 0) +
-  Number(sortie?.projets?.budget_promo || 0) +
-  Number(sortie?.projets?.budget_studio || 0) +
-  Number(sortie?.projets?.budget_influence || 0) +
-  Number(sortie?.projets?.budget_rp || 0);
-
+/*
+ * Ce message est volontairement identique si la sortie
+ * n’existe pas ou si elle appartient à un autre manager.
+ */
 if (error || !sortie) {
   return (
     <main className="min-h-screen bg-black p-10 text-white">
-      <p className="text-red-400">Sortie introuvable.</p>
+      <Link
+        href="/sorties"
+        className="text-sm text-zinc-400 hover:text-white"
+      >
+        ← Retour aux sorties
+      </Link>
+
+      <p className="mt-8 text-red-400">
+        Sortie introuvable ou accès non autorisé.
+      </p>
     </main>
   );
 }
 
+/*
+ * Les données sensibles ne sont récupérées qu’après
+ * vérification de l’accès à la sortie.
+ */
+const [
+  { data: analytics, error: analyticsError },
+  { data: releaseTasks, error: releaseTasksError },
+] = await Promise.all([
+  supabase
+    .from("analytics")
+    .select("*")
+    .eq("sortie_id", id)
+    .order("date_snapshot", { ascending: false }),
+
+  supabase
+    .from("release_tasks")
+    .select("*")
+    .eq("sortie_id", id),
+]);
+
+if (analyticsError || releaseTasksError) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <Link
+        href="/sorties"
+        className="text-sm text-zinc-400 hover:text-white"
+      >
+        ← Retour aux sorties
+      </Link>
+
+      <p className="mt-8 text-red-400">
+        Impossible de charger les données de cette sortie.
+      </p>
+    </main>
+  );
+}
+
+const links = [
+  {
+    label: "Spotify",
+    url: sortie.spotify_url,
+  },
+  {
+    label: "Apple Music",
+    url: sortie.apple_music_url,
+  },
+  {
+    label: "Deezer",
+    url: sortie.deezer_url,
+  },
+  {
+    label: "YouTube",
+    url: sortie.youtube_url,
+  },
+  {
+    label: "SoundCloud",
+    url: sortie.soundcloud_url,
+  },
+].filter(
+  (
+    item
+  ): item is {
+    label: string;
+    url: string;
+  } => Boolean(item.url)
+);
+
+const releaseTotal = releaseTasks?.length || 0;
+
+const releaseDone =
+  releaseTasks?.filter(
+    (task: any) => task.statut === "Terminé"
+  ).length || 0;
+
+const releaseProgress =
+  releaseTotal > 0
+    ? Math.round(
+        (releaseDone / releaseTotal) * 100
+      )
+    : 0;
+
+const budgetSortie =
+  Number(sortie.projets?.budget_clip || 0) +
+  Number(sortie.projets?.budget_cover || 0) +
+  Number(sortie.projets?.budget_promo || 0) +
+  Number(sortie.projets?.budget_studio || 0) +
+  Number(sortie.projets?.budget_influence || 0) +
+  Number(sortie.projets?.budget_rp || 0);
+
 const totalStreams =
   analytics?.reduce(
-    (acc: number, item: any) => acc + Number(item.streams || 0),
+    (total: number, item: any) =>
+      total + Number(item.streams || 0),
     0
   ) || 0;
 
 const totalVues =
   analytics?.reduce(
-    (acc: number, item: any) => acc + Number(item.vues || 0),
+    (total: number, item: any) =>
+      total + Number(item.vues || 0),
     0
   ) || 0;
 
 const totalRevenus =
   analytics?.reduce(
-    (acc: number, item: any) => acc + Number(item.revenus || 0),
+    (total: number, item: any) =>
+      total + Number(item.revenus || 0),
     0
   ) || 0;
 
-  const roi =
+const roi =
   budgetSortie > 0
-    ? Math.round(((totalRevenus - budgetSortie) / budgetSortie) * 100)
+    ? Math.round(
+        ((totalRevenus - budgetSortie) /
+          budgetSortie) *
+          100
+      )
     : 0;
 
 const dernierSnapshot = analytics?.[0];
