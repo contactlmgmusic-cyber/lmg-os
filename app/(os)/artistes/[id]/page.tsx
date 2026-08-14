@@ -6,6 +6,7 @@ import { ROLES } from "@/lib/roles";
 import ArtistAnalyticsChart from "@/components/ArtistAnalyticsChart";
 import SpotifyArtistSyncCard from "@/components/SpotifyArtistSyncCard";
 import SpotifyAnalyticsImportCard from "@/components/SpotifyAnalyticsImportCard";
+import YouTubeArtistSyncCard from "@/components/YouTubeArtistSyncCard";
 
 export const dynamic = "force-dynamic";
 
@@ -521,6 +522,30 @@ const revenusParProjet = projets
       />
     )}
   </div>
+)}
+
+{canManageSpotify && (
+  <YouTubeArtistSyncCard
+    artisteId={artiste.id}
+    youtube={{
+      channelId:
+        artiste.youtube_channel_id,
+      url:
+        artiste.youtube_url,
+      title:
+        artiste.youtube_title,
+      imageUrl:
+        artiste.youtube_image_url,
+      subscribers:
+        artiste.youtube_subscribers,
+      views:
+        artiste.youtube_views,
+      videoCount:
+        artiste.youtube_video_count,
+      lastSyncedAt:
+        artiste.youtube_last_synced_at,
+    }}
+  />
 )}
 
 {spotifyReleases && spotifyReleases.length > 0 && (
