@@ -21,10 +21,11 @@ export default function FeaturedArtists() {
   useEffect(() => {
     async function loadArtists() {
       const { data } = await supabaseBrowser
-        .from("artistes")
-        .select("id, nom, style, photo_url, bio, slug, ville")
-        .eq("featured", true)
-        .order("created_at", { ascending: false });
+  .from("artistes")
+  .select("id, nom, style, photo_url, bio, slug, ville")
+  .eq("is_public", true)
+  .eq("featured", true)
+  .order("created_at", { ascending: false });
 
       setArtists(data || []);
     }
