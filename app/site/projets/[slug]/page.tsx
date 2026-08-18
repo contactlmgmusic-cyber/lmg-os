@@ -56,25 +56,43 @@ export async function generateMetadata({
   const image = projet.hero_image_url || projet.cover_url;
 
   return {
+  title: `${projet.titre}${
+    artist?.nom ? ` — ${artist.nom}` : ""
+  } | Legacy Music Group`,
+
+  description,
+
+  alternates: {
+    canonical: `https://legacymusicgroup.fr/site/projets/${slug}`,
+  },
+
+  openGraph: {
     title: `${projet.titre}${
       artist?.nom ? ` — ${artist.nom}` : ""
     } | Legacy Music Group`,
     description,
-    openGraph: {
-      title: `${projet.titre}${
-        artist?.nom ? ` — ${artist.nom}` : ""
-      } | Legacy Music Group`,
-      description,
-      images: image
-        ? [
-            {
-              url: image,
-              alt: projet.titre || "Release Legacy Music Group",
-            },
-          ]
-        : [],
-    },
-  };
+    url: `https://legacymusicgroup.fr/site/projets/${slug}`,
+    siteName: "Legacy Music Group",
+    type: "music.song",
+    images: image
+      ? [
+          {
+            url: image,
+            alt: projet.titre || "Release Legacy Music Group",
+          },
+        ]
+      : [],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: `${projet.titre}${
+      artist?.nom ? ` — ${artist.nom}` : ""
+    } | Legacy Music Group`,
+    description,
+    images: image ? [image] : [],
+  },
+};
 }
 
 export default async function ProjectPage({

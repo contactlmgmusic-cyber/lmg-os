@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
+import { Metadata } from "next";
 
 type SearchParams = Promise<{
   artist?: string;
@@ -38,6 +39,15 @@ function buildFilterUrl({
 
   return query ? `/site/releases?${query}` : "/site/releases";
 }
+
+export const metadata: Metadata = {
+  title: "Releases | Legacy Music Group",
+  description:
+    "Découvrez les dernières sorties et le catalogue des artistes Legacy Music Group.",
+  alternates: {
+    canonical: "https://legacymusicgroup.fr/site/releases",
+  },
+};
 
 export default async function ReleasesPage({
   searchParams,

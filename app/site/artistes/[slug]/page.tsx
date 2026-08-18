@@ -36,21 +36,36 @@ export async function generateMetadata({
   const image = artiste.photo_url || artiste.spotify_image_url;
 
   return {
+  title: `${artiste.nom} | Artiste Legacy Music Group`,
+  description,
+
+  alternates: {
+    canonical: `https://legacymusicgroup.fr/site/artistes/${slug}`,
+  },
+
+  openGraph: {
     title: `${artiste.nom} | Legacy Music Group`,
     description,
-    openGraph: {
-      title: `${artiste.nom} | Legacy Music Group`,
-      description,
-      images: image
-        ? [
-            {
-              url: image,
-              alt: artiste.nom || "Artiste Legacy Music Group",
-            },
-          ]
-        : [],
-    },
-  };
+    url: `https://legacymusicgroup.fr/site/artistes/${slug}`,
+    siteName: "Legacy Music Group",
+    type: "profile",
+    images: image
+      ? [
+          {
+            url: image,
+            alt: artiste.nom || "Artiste Legacy Music Group",
+          },
+        ]
+      : [],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: `${artiste.nom} | Legacy Music Group`,
+    description,
+    images: image ? [image] : [],
+  },
+};
 }
 
 export default async function ArtistPage({
