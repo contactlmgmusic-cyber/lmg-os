@@ -20,29 +20,46 @@ export default function Navbar() {
             className="h-11 w-11 object-contain"
           />
 
-          <div>
-            <p className="text-sm font-bold leading-tight text-white drop-shadow md:text-base">
-              Legacy Music Group
-            </p>
-          </div>
+          <p className="text-sm font-bold leading-tight text-white drop-shadow md:text-base">
+            Legacy Music Group
+          </p>
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
-          <Link href="/site/services" className="text-sm font-medium text-white/80 transition hover:text-white">
-            Services
-          </Link>
-
-          <Link href="/site/artistes" className="text-sm font-medium text-white/80 transition hover:text-white">
+        <nav className="hidden items-center gap-7 md:flex">
+          <Link
+            href="/site/artistes"
+            className="text-sm font-medium text-white/80 transition hover:text-white"
+          >
             Artistes
           </Link>
 
-          <Link href="/site/team" className="text-sm font-medium text-white/80 transition hover:text-white">
+          <Link
+            href="/site/releases"
+            className="text-sm font-medium text-white/80 transition hover:text-white"
+          >
+            Releases
+          </Link>
+
+          <Link
+            href="/site/services"
+            className="text-sm font-medium text-white/80 transition hover:text-white"
+          >
+            Services
+          </Link>
+
+          <Link
+            href="/site/team"
+            className="text-sm font-medium text-white/80 transition hover:text-white"
+          >
             Team
           </Link>
 
-          <Link href="/site/rejoindre" className="text-sm font-medium text-white/80 transition hover:text-white">
+          <a
+            href="mailto:contact@legacymusicgroup.fr"
+            className="text-sm font-medium text-white/80 transition hover:text-white"
+          >
             Contact
-          </Link>
+          </a>
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
@@ -73,13 +90,23 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 bg-black px-6 py-6 text-white md:hidden">
           <div className="flex items-center justify-between">
-            <Image
-              src="/logo-lmg-v2.png"
-              alt="Legacy Music Group"
-              width={48}
-              height={48}
-              className="object-contain"
-            />
+            <Link
+              href="/site"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3"
+            >
+              <Image
+                src="/logo-lmg-v2.png"
+                alt="Legacy Music Group"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
+
+              <span className="font-bold">
+                Legacy Music Group
+              </span>
+            </Link>
 
             <button
               type="button"
@@ -90,24 +117,46 @@ export default function Navbar() {
             </button>
           </div>
 
-          <nav className="mt-16 flex flex-col gap-8 text-3xl font-black">
-            <Link onClick={() => setMobileOpen(false)} href="/site/services">
+          <nav className="mt-16 flex flex-col gap-7 text-3xl font-black">
+            <Link
+              onClick={() => setMobileOpen(false)}
+              href="/site/artistes"
+            >
+              Artistes
+            </Link>
+
+            <Link
+              onClick={() => setMobileOpen(false)}
+              href="/site/releases"
+            >
+              Releases
+            </Link>
+
+            <Link
+              onClick={() => setMobileOpen(false)}
+              href="/site/services"
+            >
               Services
             </Link>
 
-            <a onClick={() => setMobileOpen(false)} href="#artists">
-              Artistes
-            </a>
-
-            <Link onClick={() => setMobileOpen(false)} href="/site/team">
+            <Link
+              onClick={() => setMobileOpen(false)}
+              href="/site/team"
+            >
               Team
             </Link>
 
-            <Link onClick={() => setMobileOpen(false)} href="/site/rejoindre">
-              Rejoindre LMG
-            </Link>
+            <a
+              onClick={() => setMobileOpen(false)}
+              href="mailto:contact@legacymusicgroup.fr"
+            >
+              Contact
+            </a>
 
-            <Link onClick={() => setMobileOpen(false)} href="/login">
+            <Link
+              onClick={() => setMobileOpen(false)}
+              href="/login"
+            >
               Connexion
             </Link>
           </nav>
