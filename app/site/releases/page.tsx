@@ -288,61 +288,119 @@ export default async function ReleasesPage({
       )}
 
       {/* FILTRES */}
-      <section className="border-b border-zinc-900 px-6 py-10 md:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-wrap gap-3">
+<section className="border-b border-zinc-900 px-6 py-10 md:px-8">
+  <div className="mx-auto max-w-7xl">
+    <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:gap-12">
+
+      {/* ARTISTES */}
+      <div>
+        <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-600">
+          Artiste
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href={buildFilterUrl({
+              year: selectedYear,
+              type: selectedType,
+            })}
+            className={`rounded-full border px-5 py-2 text-sm transition ${
+              !selectedArtist
+                ? "border-yellow-500 bg-yellow-500 text-black"
+                : "border-zinc-700 text-zinc-300 hover:border-yellow-500 hover:text-white"
+            }`}
+          >
+            Tous
+          </Link>
+
+          {artists.map((artist) => (
             <Link
-              href="/site/releases"
+              key={artist.slug}
+              href={buildFilterUrl({
+                artist:
+                  selectedArtist === artist.slug
+                    ? undefined
+                    : artist.slug,
+                year: selectedYear,
+                type: selectedType,
+              })}
               className={`rounded-full border px-5 py-2 text-sm transition ${
-                !hasActiveFilters
+                selectedArtist === artist.slug
                   ? "border-yellow-500 bg-yellow-500 text-black"
-                  : "border-zinc-700 text-zinc-300 hover:border-yellow-500"
+                  : "border-zinc-700 text-zinc-300 hover:border-yellow-500 hover:text-white"
               }`}
             >
-              Toutes
+              {artist.nom}
             </Link>
+          ))}
+        </div>
+      </div>
 
-            {artists.map((artist) => (
-              <Link
-                key={artist.slug}
-                href={buildFilterUrl({
-                  artist:
-                    selectedArtist === artist.slug
-                      ? undefined
-                      : artist.slug,
-                  year: selectedYear,
-                  type: selectedType,
-                })}
-                className={`rounded-full border px-5 py-2 text-sm transition ${
-                  selectedArtist === artist.slug
-                    ? "border-yellow-500 bg-yellow-500 text-black"
-                    : "border-zinc-700 text-zinc-300 hover:border-yellow-500"
-                }`}
-              >
-                {artist.nom}
-              </Link>
-            ))}
+      {/* ANNÉES */}
+      <div>
+        <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-600">
+          Année
+        </p>
 
-            {years.map((year) => (
-              <Link
-                key={String(year)}
-                href={buildFilterUrl({
-                  artist: selectedArtist,
-                  year:
-                    selectedYear === String(year)
-                      ? undefined
-                      : String(year),
-                  type: selectedType,
-                })}
-                className={`rounded-full border px-5 py-2 text-sm transition ${
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href={buildFilterUrl({
+              artist: selectedArtist,
+              type: selectedType,
+            })}
+            className={`rounded-full border px-5 py-2 text-sm transition ${
+              !selectedYear
+                ? "border-yellow-500 bg-yellow-500 text-black"
+                : "border-zinc-700 text-zinc-300 hover:border-yellow-500 hover:text-white"
+            }`}
+          >
+            Toutes
+          </Link>
+
+          {years.map((year) => (
+            <Link
+              key={String(year)}
+              href={buildFilterUrl({
+                artist: selectedArtist,
+                year:
                   selectedYear === String(year)
-                    ? "border-yellow-500 bg-yellow-500 text-black"
-                    : "border-zinc-700 text-zinc-300 hover:border-yellow-500"
-                }`}
-              >
-                {year}
-              </Link>
-            ))}
+                    ? undefined
+                    : String(year),
+                type: selectedType,
+              })}
+              className={`rounded-full border px-5 py-2 text-sm transition ${
+                selectedYear === String(year)
+                  ? "border-yellow-500 bg-yellow-500 text-black"
+                  : "border-zinc-700 text-zinc-300 hover:border-yellow-500 hover:text-white"
+              }`}
+            >
+              {year}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* TYPES */}
+      {types.length > 0 && (
+        <div>
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-600">
+            Format
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={buildFilterUrl({
+                artist: selectedArtist,
+                year: selectedYear,
+              })}
+              className={`rounded-full border px-5 py-2 text-sm transition ${
+                !selectedType
+                  ? "border-yellow-500 bg-yellow-500 text-black"
+                  : "border-zinc-700 text-zinc-300 hover:border-yellow-500 hover:text-white"
+              }`}
+            >
+              Tous
+            </Link>
 
             {types.map((type) => (
               <Link
@@ -355,10 +413,10 @@ export default async function ReleasesPage({
                       ? undefined
                       : type,
                 })}
-                className={`rounded-full border px-5 py-2 text-sm transition ${
+                className={`rounded-full border px-5 py-2 text-sm capitalize transition ${
                   selectedType === type
                     ? "border-yellow-500 bg-yellow-500 text-black"
-                    : "border-zinc-700 text-zinc-300 hover:border-yellow-500"
+                    : "border-zinc-700 text-zinc-300 hover:border-yellow-500 hover:text-white"
                 }`}
               >
                 {type}
@@ -366,10 +424,23 @@ export default async function ReleasesPage({
             ))}
           </div>
         </div>
-      </section>
+      )}
+
+      {/* RESET */}
+      {hasActiveFilters && (
+        <Link
+          href="/site/releases"
+          className="pb-2 text-xs uppercase tracking-[0.2em] text-zinc-500 transition hover:text-white"
+        >
+          Réinitialiser ×
+        </Link>
+      )}
+    </div>
+  </div>
+</section>
 
       {/* CATALOGUE */}
-      <section className="px-6 py-24 md:px-8 md:py-28">
+      <section className="px-6 pb-24 pt-14 md:px-8 md:pb-28 md:pt-16">
         <div className="mx-auto max-w-7xl">
           {filteredReleases.length > 0 ? (
             <div className="space-y-28">
@@ -401,7 +472,7 @@ export default async function ReleasesPage({
                             href={`/site/projets/${release.slug}`}
                             className="group"
                           >
-                            <div className="relative aspect-square overflow-hidden rounded-[1.5rem] bg-zinc-900">
+                            <div className="relative aspect-square overflow-hidden rounded-[1.5rem] border border-zinc-900 bg-zinc-900 transition duration-500 group-hover:border-zinc-700">
                               {release.cover_url ? (
                                 <Image
                                   src={release.cover_url}
@@ -422,20 +493,34 @@ export default async function ReleasesPage({
                             </div>
 
                             <div className="pt-5">
-                              <p className="text-xs uppercase tracking-[0.3em] text-yellow-500">
-                                {release.type ||
-                                  "Release"}
-                              </p>
+  <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
+    <span>{release.type || "Release"}</span>
 
-                              <h3 className="mt-3 text-3xl font-black uppercase transition group-hover:text-yellow-500">
-                                {release.titre}
-                              </h3>
+    {release.date_sortie && (
+      <>
+        <span className="text-zinc-700">•</span>
 
-                              <p className="mt-2 text-zinc-400">
-                                {artist?.nom ||
-                                  "Legacy Music Group"}
-                              </p>
-                            </div>
+        <span>
+          {new Date(release.date_sortie).getFullYear()}
+        </span>
+      </>
+    )}
+  </div>
+
+  <h3 className="mt-3 text-3xl font-black uppercase leading-none text-white transition duration-300 group-hover:text-yellow-500">
+    {release.titre}
+  </h3>
+
+  <div className="mt-3 flex items-center justify-between gap-4">
+    <p className="text-sm uppercase tracking-[0.18em] text-zinc-400">
+      {artist?.nom || "Legacy Music Group"}
+    </p>
+
+    <span className="translate-x-2 text-sm text-zinc-600 opacity-0 transition duration-300 group-hover:translate-x-0 group-hover:text-white group-hover:opacity-100">
+      Découvrir →
+    </span>
+  </div>
+</div>
                           </Link>
                         );
                       }
