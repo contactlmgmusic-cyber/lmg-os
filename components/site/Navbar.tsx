@@ -32,9 +32,9 @@ export default function Navbar() {
             Services
           </Link>
 
-          <a href="#artists" className="text-sm font-medium text-white/80 transition hover:text-white">
+          <Link href="/site/artistes" className="text-sm font-medium text-white/80 transition hover:text-white">
             Artistes
-          </a>
+          </Link>
 
           <Link href="/site/team" className="text-sm font-medium text-white/80 transition hover:text-white">
             Team
