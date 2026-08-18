@@ -114,7 +114,7 @@ export default function ServicesPage() {
       </section>
 
       {/* POSITIONNEMENT */}
-      <section className="border-b border-zinc-900 px-6 py-24 md:px-8 md:py-28">
+      <section className="border-b border-zinc-900 px-6 pb-20 pt-16 md:px-8 md:pb-24 md:pt-20">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[38%_62%]">
           <div>
             <p className="text-sm uppercase tracking-[0.35em] text-yellow-500">
@@ -246,10 +246,10 @@ export default function ServicesPage() {
           </h2>
 
           <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-zinc-400">
-            Notre objectif n&apos;est pas de multiplier les projets, mais de
-            nous investir dans ceux auxquels nous croyons et de construire une
-            relation capable de créer de la valeur sur le long terme.
-          </p>
+  Notre objectif n&apos;est pas de multiplier les projets, mais de
+  construire des collaborations fortes et de nous investir durablement
+  dans le développement de chaque artiste que nous accompagnons.
+</p>
         </div>
       </section>
 
@@ -261,8 +261,8 @@ export default function ServicesPage() {
           </p>
 
           <h2 className="mt-5 text-4xl font-black uppercase md:text-6xl">
-            Ton projet peut être le prochain.
-          </h2>
+  Prêt à construire la suite ?
+</h2>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-400">
             Présente-nous ton univers, ta musique et ta vision.
