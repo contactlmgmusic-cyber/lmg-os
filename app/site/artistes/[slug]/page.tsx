@@ -120,8 +120,33 @@ export default async function ArtistPage({
   const latestProject = projets?.[0];
   const discography = projets || [];
 
+  const artistJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "MusicGroup",
+  name: artiste.nom,
+  description:
+    artiste.bio ||
+    `Artiste accompagné par Legacy Music Group.`,
+  url: `https://legacymusicgroup.fr/site/artistes/${slug}`,
+  image: artistImage || undefined,
+  sameAs: [
+    spotifyLink,
+    youtubeLink,
+    artiste.instagram,
+    artiste.tiktok,
+    artiste.apple_music,
+    artiste.deezer,
+  ].filter(Boolean),
+};
+
   return (
     <main className="min-h-screen bg-black text-white">
+      <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify(artistJsonLd),
+  }}
+/>
       <Navbar />
 
       {/* HERO ARTISTE */}

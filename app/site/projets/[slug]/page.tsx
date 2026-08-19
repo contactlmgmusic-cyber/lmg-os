@@ -150,8 +150,40 @@ export default async function ProjectPage({
     projet.apple_music_url ||
     projet.youtube_url;
 
+    const releaseJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "MusicRecording",
+  name: projet.titre,
+  description:
+    projet.description ||
+    `Release publiée par Legacy Music Group.`,
+  url: `https://legacymusicgroup.fr/site/projets/${slug}`,
+  image: projet.cover_url || heroImage || undefined,
+  datePublished: projet.date_sortie || undefined,
+  byArtist: artist?.nom
+    ? {
+        "@type": "MusicGroup",
+        name: artist.nom,
+        url: artist.slug
+          ? `https://legacymusicgroup.fr/site/artistes/${artist.slug}`
+          : undefined,
+      }
+    : undefined,
+  sameAs: [
+    projet.spotify_url,
+    projet.apple_music_url,
+    projet.youtube_url,
+  ].filter(Boolean),
+};
+
   return (
     <main className="min-h-screen bg-black text-white">
+      <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify(releaseJsonLd),
+  }}
+/>
       <Navbar />
 
       {/* HERO */}
