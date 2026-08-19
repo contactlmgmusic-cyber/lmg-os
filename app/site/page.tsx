@@ -13,8 +13,53 @@ export default function SitePage() {
 
       <ReleasesCarousel />
 
+      {/* INTRO LMG */}
+      <section className="border-t border-zinc-900 bg-black px-6 py-20 md:px-8 md:py-24">
+        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[42%_58%] lg:items-center">
+          <div>
+            <p className="text-sm uppercase tracking-[0.35em] text-yellow-500">
+              Legacy Music Group
+            </p>
+
+            <h2 className="mt-5 text-4xl font-black uppercase leading-tight md:text-6xl">
+              Music. Strategy. Legacy.
+            </h2>
+          </div>
+
+          <div>
+            <p className="max-w-3xl text-lg leading-8 text-zinc-300 md:text-xl">
+              Legacy Music Group développe des artistes et des projets à travers
+              une approche qui réunit stratégie, management, image,
+              communication et développement artistique.
+            </p>
+
+            <p className="mt-6 max-w-3xl leading-8 text-zinc-500">
+              Notre ambition : construire des trajectoires cohérentes, créer des
+              opportunités et accompagner chaque projet avec une vision long
+              terme.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link
+                href="/site/services"
+                className="rounded-full border border-zinc-700 px-6 py-3 text-sm font-semibold transition hover:border-yellow-500 hover:text-yellow-500"
+              >
+                Découvrir notre approche →
+              </Link>
+
+              <Link
+                href="/site/team"
+                className="rounded-full border border-zinc-800 px-6 py-3 text-sm font-semibold text-zinc-400 transition hover:border-white hover:text-white"
+              >
+                Découvrir l&apos;équipe
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ARTISTES */}
-      <section className="bg-zinc-950 px-6 pb-24 pt-16">
+      <section className="border-t border-zinc-900 bg-zinc-950 px-6 pb-24 pt-20 md:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
@@ -50,13 +95,13 @@ export default function SitePage() {
       <LatestReleases />
 
       {/* CTA */}
-      <section className="border-t border-zinc-900 bg-zinc-950 px-6 py-28 text-center">
+      <section className="border-t border-zinc-900 bg-zinc-950 px-6 py-28 text-center md:px-8">
         <div className="mx-auto max-w-4xl">
           <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
             Build Your Legacy
           </p>
 
-          <h2 className="text-4xl font-black md:text-6xl">
+          <h2 className="text-4xl font-black uppercase md:text-6xl">
             Ton projet mérite une vraie stratégie.
           </h2>
 
@@ -73,12 +118,12 @@ export default function SitePage() {
               Rejoindre LMG
             </Link>
 
-            <Link
-              href="/site#contact"
+            <a
+              href="mailto:contact@legacymusicgroup.fr"
               className="rounded-full border border-zinc-700 px-8 py-4 font-bold text-white transition hover:border-yellow-500"
             >
               Nous contacter
-            </Link>
+            </a>
           </div>
         </div>
       </section>
