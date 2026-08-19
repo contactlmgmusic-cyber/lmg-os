@@ -117,6 +117,7 @@ export default function Sidebar() {
       { href: "/dashboard", label: "Dashboard CEO" },
       { href: "/manager/kpi", label: "KPI Manager" },
       { href: "/analytics/dashboard", label: "Analytics Dashboard" },
+      { href: "/site-internet", label: "Site Internet" },
     ],
   },
 
