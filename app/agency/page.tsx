@@ -49,7 +49,7 @@ export default function AgencyPage() {
         <nav>
           <a href="#agence">L’agence</a>
           <a href="#expertises">Expertises</a>
-          <a href="#realisations">Réalisations</a>
+          <a href="#methode">Notre méthode</a>
           <a href="#offres">Offres</a>
         </nav>
 
@@ -158,58 +158,6 @@ export default function AgencyPage() {
         </div>
       </section>
 
-      <section className="agency-projects" id="realisations">
-        <div className="agency-projects-heading">
-          <div>
-            <p className="agency-kicker">Nos réalisations</p>
-            <h2>
-              Des projets pensés
-              <br />
-              pour <em>marquer.</em>
-            </h2>
-          </div>
-
-          <p>
-            Un aperçu des univers que nous avons façonnés, de la stratégie
-            jusqu’à l’exécution.
-          </p>
-        </div>
-
-        <div className="agency-project-grid">
-          <article>
-            <div className="agency-project-visual agency-project-yellow">
-              YF
-            </div>
-            <h3>YF Company</h3>
-            <p>Identité · Digital · Conseil</p>
-          </article>
-
-          <article>
-            <div className="agency-project-visual agency-project-dark">
-              LMG
-            </div>
-            <h3>Legacy Music Group</h3>
-            <p>Branding · Site · Stratégie</p>
-          </article>
-
-          <article>
-            <div className="agency-project-visual agency-project-blue">
-              BF
-            </div>
-            <h3>Bagheera Fitness</h3>
-            <p>Communication · Contenu</p>
-          </article>
-
-          <article>
-            <div className="agency-project-visual agency-project-sand">
-              LR
-            </div>
-            <h3>LOGE RENOV</h3>
-            <p>Identité · Communication</p>
-          </article>
-        </div>
-      </section>
-
       <section className="agency-offers" id="offres">
         <div className="agency-offers-heading">
           <p className="agency-kicker">Nos offres</p>
@@ -239,7 +187,7 @@ export default function AgencyPage() {
         </div>
       </section>
 
-      <section className="agency-method">
+      <section className="agency-method" id="methode">
         <div>
           <p className="agency-kicker agency-yellow">Notre méthode</p>
           <h2>
@@ -366,7 +314,7 @@ export default function AgencyPage() {
           <strong>Navigation</strong>
           <a href="#agence">L’agence</a>
           <a href="#expertises">Expertises</a>
-          <a href="#realisations">Réalisations</a>
+          <a href="#methode">Notre méthode</a>
           <a href="#offres">Offres</a>
         </div>
 
