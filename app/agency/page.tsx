@@ -306,9 +306,15 @@ export default function AgencyPage() {
       <footer className="agency-footer">
         <div>
           <a className="agency-logo" href="#accueil">
-            <strong>LMG</strong>
-            <span>AGENCY</span>
-          </a>
+  <Image
+    src="/logo-lmg.png"
+    alt="Legacy Music Group"
+    width={48}
+    height={48}
+    className="agency-logo-mark"
+  />
+  <span>AGENCY</span>
+</a>
 
           <p>
             Agence créative et digitale pour les marques, les entreprises, les
