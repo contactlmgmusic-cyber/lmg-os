@@ -41,6 +41,13 @@
   letter-spacing: 0.22em;
 }
 
+.agency-logo-mark {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
 .agency-logo strong {
   width: 48px;
   height: 34px;
@@ -800,4 +807,9 @@
   .agency-footer > small {
     left: 22px;
   }
+
+  .agency-logo-mark {
+  width: 42px;
+  height: 42px;
+}
 }

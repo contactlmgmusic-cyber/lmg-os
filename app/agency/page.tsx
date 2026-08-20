@@ -42,9 +42,15 @@ export default function AgencyPage() {
     <main>
       <header className="agency-nav">
         <a className="agency-logo" href="#accueil">
-          <strong>LMG</strong>
-          <span>AGENCY</span>
-        </a>
+  <Image
+    src="/logo-lmg.png"
+    alt="Legacy Music Group"
+    width={48}
+    height={48}
+    className="agency-logo-mark"
+  />
+  <span>AGENCY</span>
+</a>
 
         <nav>
           <a href="#agence">L’agence</a>
