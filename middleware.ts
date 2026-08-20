@@ -4,6 +4,20 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
+  const hostname = request.headers.get("host")?.split(":")[0] ?? "";
+
+const isAgencyDomain =
+  hostname === "agency.legacymusicgroup.fr" ||
+  hostname === "www.agency.legacymusicgroup.fr";
+
+if (isAgencyDomain && !path.startsWith("/agency")) {
+  const url = request.nextUrl.clone();
+
+  url.pathname = path === "/" ? "/agency" : `/agency${path}`;
+
+  return NextResponse.rewrite(url);
+}
+
   const maintenanceMode =
   process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
 
@@ -38,7 +52,9 @@ const isMaintenanceAllowed =
   path.startsWith("/notifications") ||
   path.startsWith("/invitations") ||
   path.startsWith("/mon-espace-artiste") ||
-  path.startsWith("/manager");
+path.startsWith("/manager") ||
+path === "/agency" ||
+path.startsWith("/agency/");
 
 if (maintenanceMode && !isMaintenanceAllowed) {
   const url = request.nextUrl.clone();
@@ -47,11 +63,13 @@ if (maintenanceMode && !isMaintenanceAllowed) {
 }
 
   const isPublicRoute =
-    path === "/" ||
-    path === "/site" ||
-    path.startsWith("/site/") ||
-    path === "/login" ||
-    path === "/signup";
+  path === "/" ||
+  path === "/site" ||
+  path.startsWith("/site/") ||
+  path === "/agency" ||
+  path.startsWith("/agency/") ||
+  path === "/login" ||
+  path === "/signup";
 
   if (isPublicRoute && path !== "/login" && path !== "/signup") {
     return NextResponse.next();
