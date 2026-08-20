@@ -561,6 +561,19 @@
   object-position: center;
 }
 
+.agency-portrait img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.agency-joseph img {
+  object-position: center 18%;
+}
+
+.agency-yliana img {
+  object-position: center 22%;
+}
+
 .agency-joseph {
   background: #1b1b18;
   color: var(--agency-yellow);
