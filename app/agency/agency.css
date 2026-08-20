@@ -552,6 +552,15 @@
   letter-spacing: -0.08em;
 }
 
+.agency-portrait {
+  position: relative;
+}
+
+.agency-portrait img {
+  object-fit: cover;
+  object-position: center;
+}
+
 .agency-joseph {
   background: #1b1b18;
   color: var(--agency-yellow);
@@ -641,6 +650,20 @@
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+.agency-stamp {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.agency-stamp small {
+  position: static;
+  max-width: 115px;
+  line-height: 1.6;
+  text-align: center;
+  transform: none;
 }
 
 @media (max-width: 800px) {

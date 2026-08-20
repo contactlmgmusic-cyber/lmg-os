@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 const expertises = [
   {
     number: "01",
@@ -294,15 +296,29 @@ export default function AgencyPage() {
 
         <div className="agency-team-grid">
           <article>
-            <div className="agency-portrait agency-joseph">JK</div>
-            <p>Président & Cofondateur</p>
+            <div className="agency-portrait agency-joseph">
+  <Image
+    src="/team/joseph.jpg"
+    alt="Joseph Kayaya, Président et Cofondateur de Legacy Music Group"
+    fill
+    sizes="(max-width: 800px) 100vw, 50vw"
+  />
+</div>
+            <p>Président & Fondateur</p>
             <h3>Joseph Kayaya</h3>
             <span>Vision stratégique · Développement · Partenariats</span>
           </article>
 
           <article>
-            <div className="agency-portrait agency-yliana">YF</div>
-            <p>Cofondatrice & Directrice de LMG Agency</p>
+            <div className="agency-portrait agency-yliana">
+  <Image
+    src="/team/yliana.jpg"
+    alt="Yliana Faidherbe, Directrice de LMG Agency"
+    fill
+    sizes="(max-width: 800px) 100vw, 50vw"
+  />
+</div>
+            <p>Directrice de LMG Agency</p>
             <h3>Yliana Faidherbe</h3>
             <span>Direction opérationnelle · Communication · Image</span>
           </article>

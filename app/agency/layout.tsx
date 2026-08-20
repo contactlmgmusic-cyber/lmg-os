@@ -3,7 +3,9 @@ import "./agency.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://agency.legacymusicgroup.fr"),
-  title: "LMG Agency | Agence créative & digitale",
+  title: {
+  absolute: "LMG Agency | Agence créative & digitale",
+},
   description:
     "Identité, communication, contenu, digital et marketing pour les marques, les entreprises, les entrepreneurs et les talents.",
   openGraph: {
