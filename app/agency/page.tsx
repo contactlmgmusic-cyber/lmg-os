@@ -59,7 +59,7 @@ export default function AgencyPage() {
           <a href="#offres">Offres</a>
         </nav>
 
-        <a className="agency-button agency-button-small" href="#contact">
+        <a className="agency-button agency-button-small" href="/devis">
           Parler de votre projet
         </a>
       </header>
@@ -87,7 +87,7 @@ export default function AgencyPage() {
           </p>
 
           <div className="agency-actions">
-            <a className="agency-button" href="#contact">
+            <a className="agency-button" href="/devis">
               Parler de votre projet <span>↗</span>
             </a>
 
@@ -185,7 +185,7 @@ export default function AgencyPage() {
               <span>0{index + 1}</span>
               <h3>{name}</h3>
               <strong>{price}</strong>
-              <a href="#contact">
+              <a href="/devis">
                 Découvrir l’offre <b>↗</b>
               </a>
             </article>
@@ -297,7 +297,7 @@ export default function AgencyPage() {
 
         <a
           className="agency-button"
-          href="mailto:contact@legacymusicgroup.fr?subject=Demande de projet LMG Agency"
+          href="/devis"
         >
           Démarrer mon projet <span>↗</span>
         </a>
