@@ -111,6 +111,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+console.log("Supabase Agency cible :", new URL(supabaseUrl).hostname);
+
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       auth: {
         persistSession: false,
