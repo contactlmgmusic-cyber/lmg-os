@@ -277,13 +277,18 @@ if (!canAccess) {
     }
 
     const gmailResult =
-      await sendCentralGmail({
-        origin:
-          request.nextUrl.origin,
-        to,
-        subject,
-        message,
-      });
+  await sendCentralGmail({
+    origin:
+      request.nextUrl.origin,
+    to,
+    subject,
+    message,
+    signatureKey:
+      profile.role ===
+      ROLES.ARTISTIC_DIRECTOR
+        ? "deepa"
+        : "joseph",
+  });
 
     const sentAt =
       new Date().toISOString();

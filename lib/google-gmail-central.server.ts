@@ -7,6 +7,30 @@ import {
   createGoogleGmailOAuthClient,
 } from "@/lib/google-gmail.server";
 
+export type GmailSignatureKey =
+  | "joseph"
+  | "deepa";
+
+const GMAIL_SIGNATURES = {
+  joseph: {
+    name: "Joseph Kayaya",
+    title: "Founder & CEO",
+    email: "contact@legacymusicgroup.fr",
+  },
+  deepa: {
+    name: "Deepa Marie Heveraet",
+    title: "Artistic Director",
+    email: "marie.heveraet@legacymusicgroup.fr",
+  },
+} satisfies Record<
+  GmailSignatureKey,
+  {
+    name: string;
+    title: string;
+    email: string;
+  }
+>;
+
 function createSupabaseAdmin() {
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -81,25 +105,32 @@ function escapeHtml(
 }
 
 function createPlainTextEmail(
-  message: string
+  message: string,
+  signatureKey: GmailSignatureKey
 ) {
+  const signature =
+    GMAIL_SIGNATURES[signatureKey];
+
   return `${message}
 
 --
-Joseph Kayaya
-Founder & CEO
+${signature.name}
+${signature.title}
 Legacy Music Group
 Artist Management • Artist Development • Booking • Marketing
 Building legacies, not moments.
-
-contact@legacymusicgroup.fr
+${signature.email}
 https://www.legacymusicgroup.fr
 https://www.instagram.com/legacymusic.group/`;
 }
 
 function createHtmlEmail(
-  message: string
+  message: string,
+  signatureKey: GmailSignatureKey
 ) {
+  const signature =
+    GMAIL_SIGNATURES[signatureKey];
+
   const formattedMessage =
     escapeHtml(message).replace(
       /\r?\n/g,
@@ -231,7 +262,7 @@ function createHtmlEmail(
                 color: #111111;
               "
             >
-              Joseph Kayaya
+              ${signature.name}
             </p>
 
             <p
@@ -242,7 +273,7 @@ function createHtmlEmail(
                 color: #111111;
               "
             >
-              Founder &amp; CEO
+              ${escapeHtml(signature.title)}
             </p>
 
             <p
@@ -307,13 +338,13 @@ function createHtmlEmail(
               </span>
 
               <a
-                href="mailto:contact@legacymusicgroup.fr"
+                href="mailto:${encodeURIComponent(signature.email)}"
                 style="
                   color: #111111;
                   text-decoration: none;
                 "
               >
-                contact@legacymusicgroup.fr
+                ${escapeHtml(signature.email)}
               </a>
             </p>
 
@@ -467,11 +498,13 @@ export async function sendCentralGmail({
   to,
   subject,
   message,
+  signatureKey = "joseph",
 }: {
   origin: string;
   to: string;
   subject: string;
   message: string;
+  signatureKey?: GmailSignatureKey;
 }) {
   const cleanTo = to.trim();
   const cleanSubject =
@@ -503,14 +536,16 @@ export async function sendCentralGmail({
     `lmg-${randomUUID()}`;
 
   const plainTextEmail =
-    createPlainTextEmail(
-      cleanMessage
-    );
+  createPlainTextEmail(
+    cleanMessage,
+    signatureKey
+  );
 
-  const htmlEmail =
-    createHtmlEmail(
-      cleanMessage
-    );
+const htmlEmail =
+  createHtmlEmail(
+    cleanMessage,
+    signatureKey
+  );
 
   const rawMessage = [
     "From: Legacy Music Group <contact@legacymusicgroup.fr>",
