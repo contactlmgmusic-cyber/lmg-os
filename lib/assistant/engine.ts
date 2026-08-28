@@ -2,6 +2,7 @@ import type { AssistantPlan } from "./types";
 import { searchLMGContext } from "./knowledge/search";
 import { planAssistantActions } from "./planner";
 import { detectIntent } from "./intents/detectIntent";
+import { buildWorkflowForIntent } from "./workflows";
 
 export async function runAssistantEngine(
   message: string
@@ -9,6 +10,8 @@ export async function runAssistantEngine(
   const context = await searchLMGContext(message);
 
   const intent = detectIntent(message);
+
+  const workflow = buildWorkflowForIntent(intent);
 
 const actions = planAssistantActions(
   intent,
@@ -33,9 +36,10 @@ const actions = planAssistantActions(
       : "Je n'ai trouvé aucun artiste ou projet correspondant dans LMG OS.";
 
   return {
-    summary,
-    recommendations,
-    estimatedTime: "≈ 2 minutes",
-    actions,
-  };
+  summary,
+  recommendations,
+  estimatedTime: "≈ 2 minutes",
+  actions,
+  workflow,
+};
 }

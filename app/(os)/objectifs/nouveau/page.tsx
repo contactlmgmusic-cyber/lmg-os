@@ -30,24 +30,32 @@ useEffect(() => {
 
     const { data: profile } = await supabaseBrowser
       .from("profiles")
-      .select("role")
+      .select("*")
       .eq("id", user.id)
       .single();
 
     if (
-      profile?.role !== ROLES.SUPER_ADMIN &&
-      profile?.role !== ROLES.ADMIN
-    ) {
+  profile?.role !== ROLES.SUPER_ADMIN &&
+  profile?.role !== ROLES.ADMIN &&
+  profile?.role !== ROLES.ARTISTIC_DIRECTOR &&
+  profile?.role !== ROLES.MANAGER
+) {
       window.location.href = "/";
       return;
     }
 
-    const { data } = await supabaseBrowser
-      .from("artistes")
-      .select("id, nom")
-      .order("nom");
+    let query = supabaseBrowser
+  .from("artistes")
+  .select("id, nom")
+  .order("nom");
 
-    setArtistes(data || []);
+if (profile?.role === ROLES.MANAGER) {
+  query = query.eq("manager_id", profile.id);
+}
+
+const { data } = await query;
+
+setArtistes(data || []);
   }
 
   loadArtistes();

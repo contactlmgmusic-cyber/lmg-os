@@ -34,6 +34,20 @@ export default async function ArtistesPage() {
         .single()
     : { data: null };
 
+if (currentProfile?.role === ROLES.PRESTATAIRE) {
+  return (
+    <main className="min-h-screen bg-black p-10 text-white">
+      <h1 className="text-3xl font-bold text-red-400">
+        Accès refusé
+      </h1>
+
+      <p className="mt-3 text-zinc-500">
+        Vous n&apos;avez pas accès aux artistes du label.
+      </p>
+    </main>
+  );
+}
+
   let query = supabase
     .from("artistes")
     .select("*")
@@ -58,7 +72,8 @@ export default async function ArtistesPage() {
 
   const canCreateArtist =
   currentProfile?.role === ROLES.SUPER_ADMIN ||
-  currentProfile?.role === ROLES.ADMIN;
+  currentProfile?.role === ROLES.ADMIN ||
+  currentProfile?.role === ROLES.ARTISTIC_DIRECTOR;
 
   return (
     <main className="p-10 text-white">
