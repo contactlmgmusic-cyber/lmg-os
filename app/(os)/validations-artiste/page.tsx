@@ -6,7 +6,12 @@ import { ROLES } from "@/lib/roles";
 export const dynamic = "force-dynamic";
 
 export default async function ValidationsArtistePage() {
-  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER]);
+  await requireRole([
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.MANAGER,
+  ROLES.ARTISTIC_DIRECTOR,
+]);
 
   const { data: validations } = await supabase
     .from("artist_approvals")

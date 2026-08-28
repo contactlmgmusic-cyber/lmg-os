@@ -22,6 +22,7 @@ export default async function ReleasePlannerPage() {
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
   ROLES.MANAGER,
+  ROLES.ARTISTIC_DIRECTOR,
 ]);
 
 const isManager =

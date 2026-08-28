@@ -26,6 +26,7 @@ export default async function ArtistRankingPage() {
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
   ROLES.MANAGER,
+  ROLES.ARTISTIC_DIRECTOR
 ]);
 
 const isManager =
