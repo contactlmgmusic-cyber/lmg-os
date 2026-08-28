@@ -622,9 +622,10 @@ useEffect(() => {
 
 if (
   profile?.role !== ROLES.SUPER_ADMIN &&
-  profile?.role !== ROLES.ADMIN
+  profile?.role !== ROLES.ADMIN &&
+  profile?.role !== ROLES.ARTISTIC_DIRECTOR
 ) {
-  router.push("/login");
+  router.push("/");
   return;
 }
 
