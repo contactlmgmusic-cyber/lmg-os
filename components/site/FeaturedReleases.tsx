@@ -13,12 +13,14 @@ export default function FeaturedReleases() {
       const { data } = await supabaseBrowser
         .from("projets")
         .select(`
-          *,
+          id, titre, slug, type, cover_url, date_sortie,
           artistes (
             nom,
             slug
           )
         `)
+        .eq("is_public", true)
+        .not("slug", "is", null)
         .order("date_sortie", { ascending: false })
         .limit(6);
 
