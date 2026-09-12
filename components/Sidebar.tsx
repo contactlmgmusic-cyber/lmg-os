@@ -32,12 +32,15 @@ export default function Sidebar() {
   const [newCandidatures, setNewCandidatures] = useState(0);
 
   useEffect(() => {
+    let active = true;
+    let channel: ReturnType<typeof supabaseBrowser.channel> | null = null;
+
     async function fetchUserData() {
       const {
         data: { user },
       } = await supabaseBrowser.auth.getUser();
 
-      if (!user) return;
+      if (!user || !active) return;
 
       setUserEmail(user.email || "");
       setAvatarUrl(
@@ -87,7 +90,7 @@ export default function Sidebar() {
 
       await loadCounts(user.id);
 
-      const channel = supabaseBrowser
+      channel = supabaseBrowser
         .channel("sidebar-notifications-count")
         .on(
           "postgres_changes",
@@ -102,12 +105,17 @@ export default function Sidebar() {
         )
         .subscribe();
 
-      return () => {
-        supabaseBrowser.removeChannel(channel);
-      };
     }
 
     fetchUserData();
+
+    return () => {
+      active = false;
+
+      if (channel) {
+        supabaseBrowser.removeChannel(channel);
+      }
+    };
   }, []);
 
   const superAdminSections: SidebarSection[] = [

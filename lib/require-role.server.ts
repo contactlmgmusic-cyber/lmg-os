@@ -3,9 +3,13 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
-import { supabase } from "@/lib/supabase";
+import {
+  getRoleHome,
+  isUserRole,
+  type UserRole,
+} from "@/lib/roles";
 
-export async function requireRole(allowedRoles: string[]) {
+export async function requireRole(allowedRoles: readonly UserRole[]) {
   const cookieStore = await cookies();
 
   const supabaseAuth = createServerClient(
@@ -27,14 +31,18 @@ export async function requireRole(allowedRoles: string[]) {
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
+  const { data: profile } = await supabaseAuth
     .from("profiles")
     .select("id, role, artiste_id")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
-  if (!profile?.role || !allowedRoles.includes(profile.role)) {
+  if (!isUserRole(profile?.role)) {
     redirect("/");
+  }
+
+  if (!allowedRoles.includes(profile.role)) {
+    redirect(getRoleHome(profile.role));
   }
 
   return profile;
