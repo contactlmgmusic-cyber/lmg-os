@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { supabase } from "@/lib/supabase";
+import { requireRole } from "@/lib/require-role.server";
 import BookingKanban from "@/components/BookingKanban";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
 export default async function BookingPage() {
+  const currentProfile = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER, ROLES.ARTISTE]);
   const cookieStore = await cookies();
 
   const supabaseAuth = createServerClient(
@@ -27,15 +28,7 @@ export default async function BookingPage() {
     data: { user },
   } = await supabaseAuth.auth.getUser();
 
-  const { data: currentProfile } = user
-    ? await supabase
-        .from("profiles")
-        .select("role, artiste_id")
-        .eq("id", user.id)
-        .single()
-    : { data: null };
-
-  let query = supabase
+  let query = supabaseAuth
     .from("bookings")
     .select(`
       *,
@@ -48,7 +41,7 @@ export default async function BookingPage() {
     .order("created_at", { ascending: false });
 
   if (currentProfile?.role === ROLES.MANAGER && user?.id) {
-  const { data: managedArtists } = await supabase
+  const { data: managedArtists } = await supabaseAuth
     .from("artistes")
     .select("id")
     .eq("manager_id", user.id);
@@ -62,8 +55,8 @@ export default async function BookingPage() {
   }
 }
 
-if (currentProfile?.role === ROLES.ARTISTE && currentProfile.artiste_id) {
-  query = query.eq("artiste_id", currentProfile.artiste_id);
+if (currentProfile?.role === ROLES.ARTISTE) {
+  query = query.eq("artiste_id", currentProfile.artiste_id || "00000000-0000-0000-0000-000000000000");
 }
 
 if (currentProfile?.role === ROLES.PRESTATAIRE) {
