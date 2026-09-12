@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 import GoogleCalendarConnection from "@/components/GoogleCalendarConnection";
@@ -26,6 +26,7 @@ function formatDate(date: string) {
 }
 
 export default async function GlobalCalendarPage() {
+  const supabase = await createAuthenticatedSupabaseClient();
   await requireRole([
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,

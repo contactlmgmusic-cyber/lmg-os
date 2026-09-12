@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
@@ -14,6 +14,7 @@ function formatNumber(value: number) {
 }
 
 export default async function CampagnesPage() {
+  const supabase = await createAuthenticatedSupabaseClient();
   await requireRole([
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,

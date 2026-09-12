@@ -1,4 +1,3 @@
-import { supabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import CalendarFilterView from "@/components/CalendarFilterView";
@@ -53,6 +52,7 @@ const supabaseAuth = createServerClient(
     },
   }
 );
+const supabase = supabaseAuth;
 
 const {
   data: { user },

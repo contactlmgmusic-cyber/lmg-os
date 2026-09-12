@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
-import { supabase } from "@/lib/supabase";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 
 export const dynamic = "force-dynamic";
 function formatEuro(value: number) {
@@ -20,6 +20,7 @@ export default async function ManagerPage() {
 ]);
 
 const managerId = (profile as any).id;
+const supabase = await createAuthenticatedSupabaseClient();
 
   const { data: artistes } = await supabase
     .from("artistes")

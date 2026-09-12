@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { redirect } from "next/navigation";
@@ -29,6 +28,7 @@ export default async function PartenaireDetailPage({
       },
     }
   );
+  const supabase = supabaseAuth;
 
   const {
     data: { user },

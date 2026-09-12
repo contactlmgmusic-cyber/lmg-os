@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 import { cookies } from "next/headers";
@@ -38,6 +37,7 @@ const supabaseServer = createServerClient(
     },
   }
 );
+const supabase = supabaseServer;
 
 const {
   data: { user },

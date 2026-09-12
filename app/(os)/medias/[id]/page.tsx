@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import MediaRelances from "@/components/MediaRelances";
 import DeleteMediaButton from "@/components/DeleteMediaButton";
 import { requireRole } from "@/lib/require-role.server";
@@ -13,6 +13,7 @@ export default async function MediaDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const supabase = await createAuthenticatedSupabaseClient();
   const { id } = await params;
 
   const profile = await requireRole([

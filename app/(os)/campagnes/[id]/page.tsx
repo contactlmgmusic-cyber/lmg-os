@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +18,8 @@ export default async function CampagneDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER]);
+  const supabase = await createAuthenticatedSupabaseClient();
   const { id } = await params;
 
   const { data: campagne, error } = await supabase
