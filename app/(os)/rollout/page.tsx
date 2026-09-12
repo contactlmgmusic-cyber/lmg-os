@@ -1,4 +1,3 @@
-import { supabase } from "@/lib/supabase";
 import RolloutKanban from "@/components/RolloutKanban";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
@@ -29,6 +28,7 @@ export default async function RolloutPage() {
 },
     }
   );
+  const supabase = supabaseServer;
 
   const {
     data: { user },

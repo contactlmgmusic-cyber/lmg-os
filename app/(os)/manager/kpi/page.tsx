@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
@@ -21,6 +21,7 @@ export default async function ManagerKpiPage() {
   ]);
 
   const isManager = profile?.role === ROLES.MANAGER;
+  const supabase = await createAuthenticatedSupabaseClient();
 
   const { data: artistes } = await supabase
     .from("artistes")

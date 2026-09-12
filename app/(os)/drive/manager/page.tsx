@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { supabase } from "@/lib/supabase";
 import { ROLES } from "@/lib/roles";
 import { Suspense } from "react";
 import GoogleDriveConnection from "@/components/GoogleDriveConnection";
@@ -23,6 +22,7 @@ export default async function ManagerDashboardPage() {
       },
     }
   );
+  const supabase = supabaseAuth;
 
   const {
     data: { user },

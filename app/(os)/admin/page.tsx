@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { supabase } from "@/lib/supabase";
 import { ROLES } from "@/lib/roles";
 import { Suspense } from "react";
 import GoogleGmailConnection from "@/components/GoogleGmailConnection";
@@ -24,6 +23,7 @@ const supabaseAuth = createServerClient(
     },
   }
 );
+const supabase = supabaseAuth;
 
 const {
   data: { user },

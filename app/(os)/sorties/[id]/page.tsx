@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 import SortieAnalyticsChart from "@/components/SortieAnalyticsChart";
@@ -11,6 +11,7 @@ export default async function SortieDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const supabase = await createAuthenticatedSupabaseClient();
   const { id } = await params;
 
   const profile = await requireRole([

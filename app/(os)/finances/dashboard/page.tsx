@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import RevenueChart from "@/components/RevenueChart";
 import FinanceChart from "@/components/FinanceChart";
 import BudgetAllocationChart from "@/components/BudgetAllocationChart";
@@ -18,6 +18,7 @@ await requireRole([
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
 ]);
+  const supabase = await createAuthenticatedSupabaseClient();
 
   const { data: finances } = await supabase.from("finances").select(`
     *,

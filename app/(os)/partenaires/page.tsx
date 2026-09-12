@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import PartenaireKanban from "@/components/PartenaireKanban";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
@@ -23,6 +22,7 @@ const supabaseAuth = createServerClient(
     },
   }
 );
+const supabase = supabaseAuth;
 
 const {
   data: { user },

@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
@@ -13,6 +13,7 @@ function formatEuro(value: number) {
 }
 
 export default async function AnalyticsPage() {
+  const supabase = await createAuthenticatedSupabaseClient();
 await requireRole([
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,

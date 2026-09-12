@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 import DeleteContractButton from "@/components/DeleteContractButton";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +11,8 @@ export default async function ContratDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER, ROLES.ARTISTE]);
+  const supabase = await createAuthenticatedSupabaseClient();
   const { id } = await params;
 
   const { data: contrat, error } = await supabase

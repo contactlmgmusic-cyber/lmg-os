@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
 export default async function SortiesPage() {
+  const supabase = await createAuthenticatedSupabaseClient();
   const profile = await requireRole([
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
