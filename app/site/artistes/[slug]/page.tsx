@@ -77,7 +77,11 @@ export default async function ArtistPage({
 
   const { data: artisteData } = await supabase
     .from("artistes")
-    .select("*")
+    .select(`
+      id, nom, slug, style, ville, bio,
+      instagram, tiktok, spotify_url, spotify, youtube_url, youtube,
+      apple_music, deezer, photo_url, spotify_image_url, youtube_image_url
+    `)
     .eq("slug", slug)
     .eq("is_public", true)
     .limit(1);
@@ -411,9 +415,7 @@ export default async function ArtistPage({
 
           <div>
             <p className="whitespace-pre-line text-lg leading-9 text-zinc-300 md:text-xl">
-              {artiste.bio ||
-                artiste.notes ||
-                "Artiste accompagné par Legacy Music Group."}
+              {artiste.bio || "Artiste accompagné par Legacy Music Group."}
             </p>
           </div>
         </div>
