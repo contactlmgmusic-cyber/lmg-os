@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import RevenueChart from "@/components/RevenueChart";
 import { ROLES } from "@/lib/roles";
@@ -47,8 +46,9 @@ export default function DashboardPage() {
     lmgGlobalScore: 0,
   });
 
-  const router = useRouter();
   const [checkingAccess, setCheckingAccess] = useState(true);
+  const loadingRef = useRef(false);
+  const pendingRef = useRef(false);
 
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [upcomingProjects, setUpcomingProjects] = useState<any[]>([]);
@@ -73,7 +73,14 @@ export default function DashboardPage() {
   }
 
   async function loadDashboard() {
-  console.time("dashboard");
+  if (loadingRef.current) {
+    pendingRef.current = true;
+    return;
+  }
+
+  loadingRef.current = true;
+
+  try {
 
   const start = monthStart();
 
@@ -315,68 +322,61 @@ const projectRanking = Array.from(byProject.entries())
   .sort((a, b) => b.resultat - a.resultat)
   .slice(0, 5);
 
-    const { data: projects } = await supabaseBrowser
-      .from("projets")
+  const [
+    { data: projects },
+    { data: next30 },
+    { data: tasks },
+    { data: lateTasksData },
+    { data: urgentReleasesData },
+    { data: relances },
+    { data: mediaRelances },
+    { data: logs },
+    { data: royalties },
+    { data: analytics },
+    { data: sortiesMoisData },
+    { data: releaseTasks },
+  ] = await Promise.all([
+    supabaseBrowser.from("projets")
       .select("id, titre, date_sortie, statut")
       .not("date_sortie", "is", null)
       .gte("date_sortie", today)
-      .order("date_sortie", { ascending: true })
-      .limit(5);
-
-      const { data: next30 } = await supabaseBrowser
-  .from("projets")
-  .select("id, titre, date_sortie, statut")
-  .gte("date_sortie", today)
-  .lte("date_sortie", in30DaysString)
-  .order("date_sortie", { ascending: true });
-
-    const { data: tasks } = await supabaseBrowser
-      .from("taches")
+      .order("date_sortie", { ascending: true }).limit(5),
+    supabaseBrowser.from("projets")
+      .select("id, titre, date_sortie, statut")
+      .gte("date_sortie", today).lte("date_sortie", in30DaysString)
+      .order("date_sortie", { ascending: true }),
+    supabaseBrowser.from("taches")
       .select("id, titre, deadline, priorite, statut")
-      .eq("priorite", "Haute")
-      .neq("statut", "Terminé")
-      .order("deadline", { ascending: true })
-      .limit(5);
-
-      const { data: lateTasksData } = await supabaseBrowser
-  .from("taches")
-  .select("id, titre, deadline, priorite, statut")
-  .lt("deadline", today)
-  .neq("statut", "Terminé")
-  .order("deadline", { ascending: true })
-  .limit(5);
-
-const { data: urgentReleasesData } = await supabaseBrowser
-  .from("projets")
-  .select("id, titre, date_sortie, statut")
-  .gte("date_sortie", today)
-  .lte("date_sortie", in7DaysString)
-  .order("date_sortie", { ascending: true })
-  .limit(5);
-
-    const { data: relances } = await supabaseBrowser
-      .from("bookings")
+      .eq("priorite", "Haute").neq("statut", "Terminé")
+      .order("deadline", { ascending: true }).limit(5),
+    supabaseBrowser.from("taches")
+      .select("id, titre, deadline, priorite, statut")
+      .lt("deadline", today).neq("statut", "Terminé")
+      .order("deadline", { ascending: true }).limit(5),
+    supabaseBrowser.from("projets")
+      .select("id, titre, date_sortie, statut")
+      .gte("date_sortie", today).lte("date_sortie", in7DaysString)
+      .order("date_sortie", { ascending: true }).limit(5),
+    supabaseBrowser.from("bookings")
       .select("id, evenement, prochaine_relance, statut")
-      .not("prochaine_relance", "is", null)
-      .lte("prochaine_relance", today)
-      .order("prochaine_relance", { ascending: true })
-
-      const { data: mediaRelances } = await supabaseBrowser
-  .from("medias")
-  .select("id, nom, contact_nom, prochaine_relance, statut, priorite")
-  .not("prochaine_relance", "is", null)
-  .lte("prochaine_relance", today)
-  .order("prochaine_relance", { ascending: true })
-
-    const { data: logs } = await supabaseBrowser
-      .from("activity_logs")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(8);
-
-      const { data: royalties } = await supabaseBrowser
-      .from("royalties")
-      .select("*");
+      .not("prochaine_relance", "is", null).lte("prochaine_relance", today)
+      .order("prochaine_relance", { ascending: true }),
+    supabaseBrowser.from("medias")
+      .select("id, nom, contact_nom, prochaine_relance, statut, priorite")
+      .not("prochaine_relance", "is", null).lte("prochaine_relance", today)
+      .order("prochaine_relance", { ascending: true }),
+    supabaseBrowser.from("activity_logs")
+      .select("id, type, titre, description, created_at")
+      .order("created_at", { ascending: false }).limit(8),
+    supabaseBrowser.from("royalties").select("statut, montant_du"),
+    supabaseBrowser.from("analytics").select(`
+      streams, followers, vues, revenus,
+      artistes ( id, nom ), sorties ( id, titre )
+    `),
+    supabaseBrowser.from("sorties")
+      .select("id, titre, date_sortie").gte("date_sortie", start),
+    supabaseBrowser.from("release_tasks").select("statut"),
+  ]);
 
 const royaltiesDues =
   royalties
@@ -394,18 +394,6 @@ const royaltiesPayees =
       0
     ) || 0;
 
-    const { data: analytics } = await supabaseBrowser
-  .from("analytics")
-  .select(`
-    *,
-    artistes ( id, nom ),
-    sorties ( id, titre )
-  `);
-
-const { data: sortiesMoisData } = await supabaseBrowser
-  .from("sorties")
-  .select("id, titre, date_sortie")
-  .gte("date_sortie", start);
 
 const streamsTotaux =
   analytics?.reduce((acc: number, item: any) => acc + Number(item.streams || 0), 0) || 0;
@@ -488,10 +476,6 @@ const roiMoyen =
         ) / projectsWithBudget.length
       )
     : 0;
-
-    const { data: releaseTasks } = await supabaseBrowser
-  .from("release_tasks")
-  .select("*");
 
 const releaseTasksTotal = releaseTasks?.length || 0;
 
@@ -585,60 +569,20 @@ setMediaFollowUps(
     setUrgentReleases(urgentReleasesData || []);
     setTopSortiesAnalytics(sortieAnalyticsRanking);
     setTopArtistesAnalytics(artisteAnalyticsRanking);
-    console.timeEnd("dashboard");
-  }
-
-useEffect(() => {
-  async function checkAccess() {
-    const {
-      data: { user },
-    } = await supabaseBrowser.auth.getUser();
-
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-
-    const { data: profile } = await supabaseBrowser
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role === ROLES.MANAGER) {
-      router.push("/manager");
-      return;
-    }
-
-    if (profile?.role === ROLES.ARTISTE) {
-      router.push("/mon-espace-artiste");
-      return;
-    }
-
-    if (profile?.role === ROLES.PRESTATAIRE) {
-      router.push("/mes-taches");
-      return;
-    }
-
-if (
-  profile?.role !== ROLES.SUPER_ADMIN &&
-  profile?.role !== ROLES.ADMIN &&
-  profile?.role !== ROLES.ARTISTIC_DIRECTOR
-) {
-  router.push("/");
-  return;
-}
-
     setCheckingAccess(false);
+  } finally {
+    loadingRef.current = false;
+    if (pendingRef.current) {
+      pendingRef.current = false;
+      void loadDashboard();
+    }
   }
-
-  checkAccess();
-}, [router]);
+  }
 
   useEffect(() => {
-  if (checkingAccess) return;
+  void loadDashboard();
 
-  loadDashboard();
+  let timer: ReturnType<typeof setTimeout> | undefined;
 
   const channel = supabaseBrowser
     .channel("dashboard-realtime")
@@ -649,16 +593,20 @@ if (
         schema: "public",
         table: "activity_logs",
       },
-      async () => {
-        await loadDashboard();
+      () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          void loadDashboard();
+        }, 1500);
       }
     )
     .subscribe();
 
   return () => {
+    clearTimeout(timer);
     supabaseBrowser.removeChannel(channel);
   };
-}, [checkingAccess]);
+}, []);
 
 if (checkingAccess) {
   return (
