@@ -105,7 +105,8 @@ export default async function ProjectPage({
   const { data } = await supabase
     .from("projets")
     .select(`
-      *,
+      id, artiste_id, titre, slug, type, cover_url, hero_image_url,
+      date_sortie, description, credits, spotify_url, apple_music_url, youtube_url,
       artistes (
         id,
         nom,
@@ -357,9 +358,7 @@ export default async function ProjectPage({
             </h2>
 
             <p className="mt-8 whitespace-pre-line text-lg leading-9 text-zinc-300 md:text-xl">
-              {projet.description ||
-                projet.notes ||
-                "Projet développé et accompagné par Legacy Music Group."}
+              {projet.description || "Projet développé et accompagné par Legacy Music Group."}
             </p>
 
             {projet.credits && (
