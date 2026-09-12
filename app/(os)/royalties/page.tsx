@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { supabase } from "@/lib/supabase";
+import { requireRole } from "@/lib/require-role.server";
 import {canGenerateRoyalties,} from "@/lib/permissions";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
 export default async function RoyaltiesPage() {
+  const currentProfile = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER, ROLES.ARTISTE]);
   const cookieStore = await cookies();
 
   const supabaseAuth = createServerClient(
@@ -27,29 +28,7 @@ export default async function RoyaltiesPage() {
     data: { user },
   } = await supabaseAuth.auth.getUser();
 
-  const { data: currentProfile } = user
-  ? await supabase
-      .from("profiles")
-      .select("role, artiste_id, email")
-      .eq("id", user.id)
-      .single()
-  : { data: null };
-
-if (currentProfile?.role === ROLES.PRESTATAIRE) {
-  return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <h1 className="text-3xl font-bold text-red-400">
-        Accès refusé
-      </h1>
-
-      <p className="mt-3 text-zinc-500">
-        Vous n&apos;avez pas accès aux royalties du label.
-      </p>
-    </main>
-  );
-}
-
-let query = supabase
+let query = supabaseAuth
   .from("royalties")
     .select(`
       *,
@@ -67,11 +46,17 @@ let query = supabase
     .order("created_at", { ascending: false });
 
   if (currentProfile?.role === ROLES.MANAGER) {
-    query = query.eq("projets.artistes.manager_id", user?.id);
+    const { data: managedArtists, error: artistsError } = await supabaseAuth.from("artistes").select("id").eq("manager_id", currentProfile.id);
+    const artistIds = artistsError ? [] : (managedArtists || []).map((artist) => artist.id);
+    const { data: managedProjects, error: projectsError } = artistIds.length
+      ? await supabaseAuth.from("projets").select("id").in("artiste_id", artistIds)
+      : { data: [], error: null };
+    const projectIds = projectsError ? [] : (managedProjects || []).map((project) => project.id);
+    query = query.in("projet_id", projectIds.length ? projectIds : ["00000000-0000-0000-0000-000000000000"]);
   }
 
-  if (currentProfile?.role === ROLES.ARTISTE && currentProfile?.email) {
-    query = query.eq("email", currentProfile.email);
+  if (currentProfile?.role === ROLES.ARTISTE) {
+    query = query.eq("email", user?.email || "__no_email__");
   }
 
   const { data: royalties, error } = await query;
