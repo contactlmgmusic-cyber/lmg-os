@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -8,9 +11,25 @@ export default async function BookingDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const profile = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER, ROLES.ARTISTE]);
   const { id } = await params;
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    { cookies: { getAll: () => cookieStore.getAll(), setAll() {} } }
+  );
 
-  const { data: booking, error } = await supabase
+  let allowedArtistIds: string[] | null = null;
+  if (profile.role === ROLES.MANAGER) {
+    const { data, error } = await supabase.from("artistes").select("id").eq("manager_id", profile.id);
+    allowedArtistIds = error ? [] : (data || []).map((artist) => artist.id);
+  }
+  if (profile.role === ROLES.ARTISTE) {
+    allowedArtistIds = profile.artiste_id ? [profile.artiste_id] : [];
+  }
+
+  let query = supabase
     .from("bookings")
     .select(`
       *,
@@ -21,8 +40,11 @@ export default async function BookingDetailPage({
         photo_url
       )
     `)
-    .eq("id", id)
-    .single();
+    .eq("id", id);
+  if (allowedArtistIds) {
+    query = query.in("artiste_id", allowedArtistIds.length ? allowedArtistIds : ["00000000-0000-0000-0000-000000000000"]);
+  }
+  const { data: booking, error } = await query.single();
 
   if (error || !booking) {
     return (
