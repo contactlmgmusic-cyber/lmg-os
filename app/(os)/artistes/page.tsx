@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { supabase } from "@/lib/supabase";
+import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
 export default async function ArtistesPage() {
+  const currentProfile = await requireRole([
+    ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR,
+    ROLES.MANAGER, ROLES.ARTISTE,
+  ]);
   const cookieStore = await cookies();
 
   const supabaseAuth = createServerClient(
@@ -22,43 +26,17 @@ export default async function ArtistesPage() {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabaseAuth.auth.getUser();
-
-  const { data: currentProfile } = user
-    ? await supabase
-        .from("profiles")
-        .select("role, artiste_id")
-        .eq("id", user.id)
-        .single()
-    : { data: null };
-
-if (currentProfile?.role === ROLES.PRESTATAIRE) {
-  return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <h1 className="text-3xl font-bold text-red-400">
-        Accès refusé
-      </h1>
-
-      <p className="mt-3 text-zinc-500">
-        Vous n&apos;avez pas accès aux artistes du label.
-      </p>
-    </main>
-  );
-}
-
-  let query = supabase
+  let query = supabaseAuth
     .from("artistes")
     .select("*")
     .order("created_at", { ascending: false });
 
   if (currentProfile?.role === ROLES.MANAGER) {
-    query = query.eq("manager_id", user?.id);
+    query = query.eq("manager_id", currentProfile.id);
   }
-  if (currentProfile?.role === ROLES.ARTISTE && currentProfile?.artiste_id) {
-  query = query.eq("id", currentProfile.artiste_id);
-}
+  if (currentProfile.role === ROLES.ARTISTE) {
+    query = query.eq("id", currentProfile.artiste_id || "00000000-0000-0000-0000-000000000000");
+  }
 
   const { data: artistes, error } = await query;
 
