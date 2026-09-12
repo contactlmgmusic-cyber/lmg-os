@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { supabase } from "@/lib/supabase";
+import { requireRole } from "@/lib/require-role.server";
 import AssetUploader from "@/components/AssetUploader";
 import ProjectComments from "@/components/ProjectComments";
 import PermissionGate from "@/components/PermissionGate";
@@ -14,6 +14,7 @@ export default async function ProjetDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER, ROLES.ARTISTE]);
   const { id } = await params;
 
   const cookieStore = await cookies();
@@ -30,6 +31,7 @@ export default async function ProjetDetailPage({
       },
     }
   );
+  const supabase = supabaseAuth;
 
   const {
     data: { user },
