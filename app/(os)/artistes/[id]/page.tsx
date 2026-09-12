@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { supabase } from "@/lib/supabase";
+import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 import ArtistAnalyticsChart from "@/components/ArtistAnalyticsChart";
 import SpotifyArtistSyncCard from "@/components/SpotifyArtistSyncCard";
@@ -24,6 +24,7 @@ export default async function ArtisteProfilPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const profile = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER, ROLES.ARTISTE]);
   const { id } = await params;
 
   const cookieStore = await cookies();
@@ -40,18 +41,13 @@ export default async function ArtisteProfilPage({
       },
     }
   );
+  const supabase = supabaseAuth;
 
   const {
     data: { user },
   } = await supabaseAuth.auth.getUser();
 
-  const { data: currentProfile } = user
-    ? await supabase
-        .from("profiles")
-        .select("role, artiste_id")
-        .eq("id", user.id)
-        .single()
-    : { data: null };
+  const currentProfile = profile;
 
   const isArtistUser = currentProfile?.role === ROLES.ARTISTE;
   const isOwnArtistProfile =
@@ -65,7 +61,7 @@ export default async function ArtisteProfilPage({
   currentProfile?.role === ROLES.ARTISTIC_DIRECTOR ||
   currentProfile?.role === ROLES.MANAGER;
 
-  const { data: artiste, error } = await supabase
+  let artisteQuery = supabase
     .from("artistes")
     .select(`
       *,
@@ -75,8 +71,10 @@ export default async function ArtisteProfilPage({
         role
       )
     `)
-    .eq("id", id)
-    .single();
+    .eq("id", id);
+  if (profile.role === ROLES.MANAGER) artisteQuery = artisteQuery.eq("manager_id", profile.id);
+  if (profile.role === ROLES.ARTISTE) artisteQuery = artisteQuery.eq("id", profile.artiste_id || "00000000-0000-0000-0000-000000000000");
+  const { data: artiste, error } = await artisteQuery.single();
 
   if (error || !artiste) {
     return (
