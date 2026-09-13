@@ -114,10 +114,11 @@ const bookingsFactures =
   currentProfile?.role === ROLES.MANAGER;
 
   return (
-    <main className="p-10 text-white">
-      <div className="mb-8 flex items-center justify-between">
+    <main className="p-6 text-white md:p-10">
+      <div className="mb-8 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <h1 className="text-4xl font-bold">Booking CRM</h1>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-yellow-400">LMG Entertainment</p>
+          <h1 className="text-4xl font-bold md:text-5xl">Booking CRM</h1>
 
           <p className="mt-2 text-zinc-400">
             {currentProfile?.role === ROLES.MANAGER
