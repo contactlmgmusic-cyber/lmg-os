@@ -3,59 +3,45 @@
 import { useEffect, useState } from "react";
 
 const items = [
-  { href: "#synthese", label: "Synthèse" },
-  { href: "#audience", label: "Audience" },
-  { href: "#performance", label: "Performance" },
-  { href: "#projets-artiste", label: "Projets" },
-  { href: "#finance-artiste", label: "Finance" },
-  { href: "#business-artiste", label: "Business" },
-  { href: "#activite-artiste", label: "Activité" },
+  { id: "overview", label: "Vue d’ensemble" },
+  { id: "audience", label: "Audience" },
+  { id: "performance", label: "Performance & finance" },
+  { id: "operations", label: "Pilotage" },
 ];
 
 export default function ArtistProfileNav() {
   const [active, setActive] = useState("synthese");
 
   useEffect(() => {
-    const targets = items
-      .map((item) => document.getElementById(item.href.slice(1)))
-      .filter((item): item is HTMLElement => Boolean(item));
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-
-        if (visible?.target.id) setActive(visible.target.id);
-      },
-      { rootMargin: "-25% 0px -65% 0px", threshold: [0, 0.25, 0.6] }
-    );
-
-    targets.forEach((target) => observer.observe(target));
-    return () => observer.disconnect();
-  }, []);
+    const panels = document.querySelectorAll<HTMLElement>("[data-artist-panel]");
+    panels.forEach((panel) => {
+      panel.hidden = panel.dataset.artistPanel !== active;
+    });
+    window.history.replaceState(null, "", `#${active}`);
+  }, [active]);
 
   return (
     <nav
       aria-label="Rubriques de la fiche artiste"
-      className="sticky top-[72px] z-20 mb-8 overflow-x-auto border-y border-zinc-900 bg-black/90 py-3 backdrop-blur lg:top-0"
+      className="sticky top-[72px] z-20 mb-8 overflow-x-auto rounded-2xl border border-zinc-800 bg-zinc-950/95 p-2 shadow-2xl backdrop-blur lg:top-4"
     >
-      <div className="flex min-w-max gap-2">
+      <div className="grid min-w-[680px] grid-cols-4 gap-2">
         {items.map((item) => {
-          const selected = active === item.href.slice(1);
+          const selected = active === item.id;
           return (
-            <a
-              key={item.href}
-              href={item.href}
-              onClick={() => setActive(item.href.slice(1))}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+            <button
+              key={item.id}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => setActive(item.id)}
+              className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
                 selected
-                  ? "bg-white text-black"
+                  ? "bg-white text-black shadow-lg"
                   : "text-zinc-500 hover:bg-zinc-900 hover:text-white"
               }`}
             >
               {item.label}
-            </a>
+            </button>
           );
         })}
       </div>
