@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/require-role.server";
 import AssetUploader from "@/components/AssetUploader";
 import ProjectComments from "@/components/ProjectComments";
 import PermissionGate from "@/components/PermissionGate";
+import ProjectProfileNav from "@/components/ProjectProfileNav";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
@@ -345,8 +346,9 @@ const avancement =
         </div>
       </div>
 
-      <section className="p-10">
-       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <section className="mx-auto max-w-[1600px] space-y-8 px-5 py-8 md:px-8 lg:px-10">
+       <ProjectProfileNav />
+       <div data-project-panel="overview" className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
   <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
     <p className="text-sm text-zinc-500">Type</p>
     <p className="mt-2 text-xl font-semibold">
@@ -452,10 +454,10 @@ const avancement =
   </div>
 </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div className="contents">
             {canViewInternalProjectData && (
-              <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+              <div data-project-panel="overview" className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8" hidden>
                 <h2 className="text-3xl font-bold">Notes rollout</h2>
                 <p className="mt-5 leading-relaxed text-zinc-300">
                   {projet.notes || "Aucune note renseignée pour ce projet."}
@@ -464,7 +466,7 @@ const avancement =
             )}
 
             {canViewInternalProjectData && (
-  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div data-project-panel="documents" className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8" hidden>
     <div className="mb-6 flex items-center justify-between">
       <h2 className="text-3xl font-bold">Fichiers du projet</h2>
 
@@ -512,13 +514,15 @@ const avancement =
 )}
 
             {canViewInternalProjectData && !isArtistUser && (
-              <PermissionGate role={currentProfile?.role} permission="assets">
-                <AssetUploader projetId={projet.id} initialAssets={assets || []} />
-              </PermissionGate>
+              <div data-project-panel="documents" hidden>
+                <PermissionGate role={currentProfile?.role} permission="assets">
+                  <AssetUploader projetId={projet.id} initialAssets={assets || []} />
+                </PermissionGate>
+              </div>
             )}
 
             {canViewInternalProjectData && (
-              <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+              <div data-project-panel="production" className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8" hidden>
                 <div className="mb-6 flex items-center justify-between">
                   <h2 className="text-3xl font-bold">Tâches liées</h2>
 
@@ -602,14 +606,13 @@ const avancement =
             )}
 
             {canViewInternalProjectData && (
-              <ProjectComments
-                projetId={projet.id}
-                initialComments={comments || []}
-              />
+              <div data-project-panel="production" hidden>
+                <ProjectComments projetId={projet.id} initialComments={comments || []} />
+              </div>
             )}
 
             {canViewInternalProjectData && (
-              <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+              <div data-project-panel="production" className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8" hidden>
                 <div className="mb-6 flex items-center justify-between">
                   <h2 className="text-3xl font-bold">Timeline rollout</h2>
 
@@ -669,9 +672,9 @@ const avancement =
             </div>
 
           {!isArtistUser && (
-            <aside className="space-y-6">
+            <aside className="contents">
 
-<div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+<div data-project-panel="finance" className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8" hidden>
   <h2 className="mb-6 text-3xl font-bold">
     Budget projet
   </h2>
@@ -733,7 +736,7 @@ const avancement =
   </div>
 </div>
 
-              <div className="mb-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+              <div data-project-panel="diffusion" className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8" hidden>
                 <h2 className="mb-6 text-3xl font-bold">Médias liés</h2>
 
                 {(!medias || medias.length === 0) && (
@@ -763,7 +766,7 @@ const avancement =
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+              <div data-project-panel="finance" className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8" hidden>
   <h2 className="mb-6 text-3xl font-bold">
     Split Sheet
   </h2>
@@ -793,7 +796,7 @@ const avancement =
   </div>
 </div>
 
-              <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+              <div data-project-panel="overview" className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8" hidden>
               <h2 className="text-3xl font-bold">Actions</h2>
 
               <div className="mt-6 space-y-3">
