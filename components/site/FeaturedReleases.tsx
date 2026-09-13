@@ -11,13 +11,9 @@ export default function FeaturedReleases() {
   useEffect(() => {
     async function loadProjects() {
       const { data } = await supabaseBrowser
-        .from("projets")
+        .from("public_projets")
         .select(`
-          id, titre, slug, type, cover_url, date_sortie,
-          artistes (
-            nom,
-            slug
-          )
+          id, titre, slug, type, cover_url, date_sortie, artistes
         `)
         .eq("is_public", true)
         .not("slug", "is", null)

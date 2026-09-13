@@ -15,7 +15,7 @@ export async function generateMetadata({
   const { slug } = await params;
 
   const { data } = await supabase
-    .from("artistes")
+    .from("public_artistes")
     .select("nom, bio, photo_url, spotify_image_url")
     .eq("slug", slug)
     .eq("is_public", true)
@@ -76,7 +76,7 @@ export default async function ArtistPage({
   const { slug } = await params;
 
   const { data: artisteData } = await supabase
-    .from("artistes")
+    .from("public_artistes")
     .select(`
       id, nom, slug, style, ville, bio,
       instagram, tiktok, spotify_url, spotify, youtube_url, youtube,
@@ -101,7 +101,7 @@ export default async function ArtistPage({
     artiste.youtube_image_url;
 
   const { data: projets } = await supabase
-    .from("projets")
+    .from("public_projets")
     .select(`
       id,
       titre,

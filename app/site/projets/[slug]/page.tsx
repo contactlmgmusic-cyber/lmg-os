@@ -23,15 +23,13 @@ export async function generateMetadata({
   const { slug } = await params;
 
   const { data } = await supabase
-    .from("projets")
+    .from("public_projets")
     .select(`
       titre,
       description,
       cover_url,
       hero_image_url,
-      artistes (
-        nom
-      )
+      artistes
     `)
     .eq("slug", slug)
     .eq("is_public", true)
@@ -103,18 +101,11 @@ export default async function ProjectPage({
   const { slug } = await params;
 
   const { data } = await supabase
-    .from("projets")
+    .from("public_projets")
     .select(`
       id, artiste_id, titre, slug, type, cover_url, hero_image_url,
       date_sortie, description, credits, spotify_url, apple_music_url, youtube_url,
-      artistes (
-        id,
-        nom,
-        slug,
-        style,
-        photo_url,
-        spotify_image_url
-      )
+      artistes
     `)
     .eq("slug", slug)
     .eq("is_public", true)
@@ -481,7 +472,7 @@ async function OtherReleases({
   }
 
   const { data: releases } = await supabase
-    .from("projets")
+    .from("public_projets")
     .select(`
       id,
       titre,

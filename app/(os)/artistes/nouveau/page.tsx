@@ -34,6 +34,22 @@ export default function NouvelArtistePage() {
 
     setLoading(true);
 
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
+
+    if (!user) {
+      alert("Votre session a expiré. Reconnectez-vous.");
+      setLoading(false);
+      return;
+    }
+
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
     const { data: artiste, error } = await supabaseBrowser
       .from("artistes")
       .insert({
@@ -43,6 +59,7 @@ export default function NouvelArtistePage() {
         statut,
         bio,
         photo_url: photoUrl,
+        manager_id: profile?.role === "manager" ? user.id : null,
       })
       .select()
       .single();

@@ -61,7 +61,7 @@ export default async function ReleasesPage({
   const selectedType = filters.type;
 
   const { data } = await supabase
-    .from("projets")
+    .from("public_projets")
     .select(`
       id,
       titre,
@@ -71,10 +71,7 @@ export default async function ReleasesPage({
       hero_image_url,
       date_sortie,
       featured,
-      artistes (
-        nom,
-        slug
-      )
+      artistes
     `)
     .eq("is_public", true)
     .not("slug", "is", null)

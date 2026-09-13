@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default async function ArtistsPage() {
   const { data: artists } = await supabase
-    .from("artistes")
+    .from("public_artistes")
     .select(`
       id,
       nom,
