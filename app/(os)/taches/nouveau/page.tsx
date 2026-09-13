@@ -27,7 +27,7 @@ function getSupabaseServerClient() {
 export default async function NouvelleTachePage() {
   const supabaseServer = getSupabaseServerClient();
 
-  const [{ data: profiles, error: profilesError }, { data: projets, error: projetsError }] =
+  const [{ data: profiles, error: profilesError }, { data: projets, error: projetsError }, { data: internalProjects, error: internalProjectsError }] =
     await Promise.all([
       supabaseServer
         .from("profiles")
@@ -38,6 +38,11 @@ export default async function NouvelleTachePage() {
         .from("projets")
         .select("id, titre")
         .order("titre", { ascending: true }),
+      supabaseServer
+        .from("internal_projects")
+        .select("id, titre")
+        .not("statut", "in", '("Terminé","Archivé")')
+        .order("titre", { ascending: true }),
     ]);
 
   if (profilesError) {
@@ -46,6 +51,10 @@ export default async function NouvelleTachePage() {
 
   if (projetsError) {
     console.error("Erreur chargement projets :", projetsError);
+  }
+
+  if (internalProjectsError) {
+    console.error("Erreur chargement projets internes :", internalProjectsError);
   }
 
   return (
@@ -61,6 +70,7 @@ export default async function NouvelleTachePage() {
       <NewTaskForm
         profiles={profiles ?? []}
         projets={projets ?? []}
+        internalProjects={internalProjects ?? []}
       />
     </main>
   );

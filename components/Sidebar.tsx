@@ -49,6 +49,7 @@ const executiveSections: SidebarSection[] = [
     eyebrow: "03",
     links: [
       { href: "/projets", label: "Tous les projets" },
+      { href: "/projets-internes", label: "Projets internes" },
       { href: "/sorties", label: "Catalogue des sorties" },
       { href: "/release-planner", label: "Planning des sorties" },
       { href: "/rollout", label: "Rollouts" },
@@ -125,6 +126,7 @@ const artisticDirectorSections: SidebarSection[] = [
     eyebrow: "03",
     links: [
       { href: "/projets", label: "Tous les projets" },
+      { href: "/projets-internes", label: "Projets internes" },
       { href: "/sorties", label: "Catalogue des sorties" },
       { href: "/release-planner", label: "Planning des sorties" },
       { href: "/rollout", label: "Rollouts" },
@@ -178,6 +180,7 @@ const managerSections: SidebarSection[] = [
     eyebrow: "03",
     links: [
       { href: "/projets", label: "Projets" },
+      { href: "/projets-internes", label: "Projets internes" },
       { href: "/sorties", label: "Sorties" },
       { href: "/release-planner", label: "Planning" },
       { href: "/rollout", label: "Rollouts" },
@@ -468,5 +471,6 @@ function isActiveLink(pathname: string, href: string) {
   if (href === "/dashboard" || href === "/manager" || href === "/chat") return pathname === href;
   if (href === "/artistes") return pathname === href || /^\/artistes\/[^/]+/.test(pathname);
   if (href === "/projets") return pathname === href || /^\/projets\/[^/]+/.test(pathname);
+  if (href === "/projets-internes") return pathname === href || pathname.startsWith("/projets-internes/");
   return pathname === href || pathname.startsWith(`${href}/`);
 }

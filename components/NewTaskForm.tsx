@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabaseBrowser } from "../lib/supabase-browser";
 
 type Profile = {
@@ -16,9 +16,11 @@ type Projet = {
 export default function NewTaskForm({
   profiles,
   projets,
+  internalProjects,
 }: {
   profiles: Profile[];
   projets: Projet[];
+  internalProjects: Projet[];
 }) {
   const [titre, setTitre] = useState("");
   const [description, setDescription] = useState("");
@@ -28,7 +30,12 @@ export default function NewTaskForm({
   const [responsableId, setResponsableId] = useState("");
   const [participantIds, setParticipantIds] = useState<string[]>([]);
   const [projetId, setProjetId] = useState("");
+  const [internalProjectId, setInternalProjectId] = useState("");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setInternalProjectId(new URLSearchParams(window.location.search).get("internal_project_id") || "");
+  }, []);
 
   function toggleParticipant(profileId: string) {
     setParticipantIds((current) =>
@@ -57,6 +64,7 @@ export default function NewTaskForm({
             deadline: deadline || null,
             responsable_id: responsableId || null,
             projet_id: projetId || null,
+            internal_project_id: internalProjectId || null,
           })
           .select("id")
           .single();
@@ -265,6 +273,15 @@ window.location.href = "/taches";
           Le responsable principal sera automatiquement ajouté aux
           participants.
         </p>
+      </div>
+
+      <div>
+        <label htmlFor="internal-project" className="mb-2 block text-sm font-medium text-zinc-400">Projet interne lié</label>
+        <select id="internal-project" value={internalProjectId} onChange={(e) => setInternalProjectId(e.target.value)} className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white">
+          <option value="">Aucun projet interne lié</option>
+          {internalProjects.map((project) => <option key={project.id} value={project.id}>{project.titre || "Projet interne sans titre"}</option>)}
+        </select>
+        <p className="mt-2 text-xs text-zinc-500">À utiliser pour les sujets de structure, stratégie, administration ou développement LMG.</p>
       </div>
 
       <div className="rounded-2xl border border-zinc-800 bg-black p-5">
