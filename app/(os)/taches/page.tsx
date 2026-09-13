@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import KanbanBoard from "@/components/KanbanBoard";
+import TaskWorkspace from "@/components/TaskWorkspace";
 import { ROLES } from "@/lib/roles";
 import { requireRole } from "@/lib/require-role.server";
 
@@ -74,16 +74,21 @@ export default async function TachesPage() {
   currentProfile?.role === ROLES.MANAGER;
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <div className="mb-10 flex items-center justify-between gap-6">
+    <main className="min-h-screen bg-black p-6 text-white md:p-10">
+      <div className="mb-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <h1 className="text-5xl font-bold">Tâches</h1>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-yellow-400">Pilotage opérationnel</p>
+          <h1 className="text-4xl font-bold md:text-5xl">Centre de travail</h1>
 
           <p className="mt-3 text-zinc-400">
-            Pilotage opérationnel des tâches LMG
+            Priorisez, assignez et suivez l’avancement de toute l’équipe LMG.
           </p>
         </div>
 
+        <div className="flex flex-wrap gap-3">
+          <Link href="/rollout" className="rounded-xl border border-zinc-700 px-5 py-3 font-medium text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900">
+            Ouvrir le rollout
+          </Link>
         {canCreateTask && (
           <Link
             href="/taches/nouveau"
@@ -92,9 +97,10 @@ export default async function TachesPage() {
             + Nouvelle tâche
           </Link>
         )}
+        </div>
       </div>
 
-      <KanbanBoard taches={taches || []} />
+      <TaskWorkspace tasks={(taches || []) as any} currentUserId={currentProfile?.id} />
     </main>
   );
 }
