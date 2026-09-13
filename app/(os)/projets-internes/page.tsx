@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
+import InternalProjectsDirectory from "@/components/InternalProjectsDirectory";
 
 export const dynamic = "force-dynamic";
 const allowed = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER];
@@ -17,9 +18,8 @@ export default async function InternalProjectsPage() {
     <main className="p-6 text-white md:p-10">
       <div className="mb-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between"><div><p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-yellow-400">Organisation LMG</p><h1 className="text-4xl font-bold md:text-5xl">Projets internes</h1><p className="mt-3 text-zinc-400">Centralisez les briefs, consignes, décisions et ressources de l’équipe.</p></div><Link href="/projets-internes/nouveau" className="rounded-xl bg-white px-5 py-3 font-medium text-black">+ Nouveau projet interne</Link></div>
       <section className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3"><Kpi label="Projets actifs" value={active} /><Kpi label="Priorités urgentes" value={urgent} accent /><Kpi label="Total" value={(projects || []).length} /></section>
-      {!projects?.length ? <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-10 text-center"><p className="text-zinc-400">Aucun projet interne pour le moment.</p><Link href="/projets-internes/nouveau" className="mt-5 inline-block text-yellow-400">Créer le premier projet →</Link></div> : <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{projects.map((project: any) => <Link key={project.id} href={`/projets-internes/${project.id}`} className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6 transition hover:border-zinc-600"><div className="flex items-start justify-between gap-4"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-yellow-400">{project.categorie || "Projet interne"}</p><span className="rounded-full bg-black px-3 py-1 text-xs text-zinc-400">{project.statut}</span></div><h2 className="mt-5 text-2xl font-bold">{project.titre}</h2><p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-400">{project.objectif || "Objectif à définir."}</p><div className="mt-6 flex items-center justify-between border-t border-zinc-800 pt-4 text-sm"><span className="text-zinc-500">{project.owner?.nom || project.owner?.full_name || "Non attribué"}</span><span className={project.priorite === "Urgente" ? "text-red-400" : "text-zinc-400"}>{project.priorite}</span></div></Link>)}</div>}
+      {!projects?.length ? <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-10 text-center"><p className="text-zinc-400">Aucun projet interne pour le moment.</p><Link href="/projets-internes/nouveau" className="mt-5 inline-block text-yellow-400">Créer le premier projet →</Link></div> : <InternalProjectsDirectory projects={projects as any} />}
     </main>
   );
 }
 function Kpi({ label, value, accent = false }: { label: string; value: number; accent?: boolean }) { return <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6"><p className="text-sm text-zinc-500">{label}</p><p className={`mt-3 text-4xl font-bold ${accent ? "text-red-400" : "text-white"}`}>{value}</p></div>; }
-

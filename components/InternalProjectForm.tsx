@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { categoriesForPole, INTERNAL_PROJECT_POLES } from "@/lib/internal-project-taxonomy";
 
 type Profile = { id: string; nom: string | null; full_name?: string | null };
 type Project = {
-  id?: string; titre?: string | null; categorie?: string | null; statut?: string | null;
+  id?: string; titre?: string | null; pole?: string | null; categorie?: string | null; statut?: string | null;
   priorite?: string | null; objectif?: string | null; contexte?: string | null;
   perimetre?: string | null; criteres_reussite?: string | null; risques?: string | null; progression?: number | null;
   consignes?: string | null; decisions?: string | null; ressources?: string | null;
@@ -16,7 +17,7 @@ type Project = {
 export default function InternalProjectForm({ profiles, project }: { profiles: Profile[]; project?: Project }) {
   const router = useRouter();
   const [form, setForm] = useState({
-    titre: project?.titre || "", categorie: project?.categorie || "", statut: project?.statut || "À cadrer",
+    titre: project?.titre || "", pole: project?.pole || "Direction", categorie: project?.categorie || "Organisation interne", statut: project?.statut || "À cadrer",
     priorite: project?.priorite || "Moyenne", objectif: project?.objectif || "", contexte: project?.contexte || "",
     perimetre: project?.perimetre || "", criteres_reussite: project?.criteres_reussite || "", risques: project?.risques || "", progression: String(project?.progression || 0),
     consignes: project?.consignes || "", decisions: project?.decisions || "", ressources: project?.ressources || "",
@@ -38,7 +39,11 @@ export default function InternalProjectForm({ profiles, project }: { profiles: P
   const fieldClass = "w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white outline-none focus:border-zinc-600";
   return (
     <form onSubmit={submit} className="space-y-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-6 xl:p-8">
-      <div className="grid gap-5 md:grid-cols-2"><label className="space-y-2"><span className="text-sm text-zinc-400">Nom du projet *</span><input required value={form.titre} onChange={(e) => update("titre", e.target.value)} className={fieldClass} placeholder="Ex. Structuration commerciale LMG" /></label><label className="space-y-2"><span className="text-sm text-zinc-400">Catégorie</span><input value={form.categorie} onChange={(e) => update("categorie", e.target.value)} className={fieldClass} placeholder="Stratégie, administratif, événement..." /></label></div>
+      <div className="grid gap-5 xl:grid-cols-3">
+        <label className="space-y-2 xl:col-span-1"><span className="text-sm text-zinc-400">Nom du projet *</span><input required value={form.titre} onChange={(e) => update("titre", e.target.value)} className={fieldClass} placeholder="Ex. Structuration & Pilotage LMG" /></label>
+        <label className="space-y-2"><span className="text-sm text-zinc-400">Pôle *</span><select required value={form.pole} onChange={(e) => { const nextPole = e.target.value; setForm((current) => ({ ...current, pole: nextPole, categorie: categoriesForPole(nextPole)[0] || "" })); }} className={fieldClass}>{INTERNAL_PROJECT_POLES.map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label className="space-y-2"><span className="text-sm text-zinc-400">Catégorie *</span><select required value={form.categorie} onChange={(e) => update("categorie", e.target.value)} className={fieldClass}>{!categoriesForPole(form.pole).includes(form.categorie as never) && form.categorie ? <option>{form.categorie}</option> : null}{categoriesForPole(form.pole).map((value) => <option key={value}>{value}</option>)}</select></label>
+      </div>
       <label className="block space-y-2"><span className="text-sm text-zinc-400">Objectif principal</span><textarea value={form.objectif} onChange={(e) => update("objectif", e.target.value)} className={`${fieldClass} min-h-28`} placeholder="Le résultat concret que ce projet doit produire." /></label>
       <label className="block space-y-2"><span className="text-sm text-zinc-400">Contexte et base de travail</span><textarea value={form.contexte} onChange={(e) => update("contexte", e.target.value)} className={`${fieldClass} min-h-40`} placeholder="Point de départ, historique, informations utiles..." /></label>
       <div className="grid gap-5 xl:grid-cols-2"><label className="space-y-2"><span className="text-sm text-zinc-400">Périmètre du projet</span><textarea value={form.perimetre} onChange={(e) => update("perimetre", e.target.value)} className={`${fieldClass} min-h-36`} placeholder="Ce qui est inclus, exclu et les limites du projet..." /></label><label className="space-y-2"><span className="text-sm text-zinc-400">Critères de réussite</span><textarea value={form.criteres_reussite} onChange={(e) => update("criteres_reussite", e.target.value)} className={`${fieldClass} min-h-36`} placeholder="Comment saurons-nous que le projet est réussi ?" /></label></div>
