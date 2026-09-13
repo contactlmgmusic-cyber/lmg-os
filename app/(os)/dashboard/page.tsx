@@ -616,6 +616,14 @@ if (checkingAccess) {
   );
 }
 
+const priorityCount =
+  lateTasks.length +
+  urgentReleases.length +
+  stats.contratsASigner +
+  stats.validationsArtisteEnAttente +
+  stats.validationsContratsEnAttente +
+  stats.mediasRelanceAujourdhui;
+
 const healthPenalty =
   lateTasks.length * 5 +
   stats.contratsASigner * 3 +
@@ -624,926 +632,441 @@ const healthPenalty =
   stats.mediasRelanceAujourdhui;
 
 const healthScore = Math.max(0, 100 - healthPenalty);
-
 const healthLabel =
-  healthScore >= 80
-    ? "Excellent"
-    : healthScore >= 60
-    ? "À surveiller"
-    : "Critique";
+  healthScore >= 80 ? "Maîtrisée" : healthScore >= 60 ? "À surveiller" : "Prioritaire";
 
-const healthTone =
-  healthScore >= 80
-    ? "border-green-500/30 bg-green-500/10 text-green-300"
-    : healthScore >= 60
-    ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-300"
-    : "border-red-500/30 bg-red-500/10 text-red-300";
+const todayLabel = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+}).format(new Date());
 
-  return (
-  <main className="min-h-screen bg-black p-10 text-white">
-
-    {/* HEADER */}
-
-    <div className="mb-10">
-      <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-        Legacy Music Group
-      </p>
-
-      <h1 className="mt-3 text-6xl font-bold">
-        Executive Dashboard
-      </h1>
-
-      <p className="mt-3 max-w-2xl text-zinc-400">
-        Vue stratégique du label : performance artistique, business,
-        finance et opérations.
-      </p>
-    </div>
-
-
-    {/* EXECUTIVE OVERVIEW */}
-
-    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-
+return (
+  <main className="min-h-screen bg-black px-5 py-8 text-white md:px-8 lg:px-10 lg:py-10">
+    <div className="mx-auto max-w-[1600px]">
+      <header className="flex flex-col gap-6 border-b border-zinc-900 pb-8 xl:flex-row xl:items-end xl:justify-between">
         <div>
-
-          <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-            LMG Executive Score
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-yellow-500">
+            Cockpit de direction
           </p>
-
-          <h2 className="mt-3 text-6xl font-bold">
-            {stats.lmgGlobalScore}
-            <span className="text-3xl text-zinc-500">
-              /100
-            </span>
-          </h2>
-
-          <p className="mt-3 text-lg text-zinc-400">
-            Performance globale du label
-          </p>
-
-          <div
-  className={`mt-6 inline-flex items-center gap-3 rounded-full border px-4 py-2 ${healthTone}`}
->
-  <span className="text-sm font-semibold">
-    Santé opérationnelle : {healthLabel}
-  </span>
-
-  <span className="text-sm font-black">
-    {healthScore}/100
-  </span>
-</div>
-
+          <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-6xl">
+            Vue d’ensemble
+          </h1>
+          <p className="mt-3 text-sm capitalize text-zinc-500">{todayLabel}</p>
         </div>
 
+        <div className="flex flex-wrap gap-3">
+          <QuickAction href="/projets/nouveau" label="Nouveau projet" primary />
+          <QuickAction href="/taches/nouveau" label="Nouvelle tâche" />
+          <QuickAction href="/calendrier/global" label="Voir le calendrier" />
+        </div>
+      </header>
 
-        <div className="w-full lg:w-[420px]">
+      <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          eyebrow="Résultat du mois"
+          value={formatCurrency(stats.resultatMois)}
+          detail={`${formatCurrency(stats.revenusMois)} encaissés`}
+          tone={stats.resultatMois >= 0 ? "positive" : "danger"}
+          href="/finances/dashboard"
+        />
+        <MetricCard
+          eyebrow="Artistes actifs"
+          value={stats.artistes}
+          detail={`${stats.managersActifs} manager${stats.managersActifs > 1 ? "s" : ""}`}
+          href="/artistes"
+        />
+        <MetricCard
+          eyebrow="Projets suivis"
+          value={stats.projets}
+          detail={`${stats.sortiesMois} sortie${stats.sortiesMois > 1 ? "s" : ""} ce mois`}
+          href="/projets"
+        />
+        <MetricCard
+          eyebrow="Actions requises"
+          value={priorityCount}
+          detail={priorityCount > 0 ? "Décisions à prendre" : "Aucune urgence"}
+          tone={priorityCount > 0 ? "warning" : "positive"}
+          href="/taches"
+        />
+      </section>
 
-          <div className="h-4 overflow-hidden rounded-full bg-black">
+      <section className="mt-8 grid gap-6 xl:grid-cols-[1.55fr_0.85fr]">
+        <div className="rounded-[28px] border border-zinc-800 bg-zinc-950 p-5 md:p-7">
+          <SectionHeading
+            eyebrow="Priorités"
+            title="À traiter maintenant"
+            description="Les points qui demandent une attention aujourd’hui."
+          />
 
-            <div
-              className="h-full rounded-full bg-white transition-all"
-              style={{
-                width: `${stats.lmgGlobalScore}%`,
-              }}
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <PriorityCard
+              label="Tâches en retard"
+              value={lateTasks.length}
+              href="/taches"
+              urgent={lateTasks.length > 0}
             />
-
-          </div>
-
-
-          <div className="mt-6 grid grid-cols-2 gap-4">
-
-            <MiniStat
-              label="Managers"
-              value={stats.managersActifs}
+            <PriorityCard
+              label="Contrats à signer"
+              value={stats.contratsASigner}
+              href="/contrats"
+              urgent={stats.contratsASigner > 0}
             />
-
-            <MiniStat
-              label="Artistes"
-              value={stats.artistes}
+            <PriorityCard
+              label="Sorties à moins de 7 jours"
+              value={urgentReleases.length}
+              href="/release-planner"
+              urgent={urgentReleases.length > 0}
             />
-
-            <MiniStat
-              label="Validations"
+            <PriorityCard
+              label="Validations en attente"
               value={
                 stats.validationsArtisteEnAttente +
                 stats.validationsContratsEnAttente
               }
-            />
-
-            <MiniStat
-              label="Sorties"
-              value={stats.sortiesMois}
-            />
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    {/* FINANCE KPI */}
-
-    <section className="mb-10">
-
-      <div className="mb-5">
-
-        <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-          Performance financière
-        </p>
-
-        <h2 className="mt-2 text-3xl font-bold">
-          Business Overview
-        </h2>
-
-      </div>
-
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-
-
-        <KpiCard
-          label="CA du mois"
-          value={`${stats.revenusMois.toFixed(2)} €`}
-          tone="green"
-        />
-
-
-        <KpiCard
-          label="Dépenses"
-          value={`${stats.depensesMois.toFixed(2)} €`}
-          tone="red"
-        />
-
-
-        <KpiCard
-          label="Résultat"
-          value={`${stats.resultatMois.toFixed(2)} €`}
-          tone={
-            stats.resultatMois >= 0
-              ? "green"
-              : "red"
-          }
-        />
-
-
-      </div>
-
-    </section>
-
-  
-    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-
-  <div className="mb-6">
-    <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-      Priorités opérationnelles
-    </p>
-
-    <h2 className="mt-2 text-3xl font-bold">
-      À traiter maintenant
-    </h2>
-  </div>
-
-
-  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5">
-
-    <AlertCard
-      label="Tâches en retard"
-      value={lateTasks.length}
-      href="/taches"
-      danger={lateTasks.length > 0}
-    />
-
-    <AlertCard
-      label="Contrats à signer"
-      value={stats.contratsASigner}
-      href="/contrats"
-      danger={stats.contratsASigner > 0}
-    />
-
-    <AlertCard
-      label="Sorties J-7"
-      value={urgentReleases.length}
-      href="/projets"
-      danger={urgentReleases.length > 0}
-    />
-
-    <AlertCard
-      label="Royalties dues"
-      value={Math.round(stats.royaltiesDues)}
-      href="/royalties"
-      danger={stats.royaltiesDues > 0}
-    />
-
-    <AlertCard
-      label="Relances médias"
-      value={stats.mediasRelanceAujourdhui}
-      href="/medias/dashboard"
-      danger={stats.mediasRelanceAujourdhui > 0}
-    />
-
-  </div>
-
-</section>
-
-    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-
-  <div className="mb-6 flex items-center justify-between">
-
-    <div>
-      <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-        Releases
-      </p>
-
-      <h2 className="mt-2 text-3xl font-bold">
-        Release Performance
-      </h2>
-    </div>
-
-
-    <Link
-      href="/release-planner"
-      className="text-sm text-zinc-400 hover:text-white"
-    >
-      Ouvrir →
-    </Link>
-
-  </div>
-
-
-  <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-
-    <MiniStat
-      label="Actions release"
-      value={stats.releaseTasksTotal}
-    />
-
-    <MiniStat
-      label="Terminées"
-      value={stats.releaseTasksDone}
-    />
-
-    <MiniStat
-      label="Progression"
-      value={`${stats.releaseProgressMoyenne}%`}
-    />
-
-  </div>
-
-</section>
-
-   <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-
-  <div className="mb-6 flex items-center justify-between">
-
-    <div>
-      <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-        Pipeline artistes
-      </p>
-
-      <h2 className="mt-2 text-3xl font-bold">
-        Candidatures
-      </h2>
-    </div>
-
-
-    <Link
-      href="/dashboard/candidatures"
-      className="text-sm text-zinc-400 hover:text-white"
-    >
-      Voir tout →
-    </Link>
-
-  </div>
-
-
-  <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-
-    <MiniStat
-      label="Nouvelles"
-      value={stats.nouvellesCandidatures}
-    />
-
-    <MiniStat
-      label="En étude"
-      value={stats.candidaturesEnEtude}
-    />
-
-    <MiniStat
-      label="Signées"
-      value={stats.candidaturesSignees}
-    />
-
-  </div>
-
-
-  <div className="space-y-3">
-
-    {latestCandidatures.length === 0 && (
-      <p className="text-zinc-500">
-        Aucune candidature récente.
-      </p>
-    )}
-
-
-    {latestCandidatures.map((candidature:any)=>(
-      
-      <Link
-        key={candidature.id}
-        href={`/dashboard/candidatures/${candidature.id}`}
-        className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black p-5 transition hover:border-zinc-600"
-      >
-
-        <div>
-
-          <h3 className="font-semibold">
-            {candidature.nom_artiste || "Artiste"}
-          </h3>
-
-          <p className="mt-1 text-sm text-zinc-500">
-            {candidature.ville || "Ville inconnue"}
-          </p>
-
-        </div>
-
-
-        <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-400">
-          {candidature.statut}
-        </span>
-
-
-      </Link>
-
-    ))}
-
-  </div>
-
-</section>
-
-    <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-
-  <div className="mb-6 flex items-center justify-between">
-
-    <div>
-
-      <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-        Releases
-      </p>
-
-      <h2 className="mt-2 text-3xl font-bold">
-        Calendrier sorties
-      </h2>
-
-    </div>
-
-
-    <Link
-      href="/projets"
-      className="text-sm text-zinc-400 hover:text-white"
-    >
-      Voir tout →
-    </Link>
-
-  </div>
-
-
-  {next30Projects.length === 0 && (
-    <p className="text-zinc-500">
-      Aucune sortie prévue dans les 30 prochains jours.
-    </p>
-  )}
-
-
-  <div className="space-y-3">
-
-    {next30Projects.map((project:any)=>{
-
-      const releaseDate = new Date(project.date_sortie);
-      const now = new Date();
-
-      const diffTime =
-        releaseDate.getTime() - now.getTime();
-
-      const diffDays =
-        Math.ceil(
-          diffTime / (1000 * 60 * 60 * 24)
-        );
-
-
-      const urgent = diffDays <= 7;
-
-
-      return (
-
-        <Link
-          key={project.id}
-          href={`/projets/${project.id}`}
-          className={`flex items-center justify-between rounded-2xl border p-5 transition hover:border-zinc-500 ${
-            urgent
-              ? "border-yellow-500/40 bg-yellow-500/10"
-              : "border-zinc-800 bg-black"
-          }`}
-        >
-
-          <div>
-
-            <h3 className="font-semibold">
-              {project.titre}
-            </h3>
-
-            <p className="mt-1 text-sm text-zinc-500">
-              {project.date_sortie} • {project.statut || "En préparation"}
-            </p>
-
-          </div>
-
-
-          <div className="text-right">
-
-            <p
-              className={
-                urgent
-                  ? "text-yellow-300 font-semibold"
-                  : "text-zinc-400"
+              href="/validations-artiste"
+              urgent={
+                stats.validationsArtisteEnAttente +
+                  stats.validationsContratsEnAttente >
+                0
               }
+            />
+            <PriorityCard
+              label="Relances médias aujourd’hui"
+              value={stats.mediasRelanceAujourdhui}
+              href="/medias/dashboard"
+              urgent={stats.mediasRelanceAujourdhui > 0}
+            />
+            <PriorityCard
+              label="Royalties à payer"
+              value={formatCurrency(stats.royaltiesDues)}
+              href="/royalties"
+              urgent={stats.royaltiesDues > 0}
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col justify-between rounded-[28px] border border-zinc-800 bg-white p-6 text-black md:p-8">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-zinc-500">
+              Santé opérationnelle
+            </p>
+            <div className="mt-5 flex items-end justify-between gap-4">
+              <p className="text-7xl font-black tracking-tighter">{healthScore}</p>
+              <p className="pb-2 text-sm font-semibold text-zinc-500">/100</p>
+            </div>
+            <p className="mt-3 text-xl font-bold">{healthLabel}</p>
+          </div>
+
+          <div className="mt-10">
+            <div className="h-2 overflow-hidden rounded-full bg-zinc-200">
+              <div
+                className={`h-full rounded-full ${
+                  healthScore >= 80
+                    ? "bg-green-500"
+                    : healthScore >= 60
+                    ? "bg-yellow-500"
+                    : "bg-red-500"
+                }`}
+                style={{ width: `${healthScore}%` }}
+              />
+            </div>
+            <div className="mt-6 grid grid-cols-3 gap-3 border-t border-zinc-200 pt-5">
+              <HealthStat label="Score LMG" value={stats.lmgGlobalScore} />
+              <HealthStat label="Tâches" value={stats.taches} />
+              <HealthStat label="Sorties" value={stats.sortiesMois} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-8 rounded-[28px] border border-zinc-800 bg-zinc-950 p-5 md:p-7">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <SectionHeading
+            eyebrow="Finance"
+            title="Performance du label"
+            description="Revenus, dépenses et évolution sur les six derniers mois."
+          />
+          <Link
+            href="/finances/dashboard"
+            className="w-fit rounded-xl border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+          >
+            Ouvrir la finance →
+          </Link>
+        </div>
+
+        <div className="mt-7 grid gap-6 xl:grid-cols-[1fr_2fr]">
+          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+            <FinanceLine label="Chiffre d’affaires" value={stats.revenusMois} positive />
+            <FinanceLine label="Dépenses" value={stats.depensesMois} />
+            <FinanceLine
+              label="Résultat net"
+              value={stats.resultatMois}
+              positive={stats.resultatMois >= 0}
+              highlighted
+            />
+          </div>
+          <div className="min-w-0 overflow-hidden rounded-2xl border border-zinc-900 bg-black p-4">
+            <RevenueChart data={revenueChartData} />
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <SectionHeading
+          eyebrow="Opérations"
+          title="Ce qui avance"
+          description="Une lecture directe des prochaines échéances du label."
+        />
+
+        <div className="mt-6 grid gap-6 xl:grid-cols-3">
+          <ActionPanel title="Prochaines sorties" href="/release-planner">
+            {next30Projects.length === 0 ? (
+              <EmptyState text="Aucune sortie prévue dans les 30 prochains jours." />
+            ) : (
+              next30Projects.slice(0, 5).map((project: any) => (
+                <ProjectRow key={project.id} project={project} />
+              ))
+            )}
+          </ActionPanel>
+
+          <ActionPanel title="Tâches prioritaires" href="/taches">
+            {[...lateTasks, ...urgentTasks]
+              .filter(
+                (task: any, index: number, items: any[]) =>
+                  items.findIndex((item) => item.id === task.id) === index
+              )
+              .slice(0, 5)
+              .map((task: any) => (
+                <ItemRow
+                  key={task.id}
+                  href={`/taches/${task.id}`}
+                  title={task.titre}
+                  meta={task.deadline || "Sans échéance"}
+                  status={task.priorite || "Priorité normale"}
+                  danger={
+                    Boolean(task.deadline) &&
+                    new Date(task.deadline).getTime() < Date.now()
+                  }
+                />
+              ))}
+            {lateTasks.length === 0 && urgentTasks.length === 0 && (
+              <EmptyState text="Aucune tâche prioritaire." />
+            )}
+          </ActionPanel>
+
+          <ActionPanel title="Relances commerciales" href="/booking">
+            {followUps.slice(0, 3).map((booking: any) => (
+              <ItemRow
+                key={booking.id}
+                href={`/booking/${booking.id}`}
+                title={booking.evenement}
+                meta={booking.prochaine_relance || "Date non renseignée"}
+                status="Booking"
+              />
+            ))}
+            {mediaFollowUps.slice(0, 2).map((media: any) => (
+              <ItemRow
+                key={media.id}
+                href={`/medias/${media.id}`}
+                title={media.nom}
+                meta={media.prochaine_relance || "Date non renseignée"}
+                status="Média"
+              />
+            ))}
+            {followUps.length === 0 && mediaFollowUps.length === 0 && (
+              <EmptyState text="Aucune relance à effectuer." />
+            )}
+          </ActionPanel>
+        </div>
+      </section>
+
+      <section className="mt-8 grid gap-6 xl:grid-cols-[1fr_1.4fr]">
+        <ActionPanel title="Pipeline artistes" href="/dashboard/candidatures">
+          <div className="grid grid-cols-3 gap-2 pb-3">
+            <PipelineStat label="Nouvelles" value={stats.nouvellesCandidatures} />
+            <PipelineStat label="En étude" value={stats.candidaturesEnEtude} />
+            <PipelineStat label="Signées" value={stats.candidaturesSignees} />
+          </div>
+          {latestCandidatures.slice(0, 3).map((item: any) => (
+            <ItemRow
+              key={item.id}
+              href={`/dashboard/candidatures/${item.id}`}
+              title={item.nom_artiste || "Artiste"}
+              meta={item.ville || "Ville non renseignée"}
+              status={item.statut || "Nouvelle"}
+            />
+          ))}
+        </ActionPanel>
+
+        <ActionPanel title="Activité récente" href="/activity">
+          {activityLogs.slice(0, 5).map((log) => (
+            <div
+              key={log.id}
+              className="flex items-start gap-4 border-b border-zinc-900 py-3 last:border-0"
             >
-              {diffDays <= 0
-                ? "Aujourd'hui"
-                : `J-${diffDays}`
-              }
-            </p>
-
-
-          </div>
-
-
-        </Link>
-
-      );
-
-    })}
-
-  </div>
-
-</section>
-
-    <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-      <KpiCard label="Royalties à payer" value={`${stats.royaltiesDues.toFixed(2)} €`} tone="red" />
-      <KpiCard label="Royalties payées" value={`${stats.royaltiesPayees.toFixed(2)} €`} tone="green" />
+              <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-yellow-500" />
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">{log.titre || "Action"}</p>
+                <p className="mt-1 truncate text-sm text-zinc-500">
+                  {log.description || log.type || "Activité LMG"}
+                </p>
+              </div>
+              <time className="shrink-0 text-xs text-zinc-600">
+                {formatShortDate(log.created_at)}
+              </time>
+            </div>
+          ))}
+          {activityLogs.length === 0 && (
+            <EmptyState text="Aucune activité récente." />
+          )}
+        </ActionPanel>
+      </section>
     </div>
-
-    <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3 xl:grid-cols-6">
-  <KpiCard
-    label="Streams totaux"
-    value={stats.streamsTotaux.toLocaleString("fr-FR")}
-  />
-
-  <KpiCard
-    label="Followers totaux"
-    value={stats.followersTotaux.toLocaleString("fr-FR")}
-  />
-
-  <KpiCard
-    label="Vues totales"
-    value={stats.vuesTotales.toLocaleString("fr-FR")}
-  />
-
-  <KpiCard
-    label="Revenus analytics"
-    value={`${stats.revenusAnalytics.toFixed(2)} €`}
-    tone="green"
-  />
-
-  <KpiCard
-    label="Sorties ce mois"
-    value={stats.sortiesMois}
-  />
-
-  <KpiCard
-    label="ROI moyen"
-    value={`${stats.roiMoyen}%`}
-    tone={stats.roiMoyen >= 0 ? "green" : "red"}
-  />
-</div>
-
-    <RevenueChart data={revenueChartData} />
-
-    <div className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-4">
-      <Panel title="Sorties à venir" href="/projets">
-        {upcomingProjects.length === 0 && <p className="text-zinc-500">Aucune sortie planifiée.</p>}
-
-        {upcomingProjects.map((project) => (
-          <Link key={project.id} href={`/projets/${project.id}`} className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600">
-            <h3 className="text-lg font-semibold">{project.titre}</h3>
-            <p className="mt-2 text-sm text-zinc-500">
-              {project.date_sortie || "Date non renseignée"} • {project.statut || "Statut"}
-            </p>
-          </Link>
-        ))}
-      </Panel>
-
-      <Panel title="Tâches urgentes" href="/taches">
-        {urgentTasks.length === 0 && <p className="text-zinc-500">Aucune tâche urgente.</p>}
-
-        {urgentTasks.map((task) => (
-          <Link key={task.id} href={`/taches/${task.id}`} className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600">
-            <h3 className="text-lg font-semibold">{task.titre}</h3>
-            <p className="mt-2 text-sm text-zinc-500">
-              {task.deadline || "Sans deadline"} • {task.priorite}
-            </p>
-          </Link>
-        ))}
-      </Panel>
-
-      <Panel title="Relances booking" href="/booking">
-        {followUps.length === 0 && <p className="text-zinc-500">Aucune relance booking.</p>}
-
-        {followUps.map((booking) => (
-          <Link key={booking.id} href={`/booking/${booking.id}`} className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600">
-            <h3 className="text-lg font-semibold">{booking.evenement}</h3>
-            <p className="mt-2 text-sm text-zinc-500">
-              {booking.prochaine_relance || "Date non renseignée"} • {booking.statut || "Statut"}
-            </p>
-          </Link>
-        ))}
-      </Panel>
-
-      <Panel title="Relances médias" href="/medias/dashboard">
-        {mediaFollowUps.length === 0 && <p className="text-zinc-500">Aucune relance média.</p>}
-
-        {mediaFollowUps.map((media) => (
-          <Link key={media.id} href={`/medias/${media.id}`} className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600">
-            <h3 className="text-lg font-semibold">{media.nom}</h3>
-            <p className="mt-2 text-sm text-zinc-500">
-              {media.prochaine_relance || "Date non renseignée"} • {media.statut || "Statut"}
-            </p>
-            <p className="mt-1 text-xs text-zinc-600">
-              {media.contact_nom || "Contact non renseigné"} • {media.priorite || "Priorité normale"}
-            </p>
-          </Link>
-        ))}
-      </Panel>
-    </div>
-
-    <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-
-  <Panel title="Top artistes rentables" href="/finances">
-
-    {topArtistes.length === 0 && (
-      <p className="text-zinc-500">
-        Aucune donnée artiste.
-      </p>
-    )}
-
-
-    {topArtistes.map((artist:any, index:number)=>(
-
-      <div
-        key={artist.nom}
-        className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black p-5"
-      >
-
-        <div className="flex items-center gap-4">
-
-          <span className="text-2xl font-bold text-zinc-600">
-            #{index + 1}
-          </span>
-
-
-          <div>
-
-            <h3 className="font-semibold">
-              {artist.nom}
-            </h3>
-
-
-            <p className="mt-1 text-sm text-zinc-500">
-              Revenus {artist.revenus.toFixed(2)} €
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <p
-          className={
-            artist.resultat >= 0
-              ? "text-green-400 font-semibold"
-              : "text-red-400 font-semibold"
-          }
-        >
-          {artist.resultat.toFixed(2)} €
-        </p>
-
-
-      </div>
-
-    ))}
-
-  </Panel>
-
-
-
-  <Panel title="Top projets rentables" href="/finances">
-
-    {topProjets.length === 0 && (
-      <p className="text-zinc-500">
-        Aucune donnée projet.
-      </p>
-    )}
-
-
-    {topProjets.map((project:any,index:number)=>(
-
-      <div
-        key={project.titre}
-        className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black p-5"
-      >
-
-        <div className="flex items-center gap-4">
-
-          <span className="text-2xl font-bold text-zinc-600">
-            #{index + 1}
-          </span>
-
-
-          <div>
-
-            <h3 className="font-semibold">
-              {project.titre}
-            </h3>
-
-
-            <p className="mt-1 text-sm text-zinc-500">
-              Revenus {project.revenus.toFixed(2)} €
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <p
-          className={
-            project.resultat >= 0
-              ? "text-green-400 font-semibold"
-              : "text-red-400 font-semibold"
-          }
-        >
-          {project.resultat.toFixed(2)} €
-        </p>
-
-
-      </div>
-
-    ))}
-
-  </Panel>
-
-</div>
-
-<div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-
-
-  <Panel title="Top artistes analytics" href="/analytics">
-
-
-    {topArtistesAnalytics.length === 0 && (
-      <p className="text-zinc-500">
-        Aucune donnée analytics artiste.
-      </p>
-    )}
-
-
-    {topArtistesAnalytics.map((artist:any,index:number)=>(
-
-      <div
-        key={artist.nom}
-        className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black p-5"
-      >
-
-        <div className="flex items-center gap-4">
-
-          <span className="text-2xl font-bold text-zinc-600">
-            #{index + 1}
-          </span>
-
-
-          <div>
-
-            <h3 className="font-semibold">
-              {artist.nom}
-            </h3>
-
-
-            <p className="mt-1 text-sm text-zinc-500">
-              {artist.streams.toLocaleString("fr-FR")} streams
-            </p>
-
-          </div>
-
-
-        </div>
-
-
-        <div className="text-right">
-
-          <p className="font-semibold text-green-400">
-            {artist.revenus.toFixed(2)} €
-          </p>
-
-
-          <p className="mt-1 text-xs text-zinc-500">
-            {artist.vues.toLocaleString("fr-FR")} vues
-          </p>
-
-        </div>
-
-
-      </div>
-
-    ))}
-
-
-  </Panel>
-
-
-
-  <Panel title="Top sorties analytics" href="/sorties">
-
-
-    {topSortiesAnalytics.length === 0 && (
-      <p className="text-zinc-500">
-        Aucune donnée analytics sortie.
-      </p>
-    )}
-
-
-    {topSortiesAnalytics.map((sortie:any,index:number)=>(
-
-      <div
-        key={sortie.titre}
-        className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black p-5"
-      >
-
-
-        <div className="flex items-center gap-4">
-
-          <span className="text-2xl font-bold text-zinc-600">
-            #{index + 1}
-          </span>
-
-
-          <div>
-
-            <h3 className="font-semibold">
-              {sortie.titre}
-            </h3>
-
-
-            <p className="mt-1 text-sm text-zinc-500">
-              {sortie.streams.toLocaleString("fr-FR")} streams
-            </p>
-
-          </div>
-
-
-        </div>
-
-
-
-        <div className="text-right">
-
-          <p className="font-semibold text-green-400">
-            {sortie.revenus.toFixed(2)} €
-          </p>
-
-
-          <p className="mt-1 text-xs text-zinc-500">
-            {sortie.vues.toLocaleString("fr-FR")} vues
-          </p>
-
-        </div>
-
-
-      </div>
-
-    ))}
-
-
-  </Panel>
-
-
-</div>
-
-    <section className="mt-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-
-  <div className="mb-6 flex items-center justify-between">
-
-    <div>
-
-      <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-        Journal
-      </p>
-
-      <h2 className="mt-2 text-3xl font-bold">
-        Activité récente
-      </h2>
-
-    </div>
-
-
-    <Link
-      href="/activity"
-      className="text-sm text-zinc-400 hover:text-white"
-    >
-      Voir tout →
-    </Link>
-
-  </div>
-
-
-  <div className="space-y-3">
-
-    {activityLogs.length === 0 && (
-      <p className="text-zinc-500">
-        Aucune activité pour le moment.
-      </p>
-    )}
-
-
-    {activityLogs.map((log)=>(
-      
-      <div
-        key={log.id}
-        className="flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-black p-5 md:flex-row md:items-center md:justify-between"
-      >
-
-        <div>
-
-          <p className="text-xs uppercase tracking-wider text-zinc-500">
-            {log.type || "activité"}
-          </p>
-
-
-          <h3 className="mt-1 font-semibold">
-            {log.titre || "Action"}
-          </h3>
-
-
-          <p className="mt-1 text-sm text-zinc-400">
-            {log.description}
-          </p>
-
-        </div>
-
-
-        <p className="text-xs text-zinc-600">
-          {new Date(log.created_at).toLocaleString("fr-FR")}
-        </p>
-
-
-      </div>
-
-    ))}
-
-  </div>
-
-</section>
   </main>
 );
 }
 
-function KpiCard({
+function QuickAction({
+  href,
   label,
-  value,
-  tone,
+  primary = false,
 }: {
+  href: string;
   label: string;
-  value: string | number;
-  tone?: "green" | "red";
+  primary?: boolean;
 }) {
-  const toneClass =
-    tone === "green"
-      ? "border-green-500/30 bg-green-500/10"
-      : tone === "red"
-      ? "border-red-500/30 bg-red-500/10"
-      : "border-zinc-800 bg-zinc-900";
+  return (
+    <Link
+      href={href}
+      className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
+        primary
+          ? "border-white bg-white text-black hover:bg-zinc-200"
+          : "border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:text-white"
+      }`}
+    >
+      {label}
+    </Link>
+  );
+}
+
+function MetricCard({
+  eyebrow,
+  value,
+  detail,
+  href,
+  tone = "default",
+}: {
+  eyebrow: string;
+  value: string | number;
+  detail: string;
+  href: string;
+  tone?: "default" | "positive" | "warning" | "danger";
+}) {
+  const toneClass = {
+    default: "border-zinc-800 bg-zinc-950",
+    positive: "border-green-500/20 bg-green-500/[0.06]",
+    warning: "border-yellow-500/25 bg-yellow-500/[0.07]",
+    danger: "border-red-500/25 bg-red-500/[0.07]",
+  }[tone];
 
   return (
-    <div className={`rounded-3xl border p-6 ${toneClass}`}>
-      <p className="text-sm text-zinc-500">{label}</p>
-      <p className="mt-3 text-4xl font-bold">{value}</p>
+    <Link
+      href={href}
+      className={`group rounded-2xl border p-5 transition hover:-translate-y-0.5 hover:border-zinc-600 ${toneClass}`}
+    >
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+        {eyebrow}
+      </p>
+      <p className="mt-4 text-4xl font-bold tracking-tight">{value}</p>
+      <div className="mt-4 flex items-center justify-between gap-3 text-sm text-zinc-500">
+        <span>{detail}</span>
+        <span className="transition group-hover:translate-x-1 group-hover:text-white">→</span>
+      </div>
+    </Link>
+  );
+}
+
+function SectionHeading({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div>
+      <p className="text-xs font-bold uppercase tracking-[0.24em] text-yellow-500">
+        {eyebrow}
+      </p>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">{title}</h2>
+      <p className="mt-2 max-w-2xl text-sm text-zinc-500">{description}</p>
     </div>
   );
 }
 
-function Panel({
+function PriorityCard({
+  label,
+  value,
+  href,
+  urgent,
+}: {
+  label: string;
+  value: string | number;
+  href: string;
+  urgent: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`flex items-center justify-between gap-4 rounded-2xl border p-4 transition hover:border-zinc-600 ${
+        urgent ? "border-red-500/20 bg-red-500/[0.06]" : "border-zinc-900 bg-black"
+      }`}
+    >
+      <div>
+        <p className="text-sm text-zinc-400">{label}</p>
+        <p className={`mt-2 text-xs font-semibold ${urgent ? "text-red-300" : "text-green-400"}`}>
+          {urgent ? "À traiter" : "À jour"}
+        </p>
+      </div>
+      <p className="text-2xl font-bold">{value}</p>
+    </Link>
+  );
+}
+
+function HealthStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div>
+      <p className="text-xl font-black">{value}</p>
+      <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">{label}</p>
+    </div>
+  );
+}
+
+function FinanceLine({
+  label,
+  value,
+  positive = false,
+  highlighted = false,
+}: {
+  label: string;
+  value: number;
+  positive?: boolean;
+  highlighted?: boolean;
+}) {
+  return (
+    <div className={`rounded-2xl border p-5 ${highlighted ? "border-yellow-500/20 bg-yellow-500/[0.06]" : "border-zinc-900 bg-black"}`}>
+      <p className="text-sm text-zinc-500">{label}</p>
+      <p className={`mt-2 text-2xl font-bold ${positive ? "text-green-400" : value > 0 ? "text-white" : "text-zinc-400"}`}>
+        {formatCurrency(value)}
+      </p>
+    </div>
+  );
+}
+
+function ActionPanel({
   title,
   href,
   children,
@@ -1553,71 +1076,93 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{title}</h2>
-
-        <Link href={href} className="text-sm text-zinc-400 hover:text-white">
-          Voir →
+    <section className="rounded-[24px] border border-zinc-800 bg-zinc-950 p-5">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h3 className="text-lg font-bold">{title}</h3>
+        <Link href={href} className="text-xs font-semibold text-zinc-500 transition hover:text-white">
+          Voir tout →
         </Link>
       </div>
-
-      <div className="space-y-4">{children}</div>
+      <div>{children}</div>
     </section>
   );
 }
 
-function AlertCard({
-  label,
-  value,
+function ItemRow({
   href,
-  danger,
+  title,
+  meta,
+  status,
+  danger = false,
 }: {
-  label: string;
-  value: number;
   href: string;
+  title: string;
+  meta: string;
+  status: string;
   danger?: boolean;
 }) {
   return (
     <Link
       href={href}
-      className={`block rounded-2xl border p-5 transition hover:border-zinc-500 ${
-        danger
-          ? "border-red-500/30 bg-red-500/10"
-          : "border-zinc-800 bg-black"
-      }`}
+      className="group flex items-center justify-between gap-4 border-b border-zinc-900 py-3 last:border-0"
     >
-      <p className={danger ? "text-red-300" : "text-zinc-500"}>
-        {label}
-      </p>
-
-      <p className="mt-3 text-4xl font-bold">
-        {value}
-      </p>
-
-      <p className="mt-3 text-xs text-zinc-500">
-        Ouvrir →
-      </p>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-semibold group-hover:text-yellow-400">{title}</p>
+        <p className={`mt-1 truncate text-xs ${danger ? "text-red-400" : "text-zinc-600"}`}>{meta}</p>
+      </div>
+      <span className="shrink-0 rounded-full border border-zinc-800 px-2.5 py-1 text-[10px] font-semibold text-zinc-400">
+        {status}
+      </span>
     </Link>
   );
 }
 
-function MiniStat({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) {
-  return (
-    <div className="rounded-2xl border border-zinc-800 bg-black p-5">
-      <p className="text-sm text-zinc-500">
-        {label}
-      </p>
+function ProjectRow({ project }: { project: any }) {
+  const releaseDate = project.date_sortie ? new Date(project.date_sortie) : null;
+  const diffDays = releaseDate
+    ? Math.ceil((releaseDate.getTime() - Date.now()) / 86400000)
+    : null;
 
-      <h3 className="mt-2 text-3xl font-bold">
-        {value}
-      </h3>
+  return (
+    <ItemRow
+      href={`/projets/${project.id}`}
+      title={project.titre}
+      meta={project.date_sortie ? formatShortDate(project.date_sortie) : "Date non définie"}
+      status={diffDays === null ? "À planifier" : diffDays <= 0 ? "Aujourd’hui" : `J-${diffDays}`}
+      danger={diffDays !== null && diffDays <= 7}
+    />
+  );
+}
+
+function PipelineStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-xl border border-zinc-900 bg-black p-3 text-center">
+      <p className="text-xl font-bold">{value}</p>
+      <p className="mt-1 text-[10px] text-zinc-600">{label}</p>
     </div>
   );
 }
+
+function EmptyState({ text }: { text: string }) {
+  return (
+    <div className="rounded-xl border border-dashed border-zinc-800 px-4 py-7 text-center text-sm text-zinc-600">
+      {text}
+    </div>
+  );
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(value || 0);
+}
+
+function formatShortDate(value: string) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit",
+    month: "short",
+  }).format(new Date(value));
+}
+
