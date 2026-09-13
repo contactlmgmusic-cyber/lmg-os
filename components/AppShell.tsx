@@ -25,7 +25,7 @@ export default function AppShell({
 
   return (
     <div className="min-h-screen bg-black">
-      <div className="fixed left-0 top-0 z-40 hidden h-screen w-72 lg:block">
+      <div className="fixed left-0 top-0 z-40 hidden h-screen w-76 lg:block">
         <Sidebar />
       </div>
 
@@ -43,16 +43,18 @@ export default function AppShell({
         </div>
       )}
 
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-zinc-800 bg-black/90 px-5 py-4 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-zinc-900 bg-black/90 px-5 py-4 backdrop-blur lg:hidden">
         <div>
-          <p className="text-lg font-bold text-white">LMG OS</p>
-          <p className="text-xs text-zinc-500">Label Management</p>
+          <p className="text-lg font-bold text-white">Legacy Music Group</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
+            Music OS
+          </p>
         </div>
 
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="rounded-xl bg-white px-4 py-2 font-semibold text-black"
+          className="rounded-xl border border-zinc-700 px-4 py-2 text-sm font-semibold text-white"
         >
           Menu
         </button>
@@ -60,7 +62,7 @@ export default function AppShell({
 
       <LiveNotifications />
 
-      <main className="min-h-screen lg:ml-72">{children}</main>
+      <main className="min-h-screen lg:ml-76">{children}</main>
     </div>
   );
 }
