@@ -38,7 +38,7 @@ export default function ArtistProfileNav() {
   return (
     <nav
       aria-label="Rubriques de la fiche artiste"
-      className="sticky top-0 z-20 mb-8 overflow-x-auto border-y border-zinc-900 bg-black/90 py-3 backdrop-blur lg:top-0"
+      className="sticky top-[72px] z-20 mb-8 overflow-x-auto border-y border-zinc-900 bg-black/90 py-3 backdrop-blur lg:top-0"
     >
       <div className="flex min-w-max gap-2">
         {items.map((item) => {
