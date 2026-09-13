@@ -557,7 +557,24 @@ const revenusParProjet = projets
 
 <ArtistProfileNav />
 
-<div id="audience" className="scroll-mt-24">
+<section data-artist-panel="overview" className="grid grid-cols-1 gap-5 md:grid-cols-3">
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+    <p className="text-sm text-zinc-500">Prochaine sortie</p>
+    <p className="mt-3 text-xl font-bold">{nextRelease?.titre || "Aucune sortie prévue"}</p>
+  </div>
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+    <p className="text-sm text-zinc-500">Tâches ouvertes</p>
+    <p className="mt-3 text-3xl font-bold">{canViewInternalArtistData ? openTasks.length : "Privé"}</p>
+  </div>
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+    <p className="text-sm text-zinc-500">Résultat net</p>
+    <p className={`mt-3 text-3xl font-bold ${resultat >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+      {canViewInternalArtistData ? `${resultat.toFixed(2)} €` : "Privé"}
+    </p>
+  </div>
+</section>
+
+<div id="audience" data-artist-panel="audience" className="scroll-mt-24" hidden>
 
 {canManageSpotify && (
   <div className="mb-8 space-y-6">
@@ -791,7 +808,7 @@ const revenusParProjet = projets
 
 </div>
 
-<section id="performance" className="scroll-mt-24">
+<section id="performance" data-artist-panel="performance" className="scroll-mt-24" hidden>
 
   {/* KPI PRINCIPAUX */}
   <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
@@ -1126,7 +1143,7 @@ const revenusParProjet = projets
 
 </section>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.6fr]">
+        <div data-artist-panel="operations" className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.6fr]" hidden>
           <div className="space-y-6">
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6 md:p-8">
   <h2 className="text-3xl font-bold">Bio / notes</h2>
