@@ -1,4 +1,5 @@
 import RolloutKanban from "@/components/RolloutKanban";
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { ROLES } from "@/lib/roles";
@@ -104,21 +105,22 @@ export default async function RolloutPage() {
   }
 
   return (
-    <main className="p-10 text-white">
-      <div className="mb-10 flex items-end justify-between">
+    <main className="p-6 text-white md:p-10">
+      <div className="mb-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-            LMG Rollout
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-yellow-400">
+            Stratégie de sortie
           </p>
 
           <h1 className="text-5xl font-bold">
-            Kanban rollout
+            Planning rollout
           </h1>
 
           <p className="mt-2 text-zinc-400">
-            Suivi des actions promo, contenus, clips et sorties.
+            Orchestrez chaque contenu, activation et échéance jusqu’à la sortie.
           </p>
         </div>
+        {canManageRollout && <Link href="/rollout/nouveau" className="rounded-xl bg-white px-5 py-3 font-medium text-black transition hover:bg-zinc-200">+ Nouvelle action</Link>}
       </div>
 
 <RolloutKanban
