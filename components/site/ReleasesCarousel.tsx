@@ -12,7 +12,7 @@ export default function ReleasesCarousel() {
   useEffect(() => {
     async function loadReleases() {
       const { data } = await supabaseBrowser
-  .from("projets")
+  .from("public_projets")
   .select(`
     id,
     titre,
@@ -21,9 +21,7 @@ export default function ReleasesCarousel() {
     cover_url,
     hero_image_url,
     date_sortie,
-    artistes (
-      nom
-    )
+    artistes
   `)
   .eq("is_public", true)
   .eq("featured", true)

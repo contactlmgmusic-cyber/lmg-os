@@ -11,7 +11,7 @@ export default function LatestReleases() {
   useEffect(() => {
     async function loadReleases() {
       const { data } = await supabaseBrowser
-        .from("projets")
+        .from("public_projets")
         .select(`
           id,
           titre,
@@ -19,9 +19,7 @@ export default function LatestReleases() {
           type,
           cover_url,
           date_sortie,
-          artistes (
-            nom
-          )
+          artistes
         `)
         .eq("is_public", true)
         .not("slug", "is", null)

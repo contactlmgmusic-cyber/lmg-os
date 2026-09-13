@@ -6,13 +6,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const [{ data: artists }, { data: releases }] = await Promise.all([
     supabase
-      .from("artistes")
+      .from("public_artistes")
       .select("slug, updated_at")
       .eq("is_public", true)
       .not("slug", "is", null),
 
     supabase
-      .from("projets")
+      .from("public_projets")
       .select("slug, updated_at, date_sortie")
       .eq("is_public", true)
       .not("slug", "is", null),

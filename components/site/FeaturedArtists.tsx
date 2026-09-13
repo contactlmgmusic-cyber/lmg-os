@@ -21,7 +21,7 @@ export default function FeaturedArtists() {
   useEffect(() => {
     async function loadArtists() {
       const { data } = await supabaseBrowser
-  .from("artistes")
+  .from("public_artistes")
   .select("id, nom, style, photo_url, bio, slug, ville")
   .eq("is_public", true)
   .eq("featured", true)
