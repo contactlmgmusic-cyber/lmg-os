@@ -7,6 +7,7 @@ import ArtistAnalyticsChart from "@/components/ArtistAnalyticsChart";
 import SpotifyArtistSyncCard from "@/components/SpotifyArtistSyncCard";
 import SpotifyAnalyticsImportCard from "@/components/SpotifyAnalyticsImportCard";
 import YouTubeArtistSyncCard from "@/components/YouTubeArtistSyncCard";
+import ArtistProfileNav from "@/components/ArtistProfileNav";
 
 export const dynamic = "force-dynamic";
 
@@ -436,8 +437,31 @@ const revenusParProjet = projets
   ].filter((social) => social.value);
 
   return (
-    <main className="text-white">
-      <section className="mb-8 overflow-hidden rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-black p-8">
+    <main className="mx-auto max-w-[1600px] scroll-smooth px-5 py-8 text-white md:px-8 lg:px-10">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <Link href="/artistes" className="text-sm font-semibold text-zinc-500 transition hover:text-white">
+          ← Tous les artistes
+        </Link>
+
+        {!isArtistUser && (
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={`/chat?channel=${artistChannelSlug}`}
+              className="rounded-xl border border-zinc-800 px-4 py-2 text-sm font-semibold text-zinc-300 transition hover:border-zinc-600 hover:text-white"
+            >
+              Ouvrir le chat
+            </Link>
+            <Link
+              href={`/artistes/${artiste.id}/modifier`}
+              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-zinc-200"
+            >
+              Modifier la fiche
+            </Link>
+          </div>
+        )}
+      </div>
+
+      <section id="synthese" className="scroll-mt-24 mb-8 overflow-hidden rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-black p-6 md:p-8">
   <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
     <div className="flex items-center gap-6">
       <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-3xl border border-zinc-700 bg-zinc-800">
@@ -530,6 +554,27 @@ const revenusParProjet = projets
     </div>
   </div>
 </section>
+
+<ArtistProfileNav />
+
+<section data-artist-panel="overview" className="grid grid-cols-1 gap-5 md:grid-cols-3">
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+    <p className="text-sm text-zinc-500">Prochaine sortie</p>
+    <p className="mt-3 text-xl font-bold">{nextRelease?.titre || "Aucune sortie prévue"}</p>
+  </div>
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+    <p className="text-sm text-zinc-500">Tâches ouvertes</p>
+    <p className="mt-3 text-3xl font-bold">{canViewInternalArtistData ? openTasks.length : "Privé"}</p>
+  </div>
+  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+    <p className="text-sm text-zinc-500">Résultat net</p>
+    <p className={`mt-3 text-3xl font-bold ${resultat >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+      {canViewInternalArtistData ? `${resultat.toFixed(2)} €` : "Privé"}
+    </p>
+  </div>
+</section>
+
+<div id="audience" data-artist-panel="audience" className="scroll-mt-24" hidden>
 
 {canManageSpotify && (
   <div className="mb-8 space-y-6">
@@ -761,7 +806,9 @@ const revenusParProjet = projets
   </section>
 )}
 
-<section className="p-10">
+</div>
+
+<section id="performance" data-artist-panel="performance" className="scroll-mt-24" hidden>
 
   {/* KPI PRINCIPAUX */}
   <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
@@ -812,7 +859,7 @@ const revenusParProjet = projets
 
   {/* ANALYTICS */}
   {canViewInternalArtistData && (
-    <div className="mt-8">
+    <div id="finance-artiste" className="mt-8 scroll-mt-24">
       <h2 className="mb-4 text-2xl font-bold">
         Analytics
       </h2>
@@ -1096,9 +1143,9 @@ const revenusParProjet = projets
 
 </section>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.6fr]">
+        <div data-artist-panel="operations" className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.6fr]" hidden>
           <div className="space-y-6">
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6 md:p-8">
   <h2 className="text-3xl font-bold">Bio / notes</h2>
 
   <p className="mt-5 leading-relaxed text-zinc-300">
@@ -1228,7 +1275,7 @@ const revenusParProjet = projets
   </div>
 </div>
 
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+            <div id="projets-artiste" className="scroll-mt-24 rounded-3xl border border-zinc-800 bg-zinc-900 p-6 md:p-8">
               <h2 className="mb-6 text-3xl font-bold">Projets visibles</h2>
 
               {visibleProjects.length === 0 && (
@@ -1315,7 +1362,7 @@ const revenusParProjet = projets
 
             {canViewInternalArtistData && (
               <>
-                <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+                <div id="activite-artiste" className="scroll-mt-24 rounded-3xl border border-zinc-800 bg-zinc-900 p-6 md:p-8">
                   <h2 className="mb-6 text-3xl font-bold">Tâches liées</h2>
 
                   {(!taches || taches.length === 0) && (
@@ -1468,7 +1515,7 @@ const revenusParProjet = projets
             </div>
 
             {canViewInternalArtistData && (
-  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+  <div id="business-artiste" className="scroll-mt-24 rounded-3xl border border-zinc-800 bg-zinc-900 p-6 md:p-8">
     <h2 className="mb-6 text-3xl font-bold">Contrats liés</h2>
 
     {(!contrats || contrats.length === 0) && (
