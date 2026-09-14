@@ -159,18 +159,18 @@ if (
   }
 
   if (loading) {
-    return <main className="min-h-screen bg-black p-10 text-white">Chargement...</main>;
+    return <main className="min-h-screen bg-black px-5 py-8 text-white sm:px-8 lg:px-10">Chargement...</main>;
   }
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
+    <main className="min-h-screen bg-black px-5 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
       <Link href={`/sorties/${id}`} className="text-sm text-zinc-400 hover:text-white">
         ← Retour sortie
       </Link>
 
-      <h1 className="mt-6 text-5xl font-bold">Modifier sortie</h1>
+      <p className="mb-3 mt-8 text-xs font-semibold uppercase tracking-[0.32em] text-zinc-500">Catalogue · Paramètres</p><h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Modifier la sortie</h1>
 
-      <form onSubmit={handleSubmit} className="mt-10 max-w-5xl space-y-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+      <form onSubmit={handleSubmit} className="mt-8 max-w-5xl space-y-5 rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8">
         <input value={titre} onChange={(e) => setTitre(e.target.value)} className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4" />
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -209,7 +209,7 @@ if (
 
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="min-h-40 w-full rounded-xl border border-zinc-800 bg-black px-4 py-4" />
 
-        <button disabled={saving} className="w-full rounded-xl bg-white px-5 py-4 font-medium text-black">
+        <button disabled={saving} className="w-full rounded-xl bg-white px-5 py-4 font-bold text-black disabled:opacity-50">
           {saving ? "Enregistrement..." : "Enregistrer"}
         </button>
 
