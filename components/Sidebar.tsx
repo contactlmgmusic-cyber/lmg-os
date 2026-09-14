@@ -30,6 +30,7 @@ const executiveSections: SidebarSection[] = [
     links: [
       { href: "/dashboard", label: "Tableau de bord" },
       { href: "/mon-travail", label: "Mon travail" },
+      { href: "/dashboard/objectifs-lmg", label: "Objectifs LMG" },
       { href: "/calendrier/global", label: "Calendrier global" },
       { href: "/assistant", label: "Assistant LMG" },
     ],
@@ -110,6 +111,7 @@ const artisticDirectorSections: SidebarSection[] = [
     links: [
       { href: "/dashboard", label: "Tableau de bord" },
       { href: "/mon-travail", label: "Mon travail" },
+      { href: "/dashboard/objectifs-lmg", label: "Objectifs LMG" },
       { href: "/calendrier/global", label: "Calendrier global" },
     ],
   },
@@ -165,6 +167,7 @@ const managerSections: SidebarSection[] = [
     links: [
       { href: "/manager", label: "Tableau de bord" },
       { href: "/mon-travail", label: "Mon travail" },
+      { href: "/dashboard/objectifs-lmg", label: "Objectifs LMG" },
       { href: "/manager/kpi", label: "Mes indicateurs" },
       { href: "/calendrier", label: "Mon calendrier" },
     ],
