@@ -1,12 +1,17 @@
 import { google } from "googleapis";
 
 export const GOOGLE_DRIVE_SCOPES = [
-  "https://www.googleapis.com/auth/drive.file",
+  "https://www.googleapis.com/auth/drive",
 ];
 
 export function createGoogleDriveOAuthClient(origin: string) {
-  const clientId = process.env.GOOGLE_DRIVE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_DRIVE_CLIENT_SECRET;
+  const clientId =
+    process.env.GOOGLE_DRIVE_CLIENT_ID ||
+    process.env.GOOGLE_CALENDAR_CLIENT_ID;
+
+  const clientSecret =
+    process.env.GOOGLE_DRIVE_CLIENT_SECRET ||
+    process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
     throw new Error("Configuration Google Drive indisponible.");
