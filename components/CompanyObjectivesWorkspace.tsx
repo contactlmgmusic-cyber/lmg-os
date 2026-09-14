@@ -15,7 +15,7 @@ type Objective = {
   project?: { id?: string; titre?: string | null } | null;
 };
 
-export default function CompanyObjectivesWorkspace({ objectives, profiles, projects, currentQuarter, quarterEnd }: { objectives: Objective[]; profiles: Option[]; projects: Option[]; currentQuarter: string; quarterEnd: string }) {
+export default function CompanyObjectivesWorkspace({ objectives, profiles, projects, currentQuarter, quarterEnd, isActiveQuarter }: { objectives: Objective[]; profiles: Option[]; projects: Option[]; currentQuarter: string; quarterEnd: string; isActiveQuarter: boolean }) {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -31,7 +31,7 @@ export default function CompanyObjectivesWorkspace({ objectives, profiles, proje
 
   const field = "w-full rounded-xl border border-zinc-800 bg-black p-3 text-sm text-white outline-none focus:border-zinc-600";
   return <div>
-    <div className="flex justify-end"><button onClick={() => setShowForm((value) => !value)} className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-black">{showForm ? "Fermer" : "+ Nouvel objectif"}</button></div>
+    {isActiveQuarter && <div className="flex justify-end"><button onClick={() => setShowForm((value) => !value)} className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-black">{showForm ? "Fermer" : "+ Nouvel objectif"}</button></div>}
     {showForm && <form onSubmit={createObjective} className="mt-5 rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 md:p-7">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"><Field label="Objectif" wide><input required className={field} value={form.titre} onChange={(e) => setForm({ ...form, titre: e.target.value })} placeholder="Ex. Structurer le pilotage LMG" /></Field><Field label="Pôle"><select className={field} value={form.pole} onChange={(e) => setForm({ ...form, pole: e.target.value })}>{INTERNAL_PROJECT_POLES.map((item) => <option key={item}>{item}</option>)}</select></Field><Field label="Trimestre"><input required className={field} value={form.trimestre} onChange={(e) => setForm({ ...form, trimestre: e.target.value })} placeholder="2026-T4" /></Field></div>
       <Field label="Description"><textarea className={`${field} mt-4 min-h-24`} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Résultat concret recherché et contexte…" /></Field>
