@@ -18,13 +18,16 @@ export default async function CampagneDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER]);
+  const profile = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER]);
   const supabase = await createAuthenticatedSupabaseClient();
   const { id } = await params;
 
-  const { data: campagne, error } = await supabase
+  const isManager = profile.role === ROLES.MANAGER;
+  let campaignQuery = supabase
     .from("campagnes")
-    .select(`
+    .select(isManager ? `
+      *, artistes!inner (id, nom, style, photo_url, manager_id), projets (id, titre, type, statut, date_sortie)
+    ` : `
       *,
       artistes (
         id,
@@ -39,9 +42,9 @@ export default async function CampagneDetailPage({
         statut,
         date_sortie
       )
-    `)
-    .eq("id", id)
-    .single();
+    `).eq("id", id);
+  if (isManager) campaignQuery = campaignQuery.eq("artistes.manager_id", profile.id);
+  const { data: campagne, error } = await campaignQuery.maybeSingle();
 
   if (error || !campagne) {
     return (
@@ -86,7 +89,7 @@ export default async function CampagneDetailPage({
     totalActions > 0 ? Math.round((actionsPubliees / totalActions) * 100) : 0;
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
+    <main className="min-h-screen bg-black px-5 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
       <Link
         href="/campagnes"
         className="text-sm text-zinc-400 hover:text-white"
@@ -95,18 +98,18 @@ export default async function CampagneDetailPage({
       </Link>
 
       <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[1fr_420px]">
-        <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+        <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8">
           <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
             {campagne.statut || "En préparation"}
           </p>
 
-          <h1 className="mt-3 text-5xl font-bold">{campagne.titre}</h1>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">{campagne.titre}</h1>
 
           <p className="mt-4 max-w-3xl text-zinc-400">
             {campagne.objectif || "Aucun objectif renseigné."}
           </p>
 
-          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-3 xl:grid-cols-4">
             <KpiCard label="Budget campagne" value={formatEuro(campagne.budget)} />
             <KpiCard label="Budget influence" value={formatEuro(budgetInfluence)} />
             <KpiCard label="Médias liés" value={allMedias.length} />
@@ -190,7 +193,7 @@ export default async function CampagneDetailPage({
         </section>
 
         <aside className="space-y-6">
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8">
             <h2 className="text-3xl font-bold">Projet lié</h2>
 
             {campagne.projets ? (
@@ -215,7 +218,7 @@ export default async function CampagneDetailPage({
             )}
           </div>
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8">
             <h2 className="text-3xl font-bold">Artiste lié</h2>
 
             {campagne.artistes ? (
@@ -252,7 +255,7 @@ export default async function CampagneDetailPage({
             )}
           </div>
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8">
             <h2 className="text-3xl font-bold">Actions</h2>
 
             <div className="mt-6 space-y-3">

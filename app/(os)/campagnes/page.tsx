@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
+import CampaignPortfolio from "@/components/CampaignPortfolio";
 
 export const dynamic = "force-dynamic";
 
@@ -15,16 +16,19 @@ function formatNumber(value: number) {
 
 export default async function CampagnesPage() {
   const supabase = await createAuthenticatedSupabaseClient();
-  await requireRole([
+  const profile = await requireRole([
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
     ROLES.ARTISTIC_DIRECTOR,
     ROLES.MANAGER,
   ]);
 
-  const { data: campagnes, error } = await supabase
+  const isManager = profile.role === ROLES.MANAGER;
+  let campaignsQuery = supabase
     .from("campagnes")
-    .select(`
+    .select(isManager ? `
+      *, artistes!inner (id, nom, manager_id), projets (id, titre)
+    ` : `
       *,
       artistes (
         id,
@@ -34,8 +38,9 @@ export default async function CampagnesPage() {
         id,
         titre
       )
-    `)
-    .order("created_at", { ascending: false });
+    `).order("created_at", { ascending: false });
+  if (isManager) campaignsQuery = campaignsQuery.eq("artistes.manager_id", profile.id);
+  const { data: campagnes, error } = await campaignsQuery;
 
   const { data: medias } = await supabase
     .from("medias")
@@ -81,14 +86,14 @@ export default async function CampagnesPage() {
   );
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <div className="mb-10 flex items-center justify-between gap-6">
+    <main className="min-h-screen bg-black px-5 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
+      <header className="mb-8 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-            LMG Marketing
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.32em] text-zinc-500">
+            Développement · LMG Music
           </p>
 
-          <h1 className="text-5xl font-bold">Dashboard Campagnes</h1>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Campagnes</h1>
 
           <p className="mt-3 text-zinc-400">
             Pilotage des campagnes médias, influenceurs et sorties.
@@ -97,93 +102,12 @@ export default async function CampagnesPage() {
 
         <Link
           href="/campagnes/nouveau"
-          className="rounded-xl bg-white px-5 py-3 font-semibold text-black hover:bg-zinc-200"
+          className="rounded-xl bg-white px-5 py-3 text-center text-sm font-bold text-black hover:bg-zinc-200"
         >
           + Nouvelle campagne
         </Link>
-      </div>
-
-      <section className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5">
-        <KpiCard label="Campagnes" value={allCampagnes.length} />
-        <KpiCard label="Actives" value={campagnesActives} />
-        <KpiCard label="Budget total" value={formatEuro(budgetTotal)} />
-        <KpiCard
-          label="Publications"
-          value={publicationsMedias + publicationsInfluenceurs}
-        />
-        <KpiCard
-          label="Audience potentielle"
-          value={formatNumber(audienceInfluenceurs)}
-        />
-      </section>
-
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        {allCampagnes.length === 0 && (
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-            <p className="text-zinc-500">Aucune campagne créée.</p>
-          </div>
-        )}
-
-        {allCampagnes.map((campagne: any) => (
-          <Link
-            key={campagne.id}
-            href={`/campagnes/${campagne.id}`}
-            className="block rounded-3xl border border-zinc-800 bg-zinc-900 p-8 hover:border-zinc-600"
-          >
-            <div className="mb-5 flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">
-                  {campagne.statut || "En préparation"}
-                </p>
-
-                <h2 className="mt-2 text-3xl font-bold">
-                  {campagne.titre}
-                </h2>
-              </div>
-
-              <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
-                {formatEuro(Number(campagne.budget || 0))}
-              </span>
-            </div>
-
-            <div className="space-y-2 text-sm text-zinc-400">
-              <p>
-                Artiste : {campagne.artistes?.nom || "Non lié"}
-              </p>
-
-              <p>
-                Projet : {campagne.projets?.titre || "Non lié"}
-              </p>
-
-              <p>
-                Période : {campagne.date_debut || "?"} →{" "}
-                {campagne.date_fin || "?"}
-              </p>
-            </div>
-
-            {campagne.objectif && (
-              <p className="mt-5 rounded-2xl bg-black p-4 text-sm text-zinc-300">
-                {campagne.objectif}
-              </p>
-            )}
-          </Link>
-        ))}
-      </section>
+      </header>
+      <CampaignPortfolio campaigns={allCampagnes} publications={publicationsMedias + publicationsInfluenceurs} audience={audienceInfluenceurs} />
     </main>
-  );
-}
-
-function KpiCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) {
-  return (
-    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-      <p className="text-sm text-zinc-500">{label}</p>
-      <p className="mt-3 text-3xl font-bold">{value}</p>
-    </div>
   );
 }
