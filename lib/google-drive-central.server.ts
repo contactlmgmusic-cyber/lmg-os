@@ -1,6 +1,9 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import {
+  createClient,
+  SupabaseClient,
+} from "@supabase/supabase-js";
 import { drive_v3, google } from "googleapis";
 import { createGoogleDriveOAuthClient } from "@/lib/google-drive.server";
 
@@ -215,4 +218,139 @@ export async function getOrCreateDriveFolder({
   }
 
   return folder.id;
+}
+
+export async function assertDriveFolderInsideRoot({
+  drive,
+  folderId,
+  rootFolderId,
+}: {
+  drive: drive_v3.Drive;
+  folderId: string;
+  rootFolderId: string;
+}) {
+  let currentFolderId: string | null =
+    folderId;
+
+  for (
+    let depth = 0;
+    depth < 20 && currentFolderId;
+    depth += 1
+  ) {
+    if (currentFolderId === rootFolderId) {
+      return;
+    }
+
+    const folderResponse =
+      await drive.files.get({
+        fileId: currentFolderId,
+        fields:
+          "id,mimeType,parents,trashed",
+      });
+
+    const folder: {
+      trashed?: boolean | null;
+      mimeType?: string | null;
+      parents?: string[] | null;
+    } = folderResponse.data;
+
+    if (
+      folder.trashed ||
+      folder.mimeType !==
+        "application/vnd.google-apps.folder"
+    ) {
+      break;
+    }
+
+    currentFolderId =
+      folder.parents?.[0] || null;
+  }
+
+  throw new Error(
+    "Le dossier de classement n’appartient pas au Drive central LMG."
+  );
+}
+
+export async function getOrCreateBoundDriveFolder({
+  drive,
+  supabaseAdmin,
+  entityType,
+  entityId,
+  bindingRole,
+  name,
+  parentId,
+}: {
+  drive: drive_v3.Drive;
+  supabaseAdmin: SupabaseClient;
+  entityType: "artist" | "project";
+  entityId: string;
+  bindingRole: string;
+  name: string;
+  parentId: string;
+}) {
+  const { data: binding } =
+    await supabaseAdmin
+      .from("google_drive_folder_bindings")
+      .select("google_drive_folder_id")
+      .eq("entity_type", entityType)
+      .eq("entity_id", entityId)
+      .eq("folder_role", bindingRole)
+      .maybeSingle();
+
+  if (binding?.google_drive_folder_id) {
+    try {
+      const { data: folder } =
+        await drive.files.get({
+          fileId:
+            binding.google_drive_folder_id,
+          fields:
+            "id,mimeType,parents,trashed",
+        });
+
+      if (
+        !folder.trashed &&
+        folder.mimeType ===
+          "application/vnd.google-apps.folder" &&
+        folder.parents?.includes(parentId)
+      ) {
+        return binding.google_drive_folder_id;
+      }
+    } catch {
+      // Le dossier a pu être supprimé ou déplacé : on le résout à nouveau.
+    }
+  }
+
+  const folderId =
+    await getOrCreateDriveFolder({
+      drive,
+      name,
+      parentId,
+    });
+
+  const { error: bindingError } =
+    await supabaseAdmin
+      .from("google_drive_folder_bindings")
+      .upsert(
+        {
+          entity_type: entityType,
+          entity_id: entityId,
+          folder_role: bindingRole,
+          google_drive_folder_id:
+            folderId,
+          updated_at:
+            new Date().toISOString(),
+        },
+        {
+          onConflict:
+            "entity_type,entity_id,folder_role",
+        }
+      );
+
+  if (bindingError) {
+    throw new Error(
+      `Impossible d’enregistrer le dossier Drive : ${bindingError.message}`
+    );
+  }
+
+  return folderId;
 }

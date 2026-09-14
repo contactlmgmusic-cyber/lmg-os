@@ -4,9 +4,15 @@ import {
 } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import {
+  assertDriveFolderInsideRoot,
   getCentralGoogleDrive,
+  getOrCreateBoundDriveFolder,
   getOrCreateDriveFolder,
 } from "@/lib/google-drive-central.server";
+import {
+  DriveFileCategory,
+  getLmgDriveRoutePlan,
+} from "@/lib/lmg-drive-routing";
 import { ROLES } from "@/lib/roles";
 
 export const runtime = "nodejs";
@@ -230,9 +236,6 @@ export async function POST(
         request.nextUrl.origin
       );
 
-    let targetFolderId =
-      rootFolderId;
-
     let linkedArtistId:
       string | null = artisteId;
 
@@ -311,66 +314,56 @@ export async function POST(
         artist.nom || "Artiste";
     }
 
-    if (artistName) {
-      const artistsFolderId =
-        await getOrCreateDriveFolder({
-          drive,
-          name: "Artistes",
-          parentId: rootFolderId,
-        });
-
-      targetFolderId =
-        await getOrCreateDriveFolder({
-          drive,
-          name: artistName,
-          parentId:
-            artistsFolderId,
-        });
-    }
-
-    if (projectName) {
-      const projectsFolderId =
-        await getOrCreateDriveFolder({
-          drive,
-          name: "Projets",
-          parentId: artistName
-            ? targetFolderId
-            : rootFolderId,
-        });
-
-      targetFolderId =
-        await getOrCreateDriveFolder({
-          drive,
-          name: projectName,
-          parentId:
-            projectsFolderId,
-        });
-    }
-
-    const categoryFolderNames:
-      Record<string, string> = {
-        Master: "Masters",
-        Cover: "Covers",
-        Clip: "Clips",
-        "Photo presse":
-          "Photos presse",
-        EPK: "EPK",
-        Contrat: "Contrats",
-        "Document interne":
-          "Documents internes",
-        Autre: "Autres",
-      };
-
-    targetFolderId =
-      await getOrCreateDriveFolder({
-        drive,
-        name:
-          categoryFolderNames[
-            categorie
-          ] || "Autres",
-        parentId:
-          targetFolderId,
+    const routePlan =
+      getLmgDriveRoutePlan({
+        category:
+          categorie as DriveFileCategory,
+        artistId: linkedArtistId,
+        artistName,
+        projectId: projetId,
+        projectName,
       });
+
+    let targetFolderId =
+      routePlan.anchorFolderId;
+
+    await assertDriveFolderInsideRoot({
+      drive,
+      folderId: targetFolderId,
+      rootFolderId,
+    });
+
+    if (
+      routePlan.entityType &&
+      routePlan.entityId &&
+      routePlan.entityFolderName
+    ) {
+      targetFolderId =
+        await getOrCreateBoundDriveFolder({
+          drive,
+          supabaseAdmin,
+          entityType:
+            routePlan.entityType,
+          entityId: routePlan.entityId,
+          bindingRole:
+            routePlan.bindingRole,
+          name:
+            routePlan.entityFolderName,
+          parentId:
+            targetFolderId,
+        });
+    }
+
+    for (const folderName of
+      routePlan.trailingFolders) {
+      targetFolderId =
+        await getOrCreateDriveFolder({
+          drive,
+          name: folderName,
+          parentId:
+            targetFolderId,
+        });
+    }
 
     const {
       token: googleAccessToken,
