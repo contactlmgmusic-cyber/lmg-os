@@ -716,6 +716,11 @@ return (
         />
       </section>
 
+      <Link href="/dashboard/revue-hebdomadaire" className="group mt-6 flex flex-col gap-5 rounded-[24px] border border-yellow-500/20 bg-yellow-500/[0.06] p-5 transition hover:border-yellow-500/40 md:flex-row md:items-center md:justify-between md:p-6">
+        <div><p className="text-xs font-bold uppercase tracking-[0.22em] text-yellow-500">Rituel d’équipe</p><h2 className="mt-2 text-xl font-bold md:text-2xl">Préparer la revue hebdomadaire</h2><p className="mt-2 text-sm text-zinc-500">Retards, projets à surveiller, décisions et priorités de la semaine.</p></div>
+        <div className="flex items-center gap-4"><span className={`rounded-full px-3 py-1 text-xs font-bold ${priorityCount ? "bg-red-500/10 text-red-300" : "bg-green-500/10 text-green-300"}`}>{priorityCount ? `${priorityCount} point${priorityCount > 1 ? "s" : ""} à traiter` : "Organisation à jour"}</span><span className="text-xl text-yellow-500 transition group-hover:translate-x-1">→</span></div>
+      </Link>
+
       <section className="mt-8 grid gap-6 xl:grid-cols-[1.55fr_0.85fr]">
         <div className="rounded-[28px] border border-zinc-800 bg-zinc-950 p-5 md:p-7">
           <SectionHeading
