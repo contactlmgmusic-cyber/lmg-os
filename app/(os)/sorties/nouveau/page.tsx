@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
 export default function NouvelleSortiePage() {
@@ -110,17 +111,19 @@ if (
   }
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <div className="mb-10">
-        <h1 className="text-5xl font-bold">Nouvelle sortie</h1>
+    <main className="min-h-screen bg-black px-5 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
+      <Link href="/sorties" className="text-sm text-zinc-500 hover:text-white">← Retour au catalogue</Link>
+      <header className="mb-8 mt-8">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.32em] text-zinc-500">Catalogue · Création</p>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Nouvelle sortie</h1>
         <p className="mt-3 text-zinc-400">
           Ajoute un single, EP, album, clip ou release distribuée.
         </p>
-      </div>
+      </header>
 
       <form
         onSubmit={handleSubmit}
-        className="max-w-5xl space-y-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-8"
+        className="max-w-5xl space-y-5 rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8"
       >
         <input
           value={titre}
@@ -215,7 +218,7 @@ if (
 
         <button
           disabled={loading}
-          className="w-full rounded-xl bg-white px-5 py-4 font-medium text-black hover:bg-zinc-200 disabled:opacity-50"
+          className="w-full rounded-xl bg-white px-5 py-4 font-bold text-black hover:bg-zinc-200 disabled:opacity-50"
         >
           {loading ? "Création..." : "Créer la sortie"}
         </button>

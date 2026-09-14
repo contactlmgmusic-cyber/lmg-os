@@ -83,7 +83,7 @@ const {
  */
 if (error || !sortie) {
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
+    <main className="min-h-screen bg-black px-5 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
       <Link
         href="/sorties"
         className="text-sm text-zinc-400 hover:text-white"
@@ -225,8 +225,9 @@ const dernierSnapshot = analytics?.[0];
         ← Retour aux sorties
       </Link>
 
-      <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[420px_1fr]">
-        <div className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900">
+      <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[360px_1fr]">
+        <aside className="xl:sticky xl:top-6 xl:self-start">
+        <div className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950">
           <div className="aspect-square bg-zinc-800">
             {sortie.cover_url ? (
               <img
@@ -242,12 +243,16 @@ const dernierSnapshot = analytics?.[0];
           </div>
         </div>
 
-        <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+        <div className="mt-4 grid grid-cols-2 gap-3"><Link href={`/sorties/${sortie.id}/modifier`} className="rounded-xl bg-white px-4 py-3 text-center text-sm font-bold text-black hover:bg-zinc-200">Modifier</Link><Link href={`/release-planner/${sortie.id}`} className="rounded-xl border border-zinc-700 px-4 py-3 text-center text-sm font-semibold hover:border-zinc-500">Planner</Link></div>
+        </aside>
+
+        <div className="space-y-6">
+        <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8">
           <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
             {sortie.type || "Single"}
           </p>
 
-          <h1 className="mt-3 text-5xl font-bold">{sortie.titre}</h1>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">{sortie.titre}</h1>
 
           <p className="mt-3 text-xl text-zinc-400">
             {sortie.artistes?.nom || "Artiste non lié"}
@@ -257,14 +262,16 @@ const dernierSnapshot = analytics?.[0];
             {sortie.statut || "En préparation"}
           </span>
 
-          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="mt-8 grid grid-cols-2 gap-3">
             <Info label="Date de sortie" value={sortie.date_sortie} />
             <Info label="UPC" value={sortie.upc} />
             <Info label="ISRC" value={sortie.isrc} />
             <Info label="Projet lié" value={sortie.projets?.titre} />
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-6">
+          </section>
+
+          <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8"><div className="mb-6"><p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Performance</p><h2 className="mt-2 text-2xl font-bold">Analytics & rentabilité</h2></div><div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
   <Info
     label="Streams"
     value={totalStreams.toLocaleString("fr-FR")}
@@ -305,8 +312,9 @@ const dernierSnapshot = analytics?.[0];
     data={analytics}
   />
 )}
+</section>
 
-<div className="mt-8 rounded-2xl border border-zinc-800 bg-black p-6">
+<section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8">
   <div className="flex items-center justify-between gap-4">
     <div>
       <h2 className="text-2xl font-bold">Release Planner</h2>
@@ -334,11 +342,11 @@ const dernierSnapshot = analytics?.[0];
   >
     Ouvrir le planner →
   </Link>
-</div>
+</section>
 
           {links.length > 0 && (
-            <div className="mt-8 rounded-2xl border border-zinc-800 bg-black p-6">
-              <h2 className="text-2xl font-bold">Liens DSP</h2>
+            <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8">
+              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Distribution</p><h2 className="mt-2 text-2xl font-bold">Liens DSP</h2>
 
               <div className="mt-5 flex flex-wrap gap-3">
                 {links.map((link) => (
@@ -352,17 +360,17 @@ const dernierSnapshot = analytics?.[0];
                   </a>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
-          <div className="mt-8 rounded-2xl border border-zinc-800 bg-black p-6">
-            <h2 className="text-2xl font-bold">Notes</h2>
+          <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8">
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Suivi interne</p><h2 className="mt-2 text-2xl font-bold">Notes</h2>
             <p className="mt-4 whitespace-pre-line text-zinc-400">
               {sortie.notes || "Aucune note renseignée."}
             </p>
-          </div>
+          </section>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3">
             <Link
               href={`/sorties/${sortie.id}/modifier`}
               className="rounded-xl bg-white px-5 py-3 font-medium text-black hover:bg-zinc-200"
@@ -377,7 +385,7 @@ const dernierSnapshot = analytics?.[0];
               Retour
             </Link>
           </div>
-        </section>
+        </div>
       </div>
     </main>
   );
@@ -391,9 +399,9 @@ function Info({
   value?: string | number | null;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-black p-5">
+    <div className="rounded-2xl border border-zinc-800 bg-black p-4 sm:p-5">
       <p className="text-sm text-zinc-500">{label}</p>
-      <p className="mt-2 break-all text-lg font-semibold">
+      <p className="mt-2 break-words text-base font-semibold sm:text-lg">
         {value || "Non renseigné"}
       </p>
     </div>
