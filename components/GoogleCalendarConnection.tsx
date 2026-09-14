@@ -194,42 +194,25 @@ export default function GoogleCalendarConnection() {
   }
 
   return (
-    <section className="h-full rounded-3xl border border-zinc-800 bg-zinc-900 p-6 xl:p-8">
-      <div className="flex flex-col gap-6">
-        <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-            Connexion externe
-          </p>
-
-          <h2 className="mt-3 text-3xl font-bold">
-            Google Calendar
-          </h2>
-
-          <p className="mt-4 leading-7 text-zinc-400">
-            Connecte ton calendrier LMG pour
-            synchroniser uniquement les événements et
-            échéances qui te concernent.
-          </p>
-
-          <span
-            className={`mt-6 inline-flex rounded-full border px-4 py-2 text-sm font-semibold ${
-              connected
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-                : "border-yellow-500/30 bg-yellow-500/10 text-yellow-300"
-            }`}
-          >
-            {connected
-              ? "Connecté"
-              : "Non connecté"}
-          </span>
+    <section className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 sm:p-6">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex items-start gap-4">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-zinc-800 bg-black text-sm font-black">31</div>
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="font-bold">Google Calendar</h2>
+              <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${connected ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-yellow-500/30 bg-yellow-500/10 text-yellow-300"}`}>{loading ? "Vérification" : connected ? "Connecté" : "Non connecté"}</span>
+            </div>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-500">Synchronise les échéances LMG avec ton agenda professionnel.</p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <button
             type="button"
             onClick={connectGoogleCalendar}
             disabled={loading}
-            className="w-full rounded-2xl bg-white px-6 py-4 font-semibold text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border border-zinc-700 bg-black px-4 py-3 text-sm font-semibold text-white transition hover:border-zinc-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading
               ? "Chargement..."
@@ -243,7 +226,7 @@ export default function GoogleCalendarConnection() {
               type="button"
               onClick={syncGoogleCalendar}
               disabled={syncing}
-              className="w-full rounded-2xl border border-zinc-700 bg-black px-6 py-4 font-semibold text-white transition hover:border-zinc-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {syncing
                 ? "Synchronisation..."
@@ -255,7 +238,7 @@ export default function GoogleCalendarConnection() {
 
       {statusMessage && (
         <p
-          className={`mt-6 rounded-2xl border p-4 text-sm ${
+          className={`mt-4 rounded-xl border p-3 text-sm ${
             connected
               ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
               : "border-red-500/30 bg-red-500/10 text-red-300"
@@ -266,7 +249,7 @@ export default function GoogleCalendarConnection() {
       )}
 
       {syncMessage && (
-        <p className="mt-4 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-4 text-sm text-cyan-300">
+        <p className="mt-4 rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-3 text-sm text-cyan-300">
           {syncMessage}
         </p>
       )}
