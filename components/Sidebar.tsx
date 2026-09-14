@@ -29,6 +29,7 @@ const executiveSections: SidebarSection[] = [
     eyebrow: "01",
     links: [
       { href: "/dashboard", label: "Tableau de bord" },
+      { href: "/mon-travail", label: "Mon travail" },
       { href: "/calendrier/global", label: "Calendrier global" },
       { href: "/assistant", label: "Assistant LMG" },
     ],
@@ -108,6 +109,7 @@ const artisticDirectorSections: SidebarSection[] = [
     eyebrow: "01",
     links: [
       { href: "/dashboard", label: "Tableau de bord" },
+      { href: "/mon-travail", label: "Mon travail" },
       { href: "/calendrier/global", label: "Calendrier global" },
     ],
   },
@@ -162,6 +164,7 @@ const managerSections: SidebarSection[] = [
     eyebrow: "01",
     links: [
       { href: "/manager", label: "Tableau de bord" },
+      { href: "/mon-travail", label: "Mon travail" },
       { href: "/manager/kpi", label: "Mes indicateurs" },
       { href: "/calendrier", label: "Mon calendrier" },
     ],
