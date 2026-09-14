@@ -44,6 +44,9 @@ export default function DashboardPage() {
     validationsContratsEnAttente: 0,
     managersActifs: 0,
     lmgGlobalScore: 0,
+    projetsInternesActifs: 0,
+    projetsInternesUrgents: 0,
+    projetsInternesEnRetard: 0,
   });
 
   const [checkingAccess, setCheckingAccess] = useState(true);
@@ -64,6 +67,7 @@ export default function DashboardPage() {
   const [urgentReleases, setUrgentReleases] = useState<any[]>([]);
   const [topSortiesAnalytics, setTopSortiesAnalytics] = useState<any[]>([]);
   const [topArtistesAnalytics, setTopArtistesAnalytics] = useState<any[]>([]);
+  const [internalProjects, setInternalProjects] = useState<any[]>([]);
 
   function monthStart() {
     const d = new Date();
@@ -335,6 +339,7 @@ const projectRanking = Array.from(byProject.entries())
     { data: analytics },
     { data: sortiesMoisData },
     { data: releaseTasks },
+    { data: internalProjectsData },
   ] = await Promise.all([
     supabaseBrowser.from("projets")
       .select("id, titre, date_sortie, statut")
@@ -376,7 +381,19 @@ const projectRanking = Array.from(byProject.entries())
     supabaseBrowser.from("sorties")
       .select("id, titre, date_sortie").gte("date_sortie", start),
     supabaseBrowser.from("release_tasks").select("statut"),
+    supabaseBrowser.from("internal_projects")
+      .select("id, titre, pole, categorie, statut, priorite, deadline, progression")
+      .not("statut", "in", '("Terminé","Archivé")')
+      .order("deadline", { ascending: true, nullsFirst: false }),
   ]);
+
+const activeInternalProjects = internalProjectsData || [];
+const urgentInternalProjects = activeInternalProjects.filter(
+  (project: any) => project.priorite === "Urgente"
+);
+const overdueInternalProjects = activeInternalProjects.filter(
+  (project: any) => project.deadline && project.deadline < today
+);
 
 const royaltiesDues =
   royalties
@@ -534,6 +551,9 @@ const releaseProgressMoyenne =
       validationsContratsEnAttente: validationsContratsCount || 0,
       managersActifs: managersCount || 0,
       lmgGlobalScore,
+      projetsInternesActifs: activeInternalProjects.length,
+      projetsInternesUrgents: urgentInternalProjects.length,
+      projetsInternesEnRetard: overdueInternalProjects.length,
     });
 
     setUpcomingProjects(projects || []);
@@ -569,6 +589,7 @@ setMediaFollowUps(
     setUrgentReleases(urgentReleasesData || []);
     setTopSortiesAnalytics(sortieAnalyticsRanking);
     setTopArtistesAnalytics(artisteAnalyticsRanking);
+    setInternalProjects(activeInternalProjects);
     setCheckingAccess(false);
   } finally {
     loadingRef.current = false;
@@ -622,14 +643,17 @@ const priorityCount =
   stats.contratsASigner +
   stats.validationsArtisteEnAttente +
   stats.validationsContratsEnAttente +
-  stats.mediasRelanceAujourdhui;
+  stats.mediasRelanceAujourdhui +
+  stats.projetsInternesUrgents +
+  stats.projetsInternesEnRetard;
 
 const healthPenalty =
   lateTasks.length * 5 +
   stats.contratsASigner * 3 +
   Math.min(Math.round(stats.royaltiesDues / 100), 20) +
   urgentReleases.length * 2 +
-  stats.mediasRelanceAujourdhui;
+  stats.mediasRelanceAujourdhui +
+  stats.projetsInternesEnRetard * 3;
 
 const healthScore = Math.max(0, 100 - healthPenalty);
 const healthLabel =
@@ -657,6 +681,7 @@ return (
 
         <div className="flex flex-wrap gap-3">
           <QuickAction href="/projets/nouveau" label="Nouveau projet" primary />
+          <QuickAction href="/projets-internes/nouveau" label="Projet interne" />
           <QuickAction href="/taches/nouveau" label="Nouvelle tâche" />
           <QuickAction href="/calendrier/global" label="Voir le calendrier" />
         </div>
@@ -819,7 +844,28 @@ return (
           description="Une lecture directe des prochaines échéances du label."
         />
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-3">
+        <div className="mt-6 grid gap-6 xl:grid-cols-2 2xl:grid-cols-4">
+          <ActionPanel title="Projets internes" href="/projets-internes">
+            <div className="mb-3 grid grid-cols-3 gap-2">
+              <PipelineStat label="Actifs" value={stats.projetsInternesActifs} />
+              <PipelineStat label="Urgents" value={stats.projetsInternesUrgents} />
+              <PipelineStat label="En retard" value={stats.projetsInternesEnRetard} />
+            </div>
+            {internalProjects.slice(0, 4).map((project: any) => (
+              <ItemRow
+                key={project.id}
+                href={`/projets-internes/${project.id}`}
+                title={project.titre}
+                meta={`${project.pole || "Direction"} · ${project.categorie || "Non classé"}`}
+                status={`${Number(project.progression || 0)}%`}
+                danger={Boolean(project.deadline) && project.deadline < new Date().toISOString().split("T")[0]}
+              />
+            ))}
+            {internalProjects.length === 0 && (
+              <EmptyState text="Aucun projet interne actif." />
+            )}
+          </ActionPanel>
+
           <ActionPanel title="Prochaines sorties" href="/release-planner">
             {next30Projects.length === 0 ? (
               <EmptyState text="Aucune sortie prévue dans les 30 prochains jours." />
@@ -1165,4 +1211,3 @@ function formatShortDate(value: string) {
     month: "short",
   }).format(new Date(value));
 }
-
