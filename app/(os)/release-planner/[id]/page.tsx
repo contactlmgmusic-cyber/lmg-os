@@ -91,6 +91,7 @@ export default function ReleasePlannerDetailPage() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("Toutes");
 
   async function loadData() {
   setLoading(true);
@@ -324,6 +325,13 @@ const categoryProgress = categories.map((categorie) => {
   };
 });
 
+const visibleTasks = activeCategory === "Toutes"
+  ? tasks
+  : tasks.filter((task) => (task.categorie || "Général") === activeCategory);
+
+const doneTasks = tasks.filter((task) => task.statut === "Terminé").length;
+const nextTask = tasks.find((task) => task.statut !== "Terminé");
+
   if (loading) {
     return (
       <main className="min-h-screen bg-black p-10 text-white">
@@ -341,7 +349,7 @@ const categoryProgress = categories.map((categorie) => {
   }
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
+    <main className="min-h-screen bg-black px-5 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
       <Link
         href="/release-planner"
         className="text-sm text-zinc-400 hover:text-white"
@@ -349,13 +357,13 @@ const categoryProgress = categories.map((categorie) => {
         ← Retour Release Planner
       </Link>
 
-      <div className="mb-10 mt-8 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="mb-8 mt-8 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
             {sortie.artistes?.nom || "Artiste non lié"}
           </p>
 
-          <h1 className="text-5xl font-bold">{sortie.titre}</h1>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{sortie.titre}</h1>
 
           <p className="mt-3 text-zinc-400">
             {sortie.type || "Sortie"} •{" "}
@@ -363,49 +371,26 @@ const categoryProgress = categories.map((categorie) => {
           </p>
         </div>
 
-<section className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-  {categoryProgress.map((item) => (
-    <div
-      key={item.categorie}
-      className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6"
-    >
-      <p className="text-sm text-zinc-500">{item.categorie}</p>
-
-      <h3 className="mt-2 text-3xl font-bold">{item.progress}%</h3>
-
-      <p className="mt-2 text-xs text-zinc-500">
-        {item.done} / {item.total} actions
-      </p>
-
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-black">
-        <div
-          className="h-full rounded-full bg-white"
-          style={{ width: `${item.progress}%` }}
-        />
-      </div>
-    </div>
-  ))}
-</section>
-
         <button
           onClick={generateChecklist}
           disabled={generating}
-          className="rounded-xl bg-white px-6 py-4 font-semibold text-black disabled:opacity-50"
+          className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-black disabled:opacity-50"
         >
           {generating ? "Génération..." : "Générer checklist"}
         </button>
-      </div>
+      </header>
 
-      <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-3xl font-bold">Progression release</h2>
+      <section className="mb-8 grid gap-4 xl:grid-cols-[1.4fr_0.6fr]">
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div><p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">État de préparation</p><h2 className="mt-2 text-2xl font-bold">Progression globale</h2></div>
 
           <span className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300">
             {progression}%
           </span>
         </div>
 
-        <div className="h-4 overflow-hidden rounded-full bg-black">
+        <div className="h-3 overflow-hidden rounded-full bg-black">
           <div
             className="h-full rounded-full bg-white transition-all"
             style={{ width: `${progression}%` }}
@@ -413,13 +398,16 @@ const categoryProgress = categories.map((categorie) => {
         </div>
 
         <p className="mt-3 text-sm text-zinc-500">
-          {tasks.filter((task) => task.statut === "Terminé").length} /{" "}
-          {tasks.length} actions terminées
+          {doneTasks} / {tasks.length} actions terminées
         </p>
+        </div>
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8"><p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Prochaine action</p><p className="mt-3 text-lg font-bold">{nextTask?.titre || "Checklist terminée"}</p><p className="mt-2 text-sm text-zinc-500">{nextTask ? `${nextTask.categorie || "Général"} · ${nextTask.date_prevue || "Date à définir"}` : "La release est prête."}</p></div>
       </section>
 
-      <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-        <h2 className="mb-6 text-3xl font-bold">Checklist sortie</h2>
+      {categoryProgress.length > 0 && <section className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">{categoryProgress.map((item) => <button type="button" onClick={() => setActiveCategory(item.categorie)} key={item.categorie} className={`rounded-2xl border p-5 text-left transition ${activeCategory === item.categorie ? "border-white bg-white text-black" : "border-zinc-800 bg-zinc-950 hover:border-zinc-600"}`}><p className={`truncate text-xs font-semibold uppercase tracking-wider ${activeCategory === item.categorie ? "text-zinc-600" : "text-zinc-600"}`}>{item.categorie}</p><div className="mt-3 flex items-end justify-between"><p className="text-2xl font-bold">{item.progress}%</p><p className="text-xs opacity-60">{item.done}/{item.total}</p></div></button>)}</section>}
+
+      <section className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950">
+        <div className="flex flex-col gap-4 border-b border-zinc-800 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6"><div><h2 className="text-2xl font-bold">Checklist de sortie</h2><p className="mt-1 text-sm text-zinc-600">{visibleTasks.length} action{visibleTasks.length > 1 ? "s" : ""} affichée{visibleTasks.length > 1 ? "s" : ""}</p></div><select value={activeCategory} onChange={(event) => setActiveCategory(event.target.value)} className="rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm outline-none"><option>Toutes</option>{categories.map((category) => <option key={category}>{category}</option>)}</select></div>
 
         {tasks.length === 0 && (
           <p className="text-zinc-500">
@@ -427,15 +415,15 @@ const categoryProgress = categories.map((categorie) => {
           </p>
         )}
 
-        <div className="space-y-4">
-          {tasks.map((task) => (
+        <div className="divide-y divide-zinc-900">
+          {visibleTasks.map((task) => (
             <button
               key={task.id}
               onClick={() => toggleTask(task)}
-              className={`w-full rounded-2xl border p-5 text-left transition hover:border-zinc-500 ${
+              className={`w-full p-5 text-left transition hover:bg-black sm:p-6 ${
                 task.statut === "Terminé"
-                  ? "border-green-500/30 bg-green-500/10"
-                  : "border-zinc-800 bg-black"
+                  ? "bg-emerald-500/[0.04]"
+                  : "bg-transparent"
               }`}
             >
               <div className="flex items-start justify-between gap-4">
@@ -459,9 +447,7 @@ const categoryProgress = categories.map((categorie) => {
                   </p>
                 </div>
 
-                <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
-                  {task.statut}
-                </span>
+                <span className={`rounded-full border px-3 py-1 text-xs ${task.statut === "Terminé" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-zinc-700 text-zinc-400"}`}>{task.statut}</span>
               </div>
             </button>
           ))}
