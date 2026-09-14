@@ -8,6 +8,7 @@ import {
 } from "@/lib/google-drive.server";
 import { google } from "googleapis";
 import { ROLES } from "@/lib/roles";
+import { LMG_DRIVE_FOLDERS } from "@/lib/lmg-drive-routing";
 
 export const runtime = "nodejs";
 
@@ -121,17 +122,8 @@ export async function GET(request: NextRequest) {
       auth: oauth2Client,
     });
 
-    const { data: existingConnection } =
-      await supabaseAdmin
-        .from("google_drive_connections")
-        .select("refresh_token, root_folder_id")
-        .eq("id", "lmg-central")
-        .maybeSingle();
-
     const refreshToken =
-      tokens.refresh_token ||
-      existingConnection?.refresh_token ||
-      null;
+      tokens.refresh_token || null;
 
     if (!tokens.access_token || !refreshToken) {
       return redirectToManager(
@@ -140,24 +132,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let rootFolderId =
-      existingConnection?.root_folder_id || null;
+    const rootFolderId =
+      LMG_DRIVE_FOLDERS.root;
 
-    if (!rootFolderId) {
-      const { data: folder } =
-        await drive.files.create({
-          requestBody: {
-            name: "LMG OS",
-            mimeType:
-              "application/vnd.google-apps.folder",
-          },
-          fields: "id",
-        });
+    const { data: rootFolder } =
+      await drive.files.get({
+        fileId: rootFolderId,
+        fields: "id,mimeType,trashed",
+      });
 
-      rootFolderId = folder.id || null;
-    }
-
-    if (!rootFolderId) {
+    if (
+      rootFolder.trashed ||
+      rootFolder.mimeType !==
+        "application/vnd.google-apps.folder"
+    ) {
       return redirectToManager(
         request,
         "folder-error"

@@ -25,6 +25,8 @@ export type DriveRoutePlan = {
 // Les dossiers dynamiques sont enregistrés en base après leur première
 // résolution : les prochains uploads ne dépendent donc plus de leur nom.
 export const LMG_DRIVE_FOLDERS = {
+  root:
+    "1vLg8atObrKttnKhdH-rBNC4-NUMzQIz5",
   artistsActive:
     "10QdwRqI70n9g79142TN_ZDtyqcj1jAs5",
   artistContracts:
