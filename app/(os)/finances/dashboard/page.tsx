@@ -66,10 +66,14 @@ export default async function FinancesDashboardPage({ searchParams }: { searchPa
     const operations = finances.filter((item: any) => item.projet_id === projet.id);
     const projetRevenus = sum(operations, "Revenu");
     const projetDepenses = sum(operations, "Dépense");
-    return { id: projet.id, titre: projet.titre, revenus: projetRevenus, depenses: projetDepenses, resultat: projetRevenus - projetDepenses };
+    const budget = projectBudget(projet);
+    const consommation = budget > 0 ? Math.round((projetDepenses / budget) * 100) : null;
+    return { id: projet.id, titre: projet.titre, revenus: projetRevenus, depenses: projetDepenses, resultat: projetRevenus - projetDepenses, budget, consommation };
   }).filter((projet) => projet.revenus || projet.depenses).sort((a, b) => b.resultat - a.resultat);
   const deficitaires = rentabilite.filter((projet) => projet.resultat < 0);
   const rentables = rentabilite.filter((projet) => projet.resultat > 0);
+  const budgetDepasse = rentabilite.filter((projet) => projet.budget > 0 && projet.depenses > projet.budget);
+  const budgetSousTension = rentabilite.filter((projet) => projet.budget > 0 && projet.depenses <= projet.budget && projet.depenses >= projet.budget * 0.8);
 
   const budgets = projets.reduce((total: any, projet: any) => ({
     clip: total.clip + Number(projet.budget_clip || 0), cover: total.cover + Number(projet.budget_cover || 0),
@@ -83,7 +87,7 @@ export default async function FinancesDashboardPage({ searchParams }: { searchPa
     { name: "Studio", value: budgets.studio }, { name: "Influence", value: budgets.influence },
     { name: "Relations presse", value: budgets.rp }, { name: "Cover", value: budgets.cover },
   ];
-  const score = financeScore(revenus, marge, roi, deficitaires.length, royaltiesDues);
+  const score = financeScore(revenus, marge, roi, deficitaires.length, royaltiesDues, budgetDepasse.length);
   const alerts = [
     royaltiesDues > 0 ? { label: "Royalties à régler", value: euros(royaltiesDues), detail: "Montants générés pas encore marqués comme payés.", href: "/royalties", tone: "warning" } : null,
     staleRevenueTotal > 0 ? { label: "Encaissements sans mise à jour", value: euros(staleRevenueTotal), detail: `${staleRevenues.length} revenu(s) ouvert(s) depuis plus de 30 jours.`, href: "/finances?suivi=retard&type=Revenu", tone: "danger" } : null,
@@ -91,6 +95,8 @@ export default async function FinancesDashboardPage({ searchParams }: { searchPa
     aEncaisser > 0 ? { label: "Revenus à encaisser", value: euros(aEncaisser), detail: "Revenus prévus ou facturés pas encore encaissés.", href: "/finances?suivi=ouvert&type=Revenu", tone: "warning" } : null,
     engagees > 0 ? { label: "Dépenses engagées", value: euros(engagees), detail: "Dépenses prévues ou facturées pas encore réglées.", href: "/finances?suivi=ouvert&type=D%C3%A9pense", tone: "neutral" } : null,
     deficitaires.length > 0 ? { label: "Projets déficitaires", value: String(deficitaires.length), detail: "Projets dont les dépenses dépassent les revenus.", href: "#rentabilite", tone: "danger" } : null,
+    budgetDepasse.length > 0 ? { label: "Budgets dépassés", value: String(budgetDepasse.length), detail: "Les dépenses réelles ont dépassé l’enveloppe prévue.", href: "#rentabilite", tone: "danger" } : null,
+    budgetSousTension.length > 0 ? { label: "Budgets consommés à 80 %", value: String(budgetSousTension.length), detail: "Ces projets approchent de leur enveloppe maximale.", href: "#rentabilite", tone: "warning" } : null,
     resultat < 0 ? { label: `Résultat négatif · ${periodLabel}`, value: euros(resultat), detail: "Les dépenses de la période dépassent les revenus.", href: "/finances", tone: "danger" } : null,
   ].filter(Boolean) as Alert[];
 
@@ -131,7 +137,7 @@ export default async function FinancesDashboardPage({ searchParams }: { searchPa
     <section id="rentabilite" className="mt-8 grid scroll-mt-8 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
       <Panel eyebrow="Rentabilité" title="Performance par projet" description="Classement selon les revenus et dépenses enregistrés dans Finance.">
         {!rentabilite.length ? <Empty text="Aucun projet ne possède encore de flux financier." /> : <div>{rentabilite.slice(0, 8).map((projet) => <ProjectRow key={projet.id} projet={projet} />)}</div>}
-        {rentabilite.length > 0 && <div className="mt-5 grid grid-cols-2 gap-3"><Mini label="Projets rentables" value={`${rentables.length}/${rentabilite.length}`} /><Mini label="Projets déficitaires" value={deficitaires.length} /></div>}
+        {rentabilite.length > 0 && <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4"><Mini label="Projets rentables" value={`${rentables.length}/${rentabilite.length}`} /><Mini label="Projets déficitaires" value={deficitaires.length} /><Mini label="Budgets dépassés" value={budgetDepasse.length} /><Mini label="Budgets à surveiller" value={budgetSousTension.length} /></div>}
       </Panel>
       <Panel eyebrow="Budgets prévisionnels" title="Répartition des investissements" description={`${euros(budgetProjets)} sur les projets · ${euros(budgetCampagnes)} sur les campagnes`}><BudgetAllocationChart data={budgetData} /></Panel>
     </section>
@@ -152,7 +158,7 @@ function CashflowBars({ data }: { data: Array<{ mois: string; revenus: number; d
 }
 function AlertRow({ alert }: { alert: Alert }) { const styles = { warning: "border-yellow-500/20 bg-yellow-500/[0.05]", danger: "border-red-500/20 bg-red-500/[0.05]", neutral: "border-zinc-800 bg-black" }; return <Link href={alert.href} className={`block rounded-2xl border p-4 transition hover:border-zinc-600 ${styles[alert.tone]}`}><div className="flex items-start justify-between gap-4"><div><p className="font-semibold">{alert.label}</p><p className="mt-1 text-xs leading-5 text-zinc-500">{alert.detail}</p></div><p className="shrink-0 font-bold">{alert.value}</p></div></Link>; }
 function Commitment({ label, value, href }: { label: string; value: number; href?: string }) { const content = <><p className="text-xs text-zinc-600">{label}</p><p className={`mt-2 text-2xl font-bold ${value < 0 ? "text-red-400" : ""}`}>{euros(value)}</p>{href && <p className="mt-3 text-xs text-zinc-700">Ouvrir →</p>}</>; return href ? <Link href={href} className="rounded-2xl border border-zinc-800 bg-black p-4 hover:border-zinc-600">{content}</Link> : <div className="rounded-2xl border border-zinc-800 bg-black p-4">{content}</div>; }
-function ProjectRow({ projet }: { projet: { id: string; titre: string; revenus: number; depenses: number; resultat: number } }) { return <Link href={`/projets/${projet.id}`} className="group grid gap-3 border-b border-zinc-900 py-4 last:border-0 sm:grid-cols-[1fr_auto] sm:items-center"><div className="min-w-0"><p className="truncate font-semibold group-hover:text-yellow-400">{projet.titre || "Projet sans titre"}</p><p className="mt-1 text-xs text-zinc-600">{euros(projet.revenus)} de revenus · {euros(projet.depenses)} de dépenses</p></div><p className={`font-bold ${projet.resultat < 0 ? "text-red-400" : "text-green-400"}`}>{euros(projet.resultat)}</p></Link>; }
+function ProjectRow({ projet }: { projet: { id: string; titre: string; revenus: number; depenses: number; resultat: number; budget: number; consommation: number | null } }) { const over = projet.consommation !== null && projet.consommation > 100; const warning = projet.consommation !== null && projet.consommation >= 80 && !over; return <Link href={`/projets/${projet.id}`} className="group grid gap-3 border-b border-zinc-900 py-4 last:border-0 sm:grid-cols-[1fr_auto] sm:items-center"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><p className="truncate font-semibold group-hover:text-yellow-400">{projet.titre || "Projet sans titre"}</p>{projet.consommation !== null && <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${over ? "bg-red-500/10 text-red-300" : warning ? "bg-yellow-500/10 text-yellow-300" : "bg-zinc-900 text-zinc-500"}`}>{projet.consommation}% du budget</span>}</div><p className="mt-1 text-xs text-zinc-600">{euros(projet.revenus)} de revenus · {euros(projet.depenses)} de dépenses{projet.budget > 0 ? ` · budget ${euros(projet.budget)}` : " · aucun budget défini"}</p></div><p className={`font-bold ${projet.resultat < 0 ? "text-red-400" : "text-green-400"}`}>{euros(projet.resultat)}</p></Link>; }
 function Empty({ text, good = false }: { text: string; good?: boolean }) { return <div className={`rounded-2xl border border-dashed p-8 text-center text-sm ${good ? "border-green-500/20 text-green-400" : "border-zinc-800 text-zinc-600"}`}>{text}</div>; }
 function Status({ score }: { score: number }) { const label = score >= 75 ? "Solide" : score >= 50 ? "À surveiller" : "Sous tension"; const style = score >= 75 ? "bg-green-500/10 text-green-300" : score >= 50 ? "bg-yellow-500/10 text-yellow-300" : "bg-red-500/10 text-red-300"; return <span className={`rounded-full px-3 py-1 text-xs font-bold ${style}`}>{label}</span>; }
 function Period({ href, label, active }: { href: string; label: string; active: boolean }) { return <Link href={href} aria-current={active ? "page" : undefined} className={`rounded-full border px-4 py-2 text-xs font-bold transition ${active ? "border-yellow-400 bg-yellow-500/10 text-yellow-200" : "border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-600 hover:text-white"}`}>{label}</Link>; }
@@ -165,5 +171,6 @@ function periodStart(period: string) { const now = new Date(); now.setHours(0, 0
 function isOnOrAfter(input: string | null, start: Date) { if (!input) return false; const date = new Date(`${input}T12:00:00`); return !Number.isNaN(date.getTime()) && date >= start; }
 function labelForPeriod(period: string) { return period === "30j" ? "30 derniers jours" : period === "trimestre" ? "trimestre en cours" : period === "annee" ? "année en cours" : "tout l’historique"; }
 function value(input?: string | string[]) { return Array.isArray(input) ? input[0] || "" : input || ""; }
-function financeScore(revenus: number, marge: number, roi: number, deficitaires: number, royalties: number) { if (!revenus) return 50; return Math.max(0, Math.min(100, Math.round(55 + Math.max(-25, Math.min(20, marge / 2)) + Math.max(-20, Math.min(15, roi / 5)) - Math.min(15, deficitaires * 4) - Math.min(10, (royalties / revenus) * 20)))); }
+function projectBudget(project: any) { return [project.budget_clip, project.budget_cover, project.budget_promo, project.budget_studio, project.budget_influence, project.budget_rp].reduce((total, amount) => total + Number(amount || 0), 0); }
+function financeScore(revenus: number, marge: number, roi: number, deficitaires: number, royalties: number, budgetOverruns: number) { if (!revenus) return Math.max(20, 50 - Math.min(20, budgetOverruns * 5)); return Math.max(0, Math.min(100, Math.round(55 + Math.max(-25, Math.min(20, marge / 2)) + Math.max(-20, Math.min(15, roi / 5)) - Math.min(15, deficitaires * 4) - Math.min(10, (royalties / revenus) * 20) - Math.min(15, budgetOverruns * 5)))); }
 function euros(value: number) { return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value || 0); }
