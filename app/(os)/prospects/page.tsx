@@ -169,7 +169,7 @@ const { data: prospects } = await prospectsQuery;
                 {items.map((prospect: any) => (
                   <Link
                     key={prospect.id}
-                    href={`/prospects/${prospect.id}`}
+                    href={`/prospects/detail/${prospect.id}`}
                     className="block rounded-2xl border border-zinc-800 bg-black p-4 hover:border-zinc-600"
                   >
                     <p className="text-xs text-zinc-500">{prospect.type}</p>
