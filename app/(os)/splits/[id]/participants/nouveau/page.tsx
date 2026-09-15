@@ -1,220 +1,26 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { supabaseBrowser } from "@/lib/supabase-browser";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import SplitParticipantForm from "@/components/SplitParticipantForm";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
+import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
-export default function NouveauParticipantPage() {
-  const params = useParams();
-  const router = useRouter();
+export const dynamic = "force-dynamic";
 
-  const splitId = params.id as string;
+export default async function NouveauParticipantPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER]);
+  const { id } = await params;
+  const supabase = await createAuthenticatedSupabaseClient();
+  const { data: split, error } = await supabase.from("splits").select("id, titre, projets(id, titre), split_participants(id, pourcentage), royalties(id)").eq("id", id).single();
+  if (error || !split) notFound();
+  const participants = split.split_participants || [];
+  const currentTotal = participants.reduce((sum: number, item: any) => sum + Number(item.pourcentage || 0), 0);
+  const locked = (split.royalties || []).length > 0;
+  const project: any = Array.isArray(split.projets) ? split.projets[0] : split.projets;
 
-  const [saving, setSaving] = useState(false);
-
-  const [nom, setNom] = useState("");
-  const [role, setRole] = useState("Auteur");
-  const [pourcentage, setPourcentage] = useState("");
-  const [email, setEmail] = useState("");
-  const [currentRole, setCurrentRole] = useState<string | null>(null);
-  const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
-
-useEffect(() => {
-  async function checkAccess() {
-    const {
-      data: { user },
-    } = await supabaseBrowser.auth.getUser();
-
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-
-    const { data: profile } = await supabaseBrowser
-      .from("profiles")
-      .select("id, role")
-      .eq("id", user.id)
-      .single();
-
-    if (
-      profile?.role !== ROLES.SUPER_ADMIN &&
-      profile?.role !== ROLES.ADMIN &&
-      profile?.role !== ROLES.ARTISTIC_DIRECTOR &&
-      profile?.role !== ROLES.MANAGER
-    ) {
-      router.push("/");
-      return;
-    }
-
-    setCurrentRole(profile.role);
-    setCurrentProfileId(profile.id);
-
-    if (profile.role === ROLES.MANAGER) {
-      const { data: managedArtists } = await supabaseBrowser
-        .from("artistes")
-        .select("id")
-        .eq("manager_id", profile.id);
-
-      const artisteIds = (managedArtists || []).map(
-        (artiste: any) => artiste.id
-      );
-
-      const { data: split } = await supabaseBrowser
-        .from("splits")
-        .select("artiste_id")
-        .eq("id", splitId)
-        .single();
-
-      if (!split || !artisteIds.includes(split.artiste_id)) {
-        router.push("/splits");
-      }
-    }
-  }
-
-  checkAccess();
-}, [router, splitId]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    setSaving(true);
-
-    if (!currentRole || !currentProfileId) {
-  alert("Impossible de vérifier tes permissions.");
-  setSaving(false);
-  return;
-}
-
-if (currentRole === ROLES.MANAGER) {
-  const { data: managedArtists } = await supabaseBrowser
-    .from("artistes")
-    .select("id")
-    .eq("manager_id", currentProfileId);
-
-  const artisteIds = (managedArtists || []).map(
-    (artiste: any) => artiste.id
-  );
-
-  const { data: split } = await supabaseBrowser
-    .from("splits")
-    .select("artiste_id")
-    .eq("id", splitId)
-    .single();
-
-  if (!split || !artisteIds.includes(split.artiste_id)) {
-    alert("Tu n'as pas accès à ce split.");
-    setSaving(false);
-    return;
-  }
-}
-
-const { data: participants } = await supabaseBrowser
-  .from("split_participants")
-  .select("pourcentage")
-  .eq("split_id", splitId);
-
-const totalActuel =
-  (participants || []).reduce(
-    (sum: number, p: any) => sum + Number(p.pourcentage || 0),
-    0
-  ) + Number(pourcentage);
-
-if (totalActuel > 100) {
-  alert(
-    `Le total dépasserait 100 % (${totalActuel.toFixed(2)} %).`
-  );
-  setSaving(false);
-  return;
-}
-
-    const { error } = await supabaseBrowser
-      .from("split_participants")
-      .insert({
-        split_id: splitId,
-        nom,
-        role,
-        pourcentage: Number(pourcentage),
-        email,
-      });
-
-    if (error) {
-      alert(error.message);
-      setSaving(false);
-      return;
-    }
-
-    router.push(`/splits/${splitId}`);
-    router.refresh();
-  }
-
-  return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <div className="mb-10">
-        <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-          LMG Royalties
-        </p>
-
-        <h1 className="text-5xl font-bold">
-          Ajouter un participant
-        </h1>
-
-        <p className="mt-3 text-zinc-400">
-          Auteur, compositeur, producteur ou beatmaker.
-        </p>
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-3xl space-y-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-8"
-      >
-        <input
-          required
-          value={nom}
-          onChange={(e) => setNom(e.target.value)}
-          placeholder="Nom du participant"
-          className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4"
-        />
-
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4"
-        >
-          <option>Auteur</option>
-          <option>Compositeur</option>
-          <option>Producteur</option>
-          <option>Beatmaker</option>
-          <option>Interprète</option>
-        </select>
-
-        <input
-          required
-          type="number"
-          min="0"
-          max="100"
-          step="0.01"
-          value={pourcentage}
-          onChange={(e) => setPourcentage(e.target.value)}
-          placeholder="% de répartition"
-          className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4"
-        />
-
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email (optionnel)"
-          className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4"
-        />
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full rounded-xl bg-white px-5 py-4 font-medium text-black hover:bg-zinc-200 disabled:opacity-50"
-        >
-          {saving ? "Enregistrement..." : "Ajouter participant"}
-        </button>
-      </form>
-    </main>
-  );
+  return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-[1100px]">
+    <Link href={`/splits/${split.id}`} className="text-sm font-semibold text-zinc-500 hover:text-white">← Retour au split</Link>
+    <header className="mt-6 border-b border-zinc-900 pb-8"><p className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500">Répartition des droits</p><h1 className="mt-3 text-4xl font-bold md:text-6xl">Ajouter un participant</h1><p className="mt-3 text-zinc-500">{split.titre} · {project?.titre || "Projet non lié"}</p></header>
+    {locked ? <section className="mt-8 rounded-[26px] border border-yellow-500/20 bg-yellow-500/[0.05] p-7"><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-400">Split verrouillé</p><h2 className="mt-2 text-2xl font-bold">Les royalties ont déjà été générées</h2><p className="mt-3 text-sm leading-6 text-zinc-500">La répartition ne peut plus recevoir de participant, afin de préserver la cohérence entre le split et les royalties existantes.</p><Link href={`/splits/${split.id}`} className="mt-5 inline-block text-sm font-bold text-white">Retour à la fiche →</Link></section> : <SplitParticipantForm splitId={split.id} splitTitle={split.titre} currentTotal={currentTotal} participantCount={participants.length} />}
+  </div></main>;
 }
