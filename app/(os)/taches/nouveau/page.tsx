@@ -6,20 +6,12 @@ import { ROLES } from "@/lib/roles";
 export const dynamic = "force-dynamic";
 
 export default async function NouvelleTachePage() {
-  const profile = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER]);
+  const profile = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR]);
   const supabase = await createAuthenticatedSupabaseClient();
   const isAdmin = profile.role === ROLES.SUPER_ADMIN || profile.role === ROLES.ADMIN;
-  const isManager = profile.role === ROLES.MANAGER;
 
   let profilesQuery = supabase.from("profiles").select("id, nom, role, artiste_id").order("nom");
   let projectsQuery = supabase.from("projets").select("id, titre, artiste_id").order("titre");
-
-  if (isManager) {
-    const { data: managedArtists } = await supabase.from("artistes").select("id").eq("manager_id", profile.id);
-    const artistIds = (managedArtists || []).map((artist: any) => artist.id);
-    profilesQuery = profilesQuery.or(`id.eq.${profile.id}${artistIds.length ? `,artiste_id.in.(${artistIds.join(",")})` : ""}`);
-    projectsQuery = artistIds.length ? projectsQuery.in("artiste_id", artistIds) : projectsQuery.eq("id", "00000000-0000-0000-0000-000000000000");
-  }
 
   const [{ data: profiles }, { data: projets }, internalResult] = await Promise.all([
     profilesQuery,

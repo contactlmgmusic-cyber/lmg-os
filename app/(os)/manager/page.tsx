@@ -20,7 +20,7 @@ export default async function ManagerPage() {
         supabase.from("contrats").select("id, titre, statut, artiste_id, artistes(nom)").in("artiste_id", artistIds).order("created_at", { ascending: false }),
         supabase.from("sorties").select("id, titre, statut, date_sortie, artiste_id, artistes(nom)").in("artiste_id", artistIds).gte("date_sortie", today).order("date_sortie").limit(8),
         supabase.from("artist_approvals").select("id, titre, statut, artiste_id, artistes(nom)").in("artiste_id", artistIds).eq("statut", "En attente").order("created_at", { ascending: false }),
-        supabase.from("taches").select("id, titre, statut, priorite, deadline, responsable_id, assigned_to, created_by").or(`responsable_id.eq.${profile.id},assigned_to.eq.${profile.id},created_by.eq.${profile.id}`).order("deadline", { ascending: true, nullsFirst: false }),
+        supabase.from("taches").select("id, titre, statut, priorite, deadline, responsable_id, assigned_to, task_assignees(user_id)").order("deadline", { ascending: true, nullsFirst: false }),
       ])
     : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }];
 
@@ -29,7 +29,7 @@ export default async function ManagerPage() {
   const contracts = contractsResult.data || [];
   const releases = releasesResult.data || [];
   const approvals = approvalsResult.data || [];
-  const tasks = tasksResult.data || [];
+  const tasks = (tasksResult.data || []).filter((task: any) => task.responsable_id === profile.id || task.assigned_to === profile.id || task.task_assignees?.some((assignment: { user_id: string }) => assignment.user_id === profile.id));
   const openTasks = tasks.filter((task: any) => task.statut !== "Terminé");
   const lateTasks = openTasks.filter((task: any) => task.deadline && task.deadline < today);
   const activeProjects = projects.filter((project: any) => !["Sorti", "Archivé", "Terminé"].includes(project.statut));
@@ -37,9 +37,9 @@ export default async function ManagerPage() {
   const activeBookings = bookings.filter((booking: any) => !["Annulé", "Refusé", "Payé"].includes(booking.statut));
 
   return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10 md:py-10"><div className="mx-auto max-w-[1500px]">
-    <header className="flex flex-col gap-6 border-b border-zinc-900 pb-8 xl:flex-row xl:items-end xl:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.28em] text-yellow-500">Portefeuille manager</p><h1 className="mt-3 text-4xl font-bold tracking-tight md:text-6xl">Mes artistes, mes priorités</h1><p className="mt-3 max-w-3xl text-zinc-500">Une vue strictement limitée aux artistes qui te sont confiés et aux actions qui te concernent.</p></div><div className="flex flex-wrap gap-3"><Link href="/taches/nouveau" className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-black">+ Créer une tâche</Link><Link href="/chat" className="rounded-xl border border-zinc-800 px-5 py-3 text-sm font-bold text-zinc-300">Chats artistes</Link></div></header>
+    <header className="flex flex-col gap-6 border-b border-zinc-900 pb-8 xl:flex-row xl:items-end xl:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.28em] text-yellow-500">Portefeuille manager</p><h1 className="mt-3 text-4xl font-bold tracking-tight md:text-6xl">Mes artistes, mes priorités</h1><p className="mt-3 max-w-3xl text-zinc-500">Une vue strictement limitée aux artistes qui te sont confiés et aux actions qui te sont attribuées.</p></div><Link href="/chat" className="w-fit rounded-xl border border-zinc-800 px-5 py-3 text-sm font-bold text-zinc-300">Chats artistes</Link></header>
 
-    <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><Metric label="Artistes confiés" value={(artists || []).length} detail="Portefeuille actif" /><Metric label="Projets actifs" value={activeProjects.length} detail="Liés à tes artistes" /><Metric label="Mes tâches ouvertes" value={openTasks.length} detail="Assignées ou créées par toi" tone={lateTasks.length ? "warning" : "good"} /><Metric label="Alertes à traiter" value={lateTasks.length + approvals.length + pendingContracts.length} detail="Retards, validations, contrats" tone={lateTasks.length + approvals.length + pendingContracts.length ? "danger" : "good"} /></section>
+    <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><Metric label="Artistes confiés" value={(artists || []).length} detail="Portefeuille actif" /><Metric label="Projets actifs" value={activeProjects.length} detail="Liés à tes artistes" /><Metric label="Mes tâches ouvertes" value={openTasks.length} detail="Uniquement celles qui te sont attribuées" tone={lateTasks.length ? "warning" : "good"} /><Metric label="Alertes à traiter" value={lateTasks.length + approvals.length + pendingContracts.length} detail="Retards, validations, contrats" tone={lateTasks.length + approvals.length + pendingContracts.length ? "danger" : "good"} /></section>
 
     <section className="mt-8 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]"><Panel title="Mes priorités" subtitle="Uniquement les tâches auxquelles tu participes." href="/taches">{!openTasks.length ? <Empty text="Aucune tâche ouverte ne t’est attribuée." /> : openTasks.slice(0, 8).map((task: any) => <Row key={task.id} href={`/taches/${task.id}`} title={task.titre} meta={task.deadline ? formatDate(task.deadline) : "Sans échéance"} badge={task.priorite || "Moyenne"} tone={task.deadline && task.deadline < today ? "danger" : "default"} />)}</Panel><Panel title="Points de vigilance" subtitle="Ce qui bloque actuellement ton portefeuille." href="/notifications"><Alert label="Tâches en retard" value={lateTasks.length} /><Alert label="Validations en attente" value={approvals.length} /><Alert label="Contrats à finaliser" value={pendingContracts.length} /><Alert label="Bookings actifs" value={activeBookings.length} neutral /></Panel></section>
 
