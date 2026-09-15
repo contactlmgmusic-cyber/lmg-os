@@ -101,7 +101,7 @@ const executiveSections: SidebarSection[] = [
       { href: "/equipe", label: "Équipe" },
       { href: "/invitations", label: "Invitations" },
       { href: "/site-internet", label: "Site Internet" },
-      { href: "/admin", label: "Paramètres" },
+      { href: "/admin", label: "Console admin" },
     ],
   },
 ];

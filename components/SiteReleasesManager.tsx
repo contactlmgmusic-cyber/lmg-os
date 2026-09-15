@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-import { supabaseBrowser } from "@/lib/supabase-browser";
 
 type ArtistRelation = {
   nom: string | null;
@@ -56,39 +55,14 @@ export default function SiteReleasesManager() {
   async function loadReleases() {
     setLoading(true);
 
-    const { data, error } = await supabaseBrowser
-      .from("projets")
-      .select(`
-        id,
-        titre,
-        slug,
-        type,
-        date_sortie,
-        cover_url,
-        hero_image_url,
-        is_public,
-        featured,
-        show_in_carousel,
-        display_order,
-        artistes (
-          nom
-        )
-      `)
-      .order("display_order", {
-        ascending: true,
-      })
-      .order("date_sortie", {
-        ascending: false,
-      });
-
-    if (error) {
-      console.error(error);
-      alert(error.message);
+    const response = await fetch("/api/site-internet/releases", { cache: "no-store" });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      alert(result.error || "Chargement impossible.");
       setLoading(false);
       return;
     }
-
-    setReleases((data || []) as Release[]);
+    setReleases((result.releases || []) as Release[]);
     setLoading(false);
   }
 
@@ -113,13 +87,10 @@ export default function SiteReleasesManager() {
     setSavingId(id);
     setMessage("");
 
-    const { error } = await supabaseBrowser
-      .from("projets")
-      .update(patch)
-      .eq("id", id);
-
-    if (error) {
-      alert(error.message);
+    const response = await fetch("/api/site-internet/releases", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...patch }) });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      alert(result.error || "Modification impossible.");
       setSavingId(null);
       return false;
     }
@@ -130,6 +101,7 @@ export default function SiteReleasesManager() {
           ? {
               ...release,
               ...patch,
+              ...(result.patch || {}),
             }
           : release
       )
