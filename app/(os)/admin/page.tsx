@@ -1,190 +1,38 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
+import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-const cookieStore = await cookies();
+  const actor = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN]);
+  const supabase = await createAuthenticatedSupabaseClient();
+  const [{ data: profiles }, { data: invitations }, { count: publicArtists }, { count: publicReleases }] = await Promise.all([
+    supabase.from("profiles").select("id, role"),
+    supabase.from("invitations").select("id, email, role, status, created_at, expires_at").order("created_at", { ascending: false }).limit(5),
+    supabase.from("artistes").select("id", { count: "exact", head: true }).eq("is_public", true),
+    supabase.from("projets").select("id", { count: "exact", head: true }).eq("is_public", true),
+  ]);
+  const members = profiles || [];
+  const pendingInvitations = (invitations || []).filter((item: any) => item.status === "pending").length;
+  const superAdmins = members.filter((item: any) => item.role === ROLES.SUPER_ADMIN).length;
+  const admins = members.filter((item: any) => item.role === ROLES.ADMIN).length;
 
-const supabaseAuth = createServerClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-  {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll() {},
-    },
-  }
-);
-const supabase = supabaseAuth;
+  return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-[1500px]">
+    <header className="flex flex-col gap-5 border-b border-zinc-900 pb-8 xl:flex-row xl:items-end xl:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500">LMG Control</p><h1 className="mt-3 text-4xl font-bold md:text-6xl">Console d’administration</h1><p className="mt-3 max-w-3xl text-zinc-400">Accès, équipe et publication réunis dans un poste de contrôle unique.</p></div><span className="w-fit rounded-full border border-zinc-800 bg-zinc-950 px-4 py-2 text-xs font-bold text-zinc-400">Session · {actor.role === ROLES.SUPER_ADMIN ? "Super Admin" : "Admin"}</span></header>
 
-const {
-  data: { user },
-} = await supabaseAuth.auth.getUser();
+    <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><Metric label="Membres actifs" value={members.length} detail="Comptes LMG OS" /><Metric label="Administrateurs" value={superAdmins + admins} detail={`${superAdmins} Super Admin · ${admins} Admin`} /><Metric label="Invitations ouvertes" value={pendingInvitations} detail="Accès en attente" tone={pendingInvitations ? "warning" : "good"} /><Metric label="Contenus publics" value={(publicArtists || 0) + (publicReleases || 0)} detail={`${publicArtists || 0} artistes · ${publicReleases || 0} releases`} /></section>
 
-const { data: currentProfile } = user
-  ? await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single()
-  : { data: null };
+    <section className="mt-8 grid gap-5 lg:grid-cols-2"><ModuleCard eyebrow="Identités" title="Équipe et rôles" description="Consulte les membres, leurs responsabilités et leurs rattachements. Les changements de rôle sensibles sont protégés." href="/equipe" action="Gérer l’équipe" /><ModuleCard eyebrow="Accès" title="Invitations sécurisées" description="Génère des liens individuels, temporaires et à usage unique à transmettre depuis Gmail." href="/invitations" action="Gérer les invitations" /><ModuleCard eyebrow="Publication" title="Site Internet" description="Contrôle les artistes, releases et contenus mis en avant sur le site public." href="/site-internet" action="Piloter le site" /><ModuleCard eyebrow="Traçabilité" title="Activité du système" description="Consulte l’historique opérationnel de LMG OS et les actions enregistrées." href="/activity" action="Voir l’activité" /></section>
 
-if (
-  currentProfile?.role !== ROLES.SUPER_ADMIN &&
-  currentProfile?.role !== ROLES.ADMIN
-) {
-  return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <h1 className="text-3xl font-bold text-red-400">
-        Accès refusé
-      </h1>
-
-      <p className="mt-3 text-zinc-500">
-        Vous n'avez pas accès à l'administration.
-      </p>
-    </main>
-  );
+    <section className="mt-8 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]"><div className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-6"><div className="flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-500">Accès récents</p><h2 className="mt-2 text-2xl font-bold">Invitations</h2></div><Link href="/invitations" className="text-sm text-zinc-500 hover:text-white">Tout gérer →</Link></div><div className="mt-5 space-y-3">{!(invitations || []).length && <p className="rounded-2xl border border-dashed border-zinc-800 p-7 text-center text-sm text-zinc-600">Aucune invitation récente.</p>}{(invitations || []).map((item: any) => <div key={item.id} className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-black p-4"><div className="min-w-0"><p className="truncate font-semibold">{item.email}</p><p className="mt-1 text-xs text-zinc-600">{item.role}</p></div><Status status={item.status} /></div>)}</div></div>
+      <aside className="rounded-[26px] border border-green-500/20 bg-green-500/[0.05] p-6"><p className="text-xs font-bold uppercase tracking-[0.2em] text-green-400">Sécurité des accès</p><h2 className="mt-2 text-2xl font-bold">Protections actives</h2><ul className="mt-5 space-y-3 text-sm leading-6 text-zinc-400"><li>✓ Pages réservées aux administrateurs</li><li>✓ Invitations uniques et limitées à 7 jours</li><li>✓ Attribution Super Admin restreinte</li><li>✓ Dernier Super Admin protégé</li><li>✓ Aucun e-mail envoyé par LMG OS</li></ul></aside>
+    </section>
+  </div></main>;
 }
 
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, email, nom, role")
-    .order("role");
+function Metric({ label, value, detail, tone = "default" }: { label: string; value: number; detail: string; tone?: "default" | "warning" | "good" }) { const style = tone === "warning" ? "border-yellow-500/20 bg-yellow-500/[0.05]" : tone === "good" ? "border-green-500/20 bg-green-500/[0.05]" : "border-zinc-800 bg-zinc-950"; return <div className={`rounded-2xl border p-5 ${style}`}><p className="text-xs font-bold uppercase tracking-wider text-zinc-500">{label}</p><p className="mt-3 text-4xl font-bold">{value}</p><p className="mt-2 text-xs text-zinc-600">{detail}</p></div>; }
+function ModuleCard({ eyebrow, title, description, href, action }: { eyebrow: string; title: string; description: string; href: string; action: string }) { return <Link href={href} className="group rounded-[26px] border border-zinc-800 bg-zinc-950 p-6 transition hover:border-zinc-600"><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-500">{eyebrow}</p><h2 className="mt-2 text-2xl font-bold">{title}</h2><p className="mt-3 max-w-xl text-sm leading-6 text-zinc-500">{description}</p><p className="mt-6 text-sm font-bold text-zinc-400 group-hover:text-white">{action} →</p></Link>; }
+function Status({ status }: { status: string }) { const accepted = status === "accepted"; const expired = status === "expired"; return <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${accepted ? "bg-green-500/10 text-green-300" : expired ? "bg-red-500/10 text-red-300" : "bg-yellow-500/10 text-yellow-300"}`}>{accepted ? "Acceptée" : expired ? "Expirée" : "En attente"}</span>; }
 
-  const { data: invitations } = await supabase
-    .from("invitations")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(6);
-
-  const usersCount = profiles?.length || 0;
-  const superAdmins = profiles?.filter((p: any) => p.role === ROLES.SUPER_ADMIN).length || 0;
-  const managers = profiles?.filter((p: any) => p.role === ROLES.MANAGER).length || 0;
-  const artistes = profiles?.filter((p: any) => p.role === ROLES.ARTISTE).length || 0;
-
-  return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <div className="mb-10">
-        <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-          LMG Admin
-        </p>
-
-        <h1 className="text-5xl font-bold">Administration</h1>
-
-        <p className="mt-3 text-zinc-400">
-          Gestion des utilisateurs, rôles, invitations et accès LMG OS.
-        </p>
-      </div>
-
-      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-4">
-        <Card label="Utilisateurs" value={usersCount} />
-        <Card label="Super Admins" value={superAdmins} />
-        <Card label="Managers" value={managers} />
-        <Card label="Artistes" value={artistes} />
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.6fr]">
-        <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-          <h2 className="mb-6 text-3xl font-bold">Utilisateurs</h2>
-
-          {(!profiles || profiles.length === 0) && (
-            <p className="text-zinc-500">Aucun utilisateur trouvé.</p>
-          )}
-
-          <div className="space-y-4">
-            {profiles?.map((profile: any) => (
-              <div
-                key={profile.id}
-                className="rounded-2xl border border-zinc-800 bg-black p-5"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-xl font-semibold">
-                      {profile.nom || profile.email || "Utilisateur"}
-                    </h3>
-
-                    <p className="mt-1 text-sm text-zinc-500">
-                      {profile.email || "Email non renseigné"}
-                    </p>
-                  </div>
-
-                  <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
-                    {profile.role || "Aucun rôle"}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <aside className="space-y-6">
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-            <h2 className="text-3xl font-bold">Actions admin</h2>
-
-            <div className="mt-6 space-y-3">
-              <Link
-                href="/invitations"
-                className="block rounded-xl bg-white px-5 py-4 text-center font-medium text-black hover:bg-zinc-200"
-              >
-                Gérer invitations
-              </Link>
-
-              <Link
-                href="/equipe"
-                className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
-              >
-                Voir équipe
-              </Link>
-
-              <Link
-                href="/"
-                className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
-              >
-                Retour cockpit CEO
-              </Link>
-            </div>
-          </section>
-
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-            <h2 className="mb-6 text-3xl font-bold">Invitations récentes</h2>
-
-            {(!invitations || invitations.length === 0) && (
-              <p className="text-zinc-500">Aucune invitation récente.</p>
-            )}
-
-            <div className="space-y-4">
-              {invitations?.map((invitation: any) => (
-                <div
-                  key={invitation.id}
-                  className="rounded-2xl border border-zinc-800 bg-black p-5"
-                >
-                  <p className="font-semibold">
-                    {invitation.email || "Email non renseigné"}
-                  </p>
-
-                  <p className="mt-1 text-sm text-zinc-500">
-                    {invitation.role || "Rôle non renseigné"}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-        </aside>
-      </div>
-    </main>
-  );
-}
-
-function Card({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-      <p className="text-sm text-zinc-500">{label}</p>
-      <h2 className="mt-3 text-5xl font-bold">{value}</h2>
-    </div>
-  );
-}

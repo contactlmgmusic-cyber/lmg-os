@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
-
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
@@ -13,20 +11,7 @@ export default async function SiteInternetPage() {
     ROLES.ADMIN,
   ]);
 
-  const cookieStore = await cookies();
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll() {},
-      },
-    }
-  );
+  const supabase = await createAuthenticatedSupabaseClient();
 
   const [
     { count: publicArtistsCount },
