@@ -127,7 +127,7 @@ export default function ChatPriveDetailPage() {
           type: "Chat",
           titre: "Nouveau message privé",
           description: message.slice(0, 100),
-          lien: `/chat/prive/${conversationId}`,
+          lien: `/chat/prive/conversation/${conversationId}`,
           niveau: "Info",
           lu: false,
           is_read: false,
