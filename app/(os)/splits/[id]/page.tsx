@@ -1,237 +1,75 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { notFound } from "next/navigation";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
+import { canGenerateRoyalties } from "@/lib/permissions";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
+const allowed = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER];
 
-export default async function SplitDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  await requireRole([
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.ARTISTIC_DIRECTOR,
-    ROLES.MANAGER,
-  ]);
-
+export default async function SplitDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const profile = await requireRole(allowed);
   const { id } = await params;
-
-  const cookieStore = await cookies();
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll() {},
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, role")
-    .eq("id", user?.id)
-    .single();
-
-  let splitQuery = supabase
-    .from("splits")
-    .select(`
-      *,
-      projets ( id, titre ),
-      artistes ( id, nom ),
-      split_participants (
-        id,
-        nom,
-        role,
-        pourcentage,
-        email
-      )
-    `)
-    .eq("id", id);
-
-  if (profile?.role === ROLES.MANAGER) {
-    const { data: managedArtists } = await supabase
-      .from("artistes")
-      .select("id")
-      .eq("manager_id", profile.id);
-
-    const artisteIds = (managedArtists || []).map(
-      (artiste: any) => artiste.id
-    );
-
-    if (artisteIds.length === 0) {
-      splitQuery = splitQuery.in("artiste_id", [
-        "00000000-0000-0000-0000-000000000000",
-      ]);
-    } else {
-      splitQuery = splitQuery.in("artiste_id", artisteIds);
-    }
-  }
-
-  const { data: split, error } = await splitQuery.single();
-
-  if (error || !split) {
-    return (
-      <main className="p-10 text-white">
-        <p className="text-red-400">Split sheet introuvable.</p>
-      </main>
-    );
-  }
+  const supabase = await createAuthenticatedSupabaseClient();
+  const { data: split, error } = await supabase.from("splits").select(`
+    id, titre, statut, notes, artiste_id, projet_id, created_at,
+    projets(id, titre), artistes(id, nom),
+    split_participants(id, nom, role, pourcentage, email),
+    royalties(id, montant_du, statut)
+  `).eq("id", id).single();
+  if (error || !split) notFound();
 
   const participants = split.split_participants || [];
+  const total = participants.reduce((sum: number, item: any) => sum + Number(item.pourcentage || 0), 0);
+  const complete = participants.length > 0 && Math.abs(total - 100) < 0.001;
+  const remaining = 100 - total;
+  const missingEmails = participants.filter((item: any) => !item.email).length;
+  const missingRoles = participants.filter((item: any) => !item.role).length;
+  const royalties = split.royalties || [];
+  const generated = royalties.length > 0;
+  const royaltiesTotal = royalties.reduce((sum: number, item: any) => sum + Number(item.montant_du || 0), 0);
+  const project: any = relation(split.projets);
+  const artist: any = relation(split.artistes);
+  const canGenerate = canGenerateRoyalties(profile.role);
+  const canDelete = profile.role !== ROLES.MANAGER;
 
-  const totalPourcentage = participants.reduce(
-    (acc: number, p: any) => acc + Number(p.pourcentage || 0),
-    0
-  );
+  return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-[1500px]">
+    <Link href="/splits" className="text-sm font-semibold text-zinc-500 hover:text-white">← Retour aux split sheets</Link>
+    <header className="mt-6 flex flex-col gap-6 border-b border-zinc-900 pb-8 xl:flex-row xl:items-end xl:justify-between">
+      <div><p className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500">Contrôle des droits</p><h1 className="mt-3 text-4xl font-bold md:text-6xl">{split.titre || "Split Sheet"}</h1><p className="mt-3 text-zinc-500">{artist?.nom || "Artiste non lié"} · {project?.titre || "Projet non lié"}</p></div>
+      <div className="flex flex-wrap gap-3"><State complete={complete} total={total} />{generated && <span className="rounded-full bg-blue-500/10 px-3 py-2 text-xs font-bold text-blue-300">Royalties générées</span>}</div>
+    </header>
 
-  return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <Link href="/splits" className="text-sm text-zinc-400 hover:text-white">
-        ← Retour split sheets
-      </Link>
+    <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <Metric label="Total réparti" value={`${total}%`} detail={complete ? "Répartition complète" : remaining > 0 ? `${remaining}% restant(s)` : `${Math.abs(remaining)}% en trop`} tone={complete ? "good" : "warning"} />
+      <Metric label="Participants" value={String(participants.length)} detail={participants.length ? "Bénéficiaires renseignés" : "Aucun participant"} />
+      <Metric label="Informations manquantes" value={String(missingEmails + missingRoles)} detail={`${missingEmails} email(s) · ${missingRoles} rôle(s)`} tone={missingEmails + missingRoles ? "warning" : "good"} />
+      <Metric label="Royalties liées" value={euros(royaltiesTotal)} detail={generated ? `${royalties.length} ligne(s) générée(s)` : "Pas encore générées"} />
+    </section>
 
-      <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[1fr_420px]">
-        <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-          <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-            Split Sheet
-          </p>
+    <section className="mt-8 grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+      <section className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 md:p-6">
+        <div className="flex flex-col gap-4 border-b border-zinc-900 pb-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-500">Répartition</p><h2 className="mt-2 text-2xl font-bold">Participants</h2><p className="mt-2 text-sm text-zinc-500">Identité, rôle et part de chaque bénéficiaire.</p></div><Link href={`/splits/${split.id}/participants/nouveau`} className="rounded-xl bg-white px-4 py-3 text-center text-sm font-bold text-black">+ Ajouter un participant</Link></div>
+        {!participants.length ? <div className="mt-6 rounded-2xl border border-dashed border-zinc-800 p-10 text-center text-sm text-zinc-600">Ajoute les bénéficiaires pour commencer la répartition.</div> : <div>{participants.sort((a: any, b: any) => Number(b.pourcentage || 0) - Number(a.pourcentage || 0)).map((participant: any) => <Participant key={participant.id} participant={participant} />)}</div>}
+        <div className="mt-5 h-3 overflow-hidden rounded-full bg-black"><div className={`h-full rounded-full ${complete ? "bg-green-400" : total > 100 ? "bg-red-400" : "bg-yellow-400"}`} style={{ width: `${Math.min(total, 100)}%` }} /></div>
+        {!complete && <div className={`mt-4 rounded-xl border p-4 text-sm ${total > 100 ? "border-red-500/20 bg-red-500/[0.05] text-red-300" : "border-yellow-500/20 bg-yellow-500/[0.05] text-yellow-300"}`}>{total > 100 ? `Répartition dépassée de ${Math.abs(remaining)} %. Corrige les pourcentages avant toute génération.` : `Il reste ${remaining} % à attribuer avant que le split soit exploitable.`}</div>}
+      </section>
 
-          <h1 className="mt-3 text-5xl font-bold">{split.titre}</h1>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <span className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300">
-              {split.statut || "Brouillon"}
-            </span>
-
-            <span
-              className={`rounded-full border px-4 py-2 text-sm ${
-                totalPourcentage === 100
-                  ? "border-green-500/40 text-green-300"
-                  : "border-red-500/40 text-red-300"
-              }`}
-            >
-              Total : {totalPourcentage}%
-            </span>
-          </div>
-
-          {totalPourcentage !== 100 && (
-            <div className="mt-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-5 text-red-200">
-              Attention : le total des splits doit être égal à 100%.
-            </div>
-          )}
-
-          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Info label="Artiste" value={split.artistes?.nom || "Non lié"} />
-            <Info label="Projet" value={split.projets?.titre || "Non lié"} />
-          </div>
-
-          <div className="mt-8 rounded-2xl border border-zinc-800 bg-black p-6">
-            <h2 className="text-2xl font-bold">Notes</h2>
-
-            <p className="mt-4 leading-relaxed text-zinc-400">
-              {split.notes || "Aucune note renseignée."}
-            </p>
-          </div>
-
-          <div className="mt-8">
-            <h2 className="mb-6 text-3xl font-bold">Participants</h2>
-
-            {participants.length === 0 && (
-              <p className="text-zinc-500">Aucun participant ajouté.</p>
-            )}
-
-            <div className="space-y-4">
-              {participants.map((participant: any) => (
-                <div
-                  key={participant.id}
-                  className="rounded-2xl border border-zinc-800 bg-black p-5"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <h3 className="text-xl font-semibold">
-                        {participant.nom}
-                      </h3>
-
-                      <p className="mt-1 text-sm text-zinc-500">
-                        {participant.role || "Rôle non renseigné"} •{" "}
-                        {participant.email || "Email non renseigné"}
-                      </p>
-                    </div>
-
-                    <p className="text-3xl font-bold">
-                      {Number(participant.pourcentage || 0)}%
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      <aside className="space-y-6">
+        <section className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 md:p-6"><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-500">Contexte</p><h2 className="mt-2 text-2xl font-bold">Rattachements</h2><div className="mt-5 space-y-3"><Info label="Artiste" value={artist?.nom || "Non lié"} href={artist?.id ? `/artistes/${artist.id}` : undefined} /><Info label="Projet" value={project?.titre || "Non lié"} href={project?.id ? `/projets/${project.id}` : undefined} /><Info label="Statut interne" value={split.statut || "Brouillon"} /></div>{split.notes && <div className="mt-5 border-t border-zinc-900 pt-5"><p className="text-xs text-zinc-600">Notes</p><p className="mt-2 text-sm leading-6 text-zinc-400">{split.notes}</p></div>}</section>
+        <section className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 md:p-6"><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-500">Workflow</p><h2 className="mt-2 text-2xl font-bold">Prochaine action</h2><p className="mt-3 text-sm leading-6 text-zinc-500">{generated ? "Les royalties ont déjà été générées depuis ce split. Consulte leur suivi avant toute modification de la répartition." : complete ? canGenerate ? "Le split est complet et prêt pour la génération des royalties." : "Le split est complet. La Direction peut maintenant générer les royalties." : "Complète la répartition et les informations des participants avant de générer les royalties."}</p>
+          <div className="mt-5 space-y-3">{canGenerate && complete && !generated && <Link href="/royalties/generer" className="block rounded-xl bg-white px-5 py-4 text-center text-sm font-bold text-black">Générer les royalties</Link>}{generated && <Link href="/royalties" className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-sm font-bold text-zinc-300">Voir les royalties</Link>}<Link href={`/splits/${split.id}/participants/nouveau`} className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-sm font-bold text-zinc-300">Ajouter un participant</Link>{canDelete && <Link href={`/splits/${split.id}/supprimer`} className="block rounded-xl border border-red-500/20 bg-red-500/[0.05] px-5 py-4 text-center text-sm font-bold text-red-300">Supprimer le split</Link>}</div>
         </section>
-
-        <aside className="space-y-6">
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-            <h2 className="text-3xl font-bold">Actions</h2>
-
-            <div className="mt-6 space-y-3">
-              <Link
-                href={`/splits/${split.id}/participants/nouveau`}
-                className="block rounded-xl bg-white px-5 py-4 text-center font-medium text-black hover:bg-zinc-200"
-              >
-                Ajouter participant
-              </Link>
-
-              {split.projets?.id && (
-                <Link
-                  href={`/projets/${split.projets.id}`}
-                  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
-                >
-                  Voir projet
-                </Link>
-              )}
-
-              {split.artistes?.id && (
-                <Link
-                  href={`/artistes/${split.artistes.id}`}
-                  className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
-                >
-                  Voir artiste
-                </Link>
-              )}
-
-              {profile?.role !== ROLES.MANAGER && (
-  <Link
-    href={`/splits/${split.id}/supprimer`}
-    className="block rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-center text-red-300 hover:bg-red-500/20"
-  >
-    Supprimer split sheet
-  </Link>
-)}
-            </div>
-          </section>
-        </aside>
-      </div>
-    </main>
-  );
+      </aside>
+    </section>
+  </div></main>;
 }
 
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-zinc-800 bg-black p-5">
-      <p className="text-sm text-zinc-500">{label}</p>
-      <p className="mt-2 text-xl font-semibold">{value}</p>
-    </div>
-  );
-}
+type Tone = "default" | "good" | "warning";
+function Metric({ label, value, detail, tone = "default" }: { label: string; value: string; detail: string; tone?: Tone }) { const styles = { default: "border-zinc-800 bg-zinc-950", good: "border-green-500/20 bg-green-500/[0.05]", warning: "border-yellow-500/25 bg-yellow-500/[0.06]" }; return <div className={`rounded-2xl border p-5 ${styles[tone]}`}><p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{label}</p><p className="mt-3 text-3xl font-bold">{value}</p><p className="mt-2 text-xs text-zinc-600">{detail}</p></div>; }
+function Participant({ participant }: { participant: any }) { const missing = !participant.email || !participant.role; return <div className="grid gap-3 border-b border-zinc-900 py-5 last:border-0 sm:grid-cols-[1fr_auto] sm:items-center"><div className="min-w-0"><div className="flex items-center gap-2"><p className="truncate font-semibold">{participant.nom || "Participant sans nom"}</p>{missing && <span className="rounded-full bg-yellow-500/10 px-2 py-1 text-[10px] font-bold text-yellow-300">À compléter</span>}</div><p className="mt-1 text-xs text-zinc-600">{participant.role || "Rôle manquant"} · {participant.email || "Email manquant"}</p></div><p className="text-2xl font-bold">{Number(participant.pourcentage || 0)}%</p></div>; }
+function Info({ label, value, href }: { label: string; value: string; href?: string }) { const content = <><p className="text-xs text-zinc-600">{label}</p><p className="mt-1 font-semibold">{value}</p></>; return href ? <Link href={href} className="block rounded-xl border border-zinc-800 bg-black p-4 hover:border-zinc-600">{content}<p className="mt-2 text-[11px] text-zinc-700">Ouvrir →</p></Link> : <div className="rounded-xl border border-zinc-800 bg-black p-4">{content}</div>; }
+function State({ complete, total }: { complete: boolean; total: number }) { return <span className={`rounded-full px-3 py-2 text-xs font-bold ${complete ? "bg-green-500/10 text-green-300" : total > 100 ? "bg-red-500/10 text-red-300" : "bg-yellow-500/10 text-yellow-300"}`}>{complete ? "Complet · 100 %" : total > 100 ? `Dépassé · ${total}%` : `Incomplet · ${total}%`}</span>; }
+function relation(input: any) { return Array.isArray(input) ? input[0] : input; }
+function euros(amount: number) { return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(amount || 0); }
