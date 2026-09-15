@@ -33,6 +33,10 @@ export default async function FinancesDashboardPage() {
   const tresorerie = encaisses - payees;
   const aEncaisser = outstanding(finances, "Revenu");
   const engagees = outstanding(finances, "Dépense");
+  const staleRevenues = finances.filter((item: any) => item.type === "Revenu" && isStale(item));
+  const staleExpenses = finances.filter((item: any) => item.type === "Dépense" && isStale(item));
+  const staleRevenueTotal = totalItems(staleRevenues);
+  const staleExpenseTotal = totalItems(staleExpenses);
   const royaltiesDues = royalties.filter((r: any) => r.statut !== "Payé").reduce((total: number, r: any) => total + Number(r.montant_du || 0), 0);
   const marge = revenus > 0 ? Math.round((resultat / revenus) * 100) : 0;
   const roi = depenses > 0 ? Math.round((resultat / depenses) * 100) : 0;
@@ -75,8 +79,10 @@ export default async function FinancesDashboardPage() {
   const score = financeScore(revenus, marge, roi, deficitaires.length, royaltiesDues);
   const alerts = [
     royaltiesDues > 0 ? { label: "Royalties à régler", value: euros(royaltiesDues), detail: "Montants générés pas encore marqués comme payés.", href: "/royalties", tone: "warning" } : null,
-    aEncaisser > 0 ? { label: "Revenus à encaisser", value: euros(aEncaisser), detail: "Revenus prévus ou facturés pas encore encaissés.", href: "/finances", tone: "warning" } : null,
-    engagees > 0 ? { label: "Dépenses engagées", value: euros(engagees), detail: "Dépenses prévues ou facturées pas encore réglées.", href: "/finances", tone: "neutral" } : null,
+    staleRevenueTotal > 0 ? { label: "Encaissements sans mise à jour", value: euros(staleRevenueTotal), detail: `${staleRevenues.length} revenu(s) ouvert(s) depuis plus de 30 jours.`, href: "/finances?suivi=retard&type=Revenu", tone: "danger" } : null,
+    staleExpenseTotal > 0 ? { label: "Règlements sans mise à jour", value: euros(staleExpenseTotal), detail: `${staleExpenses.length} dépense(s) ouverte(s) depuis plus de 30 jours.`, href: "/finances?suivi=retard&type=D%C3%A9pense", tone: "danger" } : null,
+    aEncaisser > 0 ? { label: "Revenus à encaisser", value: euros(aEncaisser), detail: "Revenus prévus ou facturés pas encore encaissés.", href: "/finances?suivi=ouvert&type=Revenu", tone: "warning" } : null,
+    engagees > 0 ? { label: "Dépenses engagées", value: euros(engagees), detail: "Dépenses prévues ou facturées pas encore réglées.", href: "/finances?suivi=ouvert&type=D%C3%A9pense", tone: "neutral" } : null,
     deficitaires.length > 0 ? { label: "Projets déficitaires", value: String(deficitaires.length), detail: "Projets dont les dépenses dépassent les revenus.", href: "#rentabilite", tone: "danger" } : null,
     resultat < 0 ? { label: "Résultat global négatif", value: euros(resultat), detail: "Les dépenses enregistrées dépassent les revenus.", href: "/finances", tone: "danger" } : null,
   ].filter(Boolean) as Alert[];
@@ -105,7 +111,7 @@ export default async function FinancesDashboardPage() {
 
     <section className="mt-8 grid gap-6 xl:grid-cols-2">
       <Panel eyebrow="Monitoring" title="Alertes financières" description="Les points qui demandent un contrôle ou une décision de la direction.">{!alerts.length ? <Empty text="Aucune alerte financière active." good /> : <div className="space-y-3">{alerts.map((alert) => <AlertRow key={alert.label} alert={alert} />)}</div>}</Panel>
-      <Panel eyebrow="Engagements" title="Ce qui reste à sécuriser" description="Montants prévus ou dus, distincts des flux déjà encaissés et payés."><div className="grid gap-3 sm:grid-cols-2"><Commitment label="Revenus à encaisser" value={aEncaisser} href="/finances" /><Commitment label="Dépenses engagées" value={engagees} href="/finances" /><Commitment label="Royalties à payer" value={royaltiesDues} href="/royalties" /><Commitment label="Trésorerie après engagements" value={tresorerie + aEncaisser - engagees - royaltiesDues} /></div></Panel>
+      <Panel eyebrow="Engagements" title="Ce qui reste à sécuriser" description="Montants prévus ou dus, distincts des flux déjà encaissés et payés."><div className="grid gap-3 sm:grid-cols-2"><Commitment label="Revenus à encaisser" value={aEncaisser} href="/finances?suivi=ouvert&type=Revenu" /><Commitment label="Dépenses engagées" value={engagees} href="/finances?suivi=ouvert&type=D%C3%A9pense" /><Commitment label="Royalties à payer" value={royaltiesDues} href="/royalties?statut=%C3%80+payer" /><Commitment label="Trésorerie après engagements" value={tresorerie + aEncaisser - engagees - royaltiesDues} /></div></Panel>
     </section>
 
     <section id="rentabilite" className="mt-8 grid scroll-mt-8 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
@@ -138,5 +144,7 @@ function Status({ score }: { score: number }) { const label = score >= 75 ? "Sol
 function bar(score: number) { return score >= 75 ? "bg-green-400" : score >= 50 ? "bg-yellow-400" : "bg-red-400"; }
 function sum(items: any[], type: "Revenu" | "Dépense", status?: string) { return items.filter((item) => item.type === type && item.statut !== "Annulé" && (!status || item.statut === status)).reduce((total, item) => total + Number(item.montant || 0), 0); }
 function outstanding(items: any[], type: "Revenu" | "Dépense") { return items.filter((item) => item.type === type && !["Payé", "Annulé"].includes(item.statut)).reduce((total, item) => total + Number(item.montant || 0), 0); }
+function totalItems(items: any[]) { return items.reduce((total, item) => total + Number(item.montant || 0), 0); }
+function isStale(item: any) { if (!item.date_operation || ["Payé", "Annulé"].includes(item.statut)) return false; const date = new Date(`${item.date_operation}T12:00:00`); const limit = new Date(); limit.setHours(0, 0, 0, 0); limit.setDate(limit.getDate() - 30); return !Number.isNaN(date.getTime()) && date < limit; }
 function financeScore(revenus: number, marge: number, roi: number, deficitaires: number, royalties: number) { if (!revenus) return 50; return Math.max(0, Math.min(100, Math.round(55 + Math.max(-25, Math.min(20, marge / 2)) + Math.max(-20, Math.min(15, roi / 5)) - Math.min(15, deficitaires * 4) - Math.min(10, (royalties / revenus) * 20)))); }
 function euros(value: number) { return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value || 0); }
