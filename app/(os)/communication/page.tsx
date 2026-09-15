@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
 const channels = [
   {
@@ -36,7 +38,8 @@ const colorClasses = {
   cyan: "border-cyan-400/25 bg-cyan-400/10 text-cyan-300",
 };
 
-export default function CommunicationPage() {
+export default async function CommunicationPage() {
+  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR]);
   return (
     <main className="min-h-screen bg-black px-4 py-6 text-white sm:px-6 xl:px-10 xl:py-8">
       <div className="mx-auto max-w-[1500px]">

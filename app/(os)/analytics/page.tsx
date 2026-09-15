@@ -17,8 +17,6 @@ export default async function AnalyticsPage() {
 await requireRole([
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
-  ROLES.ARTISTIC_DIRECTOR,
-  ROLES.MANAGER,
 ]);
 
   const { data: analytics } = await supabase

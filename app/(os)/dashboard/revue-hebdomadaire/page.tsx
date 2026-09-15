@@ -5,7 +5,7 @@ import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
-const allowed = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER];
+const allowed = [ROLES.SUPER_ADMIN, ROLES.ADMIN];
 
 export default async function WeeklyReviewPage() {
   await requireRole(allowed);

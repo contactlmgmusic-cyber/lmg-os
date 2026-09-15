@@ -7,7 +7,7 @@ import { getActiveCompanyQuarter, getCompanyQuarterEnd } from "@/lib/company-qua
 
 export const dynamic = "force-dynamic";
 
-const allowed = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER];
+const allowed = [ROLES.SUPER_ADMIN, ROLES.ADMIN];
 type PageProps = { searchParams: Promise<{ trimestre?: string }> };
 
 export default async function CompanyObjectivesPage({ searchParams }: PageProps) {

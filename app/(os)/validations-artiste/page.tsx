@@ -7,33 +7,39 @@ export const dynamic = "force-dynamic";
 
 export default async function ValidationsArtistePage() {
   const supabase = await createAuthenticatedSupabaseClient();
-  await requireRole([
+  const profile = await requireRole([
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
   ROLES.MANAGER,
   ROLES.ARTISTIC_DIRECTOR,
 ]);
 
-  const { data: validations } = await supabase
+  const isManager = profile.role === ROLES.MANAGER;
+  let validationsQuery = supabase
     .from("artist_approvals")
-    .select(`
+    .select(isManager ? `
+      *,
+      artistes!inner (id, nom, manager_id)
+    ` : `
       *,
       artistes (
         id,
         nom
       )
-    `)
-    .order("created_at", { ascending: false });
+    `);
+  if (isManager) validationsQuery = validationsQuery.eq("artistes.manager_id", profile.id);
+  const { data: validations } = await validationsQuery.order("created_at", { ascending: false });
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
+    <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10">
       <div className="mb-10 flex items-center justify-between">
         <div>
           <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
             Artist Approvals
           </p>
 
-          <h1 className="text-5xl font-bold">Validations artiste</h1>
+          <h1 className="text-4xl font-bold tracking-tight md:text-6xl">Validations artiste</h1>
+          <p className="mt-3 text-zinc-500">{isManager ? "Demandes concernant uniquement mes artistes." : "Décisions artistiques à préparer, suivre et historiser."}</p>
         </div>
 
         <Link
@@ -52,7 +58,7 @@ export default async function ValidationsArtistePage() {
         {validations?.map((item: any) => (
           <div
             key={item.id}
-            className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6"
+            className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-6"
           >
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>

@@ -105,14 +105,14 @@ export default async function RolloutPage() {
   }
 
   return (
-    <main className="p-6 text-white md:p-10">
-      <div className="mb-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+    <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10">
+      <div className="mb-8 flex flex-col gap-6 border-b border-zinc-900 pb-8 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-yellow-400">
             Stratégie de sortie
           </p>
 
-          <h1 className="text-5xl font-bold">
+          <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
             Planning rollout
           </h1>
 

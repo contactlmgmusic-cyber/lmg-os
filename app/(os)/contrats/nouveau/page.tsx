@@ -6,7 +6,7 @@ import { ROLES } from "@/lib/roles";
 export const dynamic = "force-dynamic";
 
 export default async function NouveauContratPage() {
-  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER]);
+  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER]);
   const supabase = await createAuthenticatedSupabaseClient();
   const [{ data: artists, error: artistError }, { data: projects, error: projectError }] = await Promise.all([
     supabase.from("artistes").select("id, nom").order("nom"),

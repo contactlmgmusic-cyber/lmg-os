@@ -136,8 +136,7 @@ const artisticDirectorSections: SidebarSection[] = [
       { href: "/sorties", label: "Catalogue des sorties" },
       { href: "/release-planner", label: "Planning des sorties" },
       { href: "/rollout", label: "Rollouts" },
-      { href: "/taches", label: "Tâches de l’équipe" },
-      { href: "/mes-taches", label: "Mes tâches" },
+      { href: "/taches", label: "Mes tâches" },
       { href: "/drive", label: "Fichiers & Drive" },
     ],
   },
@@ -149,7 +148,6 @@ const artisticDirectorSections: SidebarSection[] = [
       { href: "/campagnes", label: "Campagnes" },
       { href: "/medias", label: "Relations médias" },
       { href: "/influenceurs", label: "Influenceurs" },
-      { href: "/partenaires", label: "Partenaires" },
     ],
   },
   {
@@ -169,7 +167,7 @@ const managerSections: SidebarSection[] = [
     eyebrow: "01",
     links: [
       { href: "/manager", label: "Tableau de bord" },
-      { href: "/mon-travail", label: "Mon travail" },
+      { href: "/taches", label: "Mes tâches" },
       { href: "/manager/kpi", label: "Mes indicateurs" },
       { href: "/calendrier", label: "Mon calendrier" },
     ],
@@ -188,12 +186,10 @@ const managerSections: SidebarSection[] = [
     eyebrow: "03",
     links: [
       { href: "/projets", label: "Projets" },
-      { href: "/projets-internes", label: "Projets internes" },
       { href: "/sorties", label: "Sorties" },
       { href: "/release-planner", label: "Planning" },
       { href: "/rollout", label: "Rollouts" },
-      { href: "/taches", label: "Tâches" },
-      { href: "/drive/manager", label: "Fichiers" },
+      { href: "/drive", label: "Fichiers" },
     ],
   },
   {
@@ -219,7 +215,7 @@ const managerSections: SidebarSection[] = [
     title: "Communication",
     eyebrow: "06",
     links: [
-      { href: "/chat", label: "Chat d’équipe", badge: "chat" },
+      { href: "/chat", label: "Chats de mes artistes", badge: "chat" },
       { href: "/chat/prive", label: "Messages privés", badge: "chat" },
       { href: "/notifications", label: "Notifications", badge: "notifications" },
     ],
@@ -250,7 +246,7 @@ const artisteSections: SidebarSection[] = [
     title: "Communication",
     eyebrow: "03",
     links: [
-      { href: "/chat", label: "Chat d’équipe", badge: "chat" },
+      { href: "/chat", label: "Chat avec mon équipe", badge: "chat" },
       { href: "/chat/prive", label: "Messages privés", badge: "chat" },
       { href: "/notifications", label: "Notifications", badge: "notifications" },
     ],
@@ -264,14 +260,12 @@ const prestataireSections: SidebarSection[] = [
     links: [
       { href: "/mes-taches", label: "Mes tâches" },
       { href: "/calendrier", label: "Mon calendrier" },
-      { href: "/drive", label: "Mes fichiers" },
     ],
   },
   {
     title: "Communication",
     eyebrow: "02",
     links: [
-      { href: "/chat", label: "Chat d’équipe", badge: "chat" },
       { href: "/chat/prive", label: "Messages privés", badge: "chat" },
       { href: "/notifications", label: "Notifications", badge: "notifications" },
     ],

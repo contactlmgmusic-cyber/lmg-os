@@ -9,7 +9,6 @@ const allowedRoles = [
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
   ROLES.ARTISTIC_DIRECTOR,
-  ROLES.MANAGER,
 ];
 
 type WorkItem = {

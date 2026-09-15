@@ -25,6 +25,8 @@ type Channel = {
   slug: string;
   type: string | null;
   allowed_roles: string[];
+  artiste_id: string | null;
+  projet_id: string | null;
 };
 
 type Message = {
@@ -99,12 +101,16 @@ function ChatContent() {
     }
 
     const currentProfile = profileData as CurrentProfile;
+    if (currentProfile.role === "prestataire") {
+      window.location.href = "/chat/prive";
+      return;
+    }
     setProfile(currentProfile);
 
     const { data: channelData, error: channelError } =
       await supabaseBrowser
         .from("chat_channels")
-        .select("id, name, slug, type, allowed_roles")
+        .select("id, name, slug, type, allowed_roles, artiste_id, projet_id")
         .contains("allowed_roles", [currentProfile.role])
         .order("created_at", { ascending: true });
 
@@ -213,6 +219,14 @@ function ChatContent() {
   const activeChannelData = channels.find(
     (channel) => channel.slug === activeChannel
   );
+  const isManager = profile?.role === "manager";
+  const isArtist = profile?.role === "artiste";
+  const workspaceTitle = isManager ? "Chats de mes artistes" : isArtist ? "Chat avec mon équipe" : "Chat d’équipe";
+  const workspaceDescription = isManager
+    ? "Uniquement les canaux rattachés à vos artistes et à leurs projets."
+    : isArtist
+      ? "Les échanges liés à votre carrière et à vos projets avec l’équipe qui vous accompagne."
+      : "Les décisions collectives, les informations de projet et les échanges opérationnels LMG.";
 
   const filteredMessages = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -278,30 +292,6 @@ function ChatContent() {
 
     setMessage("");
 
-    const { data: channelMembers } = await supabaseBrowser
-      .from("profiles")
-      .select("id, role")
-      .neq("id", profile.id);
-
-    const recipients = (channelMembers || []).filter((member) =>
-      activeChannelData.allowed_roles.includes(member.role)
-    );
-
-    if (recipients.length > 0) {
-      await supabaseBrowser.from("notifications").insert(
-        recipients.map((member) => ({
-          user_id: member.id,
-          type: "Chat",
-          titre: `Nouveau message dans #${activeChannelData.name}`,
-          description: `${profile.nom || "Un membre"} : ${cleanMessage.slice(0, 80)}`,
-          lien: `/chat?channel=${activeChannelData.slug}`,
-          niveau: "Info",
-          lu: false,
-          is_read: false,
-        }))
-      );
-    }
-
     setSending(false);
   }
 
@@ -339,20 +329,20 @@ function ChatContent() {
               Communication · Équipe
             </p>
             <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">
-              Chat d’équipe
+              {workspaceTitle}
             </h1>
             <p className="mt-3 text-zinc-400">
-              Les décisions collectives, les informations de projet et les échanges opérationnels LMG.
+              {workspaceDescription}
             </p>
           </div>
 
           <nav className="flex flex-wrap gap-2">
-            <Link
+            {!isManager && !isArtist && <Link
               href="/communication"
               className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-zinc-300 transition hover:border-zinc-600"
             >
               Vue globale
-            </Link>
+            </Link>}
             <Link
               href="/chat/prive"
               className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-black transition hover:bg-zinc-200"
@@ -455,7 +445,7 @@ function ChatContent() {
                         : "Ce canal est encore vide."}
                     </p>
                     <p className="mt-2 text-sm text-zinc-600">
-                      {!search && "Lancez la première discussion de l’équipe."}
+                      {!search && "Lancez la première discussion avec les personnes concernées."}
                     </p>
                   </div>
                 </div>

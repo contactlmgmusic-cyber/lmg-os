@@ -84,13 +84,15 @@ const {
   const canCreateProject =
   currentProfile?.role === ROLES.SUPER_ADMIN ||
   currentProfile?.role === ROLES.ADMIN ||
+  currentProfile?.role === ROLES.ARTISTIC_DIRECTOR ||
   currentProfile?.role === ROLES.MANAGER;
 
   return (
-    <main className="p-10 text-white">
-      <div className="mb-10 flex items-center justify-between">
+    <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10">
+      <div className="mb-8 flex flex-col gap-6 border-b border-zinc-900 pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-5xl font-bold">Projets</h1>
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-yellow-500">Production · Catalogue actif</p>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-6xl">{currentProfile?.role === ROLES.MANAGER ? "Projets de mes artistes" : "Projets"}</h1>
 
           <p className="mt-2 text-zinc-400">
             {currentProfile?.role === ROLES.MANAGER
@@ -110,7 +112,7 @@ const {
       </div>
 
       {(!projets || projets.length === 0) && (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-10 text-center text-zinc-500">
+        <div className="rounded-[26px] border border-dashed border-zinc-800 bg-zinc-950 p-10 text-center text-zinc-500">
           Aucun projet trouvé.
         </div>
       )}
@@ -120,7 +122,7 @@ const {
           <Link
             key={projet.id}
             href={`/projets/${projet.id}`}
-            className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900 transition hover:border-zinc-600"
+            className="group overflow-hidden rounded-[26px] border border-zinc-800 bg-zinc-950 transition hover:-translate-y-0.5 hover:border-zinc-600"
           >
             <div className="aspect-video bg-zinc-800">
               {projet.cover_url ? (

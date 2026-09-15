@@ -57,13 +57,14 @@ export default async function MesDocumentsArtistePage() {
   ];
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
+    <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10">
       <div className="mb-10">
         <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
           Mon espace artiste
         </p>
 
-        <h1 className="text-5xl font-bold">Mes documents</h1>
+        <p className="text-xs font-bold uppercase tracking-[0.28em] text-cyan-400">Mon espace · Fichiers</p>
+        <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-6xl">Mes documents</h1>
 
         <p className="mt-3 text-zinc-400">
           Retrouve ici les documents partagés par LMG : contrats, press kit,
@@ -71,7 +72,7 @@ export default async function MesDocumentsArtistePage() {
         </p>
       </div>
 
-      <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+      <section className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-8">
         {(!documents || documents.length === 0) && (
           <p className="text-zinc-500">Aucun document disponible.</p>
         )}

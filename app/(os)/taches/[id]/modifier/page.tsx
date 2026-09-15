@@ -1,689 +1,90 @@
-import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { createServerClient } from "@supabase/ssr";
-import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
-import { syncGoogleCalendarForUser } from "@/lib/google-calendar-sync.server";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
+import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
-function createSupabaseAdmin() {
-  const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL;
+const editorRoles = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER] as const;
 
-  const serviceRoleKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error(
-      "Configuration Supabase indisponible."
-    );
-  }
-
-  return createClient(
-    supabaseUrl,
-    serviceRoleKey,
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    }
-  );
-}
-
-async function getOrigin() {
-  const headersList = await headers();
-
-  const host =
-    headersList.get("x-forwarded-host") ||
-    headersList.get("host");
-
-  const protocol =
-    headersList.get("x-forwarded-proto") ||
-    (process.env.NODE_ENV === "production"
-      ? "https"
-      : "http");
-
-  if (host) {
-    return `${protocol}://${host}`;
-  }
-
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    "https://www.legacymusicgroup.fr"
-  );
-}
-
-export default async function ModifierTachePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ModifierTachePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const profile = await requireRole(editorRoles);
+  const supabase = await createAuthenticatedSupabaseClient();
+  const { data: task } = await supabase.from("taches").select("*").eq("id", id).maybeSingle();
+  if (!task) redirect("/taches");
 
-  const cookieStore = await cookies();
+  const isAdmin = profile.role === ROLES.SUPER_ADMIN || profile.role === ROLES.ADMIN;
+  if (!isAdmin && task.created_by !== profile.id) redirect(`/taches/${id}`);
 
-  const supabaseAuth = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll() {},
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabaseAuth.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
+  let profilesQuery = supabase.from("profiles").select("id, nom, full_name, role, artiste_id").order("nom");
+  if (profile.role === ROLES.MANAGER) {
+    const { data: managedArtists } = await supabase.from("artistes").select("id").eq("manager_id", profile.id);
+    const artistIds = (managedArtists || []).map((artist) => artist.id);
+    profilesQuery = artistIds.length
+      ? profilesQuery.or(`id.eq.${profile.id},artiste_id.in.(${artistIds.join(",")})`)
+      : profilesQuery.eq("id", profile.id);
   }
 
-  const supabaseAdmin =
-    createSupabaseAdmin();
-
-  const { data: currentProfile } =
-    await supabaseAdmin
-      .from("profiles")
-      .select("id, role")
-      .eq("id", user.id)
-      .single();
-
-  const allowedRoles: string[] = [
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.MANAGER,
-    ROLES.ARTISTIC_DIRECTOR,
-  ];
-
-  if (
-    !currentProfile ||
-    !allowedRoles.includes(
-      currentProfile.role
-    )
-  ) {
-    return (
-      <main className="min-h-screen bg-black p-8 text-white">
-        <p className="text-red-300">
-          Accès refusé.
-        </p>
-      </main>
-    );
-  }
-
-  const [
-    { data: tache, error: taskError },
-    { data: profils },
-    { data: existingAssignees },
-  ] = await Promise.all([
-    supabaseAdmin
-      .from("taches")
-      .select("*")
-      .eq("id", id)
-      .single(),
-
-    supabaseAdmin
-      .from("profiles")
-      .select("id, nom, role")
-      .order("nom", {
-        ascending: true,
-      }),
-
-    supabaseAdmin
-      .from("task_assignees")
-      .select("user_id")
-      .eq("task_id", id),
+  const [{ data: profiles }, { data: assignees }] = await Promise.all([
+    profilesQuery,
+    supabase.from("task_assignees").select("user_id").eq("task_id", id),
   ]);
+  const selected = new Set((assignees || []).map((item) => item.user_id));
+  if (task.responsable_id) selected.add(task.responsable_id);
 
-  if (taskError || !tache) {
-    return (
-      <main className="min-h-screen bg-black p-8 text-white">
-        <p className="text-zinc-500">
-          Tâche introuvable.
-        </p>
-      </main>
-    );
-  }
-
-  const selectedParticipantIds =
-    new Set(
-      (existingAssignees || []).map(
-        (assignment) =>
-          assignment.user_id
-      )
-    );
-
-  if (tache.responsable_id) {
-    selectedParticipantIds.add(
-      tache.responsable_id
-    );
-  }
-
-  async function updateTache(
-    formData: FormData
-  ) {
+  async function updateTask(formData: FormData) {
     "use server";
+    const actionProfile = await requireRole(editorRoles);
+    const actionSupabase = await createAuthenticatedSupabaseClient();
+    const { data: currentTask } = await actionSupabase.from("taches").select("id, created_by").eq("id", id).maybeSingle();
+    const actionIsAdmin = actionProfile.role === ROLES.SUPER_ADMIN || actionProfile.role === ROLES.ADMIN;
+    if (!currentTask || (!actionIsAdmin && currentTask.created_by !== actionProfile.id)) throw new Error("Modification non autorisée.");
 
-    const actionCookieStore =
-      await cookies();
-
-    const actionSupabaseAuth =
-      createServerClient(
-        process.env
-          .NEXT_PUBLIC_SUPABASE_URL!,
-        process.env
-          .NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            getAll() {
-              return actionCookieStore.getAll();
-            },
-            setAll() {},
-          },
-        }
-      );
-
-    const {
-      data: { user: actionUser },
-    } =
-      await actionSupabaseAuth.auth.getUser();
-
-    if (!actionUser) {
-      redirect("/login");
+    const responsibleId = String(formData.get("responsable_id") || "").trim();
+    const participantIds = Array.from(new Set([
+      ...formData.getAll("participant_ids").map(String).filter(Boolean),
+      ...(responsibleId ? [responsibleId] : []),
+    ]));
+    const { error } = await actionSupabase.from("taches").update({
+      titre: String(formData.get("titre") || "").trim(),
+      description: String(formData.get("description") || "").trim(),
+      statut: String(formData.get("statut") || "À faire"),
+      priorite: String(formData.get("priorite") || "Moyenne"),
+      deadline: formData.get("deadline") || null,
+      responsable_id: responsibleId || null,
+      assigned_to: responsibleId || null,
+    }).eq("id", id);
+    if (error) throw error;
+    const { error: deleteError } = await actionSupabase.from("task_assignees").delete().eq("task_id", id);
+    if (deleteError) throw deleteError;
+    if (participantIds.length) {
+      const { error: assignmentError } = await actionSupabase.from("task_assignees").insert(participantIds.map((userId) => ({ task_id: id, user_id: userId })));
+      if (assignmentError) throw assignmentError;
     }
-
-    const actionSupabaseAdmin =
-      createSupabaseAdmin();
-
-    const { data: actionProfile } =
-      await actionSupabaseAdmin
-        .from("profiles")
-        .select("role")
-        .eq("id", actionUser.id)
-        .single();
-
-    const actionAllowedRoles: string[] = [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-      ROLES.MANAGER,
-      ROLES.ARTISTIC_DIRECTOR,
-    ];
-
-    if (
-      !actionProfile ||
-      !actionAllowedRoles.includes(
-        actionProfile.role
-      )
-    ) {
-      throw new Error(
-        "Tu n’as pas l’autorisation de modifier cette tâche."
-      );
-    }
-
-    const responsableId =
-      String(
-        formData.get(
-          "responsable_id"
-        ) || ""
-      ).trim();
-
-    const participantIds =
-      formData
-        .getAll("participant_ids")
-        .map((value) =>
-          String(value)
-        )
-        .filter(Boolean);
-
-    const newAssigneeIds =
-      Array.from(
-        new Set([
-          ...participantIds,
-          ...(responsableId
-            ? [responsableId]
-            : []),
-        ])
-      );
-
-    const {
-      data: previousAssignments,
-      error:
-        previousAssignmentsError,
-    } = await actionSupabaseAdmin
-      .from("task_assignees")
-      .select("user_id")
-      .eq("task_id", id);
-
-    if (previousAssignmentsError) {
-      throw previousAssignmentsError;
-    }
-
-    const { data: previousTask } =
-      await actionSupabaseAdmin
-        .from("taches")
-        .select("responsable_id")
-        .eq("id", id)
-        .single();
-
-    const previousAssigneeIds =
-      Array.from(
-        new Set([
-          ...(previousAssignments || []).map(
-            (assignment) =>
-              assignment.user_id
-          ),
-          ...(previousTask?.responsable_id
-            ? [
-                previousTask.responsable_id,
-              ]
-            : []),
-        ])
-      );
-
-    const {
-      error: updateTaskError,
-    } = await actionSupabaseAdmin
-      .from("taches")
-      .update({
-        titre: String(
-          formData.get("titre") || ""
-        ).trim(),
-
-        description: String(
-          formData.get(
-            "description"
-          ) || ""
-        ).trim(),
-
-        statut: String(
-          formData.get("statut") ||
-            "À faire"
-        ),
-
-        priorite: String(
-          formData.get("priorite") ||
-            "Moyenne"
-        ),
-
-        deadline:
-          formData.get("deadline") ||
-          null,
-
-        responsable_id:
-          responsableId || null,
-      })
-      .eq("id", id);
-
-    if (updateTaskError) {
-      throw updateTaskError;
-    }
-
-    const {
-      error: deleteAssigneesError,
-    } = await actionSupabaseAdmin
-      .from("task_assignees")
-      .delete()
-      .eq("task_id", id);
-
-    if (deleteAssigneesError) {
-      throw deleteAssigneesError;
-    }
-
-    if (newAssigneeIds.length > 0) {
-      const {
-        error: insertAssigneesError,
-      } = await actionSupabaseAdmin
-        .from("task_assignees")
-        .insert(
-          newAssigneeIds.map(
-            (participantId) => ({
-              task_id: id,
-              user_id: participantId,
-            })
-          )
-        );
-
-      if (insertAssigneesError) {
-        throw insertAssigneesError;
-      }
-    }
-
-    /*
-     * On synchronise l’union des anciens et nouveaux participants.
-     *
-     * Pour un participant ajouté :
-     * l’événement est créé.
-     *
-     * Pour un participant conservé :
-     * l’événement est actualisé.
-     *
-     * Pour un participant retiré :
-     * la synchronisation constate que la tâche ne le concerne plus
-     * et supprime l’événement de son calendrier.
-     */
-    const usersToSynchronize =
-      Array.from(
-        new Set([
-          ...previousAssigneeIds,
-          ...newAssigneeIds,
-        ])
-      );
-
-    if (
-      usersToSynchronize.length > 0
-    ) {
-      const {
-        data: connections,
-        error: connectionsError,
-      } = await actionSupabaseAdmin
-        .from(
-          "google_calendar_connections"
-        )
-        .select("user_id")
-        .in(
-          "user_id",
-          usersToSynchronize
-        );
-
-      if (connectionsError) {
-        console.error(
-          "Impossible de vérifier les connexions Calendar :",
-          connectionsError
-        );
-      } else {
-        const connectedUserIds =
-          new Set(
-            (connections || []).map(
-              (connection) =>
-                connection.user_id
-            )
-          );
-
-        const origin =
-          await getOrigin();
-
-        for (
-          const participantId of
-          usersToSynchronize
-        ) {
-          if (
-            !connectedUserIds.has(
-              participantId
-            )
-          ) {
-            continue;
-          }
-
-          try {
-            await syncGoogleCalendarForUser(
-              participantId,
-              origin
-            );
-          } catch (syncError) {
-            console.error(
-              `Erreur synchronisation Calendar de ${participantId} :`,
-              syncError
-            );
-          }
-        }
-      }
-    }
-
+    revalidatePath("/taches");
+    revalidatePath(`/taches/${id}`);
     redirect(`/taches/${id}`);
   }
 
-  const deadlineValue =
-    tache.deadline
-      ? new Date(tache.deadline)
-          .toISOString()
-          .split("T")[0]
-      : "";
-
-  return (
-    <main className="min-h-screen bg-black p-8 text-white">
-      <div className="mb-10">
-        <Link
-          href={`/taches/${id}`}
-          className="text-zinc-400 hover:text-white"
-        >
-          ← Retour à la tâche
-        </Link>
-
-        <h1 className="mt-6 text-5xl font-bold">
-          Modifier la tâche
-        </h1>
-
-        <p className="mt-3 text-zinc-400">
-          Modifie la tâche, son
-          responsable et les personnes
-          concernées.
-        </p>
+  const deadline = task.deadline ? new Date(task.deadline).toISOString().split("T")[0] : "";
+  const fieldClass = "mt-2 w-full rounded-xl border border-zinc-800 bg-black px-4 py-3 text-white outline-none focus:border-zinc-600";
+  return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-5xl">
+    <Link href={`/taches/${id}`} className="text-sm text-zinc-500 hover:text-white">← Retour à la tâche</Link>
+    <header className="mt-6 border-b border-zinc-900 pb-8"><p className="text-xs font-bold uppercase tracking-[0.28em] text-cyan-400">Action concernée</p><h1 className="mt-3 text-4xl font-bold tracking-tight md:text-6xl">Modifier la tâche</h1><p className="mt-3 text-zinc-500">Seuls le créateur et les administrateurs peuvent changer le contenu ou les personnes concernées.</p></header>
+    <form action={updateTask} className="mt-8 space-y-6 rounded-[28px] border border-zinc-800 bg-zinc-950 p-6 md:p-8">
+      <label className="block text-sm text-zinc-400">Titre<input name="titre" defaultValue={task.titre || ""} required className={fieldClass} /></label>
+      <label className="block text-sm text-zinc-400">Description<textarea name="description" defaultValue={task.description || ""} rows={5} className={fieldClass} /></label>
+      <div className="grid gap-5 md:grid-cols-3">
+        <label className="block text-sm text-zinc-400">Statut<select name="statut" defaultValue={task.statut || "À faire"} className={fieldClass}><option>À faire</option><option>En cours</option><option>Terminé</option></select></label>
+        <label className="block text-sm text-zinc-400">Priorité<select name="priorite" defaultValue={task.priorite || "Moyenne"} className={fieldClass}><option>Basse</option><option>Moyenne</option><option>Haute</option><option>Urgente</option></select></label>
+        <label className="block text-sm text-zinc-400">Échéance<input type="date" name="deadline" defaultValue={deadline} className={fieldClass} /></label>
       </div>
-
-      <form
-        action={updateTache}
-        className="max-w-4xl space-y-6 rounded-3xl border border-zinc-800 bg-zinc-900 p-8"
-      >
-        <div>
-          <label className="mb-2 block text-sm text-zinc-400">
-            Titre
-          </label>
-
-          <input
-            name="titre"
-            defaultValue={
-              tache.titre || ""
-            }
-            required
-            className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm text-zinc-400">
-            Description
-          </label>
-
-          <textarea
-            name="description"
-            defaultValue={
-              tache.description || ""
-            }
-            rows={5}
-            className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-2 block text-sm text-zinc-400">
-              Statut
-            </label>
-
-            <select
-              name="statut"
-              defaultValue={
-                tache.statut ||
-                "À faire"
-              }
-              className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
-            >
-              <option value="À faire">
-                À faire
-              </option>
-
-              <option value="En cours">
-                En cours
-              </option>
-
-              <option value="Terminé">
-                Terminé
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm text-zinc-400">
-              Priorité
-            </label>
-
-            <select
-              name="priorite"
-              defaultValue={
-                tache.priorite ||
-                "Moyenne"
-              }
-              className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
-            >
-              <option value="Basse">
-                Basse
-              </option>
-
-              <option value="Moyenne">
-                Moyenne
-              </option>
-
-              <option value="Haute">
-                Haute
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm text-zinc-400">
-            Deadline
-          </label>
-
-          <input
-            type="date"
-            name="deadline"
-            defaultValue={
-              deadlineValue
-            }
-            className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm text-zinc-400">
-            Responsable principal
-          </label>
-
-          <select
-            name="responsable_id"
-            defaultValue={
-              tache.responsable_id ||
-              ""
-            }
-            className="w-full rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white"
-          >
-            <option value="">
-              Non assigné
-            </option>
-
-            {profils?.map(
-              (profil) => (
-                <option
-                  key={profil.id}
-                  value={profil.id}
-                >
-                  {profil.nom ||
-                    "Utilisateur"}{" "}
-                  —{" "}
-                  {profil.role ||
-                    "member"}
-                </option>
-              )
-            )}
-          </select>
-
-          <p className="mt-2 text-xs text-zinc-500">
-            Le responsable principal
-            sera automatiquement conservé
-            parmi les participants.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-zinc-800 bg-black p-5">
-          <div className="mb-4">
-            <p className="font-semibold">
-              Participants concernés
-            </p>
-
-            <p className="mt-1 text-sm text-zinc-500">
-              Les personnes cochées
-              retrouveront cette tâche
-              dans leur calendrier
-              personnel.
-            </p>
-          </div>
-
-          {!profils ||
-          profils.length === 0 ? (
-            <p className="text-sm text-zinc-500">
-              Aucun utilisateur
-              disponible.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {profils.map(
-                (profil) => (
-                  <label
-                    key={profil.id}
-                    className="flex cursor-pointer items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950 p-4 transition hover:border-zinc-600"
-                  >
-                    <input
-                      type="checkbox"
-                      name="participant_ids"
-                      value={profil.id}
-                      defaultChecked={selectedParticipantIds.has(
-                        profil.id
-                      )}
-                      className="h-5 w-5 accent-white"
-                    />
-
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium">
-                        {profil.nom ||
-                          "Utilisateur"}
-                      </span>
-
-                      <span className="mt-1 block text-xs text-zinc-500">
-                        {profil.role ||
-                          "Membre LMG"}
-                      </span>
-                    </span>
-                  </label>
-                )
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="flex justify-end gap-4 pt-4">
-          <Link
-            href={`/taches/${id}`}
-            className="rounded-xl border border-zinc-700 px-5 py-3 text-zinc-300 hover:bg-zinc-800"
-          >
-            Annuler
-          </Link>
-
-          <button
-            type="submit"
-            className="rounded-xl bg-white px-5 py-3 font-medium text-black hover:bg-zinc-200"
-          >
-            Enregistrer
-          </button>
-        </div>
-      </form>
-    </main>
-  );
+      <label className="block text-sm text-zinc-400">Responsable principal<select name="responsable_id" defaultValue={task.responsable_id || ""} className={fieldClass}><option value="">Non assigné</option>{(profiles || []).map((person) => <option key={person.id} value={person.id}>{person.nom || person.full_name || "Membre LMG"} — {person.role}</option>)}</select></label>
+      <section className="rounded-2xl border border-zinc-800 bg-black p-5"><h2 className="font-semibold">Participants concernés</h2><p className="mt-1 text-sm text-zinc-600">La tâche apparaîtra uniquement chez ces personnes, son créateur et les administrateurs.</p><div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{(profiles || []).map((person) => <label key={person.id} className="flex items-center gap-3 rounded-xl border border-zinc-900 p-4 text-sm"><input type="checkbox" name="participant_ids" value={person.id} defaultChecked={selected.has(person.id)} className="h-4 w-4 accent-white" /><span className="min-w-0"><span className="block truncate font-medium">{person.nom || person.full_name || "Membre LMG"}</span><span className="text-xs text-zinc-600">{person.role}</span></span></label>)}</div></section>
+      <div className="flex justify-end gap-3"><Link href={`/taches/${id}`} className="rounded-xl border border-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-300">Annuler</Link><button className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black">Enregistrer</button></div>
+    </form>
+  </div></main>;
 }

@@ -19,6 +19,9 @@ type Task = {
   priorite: string | null;
   deadline: string | null;
   responsable_id?: string | null;
+  assigned_to?: string | null;
+  created_by?: string | null;
+  task_assignees?: { user_id: string }[];
   responsable?: Profile | null;
 };
 
@@ -39,6 +42,15 @@ function formatDate(value: string | null) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function concernsUser(task: Task, userId?: string) {
+  return Boolean(userId && (
+    task.responsable_id === userId ||
+    task.assigned_to === userId ||
+    task.created_by === userId ||
+    task.task_assignees?.some((assignment) => assignment.user_id === userId)
+  ));
 }
 
 export default function TaskWorkspace({
@@ -62,7 +74,7 @@ export default function TaskWorkspace({
     const overdue = open.filter(
       (task) => task.deadline && new Date(task.deadline).getTime() < today.getTime()
     );
-    const mine = open.filter((task) => task.responsable_id === currentUserId);
+    const mine = open.filter((task) => concernsUser(task, currentUserId));
     const completed = tasks.filter((task) => normalizeStatus(task.statut) === "Terminé");
     return { open: open.length, overdue: overdue.length, mine: mine.length, completed: completed.length };
   }, [tasks, currentUserId, today]);
@@ -78,7 +90,7 @@ export default function TaskWorkspace({
         task.responsable?.nom?.toLowerCase().includes(query);
       const matchesStatus = status === "Tous" || taskStatus === status;
       const matchesPriority = priority === "Toutes" || task.priorite === priority;
-      const matchesMine = !mineOnly || task.responsable_id === currentUserId;
+      const matchesMine = !mineOnly || concernsUser(task, currentUserId);
       return Boolean(matchesSearch && matchesStatus && matchesPriority && matchesMine);
     });
   }, [tasks, search, status, priority, mineOnly, currentUserId]);
@@ -94,14 +106,14 @@ export default function TaskWorkspace({
     <div>
       <section className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         {metricCards.map((metric) => (
-          <div key={metric.label} className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+          <div key={metric.label} className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
             <p className="text-sm text-zinc-500">{metric.label}</p>
             <p className={`mt-3 text-4xl font-bold ${metric.accent}`}>{metric.value}</p>
           </div>
         ))}
       </section>
 
-      <section className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-950 p-5">
+      <section className="mt-8 rounded-[26px] border border-zinc-800 bg-zinc-950 p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-1 flex-col gap-3 md:flex-row">
             <input
@@ -140,7 +152,7 @@ export default function TaskWorkspace({
         {view === "kanban" ? (
           <KanbanBoard taches={filteredTasks} />
         ) : (
-          <div className="overflow-hidden rounded-3xl border border-zinc-800">
+          <div className="overflow-hidden rounded-[26px] border border-zinc-800">
             {filteredTasks.length === 0 ? (
               <p className="bg-zinc-950 p-8 text-zinc-500">Aucune tâche ne correspond aux filtres.</p>
             ) : (

@@ -122,13 +122,11 @@ let tachesQuery = supabase
 if (currentProfile?.role === ROLES.MANAGER) {
   projetsQuery = projetsQuery.eq("artistes.manager_id", user?.id);
   rolloutQuery = rolloutQuery.eq("projets.artistes.manager_id", user?.id);
-  tachesQuery = tachesQuery.eq("projets.artistes.manager_id", user?.id);
 }
 
 if (currentProfile?.role === ROLES.ARTISTE) {
   projetsQuery = projetsQuery.eq("artiste_id", currentProfile.artiste_id);
   rolloutQuery = rolloutQuery.eq("projets.artiste_id", currentProfile.artiste_id);
-  tachesQuery = tachesQuery.eq("projets.artiste_id", currentProfile.artiste_id);
 }
 
 const { data: projets } = await projetsQuery;
@@ -249,14 +247,14 @@ const canCreateTask =
   currentProfile?.role === ROLES.MANAGER;
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
+    <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10">
       <div className="mb-10 flex items-end justify-between">
         <div>
           <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
             LMG Workspace
           </p>
 
-          <h1 className="text-5xl font-bold capitalize">
+          <h1 className="text-4xl font-bold capitalize tracking-tight md:text-6xl">
             {formatMonth(today)}
           </h1>
 

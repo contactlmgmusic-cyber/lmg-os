@@ -44,7 +44,7 @@ if (profile?.role === ROLES.MANAGER) {
   artisteIds = managedArtists?.map((a) => a.id) || [];
 }
 
-  const { data: objectifs } = await supabase
+  let objectivesQuery = supabase
     .from("artiste_objectifs")
     .select(`
       *,
@@ -54,8 +54,11 @@ if (profile?.role === ROLES.MANAGER) {
         photo_url,
         style
       )
-    `)
-    .order("created_at", { ascending: false });
+    `);
+  if (profile?.role === ROLES.MANAGER) {
+    objectivesQuery = objectivesQuery.in("artiste_id", artisteIds.length ? artisteIds : ["00000000-0000-0000-0000-000000000000"]);
+  }
+  const { data: objectifs } = await objectivesQuery.order("created_at", { ascending: false });
 
   const { data: analytics } = await supabase.from("analytics").select("*");
   const { data: bookings } = await supabase.from("bookings").select("*");
@@ -141,7 +144,7 @@ if (profile?.role === ROLES.MANAGER) {
       </div>
 
       <section className="space-y-5">
-        {rows.length === 0 && (
+        {filteredRows.length === 0 && (
           <p className="text-zinc-500">Aucun objectif artiste.</p>
         )}
 
@@ -149,7 +152,7 @@ if (profile?.role === ROLES.MANAGER) {
           <Link
             key={item.id}
             href={`/artistes/${item.artiste_id}`}
-            className="block rounded-3xl border border-zinc-800 bg-zinc-900 p-6 hover:border-zinc-600"
+            className="block rounded-[26px] border border-zinc-800 bg-zinc-950 p-6 hover:border-zinc-600"
           >
             <div className="mb-6 flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex items-center gap-4">
