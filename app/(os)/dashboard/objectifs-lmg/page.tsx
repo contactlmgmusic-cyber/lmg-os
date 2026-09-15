@@ -3,6 +3,7 @@ import CompanyObjectivesWorkspace from "@/components/CompanyObjectivesWorkspace"
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
+import { getActiveCompanyQuarter, getCompanyQuarterEnd } from "@/lib/company-quarter";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +14,9 @@ export default async function CompanyObjectivesPage({ searchParams }: PageProps)
   await requireRole(allowed);
   const supabase = await createAuthenticatedSupabaseClient();
   const { trimestre } = await searchParams;
-  const activeQuarter = getActiveQuarter();
+  const activeQuarter = getActiveCompanyQuarter();
   const selectedQuarter = isQuarter(trimestre) ? trimestre : activeQuarter;
-  const quarterEnd = getQuarterEnd(selectedQuarter);
+  const quarterEnd = getCompanyQuarterEnd(selectedQuarter);
 
   const [{ data: objectives }, { data: profiles }, { data: projects }, { data: quarterRows }] = await Promise.all([
     supabase.from("company_objectives").select("*, owner:profiles!company_objectives_owner_id_fkey(nom, full_name), project:internal_projects!company_objectives_internal_project_id_fkey(id, titre)").eq("trimestre", selectedQuarter).order("created_at"),
@@ -91,17 +92,4 @@ function Metric({ label, value, danger = false, good = false }: { label: string;
 
 function isQuarter(value: string | undefined): value is string {
   return /^\d{4}-T[1-4]$/.test(value || "");
-}
-
-function getActiveQuarter() {
-  const now = new Date();
-  const date = now.toISOString().slice(0, 10);
-  // LMG lance exceptionnellement le pilotage T4 2026 dès le 14 septembre.
-  if (date >= "2026-09-14" && date <= "2026-12-31") return "2026-T4";
-  return `${now.getUTCFullYear()}-T${Math.floor(now.getUTCMonth() / 3) + 1}`;
-}
-
-function getQuarterEnd(quarter: string) {
-  const [year, quarterNumber] = quarter.split("-T").map(Number);
-  return new Date(Date.UTC(year, quarterNumber * 3, 0)).toISOString().split("T")[0];
 }
