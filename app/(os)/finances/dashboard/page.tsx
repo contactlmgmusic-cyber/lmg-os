@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BudgetAllocationChart from "@/components/BudgetAllocationChart";
+import FinancePeriodNavigation from "@/components/FinancePeriodNavigation";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
@@ -106,12 +107,7 @@ export default async function FinancesDashboardPage({ searchParams }: { searchPa
       <div className="flex flex-wrap gap-3"><Link href="/finances/nouveau" className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-black">+ Nouvelle opération</Link><Link href="/finances" className="rounded-xl border border-zinc-700 px-5 py-3 text-sm font-bold text-zinc-300">Voir les transactions</Link></div>
     </header>
 
-    <nav aria-label="Période financière" className="mt-6 flex flex-wrap gap-2">
-      <Period href="/finances/dashboard?periode=30j" label="30 derniers jours" active={period === "30j"} />
-      <Period href="/finances/dashboard?periode=trimestre" label="Trimestre en cours" active={period === "trimestre"} />
-      <Period href="/finances/dashboard?periode=annee" label="Année en cours" active={period === "annee"} />
-      <Period href="/finances/dashboard?periode=tout" label="Tout l’historique" active={period === "tout"} />
-    </nav>
+    <FinancePeriodNavigation period={period} />
 
     <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <Metric label="Trésorerie nette suivie" value={euros(tresorerie)} detail="Encaissé − payé" tone={tresorerie < 0 ? "danger" : "good"} />
@@ -161,7 +157,6 @@ function Commitment({ label, value, href }: { label: string; value: number; href
 function ProjectRow({ projet }: { projet: { id: string; titre: string; revenus: number; depenses: number; resultat: number; budget: number; consommation: number | null } }) { const over = projet.consommation !== null && projet.consommation > 100; const warning = projet.consommation !== null && projet.consommation >= 80 && !over; return <Link href={`/projets/${projet.id}`} className="group grid gap-3 border-b border-zinc-900 py-4 last:border-0 sm:grid-cols-[1fr_auto] sm:items-center"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><p className="truncate font-semibold group-hover:text-yellow-400">{projet.titre || "Projet sans titre"}</p>{projet.consommation !== null && <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${over ? "bg-red-500/10 text-red-300" : warning ? "bg-yellow-500/10 text-yellow-300" : "bg-zinc-900 text-zinc-500"}`}>{projet.consommation}% du budget</span>}</div><p className="mt-1 text-xs text-zinc-600">{euros(projet.revenus)} de revenus · {euros(projet.depenses)} de dépenses{projet.budget > 0 ? ` · budget ${euros(projet.budget)}` : " · aucun budget défini"}</p></div><p className={`font-bold ${projet.resultat < 0 ? "text-red-400" : "text-green-400"}`}>{euros(projet.resultat)}</p></Link>; }
 function Empty({ text, good = false }: { text: string; good?: boolean }) { return <div className={`rounded-2xl border border-dashed p-8 text-center text-sm ${good ? "border-green-500/20 text-green-400" : "border-zinc-800 text-zinc-600"}`}>{text}</div>; }
 function Status({ score }: { score: number }) { const label = score >= 75 ? "Solide" : score >= 50 ? "À surveiller" : "Sous tension"; const style = score >= 75 ? "bg-green-500/10 text-green-300" : score >= 50 ? "bg-yellow-500/10 text-yellow-300" : "bg-red-500/10 text-red-300"; return <span className={`rounded-full px-3 py-1 text-xs font-bold ${style}`}>{label}</span>; }
-function Period({ href, label, active }: { href: string; label: string; active: boolean }) { return <Link href={href} aria-current={active ? "page" : undefined} className={`rounded-full border px-4 py-2 text-xs font-bold transition ${active ? "border-yellow-400 bg-yellow-500/10 text-yellow-200" : "border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-600 hover:text-white"}`}>{label}</Link>; }
 function bar(score: number) { return score >= 75 ? "bg-green-400" : score >= 50 ? "bg-yellow-400" : "bg-red-400"; }
 function sum(items: any[], type: "Revenu" | "Dépense", status?: string) { return items.filter((item) => item.type === type && item.statut !== "Annulé" && (!status || item.statut === status)).reduce((total, item) => total + Number(item.montant || 0), 0); }
 function outstanding(items: any[], type: "Revenu" | "Dépense") { return items.filter((item) => item.type === type && !["Payé", "Annulé"].includes(item.statut)).reduce((total, item) => total + Number(item.montant || 0), 0); }
