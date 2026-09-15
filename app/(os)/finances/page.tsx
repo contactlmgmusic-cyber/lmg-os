@@ -5,7 +5,7 @@ import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
-type SearchParams = Promise<{ q?: string | string[]; type?: string | string[]; statut?: string | string[]; categorie?: string | string[] }>;
+type SearchParams = Promise<{ q?: string | string[]; type?: string | string[]; statut?: string | string[]; categorie?: string | string[]; suivi?: string | string[] }>;
 
 export default async function FinancesPage({ searchParams }: { searchParams: SearchParams }) {
   await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN]);
@@ -15,6 +15,7 @@ export default async function FinancesPage({ searchParams }: { searchParams: Sea
   const type = value(filters.type);
   const statut = value(filters.statut);
   const categorie = value(filters.categorie);
+  const suivi = value(filters.suivi);
 
   const { data, error } = await supabase.from("finances").select(`
     id, titre, type, categorie, montant, statut, date_operation, created_at,
@@ -29,14 +30,16 @@ export default async function FinancesPage({ searchParams }: { searchParams: Sea
   const categories = Array.from(new Set(finances.map((item: any) => item.categorie).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b), "fr"));
   const filtered = finances.filter((item: any) => {
     const searchable = [item.titre, item.categorie, item.artistes?.nom, item.projets?.titre, item.bookings?.evenement].filter(Boolean).join(" ").toLowerCase();
-    return (!q || searchable.includes(q)) && (!type || item.type === type) && (!statut || item.statut === statut) && (!categorie || item.categorie === categorie);
+    return (!q || searchable.includes(q)) && (!type || item.type === type) && (!statut || item.statut === statut) && (!categorie || item.categorie === categorie) && matchesFollowup(item, suivi);
   });
 
   const revenus = total(finances, "Revenu");
   const depenses = total(finances, "Dépense");
   const aEncaisser = pending(finances, "Revenu");
   const aRegler = pending(finances, "Dépense");
-  const activeFilters = [q, type, statut, categorie].filter(Boolean).length;
+  const activeFilters = [q, type, statut, categorie, suivi].filter(Boolean).length;
+  const stale = finances.filter(isStale);
+  const unlinked = finances.filter((item: any) => item.statut !== "Annulé" && !hasAttachment(item));
 
   return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-[1500px]">
     <header className="flex flex-col gap-6 border-b border-zinc-900 pb-8 xl:flex-row xl:items-end xl:justify-between">
@@ -51,15 +54,21 @@ export default async function FinancesPage({ searchParams }: { searchParams: Sea
       <Metric label="À régler" value={euros(aRegler)} detail="Prévu ou facturé" tone={aRegler ? "warning" : "default"} />
     </section>
 
+    {(stale.length > 0 || unlinked.length > 0) && <section className="mt-6 flex flex-wrap gap-3">
+      {stale.length > 0 && <Link href="/finances?suivi=retard" className={`rounded-full border px-4 py-2 text-xs font-bold ${suivi === "retard" ? "border-red-400 bg-red-500/15 text-red-200" : "border-red-500/20 bg-red-500/[0.05] text-red-300"}`}>{stale.length} opération(s) sans mise à jour depuis 30 jours</Link>}
+      {unlinked.length > 0 && <Link href="/finances?suivi=sans-rattachement" className={`rounded-full border px-4 py-2 text-xs font-bold ${suivi === "sans-rattachement" ? "border-yellow-400 bg-yellow-500/15 text-yellow-100" : "border-yellow-500/20 bg-yellow-500/[0.05] text-yellow-300"}`}>{unlinked.length} opération(s) sans rattachement</Link>}
+    </section>}
+
     <section className="mt-8 rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 md:p-6">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-500">Registre financier</p><h2 className="mt-2 text-2xl font-bold">Toutes les opérations</h2><p className="mt-2 text-sm text-zinc-500">{filtered.length} résultat(s) sur {finances.length}</p></div>{activeFilters > 0 && <Link href="/finances" className="text-sm font-semibold text-zinc-400 hover:text-white">Réinitialiser les {activeFilters} filtre(s) →</Link>}</div>
 
-      <form method="get" className="mt-6 grid gap-3 lg:grid-cols-[1.5fr_repeat(3,0.75fr)_auto]">
+      <form method="get" className="mt-6 grid gap-3 lg:grid-cols-[1.4fr_repeat(4,0.7fr)_auto]">
         <label className="sr-only" htmlFor="finance-search">Rechercher</label>
         <input id="finance-search" name="q" defaultValue={value(filters.q)} placeholder="Titre, artiste, projet, booking…" className="min-h-12 rounded-xl border border-zinc-800 bg-black px-4 text-sm text-white outline-none placeholder:text-zinc-700 focus:border-zinc-600" />
         <Select name="type" label="Tous les types" current={type} options={["Revenu", "Dépense"]} />
         <Select name="statut" label="Tous les statuts" current={statut} options={["Prévu", "Facturé", "Payé", "Annulé"]} />
         <Select name="categorie" label="Toutes les catégories" current={categorie} options={categories.map(String)} />
+        <Select name="suivi" label="Tout le suivi" current={suivi} options={["ouvert", "retard", "sans-rattachement"]} labels={{ ouvert: "Encore ouvert", retard: "Sans mise à jour +30 j", "sans-rattachement": "Sans rattachement" }} />
         <button className="min-h-12 rounded-xl bg-zinc-100 px-5 text-sm font-bold text-black hover:bg-white">Filtrer</button>
       </form>
 
@@ -75,7 +84,7 @@ export default async function FinancesPage({ searchParams }: { searchParams: Sea
 
 type Tone = "default" | "good" | "warning";
 function Metric({ label, value: amount, detail, tone = "default" }: { label: string; value: string; detail: string; tone?: Tone }) { const styles = { default: "border-zinc-800 bg-zinc-950", good: "border-green-500/20 bg-green-500/[0.05]", warning: "border-yellow-500/25 bg-yellow-500/[0.06]" }; return <div className={`rounded-2xl border p-5 ${styles[tone]}`}><p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{label}</p><p className="mt-3 text-3xl font-bold">{amount}</p><p className="mt-2 text-xs text-zinc-600">{detail}</p></div>; }
-function Select({ name, label, current, options }: { name: string; label: string; current: string; options: string[] }) { return <select name={name} defaultValue={current} aria-label={label} className="min-h-12 rounded-xl border border-zinc-800 bg-black px-4 text-sm text-white outline-none focus:border-zinc-600"><option value="">{label}</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select>; }
+function Select({ name, label, current, options, labels = {} }: { name: string; label: string; current: string; options: string[]; labels?: Record<string, string> }) { return <select name={name} defaultValue={current} aria-label={label} className="min-h-12 rounded-xl border border-zinc-800 bg-black px-4 text-sm text-white outline-none focus:border-zinc-600"><option value="">{label}</option>{options.map((option) => <option key={option} value={option}>{labels[option] || option}</option>)}</select>; }
 function TransactionRow({ finance }: { finance: any }) {
   const attachment = finance.projets?.titre || finance.artistes?.nom || finance.bookings?.evenement || "Non rattachée";
   return <Link href={`/finances/${finance.id}`} className="group grid gap-4 border-b border-zinc-900 px-2 py-5 last:border-0 hover:bg-white/[0.02] lg:grid-cols-[110px_1fr_150px_140px_140px] lg:items-center lg:px-4">
@@ -88,6 +97,9 @@ function TransactionRow({ finance }: { finance: any }) {
 }
 function Status({ value: status }: { value: string }) { const style: Record<string, string> = { "Payé": "bg-green-500/10 text-green-300", "Facturé": "bg-blue-500/10 text-blue-300", "Prévu": "bg-yellow-500/10 text-yellow-300", "Annulé": "bg-zinc-800 text-zinc-500" }; return <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${style[status] || "bg-zinc-800 text-zinc-400"}`}>{status}</span>; }
 function attachmentKind(finance: any) { if (finance.projets?.titre) return "Projet"; if (finance.artistes?.nom) return "Artiste"; if (finance.bookings?.evenement) return "Booking"; return "Aucun rattachement"; }
+function hasAttachment(finance: any) { return Boolean(finance.projets?.id || finance.artistes?.id || finance.bookings?.id); }
+function isStale(finance: any) { if (!finance.date_operation || ["Payé", "Annulé"].includes(finance.statut)) return false; const date = new Date(`${finance.date_operation}T12:00:00`); const limit = new Date(); limit.setHours(0, 0, 0, 0); limit.setDate(limit.getDate() - 30); return !Number.isNaN(date.getTime()) && date < limit; }
+function matchesFollowup(finance: any, suivi: string) { if (!suivi) return true; if (suivi === "ouvert") return !["Payé", "Annulé"].includes(finance.statut); if (suivi === "retard") return isStale(finance); if (suivi === "sans-rattachement") return finance.statut !== "Annulé" && !hasAttachment(finance); return true; }
 function total(items: any[], type: string) { return items.filter((item) => item.type === type && item.statut !== "Annulé").reduce((sum, item) => sum + Number(item.montant || 0), 0); }
 function pending(items: any[], type: string) { return items.filter((item) => item.type === type && !["Payé", "Annulé"].includes(item.statut)).reduce((sum, item) => sum + Number(item.montant || 0), 0); }
 function count(items: any[], type: string) { return items.filter((item) => item.type === type && item.statut !== "Annulé").length; }
