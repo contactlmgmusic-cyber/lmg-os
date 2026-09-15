@@ -1,225 +1,72 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { supabaseBrowser } from "@/lib/supabase-browser";
+import { notFound } from "next/navigation";
+import RoyaltyPaymentForm from "@/components/RoyaltyPaymentForm";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
+import { requireRole } from "@/lib/require-role.server";
+import { canGenerateRoyalties } from "@/lib/permissions";
+import { ROLES } from "@/lib/roles";
 
-export default function RoyaltyDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const id = params.id as string;
+export const dynamic = "force-dynamic";
+const allowed = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER, ROLES.ARTISTE];
 
-  const [royalty, setRoyalty] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+export default async function RoyaltyDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const profile = await requireRole(allowed);
+  const { id } = await params;
+  const supabase = await createAuthenticatedSupabaseClient();
+  const { data: royalty, error } = await supabase.from("royalties").select(`
+    id, nom, role, email, revenu_total, pourcentage, montant_du, statut,
+    date_paiement, methode_paiement, reference_paiement, notes_paiement, created_at,
+    projets(id, titre, artistes(id, nom))
+  `).eq("id", id).single();
 
-  const [datePaiement, setDatePaiement] = useState("");
-  const [methodePaiement, setMethodePaiement] = useState("");
-  const [referencePaiement, setReferencePaiement] = useState("");
-  const [notesPaiement, setNotesPaiement] = useState("");
+  if (error || !royalty) notFound();
+  const project: any = Array.isArray(royalty.projets) ? royalty.projets[0] : royalty.projets;
+  const artist: any = Array.isArray(project?.artistes) ? project.artistes[0] : project?.artistes;
+  const paid = royalty.statut === "Payé";
+  const expected = (Number(royalty.revenu_total || 0) * Number(royalty.pourcentage || 0)) / 100;
+  const canManage = canGenerateRoyalties(profile.role);
 
-  async function loadRoyalty() {
-    const { data } = await supabaseBrowser
-      .from("royalties")
-      .select(`
-        *,
-        projets (
-          id,
-          titre
-        )
-      `)
-      .eq("id", id)
-      .single();
+  return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-[1500px]">
+    <Link href="/royalties" className="text-sm font-semibold text-zinc-500 hover:text-white">← Retour aux royalties</Link>
+    <header className="mt-6 flex flex-col gap-6 border-b border-zinc-900 pb-8 xl:flex-row xl:items-end xl:justify-between">
+      <div><p className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500">Détail du paiement</p><h1 className="mt-3 text-4xl font-bold md:text-6xl">{royalty.nom || "Bénéficiaire"}</h1><p className="mt-3 text-zinc-500">{royalty.role || "Participant"} · {project?.titre || "Projet non lié"}</p></div>
+      <div className="flex items-end gap-4"><div className="text-right"><p className="text-xs uppercase tracking-wider text-zinc-600">Montant dû</p><p className="mt-2 text-4xl font-black md:text-5xl">{euros(Number(royalty.montant_du || 0))}</p></div><Status paid={paid} /></div>
+    </header>
 
-    if (data) {
-      setRoyalty(data);
-      setDatePaiement(data.date_paiement || "");
-      setMethodePaiement(data.methode_paiement || "");
-      setReferencePaiement(data.reference_paiement || "");
-      setNotesPaiement(data.notes_paiement || "");
-    }
-
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    loadRoyalty();
-  }, []);
-
-  async function markAsPaid(e: React.FormEvent) {
-  e.preventDefault();
-
-  if (royalty?.statut === "Payé") {
-    alert("Cette royalty est déjà marquée comme payée.");
-    return;
-  }
-
-  const confirmed = window.confirm(
-    `Confirmer le paiement de ${Number(royalty.montant_du || 0).toFixed(
-      2
-    )} € à ${royalty.nom} ?`
-  );
-
-  if (!confirmed) return;
-
-  setSaving(true);
-
-  const finalDatePaiement =
-    datePaiement || new Date().toISOString().split("T")[0];
-
-  const { error } = await supabaseBrowser
-    .from("royalties")
-    .update({
-      statut: "Payé",
-      date_paiement: finalDatePaiement,
-      methode_paiement: methodePaiement || null,
-      reference_paiement: referencePaiement || null,
-      notes_paiement: notesPaiement || null,
-    })
-    .eq("id", id);
-
-  if (error) {
-    alert(error.message);
-    setSaving(false);
-    return;
-  }
-
-  await supabaseBrowser.from("activity_logs").insert({
-    type: "Royalties",
-    titre: "Royalty payée",
-    description: `${royalty.nom} • ${Number(royalty.montant_du || 0).toFixed(
-      2
-    )} €`,
-  });
-
-  await loadRoyalty();
-  setSaving(false);
-  router.refresh();
-}
-
-  if (loading) {
-    return <main className="p-10 text-white">Chargement...</main>;
-  }
-
-  if (!royalty) {
-    return (
-      <main className="p-10 text-white">
-        <p className="text-red-400">Royalty introuvable.</p>
-      </main>
-    );
-  }
-
-  return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <Link href="/royalties" className="text-sm text-zinc-400 hover:text-white">
-        ← Retour royalties
-      </Link>
-
-      <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[1fr_420px]">
-        <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-          <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-            Royalty
-          </p>
-
-          <h1 className="mt-3 text-5xl font-bold">{royalty.nom}</h1>
-
-          <p className="mt-6 text-5xl font-bold text-green-400">
-            {Number(royalty.montant_du || 0).toFixed(2)} €
-          </p>
-
-          <span
-            className={`mt-6 inline-block rounded-full px-4 py-2 text-sm ${
-              royalty.statut === "Payé"
-                ? "bg-green-500/20 text-green-300"
-                : "bg-red-500/20 text-red-300"
-            }`}
-          >
-            {royalty.statut || "À payer"}
-          </span>
-
-          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Info label="Projet" value={royalty.projets?.titre || "Non lié"} />
+    <section className="mt-8 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+      <div className="space-y-6">
+        <Panel eyebrow="Répartition" title="Base de calcul">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <Info label="Projet" value={project?.titre || "Non lié"} />
+            <Info label="Artiste" value={artist?.nom || "Non renseigné"} />
+            <Info label="Bénéficiaire" value={royalty.nom || "Non renseigné"} />
             <Info label="Rôle" value={royalty.role || "Non renseigné"} />
             <Info label="Email" value={royalty.email || "Non renseigné"} />
-            <Info label="Pourcentage" value={`${royalty.pourcentage || 0}%`} />
-            <Info
-              label="Revenu total"
-              value={`${Number(royalty.revenu_total || 0).toFixed(2)} €`}
-            />
-            <Info
-              label="Montant dû"
-              value={`${Number(royalty.montant_du || 0).toFixed(2)} €`}
-            />
+            <Info label="Part du bénéficiaire" value={`${Number(royalty.pourcentage || 0)}%`} />
           </div>
-
-          {royalty.statut === "Payé" && (
-            <div className="mt-8 rounded-2xl border border-zinc-800 bg-black p-6">
-              <h2 className="text-2xl font-bold">Paiement</h2>
-
-              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Info label="Date paiement" value={royalty.date_paiement || "Non renseignée"} />
-                <Info label="Méthode" value={royalty.methode_paiement || "Non renseignée"} />
-                <Info label="Référence" value={royalty.reference_paiement || "Non renseignée"} />
-                <Info label="Notes" value={royalty.notes_paiement || "Aucune note"} />
-              </div>
+          <div className="mt-5 rounded-2xl border border-zinc-800 bg-black p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-600">Calcul enregistré</p>
+            <div className="mt-4 flex flex-col gap-3 text-lg sm:flex-row sm:items-center">
+              <strong>{euros(Number(royalty.revenu_total || 0))}</strong><span className="text-zinc-700">×</span><strong>{Number(royalty.pourcentage || 0)}%</strong><span className="text-zinc-700">=</span><strong className="text-green-400">{euros(Number(royalty.montant_du || 0))}</strong>
             </div>
-          )}
-        </section>
+            {Math.abs(expected - Number(royalty.montant_du || 0)) > 0.01 && <p className="mt-4 text-xs text-yellow-400">Le montant enregistré diffère du calcul théorique de {euros(expected)}. Vérifie le split d’origine.</p>}
+          </div>
+        </Panel>
 
-        <aside className="space-y-6">
-  <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-    <h2 className="text-3xl font-bold">Marquer comme payé</h2>
-
-            <form onSubmit={markAsPaid} className="mt-6 space-y-4">
-              <input
-                type="date"
-                value={datePaiement}
-                onChange={(e) => setDatePaiement(e.target.value)}
-                className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4"
-              />
-
-              <input
-                value={methodePaiement}
-                onChange={(e) => setMethodePaiement(e.target.value)}
-                placeholder="Méthode de paiement"
-                className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4"
-              />
-
-              <input
-                value={referencePaiement}
-                onChange={(e) => setReferencePaiement(e.target.value)}
-                placeholder="Référence virement"
-                className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4"
-              />
-
-              <textarea
-                value={notesPaiement}
-                onChange={(e) => setNotesPaiement(e.target.value)}
-                placeholder="Notes paiement"
-                className="min-h-32 w-full rounded-xl border border-zinc-800 bg-black px-4 py-4"
-              />
-
-              <button
-                type="submit"
-                disabled={saving}
-                className="w-full rounded-xl bg-white px-5 py-4 font-medium text-black hover:bg-zinc-200 disabled:opacity-50"
-              >
-                {saving ? "Enregistrement..." : "Confirmer paiement"}
-              </button>
-            </form>
-          </section>
-        </aside>
+        <Panel eyebrow="Traçabilité" title={paid ? "Règlement enregistré" : "Paiement en attente"}>
+          {paid ? <div className="grid gap-3 sm:grid-cols-2"><Info label="Date du paiement" value={formatDate(royalty.date_paiement)} /><Info label="Méthode" value={royalty.methode_paiement || "Non renseignée"} /><Info label="Référence" value={royalty.reference_paiement || "Non renseignée"} /><Info label="Notes" value={royalty.notes_paiement || "Aucune note"} /></div> : <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/[0.05] p-5"><p className="font-semibold text-yellow-300">Ce montant n’est pas encore marqué comme payé.</p><p className="mt-2 text-sm leading-6 text-zinc-500">{canManage ? "Renseigne les informations du virement dans le panneau de règlement." : "La direction financière doit encore enregistrer le règlement."}</p></div>}
+        </Panel>
       </div>
-    </main>
-  );
+
+      <aside>
+        {canManage ? <RoyaltyPaymentForm royalty={{ id: royalty.id, nom: royalty.nom || "Bénéficiaire", montantDu: Number(royalty.montant_du || 0), statut: royalty.statut || "À payer", datePaiement: royalty.date_paiement || "", methodePaiement: royalty.methode_paiement || "", referencePaiement: royalty.reference_paiement || "", notesPaiement: royalty.notes_paiement || "" }} /> : <section className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-6"><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-500">Consultation</p><h2 className="mt-2 text-2xl font-bold">Suivi du règlement</h2><p className="mt-3 text-sm leading-6 text-zinc-500">{paid ? "Le paiement a été enregistré par la direction. Les informations de règlement sont visibles dans la traçabilité." : "Le paiement est en attente. Seule la direction financière peut confirmer un règlement."}</p></section>}
+      </aside>
+    </section>
+  </div></main>;
 }
 
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-zinc-800 bg-black p-5">
-      <p className="text-sm text-zinc-500">{label}</p>
-      <p className="mt-2 text-lg font-semibold">{value}</p>
-    </div>
-  );
-}
+function Panel({ eyebrow, title, children }: { eyebrow: string; title: string; children: React.ReactNode }) { return <section className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 md:p-6"><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-500">{eyebrow}</p><h2 className="mt-2 text-2xl font-bold">{title}</h2><div className="mt-5">{children}</div></section>; }
+function Info({ label, value }: { label: string; value: string }) { return <div className="rounded-2xl border border-zinc-800 bg-black p-4"><p className="text-xs text-zinc-600">{label}</p><p className="mt-2 break-words font-semibold">{value}</p></div>; }
+function Status({ paid }: { paid: boolean }) { return <span className={`rounded-full px-3 py-1 text-xs font-bold ${paid ? "bg-green-500/10 text-green-300" : "bg-yellow-500/10 text-yellow-300"}`}>{paid ? "Payé" : "À payer"}</span>; }
+function euros(amount: number) { return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(amount || 0); }
+function formatDate(input?: string | null) { if (!input) return "Non renseignée"; return new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(`${input}T12:00:00`)); }
