@@ -6,9 +6,13 @@ import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
-export default async function FinancesDashboardPage() {
+type SearchParams = Promise<{ periode?: string | string[] }>;
+
+export default async function FinancesDashboardPage({ searchParams }: { searchParams: SearchParams }) {
   await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN]);
   const supabase = await createAuthenticatedSupabaseClient();
+  const requestedPeriod = value((await searchParams).periode);
+  const period = ["30j", "trimestre", "annee", "tout"].includes(requestedPeriod) ? requestedPeriod : "tout";
 
   const [financeResult, royaltyResult, projectResult, campaignResult] = await Promise.all([
     supabase.from("finances").select("id, titre, type, montant, statut, date_operation, projet_id, projets(id, titre)").order("date_operation", { ascending: false }),
@@ -21,7 +25,9 @@ export default async function FinancesDashboardPage() {
     return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-[1500px] rounded-[26px] border border-red-500/20 bg-red-500/[0.06] p-7"><p className="text-xs font-bold uppercase tracking-[0.2em] text-red-400">Finance LMG</p><h1 className="mt-2 text-3xl font-bold">Données financières indisponibles</h1><p className="mt-3 text-sm text-zinc-400">La vue n’a pas pu être chargée. Réessaie dans quelques instants.</p></div></main>;
   }
 
-  const finances = financeResult.data || [];
+  const allFinances = financeResult.data || [];
+  const periodStartDate = periodStart(period);
+  const finances = periodStartDate ? allFinances.filter((item: any) => isOnOrAfter(item.date_operation, periodStartDate)) : allFinances;
   const royalties = royaltyResult.data || [];
   const projets = projectResult.data || [];
   const campagnes = campaignResult.data || [];
@@ -30,16 +36,17 @@ export default async function FinancesDashboardPage() {
   const resultat = revenus - depenses;
   const encaisses = sum(finances, "Revenu", "Payé");
   const payees = sum(finances, "Dépense", "Payé");
-  const tresorerie = encaisses - payees;
-  const aEncaisser = outstanding(finances, "Revenu");
-  const engagees = outstanding(finances, "Dépense");
-  const staleRevenues = finances.filter((item: any) => item.type === "Revenu" && isStale(item));
-  const staleExpenses = finances.filter((item: any) => item.type === "Dépense" && isStale(item));
+  const tresorerie = sum(allFinances, "Revenu", "Payé") - sum(allFinances, "Dépense", "Payé");
+  const aEncaisser = outstanding(allFinances, "Revenu");
+  const engagees = outstanding(allFinances, "Dépense");
+  const staleRevenues = allFinances.filter((item: any) => item.type === "Revenu" && isStale(item));
+  const staleExpenses = allFinances.filter((item: any) => item.type === "Dépense" && isStale(item));
   const staleRevenueTotal = totalItems(staleRevenues);
   const staleExpenseTotal = totalItems(staleExpenses);
   const royaltiesDues = royalties.filter((r: any) => r.statut !== "Payé").reduce((total: number, r: any) => total + Number(r.montant_du || 0), 0);
   const marge = revenus > 0 ? Math.round((resultat / revenus) * 100) : 0;
   const roi = depenses > 0 ? Math.round((resultat / depenses) * 100) : 0;
+  const periodLabel = labelForPeriod(period);
 
   const monthly = new Map<string, any>();
   finances.forEach((item: any) => {
@@ -84,7 +91,7 @@ export default async function FinancesDashboardPage() {
     aEncaisser > 0 ? { label: "Revenus à encaisser", value: euros(aEncaisser), detail: "Revenus prévus ou facturés pas encore encaissés.", href: "/finances?suivi=ouvert&type=Revenu", tone: "warning" } : null,
     engagees > 0 ? { label: "Dépenses engagées", value: euros(engagees), detail: "Dépenses prévues ou facturées pas encore réglées.", href: "/finances?suivi=ouvert&type=D%C3%A9pense", tone: "neutral" } : null,
     deficitaires.length > 0 ? { label: "Projets déficitaires", value: String(deficitaires.length), detail: "Projets dont les dépenses dépassent les revenus.", href: "#rentabilite", tone: "danger" } : null,
-    resultat < 0 ? { label: "Résultat global négatif", value: euros(resultat), detail: "Les dépenses enregistrées dépassent les revenus.", href: "/finances", tone: "danger" } : null,
+    resultat < 0 ? { label: `Résultat négatif · ${periodLabel}`, value: euros(resultat), detail: "Les dépenses de la période dépassent les revenus.", href: "/finances", tone: "danger" } : null,
   ].filter(Boolean) as Alert[];
 
   return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-[1500px]">
@@ -93,11 +100,18 @@ export default async function FinancesDashboardPage() {
       <div className="flex flex-wrap gap-3"><Link href="/finances/nouveau" className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-black">+ Nouvelle opération</Link><Link href="/finances" className="rounded-xl border border-zinc-700 px-5 py-3 text-sm font-bold text-zinc-300">Voir les transactions</Link></div>
     </header>
 
+    <nav aria-label="Période financière" className="mt-6 flex flex-wrap gap-2">
+      <Period href="/finances/dashboard?periode=30j" label="30 derniers jours" active={period === "30j"} />
+      <Period href="/finances/dashboard?periode=trimestre" label="Trimestre en cours" active={period === "trimestre"} />
+      <Period href="/finances/dashboard?periode=annee" label="Année en cours" active={period === "annee"} />
+      <Period href="/finances/dashboard?periode=tout" label="Tout l’historique" active={period === "tout"} />
+    </nav>
+
     <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <Metric label="Trésorerie nette suivie" value={euros(tresorerie)} detail="Encaissé − payé" tone={tresorerie < 0 ? "danger" : "good"} />
-      <Metric label="Revenus enregistrés" value={euros(revenus)} detail={`${euros(encaisses)} encaissés`} />
-      <Metric label="Dépenses enregistrées" value={euros(depenses)} detail={`${euros(payees)} payées`} />
-      <Metric label="Résultat net" value={euros(resultat)} detail={`${marge}% de marge nette`} tone={resultat < 0 ? "danger" : "good"} />
+      <Metric label="Revenus enregistrés" value={euros(revenus)} detail={`${euros(encaisses)} encaissés · ${periodLabel}`} />
+      <Metric label="Dépenses enregistrées" value={euros(depenses)} detail={`${euros(payees)} payées · ${periodLabel}`} />
+      <Metric label="Résultat net" value={euros(resultat)} detail={`${marge}% de marge · ${periodLabel}`} tone={resultat < 0 ? "danger" : "good"} />
     </section>
 
     <section className="mt-8 grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
@@ -141,10 +155,15 @@ function Commitment({ label, value, href }: { label: string; value: number; href
 function ProjectRow({ projet }: { projet: { id: string; titre: string; revenus: number; depenses: number; resultat: number } }) { return <Link href={`/projets/${projet.id}`} className="group grid gap-3 border-b border-zinc-900 py-4 last:border-0 sm:grid-cols-[1fr_auto] sm:items-center"><div className="min-w-0"><p className="truncate font-semibold group-hover:text-yellow-400">{projet.titre || "Projet sans titre"}</p><p className="mt-1 text-xs text-zinc-600">{euros(projet.revenus)} de revenus · {euros(projet.depenses)} de dépenses</p></div><p className={`font-bold ${projet.resultat < 0 ? "text-red-400" : "text-green-400"}`}>{euros(projet.resultat)}</p></Link>; }
 function Empty({ text, good = false }: { text: string; good?: boolean }) { return <div className={`rounded-2xl border border-dashed p-8 text-center text-sm ${good ? "border-green-500/20 text-green-400" : "border-zinc-800 text-zinc-600"}`}>{text}</div>; }
 function Status({ score }: { score: number }) { const label = score >= 75 ? "Solide" : score >= 50 ? "À surveiller" : "Sous tension"; const style = score >= 75 ? "bg-green-500/10 text-green-300" : score >= 50 ? "bg-yellow-500/10 text-yellow-300" : "bg-red-500/10 text-red-300"; return <span className={`rounded-full px-3 py-1 text-xs font-bold ${style}`}>{label}</span>; }
+function Period({ href, label, active }: { href: string; label: string; active: boolean }) { return <Link href={href} aria-current={active ? "page" : undefined} className={`rounded-full border px-4 py-2 text-xs font-bold transition ${active ? "border-yellow-400 bg-yellow-500/10 text-yellow-200" : "border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-600 hover:text-white"}`}>{label}</Link>; }
 function bar(score: number) { return score >= 75 ? "bg-green-400" : score >= 50 ? "bg-yellow-400" : "bg-red-400"; }
 function sum(items: any[], type: "Revenu" | "Dépense", status?: string) { return items.filter((item) => item.type === type && item.statut !== "Annulé" && (!status || item.statut === status)).reduce((total, item) => total + Number(item.montant || 0), 0); }
 function outstanding(items: any[], type: "Revenu" | "Dépense") { return items.filter((item) => item.type === type && !["Payé", "Annulé"].includes(item.statut)).reduce((total, item) => total + Number(item.montant || 0), 0); }
 function totalItems(items: any[]) { return items.reduce((total, item) => total + Number(item.montant || 0), 0); }
 function isStale(item: any) { if (!item.date_operation || ["Payé", "Annulé"].includes(item.statut)) return false; const date = new Date(`${item.date_operation}T12:00:00`); const limit = new Date(); limit.setHours(0, 0, 0, 0); limit.setDate(limit.getDate() - 30); return !Number.isNaN(date.getTime()) && date < limit; }
+function periodStart(period: string) { const now = new Date(); now.setHours(0, 0, 0, 0); if (period === "30j") { now.setDate(now.getDate() - 29); return now; } if (period === "trimestre") { now.setMonth(Math.floor(now.getMonth() / 3) * 3, 1); return now; } if (period === "annee") { now.setMonth(0, 1); return now; } return null; }
+function isOnOrAfter(input: string | null, start: Date) { if (!input) return false; const date = new Date(`${input}T12:00:00`); return !Number.isNaN(date.getTime()) && date >= start; }
+function labelForPeriod(period: string) { return period === "30j" ? "30 derniers jours" : period === "trimestre" ? "trimestre en cours" : period === "annee" ? "année en cours" : "tout l’historique"; }
+function value(input?: string | string[]) { return Array.isArray(input) ? input[0] || "" : input || ""; }
 function financeScore(revenus: number, marge: number, roi: number, deficitaires: number, royalties: number) { if (!revenus) return 50; return Math.max(0, Math.min(100, Math.round(55 + Math.max(-25, Math.min(20, marge / 2)) + Math.max(-20, Math.min(15, roi / 5)) - Math.min(15, deficitaires * 4) - Math.min(10, (royalties / revenus) * 20)))); }
 function euros(value: number) { return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value || 0); }
