@@ -61,9 +61,10 @@ const executiveSections: SidebarSection[] = [
     ],
   },
   {
-    title: "Développement",
+    title: "CRM & Développement",
     eyebrow: "04",
     links: [
+      { href: "/crm", label: "Vue CRM" },
       { href: "/booking", label: "Booking" },
       { href: "/campagnes", label: "Campagnes" },
       { href: "/medias", label: "Relations médias" },
@@ -142,9 +143,10 @@ const artisticDirectorSections: SidebarSection[] = [
     ],
   },
   {
-    title: "Développement",
+    title: "CRM & Développement",
     eyebrow: "04",
     links: [
+      { href: "/crm", label: "Vue CRM" },
       { href: "/campagnes", label: "Campagnes" },
       { href: "/medias", label: "Relations médias" },
       { href: "/influenceurs", label: "Influenceurs" },
@@ -198,9 +200,10 @@ const managerSections: SidebarSection[] = [
     ],
   },
   {
-    title: "Développement",
+    title: "CRM & Développement",
     eyebrow: "04",
     links: [
+      { href: "/crm", label: "Vue CRM" },
       { href: "/booking", label: "Booking" },
       { href: "/campagnes", label: "Campagnes" },
       { href: "/medias", label: "Relations médias" },
