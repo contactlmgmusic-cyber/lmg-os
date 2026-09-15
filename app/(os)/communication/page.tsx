@@ -6,6 +6,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import Link from "next/link";
 
 type CommunicationStatus =
   | "sent"
@@ -307,24 +308,37 @@ export default function CommunicationPage() {
     setPage(1);
   }
 
+  const deliveredTotal =
+    statistics.sent + statistics.failed;
+  const deliveryRate = deliveredTotal
+    ? Math.round(
+        (statistics.sent / deliveredTotal) * 100
+      )
+    : 100;
+  const activeQueue =
+    statistics.pending + statistics.processing;
+  const hasIncidents = statistics.failed > 0;
+
+  function showFailedCommunications() {
+    setStatus("failed");
+    setPage(1);
+  }
+
   return (
-    <main className="min-h-screen bg-black p-6 text-white xl:p-10">
-      <div className="mx-auto max-w-[1700px]">
-        <header className="mb-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+    <main className="min-h-screen bg-black px-4 py-6 text-white sm:px-6 xl:px-10 xl:py-8">
+      <div className="mx-auto max-w-[1500px]">
+        <header className="mb-8 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
-              LMG Communication
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-yellow-400">
+              Communication · Vue globale
             </p>
 
-            <h1 className="mt-3 text-4xl font-bold md:text-5xl">
+            <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">
               Centre de communication
             </h1>
 
             <p className="mt-3 max-w-3xl text-zinc-400">
-              Suivi centralisé des
-              e-mails envoyés, relances
-              programmées, annulations et
-              erreurs Gmail.
+              Pilotez les envois, repérez les incidents et accédez à tous les canaux internes depuis un seul écran.
             </p>
           </div>
 
@@ -334,7 +348,7 @@ export default function CommunicationPage() {
               loadCommunications
             }
             disabled={loading}
-            className="rounded-xl border border-zinc-700 px-5 py-3 font-semibold text-zinc-300 transition hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-2xl border border-zinc-700 bg-zinc-950 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading
               ? "Actualisation..."
@@ -342,49 +356,75 @@ export default function CommunicationPage() {
           </button>
         </header>
 
-        <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        <section className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
-            label="Total"
+            label="Communications"
             value={statistics.total}
-            className="border-zinc-800 bg-zinc-900 text-white"
+            detail="Tous statuts confondus"
+            className="border-zinc-800 bg-zinc-950 text-white"
           />
 
           <StatCard
-            label="Envoyés"
-            value={statistics.sent}
+            label="Taux de délivrance"
+            value={`${deliveryRate} %`}
+            detail={`${statistics.sent} envoyé${statistics.sent !== 1 ? "s" : ""}`}
             className="border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
           />
 
           <StatCard
-            label="Programmés"
-            value={statistics.pending}
+            label="File active"
+            value={activeQueue}
+            detail={`${statistics.pending} programmé${statistics.pending !== 1 ? "s" : ""} · ${statistics.processing} en cours`}
             className="border-amber-500/30 bg-amber-500/10 text-amber-300"
           />
 
           <StatCard
-            label="En cours"
-            value={
-              statistics.processing
-            }
-            className="border-cyan-500/30 bg-cyan-500/10 text-cyan-300"
-          />
-
-          <StatCard
-            label="Échecs"
+            label="Incidents"
             value={statistics.failed}
+            detail={`${statistics.cancelled} annulé${statistics.cancelled !== 1 ? "s" : ""}`}
             className="border-red-500/30 bg-red-500/10 text-red-300"
-          />
-
-          <StatCard
-            label="Annulés"
-            value={
-              statistics.cancelled
-            }
-            className="border-zinc-700 bg-zinc-800 text-zinc-300"
           />
         </section>
 
-        <section className="mb-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-5 xl:p-6">
+        <section className="mb-5 grid gap-3 md:grid-cols-3">
+          <ChannelLink href="/chat" title="Chat d’équipe" description="Échanger dans les canaux partagés" />
+          <ChannelLink href="/chat/prive" title="Messages privés" description="Retrouver les conversations directes" />
+          <ChannelLink href="/notifications" title="Notifications" description="Traiter les alertes et informations" />
+        </section>
+
+        {(hasIncidents || activeQueue > 0) && (
+          <section className={`mb-5 rounded-[26px] border p-5 sm:p-6 ${hasIncidents ? "border-red-500/30 bg-red-500/10" : "border-amber-500/30 bg-amber-500/10"}`}>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className={`text-xs font-semibold uppercase tracking-[0.24em] ${hasIncidents ? "text-red-300" : "text-amber-300"}`}>
+                  {hasIncidents ? "Action requise" : "Activité en cours"}
+                </p>
+                <h2 className="mt-2 text-xl font-bold">
+                  {hasIncidents
+                    ? `${statistics.failed} communication${statistics.failed !== 1 ? "s" : ""} en échec`
+                    : `${activeQueue} communication${activeQueue !== 1 ? "s" : ""} dans la file d’envoi`}
+                </h2>
+                <p className="mt-1 text-sm text-zinc-400">
+                  {hasIncidents
+                    ? "Consultez les messages d’erreur pour identifier les destinataires à reprendre."
+                    : "Les envois programmés ou en traitement sont suivis automatiquement."}
+                </p>
+              </div>
+
+              {hasIncidents && (
+                <button
+                  type="button"
+                  onClick={showFailedCommunications}
+                  className="shrink-0 rounded-xl bg-red-400 px-4 py-2.5 text-sm font-bold text-red-950 transition hover:bg-red-300"
+                >
+                  Voir les échecs
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+
+        <section className="mb-5 rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 xl:p-6">
           <form
             onSubmit={submitSearch}
             className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(260px,1fr)_220px_220px_auto_auto]"
@@ -490,7 +530,7 @@ export default function CommunicationPage() {
           </p>
         )}
 
-        <section className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900">
+        <section className="overflow-hidden rounded-[26px] border border-zinc-800 bg-zinc-950">
           <div className="border-b border-zinc-800 p-6">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <h2 className="text-2xl font-bold">
@@ -534,7 +574,7 @@ export default function CommunicationPage() {
                   return (
                     <article
                       key={`${item.source}-${item.id}`}
-                      className="p-6 transition hover:bg-black/30 xl:p-7"
+                      className="p-5 transition hover:bg-white/[0.025] sm:p-6 xl:p-7"
                     >
                       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                         <div className="min-w-0">
@@ -635,7 +675,7 @@ export default function CommunicationPage() {
         {!loading &&
           !error &&
           pagination.totalPages > 1 && (
-            <div className="mt-8 flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-900 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-5 flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-4 sm:flex-row sm:items-center sm:justify-between">
               <button
                 type="button"
                 onClick={() =>
@@ -687,15 +727,17 @@ export default function CommunicationPage() {
 function StatCard({
   label,
   value,
+  detail,
   className,
 }: {
   label: string;
-  value: number;
+  value: number | string;
+  detail: string;
   className: string;
 }) {
   return (
     <div
-      className={`rounded-2xl border p-5 ${className}`}
+      className={`rounded-[26px] border p-5 sm:p-6 ${className}`}
     >
       <p className="text-sm opacity-80">
         {label}
@@ -704,6 +746,39 @@ function StatCard({
       <p className="mt-3 text-3xl font-bold">
         {value}
       </p>
+
+      <p className="mt-2 text-xs opacity-65">
+        {detail}
+      </p>
     </div>
+  );
+}
+
+function ChannelLink({
+  href,
+  title,
+  description,
+}: {
+  href: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-4 transition hover:border-yellow-400/40 hover:bg-zinc-900"
+    >
+      <span>
+        <span className="block font-semibold text-zinc-100">
+          {title}
+        </span>
+        <span className="mt-1 block text-xs text-zinc-500">
+          {description}
+        </span>
+      </span>
+      <span className="text-lg text-zinc-600 transition group-hover:translate-x-1 group-hover:text-yellow-400" aria-hidden="true">
+        →
+      </span>
+    </Link>
   );
 }
