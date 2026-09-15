@@ -40,11 +40,18 @@ export default async function FinancesPage({ searchParams }: { searchParams: Sea
   const activeFilters = [q, type, statut, categorie, suivi].filter(Boolean).length;
   const stale = finances.filter(isStale);
   const unlinked = finances.filter((item: any) => item.statut !== "Annulé" && !hasAttachment(item));
+  const exportParams = new URLSearchParams();
+  if (q) exportParams.set("q", q);
+  if (type) exportParams.set("type", type);
+  if (statut) exportParams.set("statut", statut);
+  if (categorie) exportParams.set("categorie", categorie);
+  if (suivi) exportParams.set("suivi", suivi);
+  const exportHref = `/api/finances/export${exportParams.size ? `?${exportParams.toString()}` : ""}`;
 
   return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-[1500px]">
     <header className="flex flex-col gap-6 border-b border-zinc-900 pb-8 xl:flex-row xl:items-end xl:justify-between">
       <div><p className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500">Finance LMG</p><h1 className="mt-3 text-4xl font-bold md:text-6xl">Transactions</h1><p className="mt-3 max-w-3xl text-zinc-500">Enregistre et suis chaque revenu ou dépense, de la prévision jusqu’au paiement.</p></div>
-      <div className="flex flex-wrap gap-3"><Link href="/finances/nouveau" className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-black">+ Nouvelle opération</Link><Link href="/finances/dashboard" className="rounded-xl border border-zinc-700 px-5 py-3 text-sm font-bold text-zinc-300">Vue financière</Link></div>
+      <div className="flex flex-wrap gap-3"><Link href="/finances/nouveau" className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-black">+ Nouvelle opération</Link><a href={exportHref} className="rounded-xl border border-zinc-700 px-5 py-3 text-sm font-bold text-zinc-300">Exporter le CSV</a><Link href="/finances/dashboard" className="rounded-xl border border-zinc-700 px-5 py-3 text-sm font-bold text-zinc-300">Vue financière</Link></div>
     </header>
 
     <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
