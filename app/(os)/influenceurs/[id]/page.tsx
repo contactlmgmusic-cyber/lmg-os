@@ -2,7 +2,6 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { requireRole } from "@/lib/require-role.server";
-import CrmEmailPanel from "@/components/CrmEmailPanel";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
@@ -308,22 +307,6 @@ if (error || !influenceur) {
           </div>
         </aside>
       </div>
-      {!isManager && (
-  <section className="mt-10">
-    <CrmEmailPanel
-      entityType="influenceur"
-      entityId={influenceur.id}
-      defaultTo={
-        influenceur.email || ""
-      }
-      defaultSubject={`Legacy Music Group — ${influenceur.nom}`}
-      contactName={
-        influenceur.nom ||
-        influenceur.pseudo
-      }
-    />
-  </section>
-)}
     </main>
   );
 }

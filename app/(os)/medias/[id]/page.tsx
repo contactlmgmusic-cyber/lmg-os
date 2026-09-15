@@ -3,7 +3,6 @@ import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import MediaRelances from "@/components/MediaRelances";
 import DeleteMediaButton from "@/components/DeleteMediaButton";
 import { requireRole } from "@/lib/require-role.server";
-import CrmEmailPanel from "@/components/CrmEmailPanel";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
@@ -361,20 +360,6 @@ if (error || !media) {
           </div>
         </aside>
       </div>
-      {!isManager && (
-  <section className="mt-10">
-    <CrmEmailPanel
-      entityType="media"
-      entityId={media.id}
-      defaultTo={media.email || ""}
-      defaultSubject={`Legacy Music Group — ${media.nom}`}
-      contactName={
-        media.contact_nom ||
-        media.nom
-      }
-    />
-  </section>
-)}
     </main>
   );
 }
