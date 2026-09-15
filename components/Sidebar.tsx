@@ -111,10 +111,9 @@ const artisticDirectorSections: SidebarSection[] = [
     title: "Accueil",
     eyebrow: "01",
     links: [
-      { href: "/dashboard", label: "Tableau de bord" },
+      { href: "/direction-artistique", label: "Tableau de bord" },
       { href: "/mon-travail", label: "Mon travail" },
-      { href: "/dashboard/objectifs-lmg", label: "Objectifs LMG" },
-      { href: "/dashboard/priorites", label: "Priorités stratégiques" },
+      { href: "/objectifs-artistes", label: "Objectifs artistes" },
       { href: "/calendrier/global", label: "Calendrier global" },
     ],
   },
@@ -171,8 +170,6 @@ const managerSections: SidebarSection[] = [
     links: [
       { href: "/manager", label: "Tableau de bord" },
       { href: "/mon-travail", label: "Mon travail" },
-      { href: "/dashboard/objectifs-lmg", label: "Objectifs LMG" },
-      { href: "/dashboard/priorites", label: "Priorités stratégiques" },
       { href: "/manager/kpi", label: "Mes indicateurs" },
       { href: "/calendrier", label: "Mon calendrier" },
     ],
@@ -238,6 +235,7 @@ const artisteSections: SidebarSection[] = [
       { href: "/mon-espace-artiste/calendrier", label: "Mon calendrier" },
       { href: "/mon-espace-artiste/evenements", label: "Mes événements" },
       { href: "/mon-espace-artiste/documents", label: "Mes documents" },
+      { href: "/mon-espace-artiste/royalties", label: "Mes royalties" },
     ],
   },
   {
@@ -374,7 +372,7 @@ export default function Sidebar() {
     }
   }, [pathname, sections]);
 
-  const canUseGlobalTools = role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN || role === ROLES.MANAGER;
+  const canUseGlobalTools = role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN || role === ROLES.MANAGER || role === ROLES.ARTISTIC_DIRECTOR;
   const homeHref = getRoleHome(role);
   const roleLabel = role ? roleLabels[role] || role : "Chargement...";
   const userInitials = userName.split(" ").filter(Boolean).map((part) => part[0])

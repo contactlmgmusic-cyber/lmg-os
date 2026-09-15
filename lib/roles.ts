@@ -22,7 +22,6 @@ export const INTERNAL_ROLES: UserRole[] = [
 export const EXECUTIVE_ROLES: UserRole[] = [
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
-  ROLES.ARTISTIC_DIRECTOR,
 ];
 
 export function isUserRole(role: string | null | undefined): role is UserRole {
@@ -33,6 +32,8 @@ export function getRoleHome(role: string | null | undefined) {
   switch (role) {
     case ROLES.MANAGER:
       return "/manager";
+    case ROLES.ARTISTIC_DIRECTOR:
+      return "/direction-artistique";
     case ROLES.ARTISTE:
       return "/mon-espace-artiste";
     case ROLES.PRESTATAIRE:

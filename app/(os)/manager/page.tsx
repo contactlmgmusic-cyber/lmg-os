@@ -49,11 +49,6 @@ const supabase = await createAuthenticatedSupabaseClient();
       ? await supabase.from("medias").select("*").in("artiste_id", artisteIds)
       : { data: [] };
 
-const { data: finances } =
-  artisteIds.length > 0
-    ? await supabase.from("finances").select("*").in("artiste_id", artisteIds)
-    : { data: [] };
-
 const projetIds = projets?.map((p: any) => p.id) || [];
 
 const { data: royalties } =
@@ -91,14 +86,6 @@ const projetsActifs = activeProjects.length;
 
   const mediasAContacter =
     medias?.filter((m: any) => !m.statut || m.statut === "À contacter").length || 0;
-
-const chiffreAffaires =
-  finances
-    ?.filter((f: any) => f.type === "Revenu")
-    .reduce(
-      (acc: number, f: any) => acc + Number(f.montant || 0),
-      0
-    ) || 0;
 
 const royaltiesAPayer =
   royalties
@@ -177,12 +164,12 @@ const bookingsEnNegociation =
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <Card label="Mes artistes" value={artistes?.length || 0} />
 <Card label="Projets actifs" value={projetsActifs} />
-<Card label="CA généré (€)" value={formatEuro(chiffreAffaires)} />
 <Card label="Royalties à payer (€)" value={formatEuro(royaltiesAPayer)} />
 <Card label="Bookings confirmés" value={bookingsConfirmes} />
 <Card label="Tâches ouvertes" value={tachesOuvertes} />
 <Card label="Contrats à signer" value={contratsASigner} />
 <Card label="Royalties payées (€)" value={Math.round(royaltiesPayees)} />
+<Card label="Sorties à venir" value={sortiesAVenir.length} />
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-2">

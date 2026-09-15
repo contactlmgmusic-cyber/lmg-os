@@ -36,7 +36,11 @@ export default async function MonEspaceArtistePage() {
     .eq("id", user.id)
     .single();
 
-  if (!profile?.artiste_id) {
+  if (profile?.role !== ROLES.ARTISTE) {
+    redirect("/dashboard");
+  }
+
+  if (!profile.artiste_id) {
     return (
       <main className="min-h-screen bg-black p-10 text-white">
         <h1 className="text-5xl font-bold">Mon espace artiste</h1>
@@ -46,10 +50,6 @@ export default async function MonEspaceArtistePage() {
       </main>
     );
   }
-
-  if (profile?.role !== ROLES.ARTISTE) {
-  redirect("/dashboard");
-}
 
   const { data: artiste } = await supabase
     .from("artistes")
@@ -161,7 +161,7 @@ today.setHours(0, 0, 0, 0);
     type: "Sortie",
     titre: projet.titre,
     date: projet.date_sortie,
-    href: `/projets/${projet.id}`,
+    href: "/mon-espace-artiste#mes-projets",
   })),
 
   ...(taches || [])
@@ -171,7 +171,7 @@ today.setHours(0, 0, 0, 0);
       type: "Tâche",
       titre: tache.titre,
       date: tache.deadline,
-      href: `/taches/${tache.id}`,
+      href: "/mon-espace-artiste#mes-taches",
     })),
 
   ...(bookings || [])
@@ -181,7 +181,7 @@ today.setHours(0, 0, 0, 0);
       type: "Booking",
       titre: booking.evenement,
       date: booking.date_event,
-      href: `/booking/${booking.id}`,
+      href: "/mon-espace-artiste#mes-dates",
     })),
 ]
   .filter(
@@ -458,7 +458,7 @@ const prochainBooking =
       description={prochainesSorties[0]?.date_sortie || "Date non renseignée"}
       href={
         prochainesSorties[0]?.id
-          ? `/projets/${prochainesSorties[0].id}`
+          ? "/mon-espace-artiste#mes-projets"
           : "/mon-espace-artiste"
       }
     />
@@ -478,14 +478,14 @@ const prochainBooking =
       label="Prochaine tâche"
       title={prochaineTache?.titre || "Aucune tâche ouverte"}
       description={prochaineTache?.deadline || "Tout est clean"}
-      href={prochaineTache?.id ? `/taches/${prochaineTache.id}` : "/mon-espace-artiste"}
+      href={prochaineTache?.id ? "/mon-espace-artiste#mes-taches" : "/mon-espace-artiste"}
     />
 
     <DashboardCard
       label="Royalties à recevoir"
       title={`${royaltiesAPayer.toFixed(0)} €`}
       description={`${royaltiesPayees.toFixed(0)} € déjà payés`}
-      href="/royalties"
+      href="/mon-espace-artiste/royalties"
     />
   </div>
 </div>
@@ -655,7 +655,7 @@ const prochainBooking =
 </div>
 
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+          <div id="mes-projets" className="scroll-mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
             <h2 className="mb-6 text-3xl font-bold">Mes projets</h2>
 
             <div className="space-y-4">
@@ -679,7 +679,7 @@ const prochainBooking =
   return (
     <Link
       key={projet.id}
-      href={`/projets/${projet.id}`}
+      href="#mes-projets"
       className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
     >
       <div className="flex items-center justify-between">
@@ -711,7 +711,7 @@ const prochainBooking =
             </div>
           </div>
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+          <div id="mes-taches" className="scroll-mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
             <h2 className="mb-6 text-3xl font-bold">Mes tâches</h2>
 
             <div className="space-y-4">
@@ -722,7 +722,7 @@ const prochainBooking =
               {taches?.map((tache) => (
                 <Link
                   key={tache.id}
-                  href={`/taches/${tache.id}`}
+                  href="#mes-taches"
                   className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
                 >
                   <h3 className="text-xl font-bold">{tache.titre}</h3>
@@ -749,7 +749,7 @@ const prochainBooking =
     {contrats?.map((contrat: any) => (
       <Link
         key={contrat.id}
-        href={`/contrats/${contrat.id}`}
+        href="/mon-espace-artiste/contrats"
         className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
       >
         <h3 className="text-xl font-bold">
@@ -806,7 +806,7 @@ const prochainBooking =
 </div>
         </div>
 
-        <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
+        <div id="mes-dates" className="mt-8 scroll-mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
   <h2 className="mb-6 text-3xl font-bold">
     Mes prochaines dates
   </h2>
@@ -821,7 +821,7 @@ const prochainBooking =
     {bookings?.slice(0, 10).map((booking: any) => (
       <Link
         key={booking.id}
-        href={`/booking/${booking.id}`}
+        href="/mon-espace-artiste/evenements"
         className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
       >
         <h3 className="text-xl font-bold">
@@ -873,7 +873,7 @@ const prochainBooking =
       return (
         <Link
           key={projet.id}
-          href={`/projets/${projet.id}`}
+          href="#mes-projets"
           className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
         >
           <div className="mb-4 flex items-center justify-between gap-4">
@@ -942,7 +942,7 @@ const prochainBooking =
     {prochainesSorties.map((projet: any) => (
       <Link
         key={projet.id}
-        href={`/projets/${projet.id}`}
+        href="#mes-projets"
         className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
       >
         <h3 className="text-xl font-bold">

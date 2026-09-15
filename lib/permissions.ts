@@ -8,6 +8,7 @@ export function canManageArtists(role?: string | null) {
   return (
     role === ROLES.SUPER_ADMIN ||
     role === ROLES.ADMIN ||
+    role === ROLES.ARTISTIC_DIRECTOR ||
     role === ROLES.MANAGER
   );
 }
@@ -16,6 +17,7 @@ export function canManageProjects(role?: string | null) {
   return (
     role === ROLES.SUPER_ADMIN ||
     role === ROLES.ADMIN ||
+    role === ROLES.ARTISTIC_DIRECTOR ||
     role === ROLES.MANAGER
   );
 }
@@ -24,6 +26,7 @@ export function canManageTasks(role?: string | null) {
   return (
     role === ROLES.SUPER_ADMIN ||
     role === ROLES.ADMIN ||
+    role === ROLES.ARTISTIC_DIRECTOR ||
     role === ROLES.MANAGER ||
     role === ROLES.PRESTATAIRE
   );
@@ -37,6 +40,7 @@ export function canUploadAssets(role?: string | null) {
   return (
     role === ROLES.SUPER_ADMIN ||
     role === ROLES.ADMIN ||
+    role === ROLES.ARTISTIC_DIRECTOR ||
     role === ROLES.MANAGER
   );
 }
