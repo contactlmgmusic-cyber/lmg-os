@@ -19,7 +19,8 @@ export default function RoyaltyGenerator({ splits, generatedSplitIds, loadError 
   const alreadyGenerated = Boolean(splitId && generatedSplitIds.includes(splitId));
   const missingEmails = participants.filter((item: any) => !item.email).length;
   const validSplit = participants.length > 0 && Math.abs(totalPercentage - 100) < 0.001;
-  const canGenerate = Boolean(selected && revenue > 0 && validSplit && !alreadyGenerated);
+  const linkedProject = Boolean(selected?.projet_id);
+  const canGenerate = Boolean(selected && revenue > 0 && validSplit && linkedProject && missingEmails === 0 && !alreadyGenerated);
 
   async function generate() {
     if (!canGenerate || loading) return;
@@ -50,8 +51,8 @@ export default function RoyaltyGenerator({ splits, generatedSplitIds, loadError 
           <label className="mt-4 block"><span className="mb-2 block text-xs font-semibold text-zinc-500">Revenu net à répartir</span><div className="relative"><input type="number" min="0" step="0.01" value={revenu} onChange={(e) => { setRevenu(e.target.value); setMessage(""); }} placeholder="0,00" className="field pr-12" /><span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600">€</span></div></label>
         </section>
         <section className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 md:p-6"><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-500">Étape 2</p><h2 className="mt-2 text-2xl font-bold">Contrôles</h2><div className="mt-5 space-y-3">
-          <Check ok={Boolean(selected)} label="Split sheet sélectionné" /><Check ok={participants.length > 0} label={participants.length ? `${participants.length} participant(s)` : "Participants renseignés"} /><Check ok={validSplit} label={`Total du split : ${totalPercentage}%`} /><Check ok={!alreadyGenerated} label={alreadyGenerated ? "Royalties déjà générées" : "Aucune génération existante"} /><Check ok={revenue > 0} label={revenue > 0 ? `Revenu : ${euros(revenue)}` : "Revenu valide renseigné"} />
-          {missingEmails > 0 && <p className="rounded-xl border border-yellow-500/20 bg-yellow-500/[0.05] p-3 text-xs text-yellow-300">{missingEmails} participant(s) sans email : ils recevront une ligne de royalty, mais leur accès personnel ne pourra pas être rapproché automatiquement.</p>}
+          <Check ok={Boolean(selected)} label="Split sheet sélectionné" /><Check ok={linkedProject} label={linkedProject ? "Projet source rattaché" : "Projet source obligatoire"} /><Check ok={participants.length > 0} label={participants.length ? `${participants.length} participant(s)` : "Participants renseignés"} /><Check ok={validSplit} label={`Total du split : ${totalPercentage}%`} /><Check ok={missingEmails === 0} label={missingEmails ? `${missingEmails} e-mail(s) bénéficiaire(s) manquant(s)` : "Tous les bénéficiaires ont un e-mail"} /><Check ok={!alreadyGenerated} label={alreadyGenerated ? "Royalties déjà générées" : "Aucune génération existante"} /><Check ok={revenue > 0} label={revenue > 0 ? `Revenu : ${euros(revenue)}` : "Revenu valide renseigné"} />
+          {missingEmails > 0 && <p className="rounded-xl border border-red-500/20 bg-red-500/[0.05] p-3 text-xs text-red-300">La génération est bloquée : complète les e-mails dans le split sheet pour garantir l’accès et la traçabilité de chaque bénéficiaire.</p>}
         </div></section>
       </div>
       <section className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 md:p-6"><div className="flex flex-col gap-4 border-b border-zinc-900 pb-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-500">Aperçu avant génération</p><h2 className="mt-2 text-2xl font-bold">{selected?.titre || "Aucun split sélectionné"}</h2><p className="mt-2 text-sm text-zinc-500">{projectTitle(selected)}</p></div><div className="text-left sm:text-right"><p className="text-xs text-zinc-600">Total distribué</p><p className="mt-1 text-2xl font-bold">{euros(validSplit ? revenue : (revenue * totalPercentage) / 100)}</p></div></div>
