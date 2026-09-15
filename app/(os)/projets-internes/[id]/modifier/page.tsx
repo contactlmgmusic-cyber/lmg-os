@@ -5,7 +5,7 @@ import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 export default async function EditInternalProjectPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER]);
+  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR]);
   const { id } = await params; const supabase = await createAuthenticatedSupabaseClient();
   const [{ data: project }, { data: profiles }] = await Promise.all([supabase.from("internal_projects").select("*").eq("id", id).single(), supabase.from("profiles").select("id, nom, full_name").in("role", ["super_admin","admin","artistic_director","manager","prestataire"]).order("nom")]);
   if (!project) return <main className="p-10 text-white">Projet interne introuvable.</main>;

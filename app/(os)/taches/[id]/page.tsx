@@ -6,6 +6,7 @@ import ChecklistEditor from "@/components/ChecklistEditor";
 import TaskComments from "@/components/TaskComments";
 import TaskFiles from "@/components/TaskFiles";
 import TaskActivity from "@/components/TaskActivity";
+import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +55,13 @@ export default async function TacheDetailPage({
       </main>
     );
   }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: currentProfile } = user
+    ? await supabase.from("profiles").select("id, role").eq("id", user.id).maybeSingle()
+    : { data: null };
+  const isAdmin = currentProfile?.role === ROLES.SUPER_ADMIN || currentProfile?.role === ROLES.ADMIN;
+  const canManageTask = Boolean(isAdmin || (currentProfile?.id && tache.created_by === currentProfile.id));
 
   async function deleteTache() {
   "use server";
@@ -150,7 +158,7 @@ export default async function TacheDetailPage({
   </Link>
 
 
-  <div className="flex gap-3">
+  {canManageTask && <div className="flex gap-3">
 
     <Link
       href={`/taches/${tache.id}/modifier`}
@@ -171,7 +179,7 @@ export default async function TacheDetailPage({
 
     </form>
 
-  </div>
+  </div>}
 
 </div>
 

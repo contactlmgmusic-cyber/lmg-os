@@ -88,13 +88,14 @@ export default function EvenementsArtistePage() {
   }
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
+    <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10">
       <div className="mb-10">
         <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
           Mon espace artiste
         </p>
 
-        <h1 className="text-5xl font-bold">Mes événements</h1>
+        <p className="text-xs font-bold uppercase tracking-[0.28em] text-violet-400">Mon espace · Agenda</p>
+        <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-6xl">Mes événements</h1>
 
         <p className="mt-3 text-zinc-400">
           Check-in, suivi et validation de tes événements LMG.
@@ -109,7 +110,7 @@ export default function EvenementsArtistePage() {
         {events.map((event) => (
           <div
             key={event.id}
-            className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6"
+            className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-6"
           >
             <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
               <div>

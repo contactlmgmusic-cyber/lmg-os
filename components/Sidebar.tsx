@@ -101,7 +101,7 @@ const executiveSections: SidebarSection[] = [
       { href: "/equipe", label: "Équipe" },
       { href: "/invitations", label: "Invitations" },
       { href: "/site-internet", label: "Site Internet" },
-      { href: "/admin", label: "Paramètres" },
+      { href: "/admin", label: "Console admin" },
     ],
   },
 ];
@@ -111,10 +111,9 @@ const artisticDirectorSections: SidebarSection[] = [
     title: "Accueil",
     eyebrow: "01",
     links: [
-      { href: "/dashboard", label: "Tableau de bord" },
+      { href: "/direction-artistique", label: "Tableau de bord" },
       { href: "/mon-travail", label: "Mon travail" },
-      { href: "/dashboard/objectifs-lmg", label: "Objectifs LMG" },
-      { href: "/dashboard/priorites", label: "Priorités stratégiques" },
+      { href: "/objectifs-artistes", label: "Objectifs artistes" },
       { href: "/calendrier/global", label: "Calendrier global" },
     ],
   },
@@ -137,8 +136,7 @@ const artisticDirectorSections: SidebarSection[] = [
       { href: "/sorties", label: "Catalogue des sorties" },
       { href: "/release-planner", label: "Planning des sorties" },
       { href: "/rollout", label: "Rollouts" },
-      { href: "/taches", label: "Tâches de l’équipe" },
-      { href: "/mes-taches", label: "Mes tâches" },
+      { href: "/taches", label: "Mes tâches" },
       { href: "/drive", label: "Fichiers & Drive" },
     ],
   },
@@ -150,7 +148,6 @@ const artisticDirectorSections: SidebarSection[] = [
       { href: "/campagnes", label: "Campagnes" },
       { href: "/medias", label: "Relations médias" },
       { href: "/influenceurs", label: "Influenceurs" },
-      { href: "/partenaires", label: "Partenaires" },
     ],
   },
   {
@@ -170,9 +167,7 @@ const managerSections: SidebarSection[] = [
     eyebrow: "01",
     links: [
       { href: "/manager", label: "Tableau de bord" },
-      { href: "/mon-travail", label: "Mon travail" },
-      { href: "/dashboard/objectifs-lmg", label: "Objectifs LMG" },
-      { href: "/dashboard/priorites", label: "Priorités stratégiques" },
+      { href: "/taches", label: "Mes tâches" },
       { href: "/manager/kpi", label: "Mes indicateurs" },
       { href: "/calendrier", label: "Mon calendrier" },
     ],
@@ -191,12 +186,10 @@ const managerSections: SidebarSection[] = [
     eyebrow: "03",
     links: [
       { href: "/projets", label: "Projets" },
-      { href: "/projets-internes", label: "Projets internes" },
       { href: "/sorties", label: "Sorties" },
       { href: "/release-planner", label: "Planning" },
       { href: "/rollout", label: "Rollouts" },
-      { href: "/taches", label: "Tâches" },
-      { href: "/drive/manager", label: "Fichiers" },
+      { href: "/drive", label: "Fichiers" },
     ],
   },
   {
@@ -222,7 +215,7 @@ const managerSections: SidebarSection[] = [
     title: "Communication",
     eyebrow: "06",
     links: [
-      { href: "/chat", label: "Chat d’équipe", badge: "chat" },
+      { href: "/chat", label: "Chats de mes artistes", badge: "chat" },
       { href: "/chat/prive", label: "Messages privés", badge: "chat" },
       { href: "/notifications", label: "Notifications", badge: "notifications" },
     ],
@@ -238,6 +231,7 @@ const artisteSections: SidebarSection[] = [
       { href: "/mon-espace-artiste/calendrier", label: "Mon calendrier" },
       { href: "/mon-espace-artiste/evenements", label: "Mes événements" },
       { href: "/mon-espace-artiste/documents", label: "Mes documents" },
+      { href: "/mon-espace-artiste/royalties", label: "Mes royalties" },
     ],
   },
   {
@@ -252,7 +246,7 @@ const artisteSections: SidebarSection[] = [
     title: "Communication",
     eyebrow: "03",
     links: [
-      { href: "/chat", label: "Chat d’équipe", badge: "chat" },
+      { href: "/chat", label: "Chat avec mon équipe", badge: "chat" },
       { href: "/chat/prive", label: "Messages privés", badge: "chat" },
       { href: "/notifications", label: "Notifications", badge: "notifications" },
     ],
@@ -266,14 +260,12 @@ const prestataireSections: SidebarSection[] = [
     links: [
       { href: "/mes-taches", label: "Mes tâches" },
       { href: "/calendrier", label: "Mon calendrier" },
-      { href: "/drive", label: "Mes fichiers" },
     ],
   },
   {
     title: "Communication",
     eyebrow: "02",
     links: [
-      { href: "/chat", label: "Chat d’équipe", badge: "chat" },
       { href: "/chat/prive", label: "Messages privés", badge: "chat" },
       { href: "/notifications", label: "Notifications", badge: "notifications" },
     ],
@@ -374,7 +366,7 @@ export default function Sidebar() {
     }
   }, [pathname, sections]);
 
-  const canUseGlobalTools = role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN || role === ROLES.MANAGER;
+  const canUseGlobalTools = role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN || role === ROLES.MANAGER || role === ROLES.ARTISTIC_DIRECTOR;
   const homeHref = getRoleHome(role);
   const roleLabel = role ? roleLabels[role] || role : "Chargement...";
   const userInitials = userName.split(" ").filter(Boolean).map((part) => part[0])

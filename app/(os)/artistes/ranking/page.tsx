@@ -5,295 +5,45 @@ import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
-function getLevel(score: number) {
-  if (score >= 90) return "💎 Diamond Artist";
-  if (score >= 75) return "🏆 Platinum Artist";
-  if (score >= 60) return "🥇 Gold Artist";
-  if (score >= 40) return "🥈 Silver Artist";
-  return "🥉 Bronze Artist";
-}
-
-function formatNumber(value: number) {
-  return Number(value || 0).toLocaleString("fr-FR");
-}
-
-function formatEuro(value: number) {
-  return `${Number(value || 0).toFixed(2)} €`;
-}
-
 export default async function ArtistRankingPage() {
-  const profile = await requireRole([
-  ROLES.SUPER_ADMIN,
-  ROLES.ADMIN,
-  ROLES.MANAGER,
-  ROLES.ARTISTIC_DIRECTOR
-]);
-
-const isManager =
-  profile?.role === ROLES.MANAGER;
+  const profile = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER, ROLES.ARTISTIC_DIRECTOR]);
   const supabase = await createAuthenticatedSupabaseClient();
+  const isManager = profile.role === ROLES.MANAGER;
+  let artistsQuery = supabase.from("artistes").select("id, nom, style, photo_url, statut, manager_id").order("nom");
+  if (isManager) artistsQuery = artistsQuery.eq("manager_id", profile.id);
+  const { data: artists } = await artistsQuery;
+  const artistIds = (artists || []).map((artist: any) => artist.id);
+  const [{ data: analytics }, { data: bookings }, { data: releases }] = artistIds.length
+    ? await Promise.all([
+        supabase.from("analytics").select("artiste_id, streams, followers, vues").in("artiste_id", artistIds),
+        supabase.from("bookings").select("artiste_id, statut").in("artiste_id", artistIds),
+        supabase.from("sorties").select("artiste_id, statut").in("artiste_id", artistIds),
+      ])
+    : [{ data: [] }, { data: [] }, { data: [] }];
 
-  const { data: artistes } = await supabase
-    .from("artistes")
-    .select(
-  "id, nom, style, photo_url, statut, manager_id"
-)
-    .order("nom");
+  const ranking = (artists || []).map((artist: any) => {
+    const artistAnalytics = (analytics || []).filter((item: any) => item.artiste_id === artist.id);
+    const streams = total(artistAnalytics, "streams");
+    const followers = total(artistAnalytics, "followers");
+    const views = total(artistAnalytics, "vues");
+    const confirmedBookings = (bookings || []).filter((item: any) => item.artiste_id === artist.id && item.statut === "Confirmé").length;
+    const releaseCount = (releases || []).filter((item: any) => item.artiste_id === artist.id).length;
+    const score = Math.min(100, Math.round(Math.min(streams / 100000, 1) * 40 + Math.min(followers / 10000, 1) * 25 + Math.min(views / 250000, 1) * 15 + Math.min(confirmedBookings / 10, 1) * 10 + Math.min(releaseCount / 5, 1) * 10));
+    return { ...artist, streams, followers, views, confirmedBookings, releaseCount, score };
+  }).sort((a: any, b: any) => b.score - a.score);
 
-    const visibleArtistes = isManager
-  ? artistes?.filter(
-      (artiste: any) =>
-        artiste.manager_id === (profile as any).id
-    ) || []
-  : artistes || [];
+  const leader = ranking[0];
+  const average = ranking.length ? Math.round(ranking.reduce((sum: number, artist: any) => sum + artist.score, 0) / ranking.length) : 0;
+  const streamTotal = ranking.reduce((sum: number, artist: any) => sum + artist.streams, 0);
 
-const artisteIds = visibleArtistes.map(
-  (artiste: any) => artiste.id
-);
-
-  const { data: analytics } =
-  artisteIds.length > 0
-    ? await supabase
-        .from("analytics")
-        .select("*")
-        .in("artiste_id", artisteIds)
-    : { data: [] };
-
-const { data: bookings } =
-  artisteIds.length > 0
-    ? await supabase
-        .from("bookings")
-        .select("*")
-        .in("artiste_id", artisteIds)
-    : { data: [] };
-
-const { data: sorties } =
-  artisteIds.length > 0
-    ? await supabase
-        .from("sorties")
-        .select("*")
-        .in("artiste_id", artisteIds)
-    : { data: [] };
-
-  const ranking =
-    visibleArtistes
-  .map((artiste: any) => {
-        const artistAnalytics =
-          analytics?.filter((item: any) => item.artiste_id === artiste.id) || [];
-
-        const artistBookings =
-          bookings?.filter((item: any) => item.artiste_id === artiste.id) || [];
-
-        const artistSorties =
-          sorties?.filter((item: any) => item.artiste_id === artiste.id) || [];
-
-        const streams = artistAnalytics.reduce(
-          (acc: number, item: any) => acc + Number(item.streams || 0),
-          0
-        );
-
-        const followers = artistAnalytics.reduce(
-          (acc: number, item: any) => acc + Number(item.followers || 0),
-          0
-        );
-
-        const revenus = artistAnalytics.reduce(
-          (acc: number, item: any) => acc + Number(item.revenus || 0),
-          0
-        );
-
-        const bookingsConfirmes = artistBookings.filter(
-          (booking: any) => booking.statut === "Confirmé"
-        ).length;
-
-        const sortiesCount = artistSorties.length;
-
-        const score = Math.min(
-          100,
-          Math.round(
-            Math.min(streams / 100000, 1) * 30 +
-              Math.min(followers / 10000, 1) * 20 +
-              Math.min(revenus / 5000, 1) * 20 +
-              Math.min(bookingsConfirmes / 10, 1) * 15 +
-              Math.min(sortiesCount / 5, 1) * 15
-          )
-        );
-
-        return {
-          ...artiste,
-          streams,
-          followers,
-          revenus,
-          bookingsConfirmes,
-          sortiesCount,
-          score,
-          level: getLevel(score),
-        };
-      })
-      .sort((a: any, b: any) => b.score - a.score);
-
-      const totalRankingStreams = ranking.reduce(
-  (total: number, artiste: any) =>
-    total + artiste.streams,
-  0
-);
-
-const totalRankingRevenus = ranking.reduce(
-  (total: number, artiste: any) =>
-    total + artiste.revenus,
-  0
-);
-
-const averageScore =
-  ranking.length > 0
-    ? Math.round(
-        ranking.reduce(
-          (total: number, artiste: any) =>
-            total + artiste.score,
-          0
-        ) / ranking.length
-      )
-    : 0;
-
-const topArtist = ranking[0] || null;
-
-  return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <div className="mb-10">
-        <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-          LMG Artist Performance
-        </p>
-
-        <h1 className="text-5xl font-bold">Classement artistes</h1>
-
-        <p className="mt-3 text-zinc-400">
-          Classement automatique selon streams, followers, revenus, bookings et
-          sorties.
-        </p>
-      </div>
-
-      <section className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-  <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-    <p className="text-sm text-zinc-500">
-      Artistes classés
-    </p>
-
-    <p className="mt-3 text-3xl font-bold">
-      {ranking.length}
-    </p>
-  </div>
-
-  <div className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-6">
-    <p className="text-sm text-blue-300">
-      Score moyen
-    </p>
-
-    <p className="mt-3 text-3xl font-bold">
-      {averageScore}/100
-    </p>
-  </div>
-
-  <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-6">
-    <p className="text-sm text-emerald-300">
-      Streams cumulés
-    </p>
-
-    <p className="mt-3 text-3xl font-bold">
-      {formatNumber(totalRankingStreams)}
-    </p>
-  </div>
-
-  <div className="rounded-3xl border border-yellow-500/30 bg-yellow-500/10 p-6">
-    <p className="text-sm text-yellow-300">
-      Artiste leader
-    </p>
-
-    <p className="mt-3 truncate text-3xl font-bold">
-      {topArtist?.nom || "Aucun"}
-    </p>
-
-    <p className="mt-2 text-sm text-yellow-200/70">
-      {formatEuro(totalRankingRevenus)} générés au total
-    </p>
-  </div>
-</section>
-
-      <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6 xl:p-8">
-        {ranking.length === 0 && (
-          <p className="text-zinc-500">Aucun artiste disponible.</p>
-        )}
-
-        <div className="space-y-5">
-          {ranking.map((artiste: any, index: number) => (
-            <Link
-              key={artiste.id}
-              href={`/artistes/${artiste.id}`}
-              className="block rounded-3xl border border-zinc-800 bg-black p-6 transition hover:border-zinc-500"
-            >
-              <div className="grid grid-cols-1 gap-6 xl:grid-cols-[90px_minmax(260px,1.4fr)_150px_150px_150px_150px_130px_110px] xl:items-center">
-                <div className="text-4xl font-bold text-zinc-500">
-                  #{index + 1}
-                </div>
-
-                <div className="flex min-w-0 items-center gap-5">
-                  {artiste.photo_url ? (
-                    <img
-                      src={artiste.photo_url}
-                      alt={artiste.nom}
-                      className="h-20 w-20 shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-zinc-800">
-                      👤
-                    </div>
-                  )}
-
-                  <div className="min-w-0">
-                    <h2 className="truncate text-2xl font-bold">
-                      {artiste.nom}
-                    </h2>
-
-                    <p className="mt-1 max-w-[260px] truncate text-sm text-zinc-500">
-                      {artiste.style || "Style non renseigné"}
-                    </p>
-
-                    <p className="mt-3 inline-flex rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1 text-xs font-semibold text-yellow-300">
-                      {artiste.level}
-                    </p>
-                  </div>
-                </div>
-
-                <RankingItem label="Score" value={`${artiste.score}/100`} />
-                <RankingItem label="Streams" value={formatNumber(artiste.streams)} />
-                <RankingItem label="Followers" value={formatNumber(artiste.followers)} />
-                <RankingItem label="Revenus" value={formatEuro(artiste.revenus)} />
-                <RankingItem label="Bookings" value={formatNumber(artiste.bookingsConfirmes)} />
-                <RankingItem label="Sorties" value={formatNumber(artiste.sortiesCount)} />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-    </main>
-  );
+  return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-[1500px]">
+    <header className="border-b border-zinc-900 pb-8"><p className="text-xs font-bold uppercase tracking-[0.25em] text-cyan-400">Performance artistique</p><h1 className="mt-3 text-4xl font-bold md:text-6xl">{isManager ? "Performance de mes artistes" : "Vue comparative du roster"}</h1><p className="mt-3 max-w-3xl text-zinc-500">Un indicateur de pilotage fondé sur l’audience, les streams, les sorties et les bookings. Il ne s’agit pas d’un classement de valeur artistique.</p></header>
+    <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><Metric label="Artistes observés" value={number(ranking.length)} /><Metric label="Score moyen" value={`${average}/100`} tone="cyan" /><Metric label="Streams cumulés" value={number(streamTotal)} /><Metric label="Dynamique la plus forte" value={leader?.nom || "Aucune donnée"} tone="yellow" /></section>
+    <section className="mt-8 space-y-4">{!ranking.length ? <div className="rounded-[26px] border border-dashed border-zinc-800 p-12 text-center text-zinc-600">Aucune donnée disponible.</div> : ranking.map((artist: any, index: number) => <Link key={artist.id} href={`/artistes/${artist.id}`} className="group grid gap-5 rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 transition hover:border-cyan-500/35 lg:grid-cols-[70px_minmax(220px,1fr)_repeat(5,110px)] lg:items-center"><span className="text-3xl font-black text-zinc-700">#{index + 1}</span><div className="min-w-0"><p className="truncate text-xl font-bold group-hover:text-cyan-300">{artist.nom}</p><p className="mt-1 text-xs text-zinc-600">{artist.style || "Style non renseigné"}</p><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-900"><div className="h-full rounded-full bg-cyan-400" style={{ width: `${artist.score}%` }} /></div></div><Value label="Score" value={`${artist.score}/100`} /><Value label="Streams" value={number(artist.streams)} /><Value label="Followers" value={number(artist.followers)} /><Value label="Vues" value={number(artist.views)} /><Value label="Bookings" value={number(artist.confirmedBookings)} /></Link>)}</section>
+  </div></main>;
 }
 
-function RankingItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="min-w-0">
-      <p className="whitespace-nowrap text-xs uppercase tracking-[0.2em] text-zinc-600">
-        {label}
-      </p>
-
-      <p className="mt-2 truncate text-lg font-semibold text-zinc-200">
-        {value}
-      </p>
-    </div>
-  );
-}
+function total(rows: any[], key: string) { return rows.reduce((sum, item) => sum + Number(item[key] || 0), 0); }
+function number(value: number) { return Number(value || 0).toLocaleString("fr-FR"); }
+function Metric({ label, value, tone = "default" }: { label: string; value: string; tone?: "default" | "cyan" | "yellow" }) { const styles = { default: "border-zinc-800 bg-zinc-950", cyan: "border-cyan-500/25 bg-cyan-500/[0.06]", yellow: "border-yellow-500/25 bg-yellow-500/[0.06]" }; return <div className={`rounded-2xl border p-5 ${styles[tone]}`}><p className="text-xs font-bold uppercase tracking-wider text-zinc-500">{label}</p><p className="mt-3 truncate text-2xl font-bold">{value}</p></div>; }
+function Value({ label, value }: { label: string; value: string }) { return <div><p className="text-[10px] font-bold uppercase tracking-wider text-zinc-600">{label}</p><p className="mt-2 font-semibold">{value}</p></div>; }

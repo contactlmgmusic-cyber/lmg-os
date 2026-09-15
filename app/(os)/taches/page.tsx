@@ -52,7 +52,8 @@ export default async function TachesPage() {
       nom,
       avatar_url,
       role
-    )
+    ),
+    task_assignees (user_id)
   `)
   .order("created_at", { ascending: false });
 
@@ -67,6 +68,7 @@ export default async function TachesPage() {
     );
   }
 
+  const isAdmin = currentProfile?.role === ROLES.SUPER_ADMIN || currentProfile?.role === ROLES.ADMIN;
   const canCreateTask =
   currentProfile?.role === ROLES.SUPER_ADMIN ||
   currentProfile?.role === ROLES.ADMIN ||
@@ -80,15 +82,13 @@ export default async function TachesPage() {
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-yellow-400">Pilotage opérationnel</p>
           <h1 className="text-4xl font-bold md:text-5xl">Centre de travail</h1>
 
-          <p className="mt-3 text-zinc-400">
-            Priorisez, assignez et suivez l’avancement de toute l’équipe LMG.
-          </p>
+          <p className="mt-3 text-zinc-400">{isAdmin ? "Priorisez, assignez et suivez l’avancement de toute l’équipe LMG." : "Retrouve uniquement les tâches que tu as créées ou auxquelles tu es assigné."}</p>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Link href="/rollout" className="rounded-xl border border-zinc-700 px-5 py-3 font-medium text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900">
+          {canCreateTask && <Link href="/rollout" className="rounded-xl border border-zinc-700 px-5 py-3 font-medium text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900">
             Ouvrir le rollout
-          </Link>
+          </Link>}
         {canCreateTask && (
           <Link
             href="/taches/nouveau"

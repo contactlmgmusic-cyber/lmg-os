@@ -5,7 +5,7 @@ import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
-const allowed = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER];
+const allowed = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR];
 function date(value: string | null) { return value ? new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(`${value}T12:00:00`)) : "Non définie"; }
 
 export default async function InternalProjectPage({ params }: { params: Promise<{ id: string }> }) {

@@ -246,14 +246,15 @@ console.log("ARTISTE EVENTS =", artisteEvents);
   ];
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
+    <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10">
       <div className="mb-10 flex items-end justify-between">
         <div>
           <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
             Mon espace artiste
           </p>
 
-          <h1 className="text-5xl font-bold capitalize">
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-cyan-400">Mon espace · Planning</p>
+          <h1 className="mt-3 text-4xl font-bold capitalize tracking-tight md:text-6xl">
             {formatMonth(today)}
           </h1>
 

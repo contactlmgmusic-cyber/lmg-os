@@ -84,10 +84,11 @@ export default async function MediasPage() {
     profile.role === ROLES.MANAGER;
 
   return (
-    <main className="p-10 text-white">
+    <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10">
       <div className="mb-8 flex items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-bold">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-400">CRM · Presse & playlists</p>
+          <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
             CRM Médias
           </h1>
 

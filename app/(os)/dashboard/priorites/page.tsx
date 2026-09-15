@@ -6,7 +6,7 @@ import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
-const allowed = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER];
+const allowed = [ROLES.SUPER_ADMIN, ROLES.ADMIN];
 type Priority = { id: string; title: string; context: string; href: string; deadline: string | null; level: "Critique" | "Haute" | "À surveiller" };
 
 export default async function StrategicPrioritiesPage() {

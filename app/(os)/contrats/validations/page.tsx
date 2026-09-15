@@ -7,11 +7,16 @@ export const dynamic = "force-dynamic";
 
 export default async function ValidationsContratsPage() {
   const supabase = await createAuthenticatedSupabaseClient();
-  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER]);
+  const profile = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER]);
 
-  const { data: validations } = await supabase
+  const isManager = profile.role === ROLES.MANAGER;
+  let validationsQuery = supabase
     .from("contract_approvals")
-    .select(`
+    .select(isManager ? `
+      *,
+      contrats (id, titre, type, statut, fichier_url, fichier_signe_url),
+      artistes!inner (id, nom, manager_id)
+    ` : `
       *,
       contrats (
         id,
@@ -25,17 +30,18 @@ export default async function ValidationsContratsPage() {
         id,
         nom
       )
-    `)
-    .order("created_at", { ascending: false });
+    `);
+  if (isManager) validationsQuery = validationsQuery.eq("artistes.manager_id", profile.id);
+  const { data: validations } = await validationsQuery.order("created_at", { ascending: false });
 
   return (
-    <main className="min-h-screen bg-black p-10 text-white">
+    <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10">
       <div className="mb-10">
         <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
           Contract Approvals
         </p>
 
-        <h1 className="text-5xl font-bold">Validations contrats</h1>
+        <h1 className="text-4xl font-bold tracking-tight md:text-6xl">Validations contrats</h1>
 
         <p className="mt-3 text-zinc-400">
           Suivi des réponses artistes sur les contrats.
@@ -50,7 +56,7 @@ export default async function ValidationsContratsPage() {
         {validations?.map((validation: any) => (
           <div
             key={validation.id}
-            className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6"
+            className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-6"
           >
             <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
               <div>

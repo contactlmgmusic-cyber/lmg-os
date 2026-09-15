@@ -1,129 +1,20 @@
-"use client";
+import { notFound } from "next/navigation";
+import TeamMemberEditForm from "@/components/TeamMemberEditForm";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { supabaseBrowser } from "../../../../../lib/supabase-browser";
+export const dynamic = "force-dynamic";
 
-type Artiste = {
-  id: string;
-  nom: string;
-};
+export default async function EditMemberPage({ params }: { params: Promise<{ id: string }> }) {
+  const actor = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN]);
+  const { id } = await params;
+  const supabase = await createAuthenticatedSupabaseClient();
+  const [{ data: member }, { data: artists }] = await Promise.all([
+    supabase.from("profiles").select("id, nom, email, role, artiste_id").eq("id", id).maybeSingle(),
+    supabase.from("artistes").select("id, nom").order("nom"),
+  ]);
+  if (!member) notFound();
 
-export default function ModifierMembrePage() {
-  const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
-
-  const [loading, setLoading] = useState(true);
-  const [nom, setNom] = useState("");
-  const [role, setRole] = useState("member");
-  const [artisteId, setArtisteId] = useState("");
-  const [artistes, setArtistes] = useState<Artiste[]>([]);
-
-  useEffect(() => {
-    async function fetchData() {
-      const { data: profile, error } = await supabaseBrowser
-        .from("profiles")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) {
-        alert(error.message);
-        return;
-      }
-
-      const { data: artistesData } = await supabaseBrowser
-        .from("artistes")
-        .select("id, nom")
-        .order("nom", { ascending: true });
-
-      setNom(profile.nom || "");
-      setRole(profile.role || "member");
-      setArtisteId(profile.artiste_id || "");
-      setArtistes(artistesData || []);
-      setLoading(false);
-    }
-
-    fetchData();
-  }, [id]);
-
-  async function handleUpdate(e: React.FormEvent) {
-    e.preventDefault();
-
-    const { error } = await supabaseBrowser
-      .from("profiles")
-      .update({
-        nom,
-        role,
-        artiste_id: artisteId || null,
-      })
-      .eq("id", id);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    router.push("/equipe");
-    router.refresh();
-  }
-
-  if (loading) {
-    return <main className="p-10 text-white">Chargement...</main>;
-  }
-
-  return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <div className="mb-10">
-        <h1 className="text-5xl font-bold">Modifier membre</h1>
-
-        <p className="mt-3 text-zinc-400">
-          Modifier le nom, le rôle et l’artiste lié.
-        </p>
-      </div>
-
-      <form
-        onSubmit={handleUpdate}
-        className="max-w-2xl space-y-5 rounded-3xl border border-zinc-800 bg-zinc-900 p-8"
-      >
-        <input
-          value={nom}
-          onChange={(e) => setNom(e.target.value)}
-          placeholder="Nom du membre"
-          className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
-        />
-
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
-        >
-          <option value="artiste">Artiste</option>
-<option value="manager">Manager</option>
-<option value="prestataire">Prestataire</option>
-<option value="admin">Admin</option>
-<option value="super_admin">Super Admin</option>
-        </select>
-
-        <select
-          value={artisteId}
-          onChange={(e) => setArtisteId(e.target.value)}
-          className="w-full rounded-2xl border border-zinc-800 bg-black p-4 text-white"
-        >
-          <option value="">Aucun artiste lié</option>
-
-          {artistes.map((artiste) => (
-            <option key={artiste.id} value={artiste.id}>
-              {artiste.nom}
-            </option>
-          ))}
-        </select>
-
-        <button className="w-full rounded-2xl bg-white px-5 py-4 font-semibold text-black">
-          Enregistrer
-        </button>
-      </form>
-    </main>
-  );
+  return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-3xl"><header className="mb-8 border-b border-zinc-900 pb-8"><p className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500">Administration · Équipe</p><h1 className="mt-3 text-4xl font-bold md:text-5xl">Modifier un membre</h1><p className="mt-3 text-zinc-400">{member.email || "Compte sans e-mail renseigné"}</p></header><TeamMemberEditForm member={member} artists={artists || []} actorId={actor.id} actorRole={actor.role} /></div></main>;
 }

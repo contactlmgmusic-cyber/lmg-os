@@ -1078,7 +1078,7 @@ const revenusParProjet = projets
 
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
       <Link
-        href="/objectifs"
+        href="/objectifs-artistes"
         className="rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
       >
         <p className="text-sm text-zinc-500">Objectifs</p>
@@ -1162,7 +1162,7 @@ const revenusParProjet = projets
 
       {!isArtistUser && (
         <Link
-          href="/objectifs/nouveau"
+          href="/objectifs-artistes/create"
           className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black"
         >
           + Ajouter objectif
