@@ -243,8 +243,7 @@ const { data: contrats } = await supabase
 const canCreateTask =
   currentProfile?.role === ROLES.SUPER_ADMIN ||
   currentProfile?.role === ROLES.ADMIN ||
-  currentProfile?.role === ROLES.ARTISTIC_DIRECTOR ||
-  currentProfile?.role === ROLES.MANAGER;
+  currentProfile?.role === ROLES.ARTISTIC_DIRECTOR;
 
   return (
     <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10">

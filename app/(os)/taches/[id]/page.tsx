@@ -61,7 +61,10 @@ export default async function TacheDetailPage({
     ? await supabase.from("profiles").select("id, role").eq("id", user.id).maybeSingle()
     : { data: null };
   const isAdmin = currentProfile?.role === ROLES.SUPER_ADMIN || currentProfile?.role === ROLES.ADMIN;
-  const canManageTask = Boolean(isAdmin || (currentProfile?.id && tache.created_by === currentProfile.id));
+  const canManageTask = Boolean(
+    isAdmin ||
+    (currentProfile?.role === ROLES.ARTISTIC_DIRECTOR && currentProfile?.id && tache.created_by === currentProfile.id)
+  );
 
   async function deleteTache() {
   "use server";

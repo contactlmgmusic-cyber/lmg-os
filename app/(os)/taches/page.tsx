@@ -43,7 +43,7 @@ export default async function TachesPage() {
         .maybeSingle()
     : { data: null };
 
-  const { data: taches, error } = await supabase
+  const { data: rawTasks, error } = await supabase
   .from("taches")
   .select(`
     *,
@@ -57,6 +57,19 @@ export default async function TachesPage() {
   `)
   .order("created_at", { ascending: false });
 
+  const isAdmin = currentProfile?.role === ROLES.SUPER_ADMIN || currentProfile?.role === ROLES.ADMIN;
+  const taches = isAdmin
+    ? rawTasks || []
+    : (rawTasks || []).filter((task: any) => {
+        const isAssigned =
+          task.responsable_id === currentProfile?.id ||
+          task.assigned_to === currentProfile?.id ||
+          task.task_assignees?.some((assignment: { user_id: string }) => assignment.user_id === currentProfile?.id);
+        const isCreatedByDirector =
+          currentProfile?.role === ROLES.ARTISTIC_DIRECTOR && task.created_by === currentProfile.id;
+        return isAssigned || isCreatedByDirector;
+      });
+
   if (error) {
     return (
       <main className="min-h-screen bg-black p-10 text-white">
@@ -68,12 +81,10 @@ export default async function TachesPage() {
     );
   }
 
-  const isAdmin = currentProfile?.role === ROLES.SUPER_ADMIN || currentProfile?.role === ROLES.ADMIN;
   const canCreateTask =
   currentProfile?.role === ROLES.SUPER_ADMIN ||
   currentProfile?.role === ROLES.ADMIN ||
-  currentProfile?.role === ROLES.ARTISTIC_DIRECTOR ||
-  currentProfile?.role === ROLES.MANAGER;
+  currentProfile?.role === ROLES.ARTISTIC_DIRECTOR;
 
   return (
     <main className="min-h-screen bg-black p-6 text-white md:p-10">
@@ -82,7 +93,7 @@ export default async function TachesPage() {
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-yellow-400">Pilotage opérationnel</p>
           <h1 className="text-4xl font-bold md:text-5xl">Centre de travail</h1>
 
-          <p className="mt-3 text-zinc-400">{isAdmin ? "Priorisez, assignez et suivez l’avancement de toute l’équipe LMG." : "Retrouve uniquement les tâches que tu as créées ou auxquelles tu es assigné."}</p>
+          <p className="mt-3 text-zinc-400">{isAdmin ? "Priorisez, assignez et suivez l’avancement de toute l’équipe LMG." : currentProfile?.role === ROLES.ARTISTIC_DIRECTOR ? "Retrouve uniquement les tâches que tu as créées ou auxquelles tu es assigné." : "Retrouve uniquement les tâches qui te sont directement attribuées."}</p>
         </div>
 
         <div className="flex flex-wrap gap-3">

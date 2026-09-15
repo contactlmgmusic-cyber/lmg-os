@@ -7,7 +7,7 @@ import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
-const editorRoles = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER] as const;
+const editorRoles = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR] as const;
 
 export default async function ModifierTachePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -20,14 +20,6 @@ export default async function ModifierTachePage({ params }: { params: Promise<{ 
   if (!isAdmin && task.created_by !== profile.id) redirect(`/taches/${id}`);
 
   let profilesQuery = supabase.from("profiles").select("id, nom, full_name, role, artiste_id").order("nom");
-  if (profile.role === ROLES.MANAGER) {
-    const { data: managedArtists } = await supabase.from("artistes").select("id").eq("manager_id", profile.id);
-    const artistIds = (managedArtists || []).map((artist) => artist.id);
-    profilesQuery = artistIds.length
-      ? profilesQuery.or(`id.eq.${profile.id},artiste_id.in.(${artistIds.join(",")})`)
-      : profilesQuery.eq("id", profile.id);
-  }
-
   const [{ data: profiles }, { data: assignees }] = await Promise.all([
     profilesQuery,
     supabase.from("task_assignees").select("user_id").eq("task_id", id),
