@@ -1,64 +1,116 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabaseBrowser } from "../lib/supabase-browser";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 
-type ActivityLog = {
+type NotificationToast = {
   id: string;
   titre: string;
-  description: string;
+  description: string | null;
+  link: string | null;
+  lien: string | null;
+  niveau: string | null;
 };
 
 export default function LiveNotifications() {
   const [notification, setNotification] =
-    useState<ActivityLog | null>(null);
+    useState<NotificationToast | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const channel = supabaseBrowser
-      .channel("activity-toast")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "activity_logs",
-        },
-        (payload) => {
-          console.log("NEW NOTIFICATION", payload);
+    let realtimeChannel: ReturnType<typeof supabaseBrowser.channel> | null =
+      null;
 
-          const data = payload.new as ActivityLog;
+    async function subscribe() {
+      const {
+        data: { user },
+      } = await supabaseBrowser.auth.getUser();
 
-          setNotification(data);
+      if (!user) {
+        return;
+      }
 
-          setTimeout(() => {
-            setNotification(null);
-          }, 4000);
-        }
-      )
-      .subscribe((status) => {
-        console.log("REALTIME STATUS:", status);
-      });
+      realtimeChannel = supabaseBrowser
+        .channel(`notification-toast-${user.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            const incoming = payload.new as NotificationToast;
+            setNotification(incoming);
+
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+
+            timeoutRef.current = setTimeout(() => {
+              setNotification(null);
+            }, 6000);
+          }
+        )
+        .subscribe();
+    }
+
+    void subscribe();
 
     return () => {
-      supabaseBrowser.removeChannel(channel);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      if (realtimeChannel) {
+        void supabaseBrowser.removeChannel(realtimeChannel);
+      }
     };
   }, []);
 
-  if (!notification) return null;
+  if (!notification) {
+    return null;
+  }
+
+  const href =
+    notification.link || notification.lien || "/notifications";
 
   return (
-    <div className="fixed right-6 top-6 z-[9999] w-96 rounded-3xl border border-zinc-700 bg-zinc-950 p-5 text-white shadow-2xl">
-      <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-        Nouvelle activité
-      </p>
-
-      <h3 className="mt-2 text-lg font-bold">
-        {notification.titre}
-      </h3>
-
-      <p className="mt-1 text-sm text-zinc-400">
-        {notification.description}
-      </p>
-    </div>
+    <aside className="fixed bottom-5 left-4 right-4 z-[9999] sm:left-auto sm:right-6 sm:w-[390px]">
+      <div className="rounded-[22px] border border-cyan-400/25 bg-zinc-950 p-5 text-white shadow-2xl shadow-black">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-300">
+              Nouvelle notification
+            </p>
+            <h2 className="mt-2 truncate font-bold">
+              {notification.titre || "Notification"}
+            </h2>
+            {notification.description && (
+              <p className="mt-1 line-clamp-2 text-sm leading-5 text-zinc-400">
+                {notification.description}
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setNotification(null)}
+            className="rounded-lg px-2 py-1 text-zinc-500 hover:bg-zinc-900 hover:text-white"
+            aria-label="Fermer la notification"
+          >
+            ×
+          </button>
+        </div>
+        <Link
+          href={href}
+          onClick={() => setNotification(null)}
+          className="mt-4 block rounded-xl bg-cyan-300 px-4 py-2.5 text-center text-sm font-bold text-cyan-950 transition hover:bg-cyan-200"
+        >
+          Ouvrir
+        </Link>
+      </div>
+    </aside>
   );
 }
