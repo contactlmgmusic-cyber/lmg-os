@@ -11,14 +11,6 @@
     {
       "path": "/api/cron/google-calendar",
       "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/cron/google-gmail-relances",
-      "schedule": "0 7 * * *"
-    },
-    {
-      "path": "/api/cron/ovh-email-replies",
-      "schedule": "0 8 * * *"
     }
   ]
 }
