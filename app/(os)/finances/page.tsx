@@ -1,460 +1,96 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
-export default async function FinancesPage() {
-await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN]);
-const cookieStore = await cookies();
+type SearchParams = Promise<{ q?: string | string[]; type?: string | string[]; statut?: string | string[]; categorie?: string | string[] }>;
 
-const supabaseAuth = createServerClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-  {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll() {},
-    },
+export default async function FinancesPage({ searchParams }: { searchParams: SearchParams }) {
+  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN]);
+  const supabase = await createAuthenticatedSupabaseClient();
+  const filters = await searchParams;
+  const q = value(filters.q).trim().toLowerCase();
+  const type = value(filters.type);
+  const statut = value(filters.statut);
+  const categorie = value(filters.categorie);
+
+  const { data, error } = await supabase.from("finances").select(`
+    id, titre, type, categorie, montant, statut, date_operation, created_at,
+    artistes(id, nom), projets(id, titre), bookings(id, evenement)
+  `).order("date_operation", { ascending: false }).order("created_at", { ascending: false });
+
+  if (error) {
+    return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-[1500px] rounded-[26px] border border-red-500/20 bg-red-500/[0.06] p-7"><p className="text-xs font-bold uppercase tracking-[0.2em] text-red-400">Transactions LMG</p><h1 className="mt-2 text-3xl font-bold">Transactions indisponibles</h1><p className="mt-3 text-sm text-zinc-400">Les opérations n’ont pas pu être chargées. Réessaie dans quelques instants.</p></div></main>;
   }
-);
 
-const supabase = supabaseAuth;
-  
-  const { data: finances } = await supabase
-    .from("finances")
-    .select(`
-      *,
-      artistes (
-        id,
-        nom
-      ),
-      projets (
-        id,
-        titre
-      ),
-      bookings (
-        id,
-        evenement
-      )
-    `)
-    .order("date_operation", { ascending: false });
-
-    const { data: bookings } = await supabase
-  .from("bookings")
-  .select("*");
-
-const { data: royalties } = await supabase
-  .from("royalties")
-  .select("*");
-
-  const revenus =
-    finances
-      ?.filter((f: any) => f.type === "Revenu")
-      .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
-
-  const depenses =
-    finances
-      ?.filter((f: any) => f.type === "Dépense")
-      .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
-
-  const resultat = revenus - depenses;
-
-  const caEncaisse =
-  finances
-    ?.filter((f: any) => f.type === "Revenu" && f.statut === "Payé")
-    .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
-
-const caPrevisionnel =
-  finances
-    ?.filter((f: any) => f.type === "Revenu" && f.statut !== "Payé")
-    .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
-
-const royaltiesAPayer =
-  royalties
-    ?.filter((r: any) => r.statut !== "Payé")
-    .reduce((acc: number, r: any) => acc + Number(r.montant_du || 0), 0) || 0;
-
-const royaltiesPayees =
-  royalties
-    ?.filter((r: any) => r.statut === "Payé")
-    .reduce((acc: number, r: any) => acc + Number(r.montant_du || 0), 0) || 0;
-
-const cachetsConfirmes =
-  bookings
-    ?.filter((b: any) => b.statut === "Confirmé")
-    .reduce(
-      (acc: number, b: any) =>
-        acc + Number(b.montant_cachet || b.cachet || 0),
-      0
-    ) || 0;
-
-const cachetsFactures =
-  bookings
-    ?.filter((b: any) => b.statut === "Facturé")
-    .reduce(
-      (acc: number, b: any) =>
-        acc + Number(b.montant_cachet || b.cachet || 0),
-      0
-    ) || 0;
-
-const cachetsPayes =
-  bookings
-    ?.filter((b: any) => b.statut === "Payé")
-    .reduce(
-      (acc: number, b: any) =>
-        acc + Number(b.montant_cachet || b.cachet || 0),
-      0
-    ) || 0;
-
-const margeNette =
-  revenus > 0 ? Math.round((resultat / revenus) * 100) : 0;
-
-  const revenusBooking =
-    finances
-      ?.filter(
-        (f: any) =>
-          f.type === "Revenu" &&
-          f.categorie?.toLowerCase() === "booking"
-      )
-      .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
-
-  const depensesPromo =
-    finances
-      ?.filter(
-        (f: any) =>
-          f.type === "Dépense" &&
-          ["promo", "marketing", "ads"].includes(
-            f.categorie?.toLowerCase()
-          )
-      )
-      .reduce((acc: number, f: any) => acc + Number(f.montant || 0), 0) || 0;
-
-  const operationsPayees =
-    finances?.filter((f: any) => f.statut === "Payé").length || 0;
-
-  const operationsPrevues =
-    finances?.filter((f: any) => f.statut === "Prévu").length || 0;
-
-  const byArtist = new Map();
-
-  finances?.forEach((f: any) => {
-    if (!f.artistes?.nom) return;
-
-    const current = byArtist.get(f.artistes.nom) || {
-      revenus: 0,
-      depenses: 0,
-    };
-
-    if (f.type === "Revenu") current.revenus += Number(f.montant || 0);
-    if (f.type === "Dépense") current.depenses += Number(f.montant || 0);
-
-    byArtist.set(f.artistes.nom, current);
+  const finances = data || [];
+  const categories = Array.from(new Set(finances.map((item: any) => item.categorie).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b), "fr"));
+  const filtered = finances.filter((item: any) => {
+    const searchable = [item.titre, item.categorie, item.artistes?.nom, item.projets?.titre, item.bookings?.evenement].filter(Boolean).join(" ").toLowerCase();
+    return (!q || searchable.includes(q)) && (!type || item.type === type) && (!statut || item.statut === statut) && (!categorie || item.categorie === categorie);
   });
 
-  const artistRanking = Array.from(byArtist.entries())
-    .map(([nom, values]: any) => ({
-      nom,
-      resultat: values.revenus - values.depenses,
-      revenus: values.revenus,
-      depenses: values.depenses,
-    }))
-    .sort((a, b) => b.resultat - a.resultat);
+  const revenus = total(finances, "Revenu");
+  const depenses = total(finances, "Dépense");
+  const aEncaisser = pending(finances, "Revenu");
+  const aRegler = pending(finances, "Dépense");
+  const activeFilters = [q, type, statut, categorie].filter(Boolean).length;
 
-  const byProject = new Map();
+  return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10"><div className="mx-auto max-w-[1500px]">
+    <header className="flex flex-col gap-6 border-b border-zinc-900 pb-8 xl:flex-row xl:items-end xl:justify-between">
+      <div><p className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500">Finance LMG</p><h1 className="mt-3 text-4xl font-bold md:text-6xl">Transactions</h1><p className="mt-3 max-w-3xl text-zinc-500">Enregistre et suis chaque revenu ou dépense, de la prévision jusqu’au paiement.</p></div>
+      <div className="flex flex-wrap gap-3"><Link href="/finances/nouveau" className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-black">+ Nouvelle opération</Link><Link href="/finances/dashboard" className="rounded-xl border border-zinc-700 px-5 py-3 text-sm font-bold text-zinc-300">Vue financière</Link></div>
+    </header>
 
-  finances?.forEach((f: any) => {
-    if (!f.projets?.titre) return;
+    <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <Metric label="Revenus enregistrés" value={euros(revenus)} detail={`${count(finances, "Revenu")} opération(s)`} tone="good" />
+      <Metric label="Dépenses enregistrées" value={euros(depenses)} detail={`${count(finances, "Dépense")} opération(s)`} />
+      <Metric label="À encaisser" value={euros(aEncaisser)} detail="Prévu ou facturé" tone={aEncaisser ? "warning" : "default"} />
+      <Metric label="À régler" value={euros(aRegler)} detail="Prévu ou facturé" tone={aRegler ? "warning" : "default"} />
+    </section>
 
-    const current = byProject.get(f.projets.titre) || {
-      revenus: 0,
-      depenses: 0,
-    };
+    <section className="mt-8 rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 md:p-6">
+      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-500">Registre financier</p><h2 className="mt-2 text-2xl font-bold">Toutes les opérations</h2><p className="mt-2 text-sm text-zinc-500">{filtered.length} résultat(s) sur {finances.length}</p></div>{activeFilters > 0 && <Link href="/finances" className="text-sm font-semibold text-zinc-400 hover:text-white">Réinitialiser les {activeFilters} filtre(s) →</Link>}</div>
 
-    if (f.type === "Revenu") current.revenus += Number(f.montant || 0);
-    if (f.type === "Dépense") current.depenses += Number(f.montant || 0);
+      <form method="get" className="mt-6 grid gap-3 lg:grid-cols-[1.5fr_repeat(3,0.75fr)_auto]">
+        <label className="sr-only" htmlFor="finance-search">Rechercher</label>
+        <input id="finance-search" name="q" defaultValue={value(filters.q)} placeholder="Titre, artiste, projet, booking…" className="min-h-12 rounded-xl border border-zinc-800 bg-black px-4 text-sm text-white outline-none placeholder:text-zinc-700 focus:border-zinc-600" />
+        <Select name="type" label="Tous les types" current={type} options={["Revenu", "Dépense"]} />
+        <Select name="statut" label="Tous les statuts" current={statut} options={["Prévu", "Facturé", "Payé", "Annulé"]} />
+        <Select name="categorie" label="Toutes les catégories" current={categorie} options={categories.map(String)} />
+        <button className="min-h-12 rounded-xl bg-zinc-100 px-5 text-sm font-bold text-black hover:bg-white">Filtrer</button>
+      </form>
 
-    byProject.set(f.projets.titre, current);
-  });
+      {!filtered.length ? <div className="mt-6 rounded-2xl border border-dashed border-zinc-800 p-10 text-center"><p className="font-semibold">Aucune transaction trouvée</p><p className="mt-2 text-sm text-zinc-600">{finances.length ? "Modifie ou réinitialise les filtres." : "Crée la première opération financière de LMG."}</p>{!finances.length && <Link href="/finances/nouveau" className="mt-5 inline-block text-sm font-bold text-yellow-400">Créer une opération →</Link>}</div> : <>
+        <div className="mt-6 hidden grid-cols-[110px_1fr_150px_140px_140px] gap-4 border-b border-zinc-800 px-4 pb-3 text-xs font-semibold uppercase tracking-wider text-zinc-600 lg:grid"><span>Date</span><span>Opération</span><span>Rattachement</span><span>Statut</span><span className="text-right">Montant</span></div>
+        <div>{filtered.map((finance: any) => <TransactionRow key={finance.id} finance={finance} />)}</div>
+      </>}
+    </section>
 
-  const projectRanking = Array.from(byProject.entries())
-    .map(([titre, values]: any) => ({
-      titre,
-      resultat: values.revenus - values.depenses,
-      revenus: values.revenus,
-      depenses: values.depenses,
-    }))
-    .sort((a, b) => b.resultat - a.resultat);
-
-  return (
-    <main className="min-h-screen bg-black p-10 text-white">
-      <div className="mb-10 flex items-center justify-between">
-        <div>
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-            LMG Finance OS
-          </p>
-
-          <h1 className="text-5xl font-bold">Finances</h1>
-
-          <p className="mt-3 text-zinc-400">
-            Pilotage financier du label : revenus, dépenses, marges et rentabilité.
-          </p>
-        </div>
-
-        <Link
-          href="/finances/nouveau"
-          className="rounded-xl bg-white px-5 py-3 font-medium text-black"
-        >
-          + Nouvelle opération
-        </Link>
-      </div>
-
-      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
-          <p className="text-sm text-green-300">Revenus</p>
-          <h2 className="mt-2 text-4xl font-bold">{revenus.toFixed(2)} €</h2>
-        </div>
-
-        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-6">
-          <p className="text-sm text-red-300">Dépenses</p>
-          <h2 className="mt-2 text-4xl font-bold">{depenses.toFixed(2)} €</h2>
-        </div>
-
-        <div
-          className={`rounded-3xl border p-6 ${
-            resultat >= 0
-              ? "border-white/20 bg-zinc-900"
-              : "border-red-500/30 bg-red-500/10"
-          }`}
-        >
-          <p className="text-sm text-zinc-400">Résultat net</p>
-          <h2 className="mt-2 text-4xl font-bold">{resultat.toFixed(2)} €</h2>
-        </div>
-      </div>
-
-      <section className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-  <div className="mb-6">
-    <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
-      Cockpit financier
-    </p>
-
-    <h2 className="text-3xl font-bold">
-      Vision business LMG
-    </h2>
-  </div>
-
-  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-    <FinanceKpi
-      label="CA encaissé"
-      value={`${caEncaisse.toFixed(2)} €`}
-      tone="green"
-    />
-
-    <FinanceKpi
-      label="CA prévisionnel"
-      value={`${caPrevisionnel.toFixed(2)} €`}
-    />
-
-    <FinanceKpi
-      label="Marge nette"
-      value={`${margeNette}%`}
-      tone={margeNette >= 0 ? "green" : "red"}
-    />
-
-    <FinanceKpi
-      label="Royalties à payer"
-      value={`${royaltiesAPayer.toFixed(2)} €`}
-      tone="red"
-    />
-
-    <FinanceKpi
-      label="Royalties payées"
-      value={`${royaltiesPayees.toFixed(2)} €`}
-      tone="green"
-    />
-
-    <FinanceKpi
-      label="Cachets confirmés"
-      value={`${cachetsConfirmes.toFixed(2)} €`}
-    />
-
-    <FinanceKpi
-      label="Cachets facturés"
-      value={`${cachetsFactures.toFixed(2)} €`}
-    />
-
-    <FinanceKpi
-      label="Cachets payés"
-      value={`${cachetsPayes.toFixed(2)} €`}
-      tone="green"
-    />
-  </div>
-</section>
-
-      <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-4">
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-          <p className="text-sm text-zinc-500">Revenus booking</p>
-          <h3 className="mt-2 text-3xl font-bold">{revenusBooking.toFixed(2)} €</h3>
-        </div>
-
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-          <p className="text-sm text-zinc-500">Dépenses promo</p>
-          <h3 className="mt-2 text-3xl font-bold">{depensesPromo.toFixed(2)} €</h3>
-        </div>
-
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-          <p className="text-sm text-zinc-500">Opérations payées</p>
-          <h3 className="mt-2 text-3xl font-bold">{operationsPayees}</h3>
-        </div>
-
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-          <p className="text-sm text-zinc-500">Opérations prévues</p>
-          <h3 className="mt-2 text-3xl font-bold">{operationsPrevues}</h3>
-        </div>
-      </div>
-
-      <div className="mb-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-          <h2 className="mb-6 text-3xl font-bold">Rentabilité par artiste</h2>
-
-          {artistRanking.length === 0 && (
-            <p className="text-zinc-500">Aucune donnée artiste.</p>
-          )}
-
-          <div className="space-y-4">
-            {artistRanking.slice(0, 6).map((artist) => (
-              <div
-                key={artist.nom}
-                className="rounded-2xl border border-zinc-800 bg-black p-5"
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold">{artist.nom}</h3>
-                  <p
-                    className={
-                      artist.resultat >= 0 ? "text-green-400" : "text-red-400"
-                    }
-                  >
-                    {artist.resultat.toFixed(2)} €
-                  </p>
-                </div>
-
-                <p className="mt-2 text-sm text-zinc-500">
-                  Revenus : {artist.revenus.toFixed(2)} € • Dépenses :{" "}
-                  {artist.depenses.toFixed(2)} €
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-          <h2 className="mb-6 text-3xl font-bold">Rentabilité par projet</h2>
-
-          {projectRanking.length === 0 && (
-            <p className="text-zinc-500">Aucune donnée projet.</p>
-          )}
-
-          <div className="space-y-4">
-            {projectRanking.slice(0, 6).map((project) => (
-              <div
-                key={project.titre}
-                className="rounded-2xl border border-zinc-800 bg-black p-5"
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold">{project.titre}</h3>
-                  <p
-                    className={
-                      project.resultat >= 0 ? "text-green-400" : "text-red-400"
-                    }
-                  >
-                    {project.resultat.toFixed(2)} €
-                  </p>
-                </div>
-
-                <p className="mt-2 text-sm text-zinc-500">
-                  Revenus : {project.revenus.toFixed(2)} € • Dépenses :{" "}
-                  {project.depenses.toFixed(2)} €
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-        <h2 className="mb-6 text-3xl font-bold">Dernières opérations</h2>
-
-        {(!finances || finances.length === 0) && (
-          <p className="text-zinc-500">Aucune opération financière.</p>
-        )}
-
-        <div className="space-y-4">
-         {finances?.map((finance: any) => (
-  <Link
-    key={finance.id}
-    href={`/finances/${finance.id}`}
-    className="block rounded-2xl border border-zinc-800 bg-black p-5 hover:border-zinc-600"
-  >
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-xl font-semibold">{finance.titre}</h3>
-
-                  <p className="mt-1 text-sm text-zinc-500">
-                    {finance.categorie || "Sans catégorie"} •{" "}
-                    {finance.artistes?.nom || "Aucun artiste"} •{" "}
-                    {finance.projets?.titre || "Aucun projet"}
-                  </p>
-                </div>
-
-                <div className="text-right">
-                  <p
-                    className={
-                      finance.type === "Revenu"
-                        ? "text-green-400"
-                        : "text-red-400"
-                    }
-                  >
-                    {finance.type === "Revenu" ? "+" : "-"}
-                    {Number(finance.montant || 0).toFixed(2)} €
-                  </p>
-
-                  <p className="mt-1 text-xs text-zinc-500">
-                    {finance.statut || "Prévu"}
-                  </p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-    </main>
-  );
+    <section className="mt-8 rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 md:p-7"><div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-500">Qualité des données</p><h2 className="mt-2 text-2xl font-bold">Une transaction complète rend tout Finance fiable</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-500">Renseigne la catégorie, la date, le statut et au moins un rattachement pertinent. Ces informations alimentent directement la trésorerie, la rentabilité des projets et les alertes.</p></div><Link href="/finances/nouveau" className="shrink-0 text-sm font-semibold text-zinc-400 hover:text-white">Ajouter une opération →</Link></div></section>
+  </div></main>;
 }
 
-function FinanceKpi({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string | number;
-  tone?: "green" | "red";
-}) {
-  const toneClass =
-    tone === "green"
-      ? "border-green-500/30 bg-green-500/10"
-      : tone === "red"
-      ? "border-red-500/30 bg-red-500/10"
-      : "border-zinc-800 bg-black";
-
-  return (
-    <div className={`rounded-3xl border p-6 ${toneClass}`}>
-      <p className="text-sm text-zinc-500">{label}</p>
-      <h3 className="mt-3 text-3xl font-bold">{value}</h3>
-    </div>
-  );
+type Tone = "default" | "good" | "warning";
+function Metric({ label, value: amount, detail, tone = "default" }: { label: string; value: string; detail: string; tone?: Tone }) { const styles = { default: "border-zinc-800 bg-zinc-950", good: "border-green-500/20 bg-green-500/[0.05]", warning: "border-yellow-500/25 bg-yellow-500/[0.06]" }; return <div className={`rounded-2xl border p-5 ${styles[tone]}`}><p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{label}</p><p className="mt-3 text-3xl font-bold">{amount}</p><p className="mt-2 text-xs text-zinc-600">{detail}</p></div>; }
+function Select({ name, label, current, options }: { name: string; label: string; current: string; options: string[] }) { return <select name={name} defaultValue={current} aria-label={label} className="min-h-12 rounded-xl border border-zinc-800 bg-black px-4 text-sm text-white outline-none focus:border-zinc-600"><option value="">{label}</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select>; }
+function TransactionRow({ finance }: { finance: any }) {
+  const attachment = finance.projets?.titre || finance.artistes?.nom || finance.bookings?.evenement || "Non rattachée";
+  return <Link href={`/finances/${finance.id}`} className="group grid gap-4 border-b border-zinc-900 px-2 py-5 last:border-0 hover:bg-white/[0.02] lg:grid-cols-[110px_1fr_150px_140px_140px] lg:items-center lg:px-4">
+    <div><p className="text-xs font-semibold text-zinc-400">{date(finance.date_operation)}</p><p className="mt-1 text-[11px] text-zinc-700">{finance.categorie || "Sans catégorie"}</p></div>
+    <div className="min-w-0"><div className="flex items-center gap-2"><span className={`h-2 w-2 shrink-0 rounded-full ${finance.type === "Revenu" ? "bg-green-400" : "bg-red-400"}`} /><p className="truncate font-semibold group-hover:text-yellow-400">{finance.titre || "Opération sans titre"}</p></div><p className="mt-1 pl-4 text-xs text-zinc-600">{finance.type}</p></div>
+    <div className="min-w-0"><p className="truncate text-sm text-zinc-400">{attachment}</p><p className="mt-1 text-[11px] text-zinc-700">{attachmentKind(finance)}</p></div>
+    <Status value={finance.statut || "Prévu"} />
+    <div className="text-left lg:text-right"><p className={`font-bold ${finance.type === "Revenu" ? "text-green-400" : "text-red-400"}`}>{finance.type === "Revenu" ? "+" : "−"} {euros(Number(finance.montant || 0))}</p><p className="mt-1 text-[11px] text-zinc-700">Voir le détail →</p></div>
+  </Link>;
 }
+function Status({ value: status }: { value: string }) { const style: Record<string, string> = { "Payé": "bg-green-500/10 text-green-300", "Facturé": "bg-blue-500/10 text-blue-300", "Prévu": "bg-yellow-500/10 text-yellow-300", "Annulé": "bg-zinc-800 text-zinc-500" }; return <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${style[status] || "bg-zinc-800 text-zinc-400"}`}>{status}</span>; }
+function attachmentKind(finance: any) { if (finance.projets?.titre) return "Projet"; if (finance.artistes?.nom) return "Artiste"; if (finance.bookings?.evenement) return "Booking"; return "Aucun rattachement"; }
+function total(items: any[], type: string) { return items.filter((item) => item.type === type && item.statut !== "Annulé").reduce((sum, item) => sum + Number(item.montant || 0), 0); }
+function pending(items: any[], type: string) { return items.filter((item) => item.type === type && !["Payé", "Annulé"].includes(item.statut)).reduce((sum, item) => sum + Number(item.montant || 0), 0); }
+function count(items: any[], type: string) { return items.filter((item) => item.type === type && item.statut !== "Annulé").length; }
+function value(input?: string | string[]) { return Array.isArray(input) ? input[0] || "" : input || ""; }
+function euros(amount: number) { return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(amount || 0); }
+function date(input?: string) { if (!input) return "Sans date"; return new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${input}T12:00:00`)); }
