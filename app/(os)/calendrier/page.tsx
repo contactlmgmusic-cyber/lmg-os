@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import CalendarFilterView from "@/components/CalendarFilterView";
 import { ROLES } from "@/lib/roles";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +23,12 @@ function toDateKey(date: string) {
   return new Date(date).toISOString().split("T")[0];
 }
 
-export default async function CalendrierPage() {
+export default async function CalendrierPage({ searchParams }: { searchParams: Promise<{ mois?: string }> }) {
+  const params = await searchParams;
   const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
+  const requestedMonth = /^\d{4}-\d{2}$/.test(params.mois || "") ? params.mois! : `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+  const [year, monthNumber] = requestedMonth.split("-").map(Number);
+  const month = monthNumber - 1;
 
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
@@ -61,7 +64,7 @@ const {
 const { data: currentProfile } = user
   ? await supabase
       .from("profiles")
-      .select("role, artiste_id")
+      .select("id, role, artiste_id")
       .eq("id", user.id)
       .single()
   : { data: null };
@@ -108,6 +111,10 @@ let tachesQuery = supabase
     deadline,
     statut,
     priorite,
+    responsable_id,
+    assigned_to,
+    created_by,
+    task_assignees (user_id),
     projets (
       id,
       artiste_id,
@@ -131,7 +138,12 @@ if (currentProfile?.role === ROLES.ARTISTE) {
 
 const { data: projets } = await projetsQuery;
 const { data: rolloutEvents } = await rolloutQuery;
-const { data: taches } = await tachesQuery;
+const { data: rawTasks } = await tachesQuery;
+const isAdmin = currentProfile?.role === ROLES.SUPER_ADMIN || currentProfile?.role === ROLES.ADMIN;
+const taches = isAdmin ? rawTasks || [] : (rawTasks || []).filter((task: any) => {
+  const assigned = task.responsable_id === currentProfile?.id || task.assigned_to === currentProfile?.id || task.task_assignees?.some((item: { user_id: string }) => item.user_id === currentProfile?.id);
+  return assigned || (currentProfile?.role === ROLES.ARTISTIC_DIRECTOR && task.created_by === currentProfile.id);
+});
 
 const { data: bookings } = await supabase
   .from("bookings")
@@ -245,9 +257,13 @@ const canCreateTask =
   currentProfile?.role === ROLES.ADMIN ||
   currentProfile?.role === ROLES.ARTISTIC_DIRECTOR;
 
+  const previousMonth = new Date(year, month - 1, 1);
+  const nextMonth = new Date(year, month + 1, 1);
+  const monthKey = (value: Date) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
+
   return (
     <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10">
-      <div className="mb-10 flex items-end justify-between">
+      <div className="mb-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
             LMG Workspace
@@ -262,14 +278,12 @@ const canCreateTask =
           </p>
         </div>
 
-        {canCreateTask && (
-  <a
-    href="/taches/nouveau"
-    className="rounded-2xl bg-white px-5 py-3 font-semibold text-black transition hover:bg-zinc-200"
-  >
-    + Nouvelle tâche
-  </a>
-)}
+        <div className="flex flex-wrap gap-3">
+          <Link href={`/calendrier?mois=${monthKey(previousMonth)}`} className="rounded-xl border border-zinc-800 px-4 py-3 text-sm font-semibold text-zinc-400 transition hover:border-zinc-600 hover:text-white">← Mois précédent</Link>
+          <Link href="/calendrier" className="rounded-xl border border-zinc-800 px-4 py-3 text-sm font-semibold text-zinc-400 transition hover:border-zinc-600 hover:text-white">Aujourd’hui</Link>
+          <Link href={`/calendrier?mois=${monthKey(nextMonth)}`} className="rounded-xl border border-zinc-800 px-4 py-3 text-sm font-semibold text-zinc-400 transition hover:border-zinc-600 hover:text-white">Mois suivant →</Link>
+          {canCreateTask && <Link href="/taches/nouveau" className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200">+ Nouvelle tâche</Link>}
+        </div>
       </div>
 
       <CalendarFilterView
