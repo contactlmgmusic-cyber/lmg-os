@@ -353,6 +353,7 @@ export default function Sidebar() {
     if (role === ROLES.MANAGER) return managerSections;
     if (role === ROLES.ARTISTIC_DIRECTOR) return artisticDirectorSections;
     if (role === ROLES.PRESTATAIRE) return prestataireSections;
+    if (role === ROLES.ADMIN) return executiveSections.map((section) => ({ ...section, links: section.links.filter((link) => link.href !== "/assistant") }));
     return executiveSections;
   }, [role]);
 

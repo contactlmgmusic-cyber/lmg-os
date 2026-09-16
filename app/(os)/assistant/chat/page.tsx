@@ -5,12 +5,7 @@ import { ROLES } from "@/lib/roles";
 export const dynamic = "force-dynamic";
 
 export default async function AssistantChatPage() {
-  await requireRole([
-  ROLES.SUPER_ADMIN,
-  ROLES.ADMIN,
-  ROLES.ARTISTIC_DIRECTOR,
-  ROLES.MANAGER,
-]);
+  await requireRole([ROLES.SUPER_ADMIN]);
 
   return <AssistantChatClient />;
 }
