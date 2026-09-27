@@ -47,6 +47,7 @@ export async function proxy(request: NextRequest) {
     "/rollout",
     "/drive",
     "/assistant",
+    "/portail-groupe",
     "/chat",
     "/equipe",
     "/notifications",
