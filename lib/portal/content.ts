@@ -29,6 +29,7 @@ export const fields = {
     ["introEn", "Introduction — EN"],
     ["category", "Catégorie — FR"],
     ["categoryEn", "Category — EN"],
+    ["image", "Image de couverture"],
     ["publishedAt", "Date de publication"],
   ],
   project: [

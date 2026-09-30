@@ -73,6 +73,7 @@ export default function PortalWorkspace({
               introEn: "",
               category: "Vie du groupe",
               categoryEn: "Group",
+              image: "",
               publishedAt: new Intl.DateTimeFormat(
                 "en-CA",
                 {
@@ -309,7 +310,7 @@ export default function PortalWorkspace({
         ].slice(0, 100)
       );
 
-      if (selected?.kind === "project") {
+      if (selected) {
         change("image", data.publicUrl);
       }
 
@@ -533,6 +534,37 @@ export default function PortalWorkspace({
                         }
                       />
                     </LanguageBlock>
+
+                    <section className="mb-7 rounded-xl border border-zinc-800 bg-zinc-950 p-5">
+                      <h2 className="text-lg font-semibold">
+                        Image de couverture
+                      </h2>
+
+                      <p className="mt-1 mb-5 text-xs text-zinc-500">
+                        Visuel utilisé sur la présentation de l’article dans News.
+                        Importez une image depuis la médiathèque ci-dessous ou collez son URL.
+                      </p>
+
+                      <TextField
+                        label="URL du visuel"
+                        value={String(
+                          selected.data.image || ""
+                        )}
+                        onChange={(value) =>
+                          change("image", value)
+                        }
+                      />
+
+                      {selected.data.image && (
+                        <div className="mt-4 overflow-hidden rounded-xl border border-zinc-800">
+                          <img
+                            src={String(selected.data.image)}
+                            alt=""
+                            className="aspect-[16/9] w-full object-cover"
+                          />
+                        </div>
+                      )}
+                    </section>
 
                     <label className="mb-8 block text-sm">
                       Date de publication
@@ -904,10 +936,7 @@ export default function PortalWorkspace({
                     onClick={() => {
                       setMediaUrl(item.url);
 
-                      if (
-                        selected?.kind ===
-                        "project"
-                      ) {
+                      if (selected) {
                         change(
                           "image",
                           item.url
