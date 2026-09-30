@@ -86,6 +86,9 @@ export default function PortalWorkspace({
                   text: "",
                   titleEn: "",
                   textEn: "",
+                  image: "",
+                  imageAlt: "",
+                  imageAltEn: "",
                 },
               ],
             }
@@ -171,6 +174,9 @@ export default function PortalWorkspace({
             text: "",
             titleEn: "",
             textEn: "",
+            image: "",
+            imageAlt: "",
+            imageAltEn: "",
           }
         : {
             title: "",
@@ -688,6 +694,7 @@ export default function PortalWorkspace({
 
                           {selected.kind ===
                           "news" ? (
+                            <>
                             <div className="grid gap-6 xl:grid-cols-2">
                               <div>
                                 <p className="mb-4 font-semibold">
@@ -769,6 +776,95 @@ export default function PortalWorkspace({
                                 />
                               </div>
                             </div>
+
+                            <div className="mt-6 border-t border-zinc-800 pt-6">
+                              <p className="mb-4 font-semibold">
+                                Visuel du paragraphe
+                              </p>
+
+                              <TextField
+                                label="URL de l’image (optionnelle)"
+                                value={section.image || ""}
+                                onChange={(value) =>
+                                  updateSection(
+                                    index,
+                                    "image",
+                                    value
+                                  )
+                                }
+                              />
+
+                              {mediaUrl && (
+                                <button
+                                  type="button"
+                                  className="mb-5 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-yellow-400"
+                                  onClick={() =>
+                                    updateSection(
+                                      index,
+                                      "image",
+                                      mediaUrl
+                                    )
+                                  }
+                                >
+                                  Utiliser le dernier visuel importé
+                                </button>
+                              )}
+
+                              {section.image && (
+                                <div className="mb-5 overflow-hidden rounded-xl border border-zinc-800 bg-black">
+                                  <img
+                                    src={section.image}
+                                    alt=""
+                                    className="max-h-80 w-full object-cover"
+                                  />
+                                </div>
+                              )}
+
+                              <div className="grid gap-6 xl:grid-cols-2">
+                                <TextField
+                                  label="Texte alternatif — FR"
+                                  value={section.imageAlt || ""}
+                                  onChange={(value) =>
+                                    updateSection(
+                                      index,
+                                      "imageAlt",
+                                      value
+                                    )
+                                  }
+                                />
+
+                                <TextField
+                                  label="Alternative text — EN"
+                                  value={
+                                    section.imageAltEn || ""
+                                  }
+                                  onChange={(value) =>
+                                    updateSection(
+                                      index,
+                                      "imageAltEn",
+                                      value
+                                    )
+                                  }
+                                />
+                              </div>
+
+                              {section.image && (
+                                <button
+                                  type="button"
+                                  className="text-sm text-red-300"
+                                  onClick={() =>
+                                    updateSection(
+                                      index,
+                                      "image",
+                                      ""
+                                    )
+                                  }
+                                >
+                                  Retirer le visuel
+                                </button>
+                              )}
+                            </div>
+                            </>
                           ) : (
                             <>
                               <TextField

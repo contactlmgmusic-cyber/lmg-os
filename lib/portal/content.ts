@@ -5,6 +5,9 @@ export type PortalSection = {
   text: string;
   titleEn?: string;
   textEn?: string;
+  image?: string;
+  imageAlt?: string;
+  imageAltEn?: string;
 };
 
 export type PortalData = Record<
@@ -162,11 +165,31 @@ export function validateEntry(
         );
       }
 
+      const image =
+        typeof section.image === "string"
+          ? section.image.trim()
+          : "";
+
+      if (image && !isHttps(image)) {
+        throw new Error(
+          "L’image d’un paragraphe doit utiliser une URL HTTPS."
+        );
+      }
+
       return {
         title: section.title.trim(),
         text: section.text.trim(),
         titleEn: section.titleEn.trim(),
         textEn: section.textEn.trim(),
+        image,
+        imageAlt:
+          typeof section.imageAlt === "string"
+            ? section.imageAlt.trim()
+            : "",
+        imageAltEn:
+          typeof section.imageAltEn === "string"
+            ? section.imageAltEn.trim()
+            : "",
       };
     }
 
