@@ -19,56 +19,66 @@ export default function LiveNotifications() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    let realtimeChannel: ReturnType<typeof supabaseBrowser.channel> | null =
-      null;
+  let realtimeChannel: ReturnType<typeof supabaseBrowser.channel> | null = null;
+  let cancelled = false;
 
-    async function subscribe() {
-      const {
-        data: { user },
-      } = await supabaseBrowser.auth.getUser();
+  async function subscribeToNotifications() {
+    const {
+      data: { user },
+    } = await supabaseBrowser.auth.getUser();
 
-      if (!user) {
-        return;
-      }
-
-      realtimeChannel = supabaseBrowser
-        .channel(`notification-toast-${user.id}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "notifications",
-            filter: `user_id=eq.${user.id}`,
-          },
-          (payload) => {
-            const incoming = payload.new as NotificationToast;
-            setNotification(incoming);
-
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current);
-            }
-
-            timeoutRef.current = setTimeout(() => {
-              setNotification(null);
-            }, 6000);
-          }
-        )
-        .subscribe();
+    if (!user || cancelled) {
+      return;
     }
 
-    void subscribe();
+    const channel = supabaseBrowser
+      .channel(`notification-toast-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          if (cancelled) {
+            return;
+          }
 
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+          const incoming = payload.new as NotificationToast;
+          setNotification(incoming);
 
-      if (realtimeChannel) {
-        void supabaseBrowser.removeChannel(realtimeChannel);
-      }
-    };
-  }, []);
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+          }
+
+          timeoutRef.current = setTimeout(() => {
+            setNotification(null);
+          }, 6000);
+        }
+      );
+
+    realtimeChannel = channel;
+    channel.subscribe();
+  }
+
+  void subscribeToNotifications();
+
+  return () => {
+    cancelled = true;
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
+    if (realtimeChannel) {
+      void supabaseBrowser.removeChannel(realtimeChannel);
+      realtimeChannel = null;
+    }
+  };
+}, []);
 
   if (!notification) {
     return null;
