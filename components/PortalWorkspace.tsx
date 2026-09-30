@@ -260,7 +260,7 @@ export default function PortalWorkspace({
     }
   }
 
-  async function upload(file?: File) {
+  async function upload(file?: File, sectionIndex?: number) {
     if (!file) return;
 
     if (
@@ -306,19 +306,21 @@ export default function PortalWorkspace({
 
       setMediaUrl(data.publicUrl);
 
-      setMedia((current) =>
-        [
-          {
-            name,
-            url: data.publicUrl,
-          },
-          ...current,
-        ].slice(0, 100)
-      );
+setMedia((current) =>
+  [
+    {
+      name,
+      url: data.publicUrl,
+    },
+    ...current,
+  ].slice(0, 100)
+);
 
-      if (selected) {
-        change("image", data.publicUrl);
-      }
+if (typeof sectionIndex === "number") {
+  updateSection(sectionIndex, "image", data.publicUrl);
+} else if (selected) {
+  change("image", data.publicUrl);
+}
 
       setMessage(
         "Visuel ajouté à la médiathèque publique."
@@ -794,21 +796,25 @@ export default function PortalWorkspace({
                                 }
                               />
 
-                              {mediaUrl && (
-                                <button
-                                  type="button"
-                                  className="mb-5 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-yellow-400"
-                                  onClick={() =>
-                                    updateSection(
-                                      index,
-                                      "image",
-                                      mediaUrl
-                                    )
-                                  }
-                                >
-                                  Utiliser le dernier visuel importé
-                                </button>
-                              )}
+                              <label className="mb-5 inline-flex cursor-pointer items-center rounded-lg border border-zinc-700 px-4 py-2 text-sm text-yellow-400 transition hover:border-yellow-400/50 hover:bg-yellow-400/5">
+  {busy ? "Import en cours..." : "Importer une image pour cette section"}
+
+  <input
+    type="file"
+    accept="image/png,image/jpeg,image/webp"
+    className="hidden"
+    disabled={busy}
+    onChange={(event) => {
+      const file = event.target.files?.[0];
+
+      if (file) {
+        void upload(file, index);
+      }
+
+      event.currentTarget.value = "";
+    }}
+  />
+</label>
 
                               {section.image && (
                                 <div className="mb-5 overflow-hidden rounded-xl border border-zinc-800 bg-black">
