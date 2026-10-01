@@ -91,19 +91,19 @@ export default function Footer() {
             }
             className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-zinc-300"
           >
-            <Link href="/site/about" className="transition hover:text-yellow-500">
+            <Link href="/about" className="transition hover:text-yellow-500">
               {fr ? "À propos" : "About"}
             </Link>
 
-            <Link href="/site/artistes" className="transition hover:text-yellow-500">
+            <Link href="/artistes" className="transition hover:text-yellow-500">
               {fr ? "Artistes" : "Artists"}
             </Link>
 
-            <Link href="/site/releases" className="transition hover:text-yellow-500">
+            <Link href="/releases" className="transition hover:text-yellow-500">
               {fr ? "Sorties" : "Releases"}
             </Link>
 
-            <Link href="/site/news" className="transition hover:text-yellow-500">
+            <Link href="/news" className="transition hover:text-yellow-500">
               {fr ? "Actualités" : "News"}
             </Link>
 
@@ -114,16 +114,16 @@ export default function Footer() {
               Careers
             </a>
 
-            <Link href="/site/faq" className="transition hover:text-yellow-500">
+            <Link href="/faq" className="transition hover:text-yellow-500">
               FAQ
             </Link>
 
-            <Link href="/site/contact" className="transition hover:text-yellow-500">
+            <Link href="/contact" className="transition hover:text-yellow-500">
               Contact
             </Link>
 
             <Link
-              href="/site/recherche"
+              href="/recherche"
               className="transition hover:text-yellow-500"
             >
               {fr ? "Rechercher" : "Search"}
@@ -174,14 +174,14 @@ export default function Footer() {
 
               <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-3">
                 <Link
-                  href="/site/mentions-legales"
+                  href="/mentions-legales"
                   className="transition hover:text-white"
                 >
                   {fr ? "Mentions légales" : "Legal Notice"}
                 </Link>
 
                 <Link
-                  href="/site/confidentialite"
+                  href="/confidentialite"
                   className="transition hover:text-white"
                 >
                   {fr
@@ -190,7 +190,7 @@ export default function Footer() {
                 </Link>
 
                 <Link
-                  href="/site/cookies"
+                  href="/cookies"
                   className="transition hover:text-white"
                 >
                   {fr
@@ -213,14 +213,14 @@ export default function Footer() {
 </button>
 
                 <Link
-                  href="/site/accessibilite"
+                  href="/accessibilite"
                   className="transition hover:text-white"
                 >
                   {fr ? "Accessibilité" : "Accessibility"}
                 </Link>
 
                 <Link
-                  href="/site/plan-du-site"
+                  href="/plan-du-site"
                   className="transition hover:text-white"
                 >
                   {fr ? "Plan du site" : "Site Map"}

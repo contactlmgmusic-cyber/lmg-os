@@ -91,7 +91,7 @@ export default function ServicesPage() {
 
         <div className="relative z-10 mx-auto max-w-7xl">
           <Link
-            href="/site"
+            href="/"
             className="text-sm text-zinc-500 transition hover:text-white"
           >
             ← Retour au site
@@ -269,7 +269,7 @@ export default function ServicesPage() {
           </p>
 
           <Link
-            href="/site/rejoindre"
+            href="/rejoindre"
             className="mt-10 inline-block rounded-full bg-yellow-500 px-8 py-4 font-bold text-black transition hover:bg-yellow-400"
           >
             Présenter mon projet

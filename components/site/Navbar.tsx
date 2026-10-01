@@ -22,32 +22,32 @@ export default function Navbar() {
     {
       id: "about",
       label: t.navigation.about,
-      path: "/site/about",
+      path: "/about",
       title: t.about.title,
       intro: t.about.intro,
       links: [
         [
-          "/site/about",
+          "/about",
           t.about.overview,
           t.about.overviewDescription,
         ],
         [
-          "/site/about/what-we-do",
+          "/about/what-we-do",
           t.about.whatWeDo,
           t.about.whatWeDoDescription,
         ],
         [
-          "/site/about/live",
+          "/about/live",
           t.about.live,
           t.about.liveDescription,
         ],
         [
-          "/site/team",
+          "/team",
           t.about.team,
           t.about.teamDescription,
         ],
         [
-          "/site/contact",
+          "/contact",
           t.about.contact,
           t.about.contactDescription,
         ],
@@ -56,22 +56,22 @@ export default function Navbar() {
     {
       id: "artists",
       label: t.navigation.artists,
-      path: "/site/artistes",
+      path: "/artistes",
       title: t.artists.title,
       intro: t.artists.intro,
       links: [
         [
-          "/site/artistes",
+          "/artistes",
           t.artists.roster,
           t.artists.rosterDescription,
         ],
         [
-          "/site/releases",
+          "/releases",
           t.artists.releases,
           t.artists.releasesDescription,
         ],
         [
-          "/site/artist-portal",
+          "/artist-portal",
           t.artists.portal,
           t.artists.portalDescription,
         ],
@@ -80,17 +80,17 @@ export default function Navbar() {
     {
       id: "news",
       label: t.navigation.news,
-      path: "/site/news",
+      path: "/news",
       title: t.news.title,
       intro: t.news.intro,
       links: [
         [
-          "/site/news",
+          "/news",
           t.news.musicNews,
           t.news.musicNewsDescription,
         ],
         [
-          "/site/press",
+          "/press",
           t.news.press,
           t.news.pressDescription,
         ],
@@ -177,7 +177,7 @@ export default function Navbar() {
   return (
     <header ref={header} className="music-site-header">
       <Link
-        href="/site"
+        href="/"
         className="music-brand"
         aria-label="LMG Music, Home"
         onClick={closeAll}
@@ -278,12 +278,12 @@ export default function Navbar() {
         </a>
 
         <Link
-          href="/site/faq"
+          href="/faq"
           className={`music-nav-trigger${
-            active("/site/faq") ? " is-current" : ""
+            active("/faq") ? " is-current" : ""
           }`}
           aria-current={
-            pathname === "/site/faq" ? "page" : undefined
+            pathname === "/faq" ? "page" : undefined
           }
           onClick={closeAll}
         >
@@ -317,7 +317,7 @@ export default function Navbar() {
       </div>
 
       <Link
-        href="/site/recherche"
+        href="/recherche"
         className="music-header-search"
         aria-label={t.navigation.search}
         onClick={closeAll}
@@ -413,7 +413,7 @@ export default function Navbar() {
         </a>
 
         <Link
-          href="/site/faq"
+          href="/faq"
           className="music-mobile-direct-link"
           onClick={closeAll}
         >

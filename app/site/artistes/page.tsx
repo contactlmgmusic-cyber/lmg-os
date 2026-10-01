@@ -42,7 +42,7 @@ export default async function ArtistsPage() {
       <section className="border-b border-zinc-900 px-6 pb-20 pt-36 md:px-8 md:pb-28">
         <div className="mx-auto max-w-7xl">
           <Link
-            href="/site"
+            href="/"
             className="text-sm text-zinc-500 transition hover:text-white"
           >
             ← Retour au site
@@ -87,7 +87,7 @@ export default async function ArtistsPage() {
                 return (
                   <Link
                     key={artist.id}
-                    href={`/site/artistes/${artist.slug}`}
+                    href={`/artistes/${artist.slug}`}
                     className="group"
                   >
                     <div className="relative min-h-[620px] overflow-hidden rounded-[2rem] border border-zinc-900 bg-zinc-950 transition duration-500 group-hover:border-zinc-700">
@@ -155,7 +155,7 @@ export default async function ArtistsPage() {
           </p>
 
           <Link
-            href="/site/rejoindre"
+            href="/rejoindre"
             className="mt-10 inline-block rounded-full bg-yellow-500 px-8 py-4 font-bold text-black transition hover:bg-yellow-400"
           >
             Présenter mon projet

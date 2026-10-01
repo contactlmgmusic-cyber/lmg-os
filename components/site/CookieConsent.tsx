@@ -133,7 +133,7 @@ export default function CookieConsent() {
                   </p>
 
                   <Link
-                    href="/site/cookies"
+                    href="/cookies"
                     className="mt-3 inline-block text-xs text-zinc-500 underline underline-offset-4 transition hover:text-white"
                   >
                     {fr

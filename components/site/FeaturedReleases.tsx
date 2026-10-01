@@ -34,7 +34,7 @@ export default function FeaturedReleases() {
           {projets.map((projet) => (
             <Link
               key={projet.id}
-              href={`/site/projets/${projet.slug || projet.id}`}
+              href={`/projets/${projet.slug || projet.id}`}
               className="group overflow-hidden rounded-[2rem] border border-zinc-800 bg-black transition hover:border-yellow-500"
             >
               <div className="relative aspect-square bg-zinc-900">

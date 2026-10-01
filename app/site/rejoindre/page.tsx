@@ -81,7 +81,7 @@ export default function RejoindrePage() {
 
         <div className="relative z-10 mx-auto max-w-7xl">
           <Link
-            href="/site"
+            href="/"
             className="text-sm text-zinc-500 transition hover:text-white"
           >
             ← Retour au site

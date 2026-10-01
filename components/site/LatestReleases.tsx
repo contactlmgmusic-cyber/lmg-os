@@ -3,10 +3,13 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { useSiteLanguage } from "@/components/site/LanguageProvider";
 
 export default function LatestReleases() {
   const [releases, setReleases] = useState<any[]>([]);
+  const { t } = useSiteLanguage();
 
   useEffect(() => {
     async function loadReleases() {
@@ -43,24 +46,24 @@ export default function LatestReleases() {
   };
 
   return (
-    <section className="border-t border-zinc-900 bg-black px-6 py-24">
+    <section className="border-t border-zinc-900 bg-black px-6 py-20 md:px-8 md:py-24">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div className="mb-12 flex items-end justify-between gap-8">
           <div>
-            <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
-              Latest Releases
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.32em] text-yellow-500">
+              {t.home.releasesEyebrow}
             </p>
 
-            <h2 className="text-4xl font-black uppercase md:text-6xl">
-              Dernières sorties
+            <h2 className="text-3xl font-semibold uppercase tracking-[-0.025em] md:text-5xl">
+              {t.home.releasesTitle}
             </h2>
           </div>
 
           <Link
-            href="/site/releases"
-            className="text-sm font-semibold text-zinc-400 transition hover:text-yellow-500"
+            href="/releases"
+            className="hidden text-sm font-semibold text-zinc-400 transition hover:text-yellow-500 md:block"
           >
-            Voir toutes les sorties →
+            {t.home.releasesAll} ↗
           </Link>
         </div>
 
@@ -71,16 +74,16 @@ export default function LatestReleases() {
             return (
               <Link
                 key={release.id}
-                href={`/site/projets/${release.slug}`}
+                href={`/projets/${release.slug}`}
                 className="group"
               >
-                <div className="relative aspect-square overflow-hidden rounded-[1.5rem] border border-zinc-900 bg-zinc-900 transition duration-500 group-hover:border-zinc-700">
+                <div className="relative aspect-square overflow-hidden bg-zinc-900">
                   {release.cover_url ? (
                     <Image
                       src={release.cover_url}
-                      alt={release.titre || "Release LMG"}
+                      alt={release.titre || "LMG Music release"}
                       fill
-                      className="object-cover transition duration-700 group-hover:scale-105"
+                      className="object-cover transition duration-700 group-hover:scale-[1.03]"
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-zinc-600">
@@ -90,7 +93,7 @@ export default function LatestReleases() {
                 </div>
 
                 <div className="pt-5">
-                  <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
+                  <div className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-yellow-500">
                     <span>{release.type || "Release"}</span>
 
                     {release.date_sortie && (
@@ -103,18 +106,25 @@ export default function LatestReleases() {
                     )}
                   </div>
 
-                  <h3 className="mt-3 text-3xl font-black uppercase leading-none text-white transition group-hover:text-yellow-500">
+                  <h3 className="mt-3 text-xl font-semibold uppercase leading-tight text-white transition group-hover:text-yellow-500 md:text-2xl">
                     {release.titre}
                   </h3>
 
-                  <p className="mt-3 text-sm uppercase tracking-[0.18em] text-zinc-400">
-                    {artist?.nom || "Legacy Music Group"}
+                  <p className="mt-3 text-xs uppercase tracking-[0.18em] text-zinc-400">
+                    {artist?.nom || "LMG Music"}
                   </p>
                 </div>
               </Link>
             );
           })}
         </div>
+
+        <Link
+          href="/releases"
+          className="mt-10 inline-block text-sm font-semibold text-zinc-400 transition hover:text-yellow-500 md:hidden"
+        >
+          {t.home.releasesAll} ↗
+        </Link>
       </div>
     </section>
   );

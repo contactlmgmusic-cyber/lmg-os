@@ -104,7 +104,7 @@ export default function ReleasesCarousel() {
   </p>
 </div>
 
-<Link href={`/site/projets/${release.slug}`}>
+<Link href={`/projets/${release.slug}`}>
   <div className="relative h-[420px] w-[92vw] max-w-[420px] overflow-hidden rounded-[22px] shadow-2xl transition duration-500 hover:scale-[1.02] lg:h-[450px] lg:w-[760px] lg:max-w-none xl:w-[900px]">
     {heroImage ? (
       <Image

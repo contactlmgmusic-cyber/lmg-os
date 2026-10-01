@@ -103,14 +103,14 @@ export default function LmgOsPresentationPage() {
             </Link>
 
             <Link
-              href="/site/confidentialite"
+              href="/confidentialite"
               className="rounded-2xl border border-zinc-700 px-6 py-4 text-center font-semibold text-white transition hover:border-zinc-500"
             >
               Politique de confidentialité
             </Link>
 
             <Link
-              href="/site"
+              href="/"
               className="rounded-2xl border border-zinc-700 px-6 py-4 text-center font-semibold text-white transition hover:border-zinc-500"
             >
               Legacy Music Group

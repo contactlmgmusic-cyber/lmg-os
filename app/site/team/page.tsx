@@ -67,7 +67,7 @@ export default function TeamPage() {
 
         <div className="relative z-10 mx-auto max-w-7xl">
           <Link
-            href="/site"
+            href="/"
             className="text-sm text-zinc-500 transition hover:text-white"
           >
             ← Retour au site
@@ -198,7 +198,7 @@ export default function TeamPage() {
 
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
-              href="/site/rejoindre"
+              href="/rejoindre"
               className="rounded-full bg-yellow-500 px-8 py-4 font-bold text-black transition hover:bg-yellow-400"
             >
               Rejoindre LMG

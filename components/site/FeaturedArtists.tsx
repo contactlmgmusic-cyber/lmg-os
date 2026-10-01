@@ -41,7 +41,7 @@ export default function FeaturedArtists() {
           {artists.map((artist) => (
             <Link
               key={artist.id}
-              href={`/site/artistes/${artist.slug || artist.id}`}
+              href={`/artistes/${artist.slug || artist.id}`}
               className="group overflow-hidden rounded-[2rem] border border-zinc-800 bg-black transition duration-300 hover:-translate-y-2 hover:border-yellow-500"
             >
               <div className="relative h-[700px] overflow-hidden bg-zinc-900">

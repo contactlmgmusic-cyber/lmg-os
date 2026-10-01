@@ -1,130 +1,131 @@
+"use client";
+
 import Link from "next/link";
 
 import Navbar from "@/components/site/Navbar";
-import FeaturedArtists from "@/components/site/FeaturedArtists";
 import LatestReleases from "@/components/site/LatestReleases";
 import Footer from "@/components/site/Footer";
 import ReleasesCarousel from "@/components/site/ReleasesCarousel";
+import { useSiteLanguage } from "@/components/site/LanguageProvider";
 
 export default function SitePage() {
+  const { t } = useSiteLanguage();
+
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
 
       <ReleasesCarousel />
 
-      {/* INTRO LMG */}
-      <section className="border-t border-zinc-900 bg-black px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[42%_58%] lg:items-center">
-          <div>
-            <p className="text-sm uppercase tracking-[0.35em] text-yellow-500">
-              Legacy Music Group
-            </p>
+      <LatestReleases />
 
-            <h2 className="mt-5 text-4xl font-black uppercase leading-tight md:text-6xl">
-              Music. Strategy. Legacy.
-            </h2>
+      {/* LIVE & ENTERTAINMENT */}
+      <section className="border-t border-zinc-900 bg-[#070707]">
+        <div className="mx-auto grid min-h-[620px] max-w-[1600px] lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="relative min-h-[420px] overflow-hidden bg-zinc-950 lg:min-h-[620px]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,184,0,0.14),transparent_45%)]" />
+
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.4em] text-yellow-500">
+                  LMG MUSIC
+                </p>
+
+                <p className="mt-5 text-5xl font-black uppercase tracking-[-0.05em] text-white/10 md:text-7xl">
+                  LIVE
+                </p>
+              </div>
+            </div>
+
+            <div className="absolute bottom-8 left-8 text-[10px] uppercase tracking-[0.3em] text-zinc-600">
+              Live image
+            </div>
           </div>
 
-          <div>
-            <p className="max-w-3xl text-lg leading-8 text-zinc-300 md:text-xl">
-              Legacy Music Group développe des artistes et des projets à travers
-              une approche qui réunit stratégie, management, image,
-              communication et développement artistique.
-            </p>
+          <div className="flex items-center px-6 py-16 md:px-12 lg:px-16">
+            <div className="max-w-xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-yellow-500">
+                {t.home.liveEyebrow}
+              </p>
 
-            <p className="mt-6 max-w-3xl leading-8 text-zinc-500">
-              Notre ambition : construire des trajectoires cohérentes, créer des
-              opportunités et accompagner chaque projet avec une vision long
-              terme.
-            </p>
+              <h2 className="mt-5 text-3xl font-semibold uppercase leading-[1.02] tracking-[-0.025em] md:text-5xl">
+                {t.home.liveTitle}
+              </h2>
 
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                href="/site/services"
-                className="rounded-full border border-zinc-700 px-6 py-3 text-sm font-semibold transition hover:border-yellow-500 hover:text-yellow-500"
-              >
-                Découvrir notre approche →
-              </Link>
+              <p className="mt-5 text-xl font-medium uppercase tracking-[-0.02em] text-zinc-400">
+                {t.home.liveSubtitle}
+              </p>
+
+              <p className="mt-8 max-w-md text-sm leading-7 text-zinc-500">
+                {t.home.liveDescription}
+              </p>
 
               <Link
-                href="/site/team"
-                className="rounded-full border border-zinc-800 px-6 py-3 text-sm font-semibold text-zinc-400 transition hover:border-white hover:text-white"
+                href="/about/live"
+                className="mt-9 inline-flex items-center gap-3 border-b border-yellow-500 pb-2 text-sm font-semibold text-white transition hover:text-yellow-500"
               >
-                Découvrir l&apos;équipe
+                {t.home.liveCta}
+                <span aria-hidden="true">↗</span>
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ARTISTES */}
-      <section className="border-t border-zinc-900 bg-zinc-950 px-6 pb-24 pt-20 md:px-8">
+      {/* NEWS */}
+      <section className="border-t border-zinc-900 bg-black px-6 py-20 md:px-8 md:py-24">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div className="flex items-end justify-between gap-8">
             <div>
-              <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
-                Roster
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.32em] text-yellow-500">
+                {t.home.newsEyebrow}
               </p>
 
-              <h2 className="text-4xl font-black uppercase md:text-6xl">
-                Artistes LMG
+              <h2 className="text-3xl font-semibold uppercase tracking-[-0.025em] md:text-5xl">
+                {t.home.newsTitle}
               </h2>
             </div>
 
-            <div className="flex max-w-xl flex-col gap-5">
-              <p className="text-zinc-400">
-                Découvrez les artistes que nous accompagnons dans leur
-                développement, leur image et leur stratégie de carrière.
-              </p>
-
-              <Link
-                href="/site/artistes"
-                className="w-fit text-sm font-semibold text-zinc-400 transition hover:text-yellow-500"
-              >
-                Voir tous les artistes →
-              </Link>
-            </div>
+            <Link
+              href="/news"
+              className="hidden text-sm font-semibold text-zinc-400 transition hover:text-yellow-500 md:block"
+            >
+              {t.home.newsAll} ↗
+            </Link>
           </div>
 
-          <FeaturedArtists />
+          <div className="mt-12 border-y border-zinc-900 py-16">
+            <p className="text-sm uppercase tracking-[0.2em] text-zinc-600">
+              {t.home.newsEmpty}
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* DERNIÈRES SORTIES */}
-      <LatestReleases />
+            {/* PROJECT CTA */}
+      <section className="border-t border-zinc-900 bg-yellow-500 px-6 py-14 text-black md:px-8 md:py-16">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-black/55">
+              {t.home.projectEyebrow}
+            </p>
 
-      {/* CTA */}
-      <section className="border-t border-zinc-900 bg-zinc-950 px-6 py-28 text-center md:px-8">
-        <div className="mx-auto max-w-4xl">
-          <p className="mb-4 text-sm uppercase tracking-[0.3em] text-yellow-500">
-            Build Your Legacy
-          </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-[-0.025em] md:text-4xl">
+              {t.home.projectTitle}
+            </h2>
 
-          <h2 className="text-4xl font-black uppercase md:text-6xl">
-            Ton projet mérite une vraie stratégie.
-          </h2>
-
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-400">
-            Si tu es prêt à travailler ton image, structurer ta carrière et
-            construire sur le long terme, présente ton projet à LMG.
-          </p>
-
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Link
-              href="/site/rejoindre"
-              className="rounded-full bg-yellow-500 px-8 py-4 font-bold text-black transition hover:bg-yellow-400"
-            >
-              Rejoindre LMG
-            </Link>
-
-            <a
-              href="mailto:contact@legacymusicgroup.fr"
-              className="rounded-full border border-zinc-700 px-8 py-4 font-bold text-white transition hover:border-yellow-500"
-            >
-              Nous contacter
-            </a>
+            <p className="mt-3 max-w-xl text-sm text-black/65">
+              {t.home.projectDescription}
+            </p>
           </div>
+
+          <Link
+            href="/rejoindre"
+            className="inline-flex w-fit shrink-0 items-center gap-5 rounded-full bg-black px-7 py-3.5 text-sm font-bold text-white transition hover:scale-[1.02]"
+          >
+            {t.home.projectCta}
+            <span aria-hidden="true">↗</span>
+          </Link>
         </div>
       </section>
 

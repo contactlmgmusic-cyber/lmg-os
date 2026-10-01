@@ -37,7 +37,7 @@ function buildFilterUrl({
 
   const query = params.toString();
 
-  return query ? `/site/releases?${query}` : "/site/releases";
+  return query ? `/releases?${query}` : "/releases";
 }
 
 export const metadata: Metadata = {
@@ -215,7 +215,7 @@ export default async function ReleasesPage({
       <section className="border-b border-zinc-900 px-6 pb-20 pt-36 md:px-8 md:pb-28">
         <div className="mx-auto max-w-7xl">
           <Link
-            href="/site"
+            href="/"
             className="text-sm text-zinc-500 transition hover:text-white"
           >
             ← Retour au site
@@ -245,7 +245,7 @@ export default async function ReleasesPage({
             </p>
 
             <Link
-              href={`/site/projets/${featuredRelease.slug}`}
+              href={`/projets/${featuredRelease.slug}`}
               className="group relative block min-h-[520px] overflow-hidden rounded-[2rem] border border-zinc-800 bg-black"
             >
               {featuredRelease.hero_image_url ||
@@ -436,7 +436,7 @@ export default async function ReleasesPage({
       {/* RESET */}
       {hasActiveFilters && (
         <Link
-          href="/site/releases"
+          href="/releases"
           className="pb-2 text-xs uppercase tracking-[0.2em] text-zinc-500 transition hover:text-white"
         >
           Réinitialiser ×
@@ -476,7 +476,7 @@ export default async function ReleasesPage({
                         return (
                           <Link
                             key={release.id}
-                            href={`/site/projets/${release.slug}`}
+                            href={`/projets/${release.slug}`}
                             className="group"
                           >
                             <div className="relative aspect-square overflow-hidden rounded-[1.5rem] border border-zinc-900 bg-zinc-900 transition duration-500 group-hover:border-zinc-700">
@@ -543,7 +543,7 @@ export default async function ReleasesPage({
               </p>
 
               <Link
-                href="/site/releases"
+                href="/releases"
                 className="mt-8 inline-block text-yellow-500 hover:text-yellow-400"
               >
                 Réinitialiser les filtres

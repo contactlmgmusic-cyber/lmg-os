@@ -4,7 +4,7 @@ export default function MentionsLegalesPage() {
   return (
     <main className="min-h-screen bg-black px-6 py-28 text-white">
       <section className="mx-auto max-w-4xl">
-        <Link href="/site" className="text-sm text-zinc-400 hover:text-white">
+        <Link href="/" className="text-sm text-zinc-400 hover:text-white">
           ← Retour au site
         </Link>
 

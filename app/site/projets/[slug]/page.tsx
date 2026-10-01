@@ -196,7 +196,7 @@ export default async function ProjectPage({
         <div className="relative z-10 mx-auto flex min-h-[760px] max-w-7xl items-end px-6 pb-20 pt-36 md:px-8 md:pb-24">
           <div className="max-w-4xl">
             <Link
-              href="/site/releases"
+              href="/releases"
               className="text-sm text-white/60 transition hover:text-white"
             >
               ← Retour aux releases
@@ -226,7 +226,7 @@ export default async function ProjectPage({
               <Link
                 href={
                   artist.slug
-                    ? `/site/artistes/${artist.slug}`
+                    ? `/artistes/${artist.slug}`
                     : "#"
                 }
                 className="mt-7 inline-block text-xl font-medium uppercase tracking-[0.25em] text-zinc-300 transition hover:text-yellow-500"
@@ -412,7 +412,7 @@ export default async function ProjectPage({
 
                 {artist.slug && (
                   <Link
-                    href={`/site/artistes/${artist.slug}`}
+                    href={`/artistes/${artist.slug}`}
                     className="mt-9 inline-block rounded-full border border-zinc-700 px-7 py-3 font-semibold transition hover:border-yellow-500 hover:text-yellow-500"
                   >
                     Découvrir l&apos;artiste →
@@ -507,7 +507,7 @@ async function OtherReleases({
           </div>
 
           <Link
-            href="/site/releases"
+            href="/releases"
             className="text-sm font-semibold text-zinc-400 transition hover:text-yellow-500"
           >
             Voir toutes les sorties →
@@ -518,7 +518,7 @@ async function OtherReleases({
           {releases.map((release) => (
             <Link
               key={release.id}
-              href={`/site/projets/${release.slug}`}
+              href={`/projets/${release.slug}`}
               className="group"
             >
               <div className="relative aspect-square overflow-hidden rounded-[1.5rem] border border-zinc-900 bg-zinc-900 transition duration-500 group-hover:border-zinc-700">

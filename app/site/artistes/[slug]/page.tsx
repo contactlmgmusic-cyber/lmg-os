@@ -297,7 +297,7 @@ export default async function ArtistPage({
             </div>
 
             <Link
-              href={`/site/projets/${latestProject.slug}`}
+              href={`/projets/${latestProject.slug}`}
               className="group relative block min-h-[560px] overflow-hidden rounded-[2rem] border border-zinc-800 bg-black"
             >
               {latestProject.hero_image_url || latestProject.cover_url ? (
@@ -356,7 +356,7 @@ export default async function ArtistPage({
               {discography.map((project) => (
                 <Link
                   key={project.id}
-                  href={`/site/projets/${project.slug}`}
+                  href={`/projets/${project.slug}`}
                   className="group"
                 >
                   <div className="relative aspect-square overflow-hidden rounded-[1.5rem] bg-zinc-900">
