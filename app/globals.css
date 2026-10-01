@@ -24,3 +24,559 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* =========================================================
+   LMG MUSIC — SITE HEADER
+   ========================================================= */
+
+.music-site-header {
+  --music-gold: #f5b800;
+  --music-black: #050505;
+  --music-panel: #0b0b0b;
+  --music-line: rgba(255, 255, 255, 0.12);
+  --music-muted: #9b9b9b;
+
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(5, 5, 5, 0.97);
+  border-bottom: 1px solid var(--music-line);
+  color: #fff;
+}
+
+.music-brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.music-logo {
+  display: block;
+  object-fit: contain;
+}
+
+.music-nav-section {
+  display: flex;
+  align-items: stretch;
+}
+
+.music-nav-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.music-nav-trigger > span {
+  color: var(--music-gold);
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.music-nav-trigger::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--music-gold);
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
+
+.music-nav-trigger:hover,
+.music-nav-trigger.is-current,
+.music-nav-trigger[aria-expanded="true"] {
+  color: #fff;
+}
+
+.music-nav-trigger:hover::after,
+.music-nav-trigger.is-current::after,
+.music-nav-trigger[aria-expanded="true"]::after {
+  transform: scaleX(1);
+}
+
+.music-nav-trigger[aria-expanded="true"]::before {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: calc(50% - 10px);
+  z-index: 2;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid var(--music-panel);
+  border-left: 10px solid transparent;
+}
+
+.music-mega-panel[hidden],
+.music-mobile-submenu[hidden] {
+  display: none;
+}
+
+.music-mega-panel:not([hidden]) {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 50px;
+  width: min(960px, calc(100vw - 48px));
+  max-height: calc(100svh - 110px);
+  padding: 52px;
+  overflow: auto;
+  background: var(--music-panel);
+  border: 1px solid rgba(245, 184, 0, 0.12);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.48);
+  color: #fff;
+  transform: translateX(-50%);
+  animation: music-panel-enter 0.18s ease-out;
+}
+
+@keyframes music-panel-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.music-panel-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  color: #777;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.music-panel-close:hover {
+  color: var(--music-gold);
+}
+
+.music-mega-intro > span {
+  color: var(--music-gold);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.music-mega-intro h2 {
+  margin: 20px 0;
+  color: #fff;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.music-mega-intro p {
+  max-width: 280px;
+  margin: 0;
+  color: #9c9c9c;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.music-mega-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.music-mega-links li + li {
+  border-top: 1px solid var(--music-line);
+}
+
+.music-mega-links a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 0;
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.music-mega-links a:hover,
+.music-mega-links a[aria-current="page"] {
+  color: var(--music-gold);
+}
+
+.music-mega-links strong {
+  display: block;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.music-mega-links small {
+  display: block;
+  margin-top: 7px;
+  color: #888;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.music-mega-links a > span:last-child {
+  color: var(--music-gold);
+  font-size: 20px;
+}
+
+.music-language-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+}
+
+.music-language-switcher button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 4px 1px;
+  color: #666;
+  font: inherit;
+  cursor: pointer;
+}
+
+.music-language-switcher button:hover,
+.music-language-switcher button.is-active {
+  color: #fff;
+}
+
+.music-language-switcher span {
+  color: #444;
+}
+
+.music-header-search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: #fff;
+  transition: color 0.2s ease;
+}
+
+.music-header-search:hover {
+  color: var(--music-gold);
+}
+
+.music-search-icon {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: 1.8px solid currentColor;
+  border-radius: 50%;
+}
+
+.music-search-icon::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  bottom: -3px;
+  width: 8px;
+  height: 1.8px;
+  background: currentColor;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  transform-origin: left center;
+}
+
+.music-menu-toggle,
+.music-mobile-menu {
+  display: none;
+}
+
+/* =========================================================
+   LMG MUSIC — DESKTOP HEADER
+   ========================================================= */
+
+@media (min-width: 801px) {
+  .music-site-header {
+    display: grid;
+    grid-template-columns: 90px minmax(0, 1fr) auto 44px;
+    grid-template-rows: 88px;
+    align-items: center;
+    column-gap: 18px;
+    height: 88px;
+    padding: 0 clamp(24px, 4vw, 70px);
+  }
+
+  .music-site-header > .music-brand {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  .music-site-header > .music-brand .music-logo {
+    width: 64px;
+    height: 64px;
+  }
+
+  .music-site-header > .music-desktop-nav {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    align-self: stretch;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(20px, 1.8vw, 32px);
+    min-width: 0;
+  }
+
+  .music-site-header > .music-desktop-nav .music-nav-section {
+    height: 100%;
+  }
+
+  .music-site-header > .music-desktop-nav .music-nav-trigger {
+    height: 100%;
+    justify-content: center;
+  }
+
+  .music-site-header > .music-language-switcher {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .music-site-header > .music-header-search {
+    grid-column: 4;
+    grid-row: 1;
+    justify-self: end;
+  }
+}
+
+/* =========================================================
+   LMG MUSIC — MOBILE HEADER
+   ========================================================= */
+
+@media (max-width: 800px) {
+  .music-site-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: 12px;
+    height: 72px;
+    padding: 0 20px;
+  }
+
+  .music-site-header > .music-brand .music-logo {
+    width: 52px;
+    height: 52px;
+  }
+
+  .music-desktop-nav {
+    display: none;
+  }
+
+  .music-site-header > .music-language-switcher {
+    margin-left: auto;
+    font-size: 11px;
+  }
+
+  .music-site-header > .music-header-search {
+    width: 38px;
+    height: 38px;
+  }
+
+  .music-site-header > .music-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .music-menu-toggle > span {
+    color: var(--music-gold);
+    font-size: 17px;
+    font-weight: 400;
+  }
+
+  .music-site-header > .music-mobile-menu:not([hidden]) {
+    position: absolute;
+    top: 72px;
+    right: 0;
+    left: 0;
+    display: block;
+    max-height: calc(100svh - 72px);
+    overflow-y: auto;
+    padding: 0 20px 30px;
+    background: var(--music-black);
+    border-bottom: 1px solid var(--music-line);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+    z-index: 40;
+  }
+
+  .music-mobile-section-trigger,
+  .music-mobile-direct-link {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-height: 65px;
+    padding: 18px 0;
+    border: 0;
+    border-bottom: 1px solid var(--music-line);
+    background: transparent;
+    color: #fff;
+    text-align: left;
+    font-family: inherit;
+    font-size: 17px;
+    text-decoration: none;
+  }
+
+  .music-mobile-section-trigger > span:first-child,
+  .music-mobile-direct-link > span:first-child {
+    color: var(--music-gold);
+    font-size: 9px;
+  }
+
+  .music-mobile-section-trigger > span:last-child,
+  .music-mobile-direct-link > span:last-child {
+    margin-left: auto;
+    color: var(--music-gold);
+  }
+
+  .music-mobile-section-trigger[aria-expanded="true"],
+  .music-mobile-section-trigger.is-current {
+    color: var(--music-gold);
+  }
+
+  .music-mobile-submenu {
+    margin: 0;
+    padding: 8px 18px;
+    list-style: none;
+    background: #101010;
+  }
+
+  .music-mobile-submenu li + li {
+    border-top: 1px solid var(--music-line);
+  }
+
+  .music-mobile-submenu a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 17px 0;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .music-mobile-submenu strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .music-mobile-submenu small {
+    display: block;
+    margin-top: 6px;
+    color: #777;
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .music-mobile-submenu a > span:last-child {
+    color: var(--music-gold);
+    font-size: 17px;
+  }
+
+  .music-mobile-menu > p {
+    margin: 28px 0 0;
+    padding-top: 22px;
+    border-top: 1px solid var(--music-line);
+    color: #666;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+}
+
+@media (max-width: 480px) {
+  .music-site-header {
+    gap: 9px;
+    padding: 0 16px;
+  }
+
+  .music-site-header > .music-brand .music-logo {
+    width: 48px;
+    height: 48px;
+  }
+
+  .music-site-header > .music-header-search {
+    width: 34px;
+  }
+
+  .music-site-header > .music-menu-toggle {
+    gap: 6px;
+    font-size: 10px;
+  }
+}
+
+/* =========================================================
+   LMG MUSIC — HEADER FINISHING
+   ========================================================= */
+
+@media (min-width: 801px) {
+  .music-mega-panel:not([hidden]) {
+    padding: 42px 52px;
+    gap: 56px;
+  }
+
+  .music-mega-links a {
+    padding: 15px 0;
+  }
+
+  .music-mega-intro h2 {
+    margin: 16px 0;
+  }
+}
+
+.music-brand::after {
+  content: "LMG MUSIC";
+  margin-left: 12px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+
+@media (max-width: 1050px) {
+  .music-brand::after {
+    display: none;
+  }
+}
