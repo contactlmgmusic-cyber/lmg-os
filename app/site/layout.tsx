@@ -1,3 +1,4 @@
+import CookieConsent from "@/components/site/CookieConsent";
 import { SiteLanguageProvider } from "@/components/site/LanguageProvider";
 
 export default function SiteLayout({
@@ -8,6 +9,7 @@ export default function SiteLayout({
   return (
     <SiteLanguageProvider>
       {children}
+      <CookieConsent />
     </SiteLanguageProvider>
   );
 }
