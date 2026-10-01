@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import Navbar from "@/components/site/Navbar";
 import LatestReleases from "@/components/site/LatestReleases";
+import LatestNews from "@/components/site/LatestNews";
 import Footer from "@/components/site/Footer";
 import ReleasesCarousel from "@/components/site/ReleasesCarousel";
 import { useSiteLanguage } from "@/components/site/LanguageProvider";
@@ -72,37 +73,9 @@ export default function SitePage() {
         </div>
       </section>
 
-      {/* NEWS */}
-      <section className="border-t border-zinc-900 bg-black px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-end justify-between gap-8">
-            <div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.32em] text-yellow-500">
-                {t.home.newsEyebrow}
-              </p>
+      <LatestNews />
 
-              <h2 className="text-3xl font-semibold uppercase tracking-[-0.025em] md:text-5xl">
-                {t.home.newsTitle}
-              </h2>
-            </div>
-
-            <Link
-              href="/news"
-              className="hidden text-sm font-semibold text-zinc-400 transition hover:text-yellow-500 md:block"
-            >
-              {t.home.newsAll} ↗
-            </Link>
-          </div>
-
-          <div className="mt-12 border-y border-zinc-900 py-16">
-            <p className="text-sm uppercase tracking-[0.2em] text-zinc-600">
-              {t.home.newsEmpty}
-            </p>
-          </div>
-        </div>
-      </section>
-
-            {/* PROJECT CTA */}
+      {/* PROJECT CTA */}
       <section className="border-t border-zinc-900 bg-yellow-500 px-6 py-14 text-black md:px-8 md:py-16">
         <div className="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row md:items-center md:justify-between">
           <div>
