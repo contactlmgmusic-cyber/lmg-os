@@ -73,6 +73,33 @@ export const siteTranslations = {
         "Press releases, music releases and media resources.",
     },
 
+        home: {
+      releasesEyebrow: "New Music",
+      releasesTitle: "Latest Releases",
+      releasesAll: "View all releases",
+
+      liveEyebrow: "Live & Entertainment",
+      liveTitle: "Beyond the release.",
+      liveSubtitle: "From music to live.",
+      liveDescription:
+        "Live performances, showcases and experiences built around artists and their music.",
+      liveCta: "Explore Live & Entertainment",
+
+      newsEyebrow: "Newsroom",
+      newsTitle: "Latest News",
+      newsAll: "View all news",
+      newsEmpty: "New stories coming soon.",
+
+      projectEyebrow: "Work with LMG Music",
+      projectTitle: "Have a project?",
+      projectDescription:
+        "Introduce your music and tell us where you want to take it.",
+      projectCta: "Present a project",
+
+      followEyebrow: "Stay Connected",
+      followTitle: "Follow LMG Music",
+    },
+
     tagline: "Music. Strategy. Legacy.",
   },
 
@@ -146,10 +173,42 @@ export const siteTranslations = {
         "Communiqués de presse, sorties musicales et ressources médias.",
     },
 
+        home: {
+      releasesEyebrow: "Nouveautés",
+      releasesTitle: "Dernières sorties",
+      releasesAll: "Voir toutes les sorties",
+
+      liveEyebrow: "Live & Entertainment",
+      liveTitle: "Au-delà de la sortie.",
+      liveSubtitle: "De la musique à la scène.",
+      liveDescription:
+        "Performances live, showcases et expériences développées autour des artistes et de leur musique.",
+      liveCta: "Découvrir Live & Entertainment",
+
+      newsEyebrow: "Newsroom",
+      newsTitle: "Dernières actualités",
+      newsAll: "Voir toutes les actualités",
+      newsEmpty: "De nouvelles actualités arrivent bientôt.",
+
+      projectEyebrow: "LMG Music",
+      projectTitle: "Un projet ?",
+      projectDescription:
+        "Présente-nous ta musique et la direction que tu souhaites lui donner.",
+      projectCta: "Présenter un projet",
+
+      followEyebrow: "Stay Connected",
+      followTitle: "Suivre LMG Music",
+    },
+
     tagline: "Music. Strategy. Legacy.",
   },
 } as const;
 
-export function getSiteTranslations(locale: SiteLocale) {
-  return siteTranslations[locale];
+export type SiteTranslations =
+  (typeof siteTranslations)["en"];
+
+export function getSiteTranslations(
+  locale: SiteLocale
+): SiteTranslations {
+  return siteTranslations[locale] as SiteTranslations;
 }

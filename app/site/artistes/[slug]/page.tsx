@@ -40,13 +40,13 @@ export async function generateMetadata({
   description,
 
   alternates: {
-    canonical: `https://legacymusicgroup.fr/site/artistes/${slug}`,
+    canonical: `https://www.lmgmusic.fr/artistes/${slug}`,
   },
 
   openGraph: {
     title: `${artiste.nom} | Legacy Music Group`,
     description,
-    url: `https://legacymusicgroup.fr/site/artistes/${slug}`,
+    url: `https://www.lmgmusic.fr/artistes/${slug}`,
     siteName: "Legacy Music Group",
     type: "profile",
     images: image
@@ -131,7 +131,7 @@ export default async function ArtistPage({
   description:
     artiste.bio ||
     `Artiste accompagné par Legacy Music Group.`,
-  url: `https://legacymusicgroup.fr/site/artistes/${slug}`,
+  url: `https://www.lmgmusic.fr/artistes/${slug}`,
   image: artistImage || undefined,
   sameAs: [
     spotifyLink,
@@ -188,7 +188,7 @@ export default async function ArtistPage({
 
             <div>
               <Link
-                href="/site#artists"
+                href="/artistes"
                 className="text-sm text-white/60 transition hover:text-white"
               >
                 ← Retour aux artistes

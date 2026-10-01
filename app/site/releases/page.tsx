@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   description:
     "Découvrez les dernières sorties et le catalogue des artistes Legacy Music Group.",
   alternates: {
-    canonical: "https://legacymusicgroup.fr/site/releases",
+    canonical: "https://www.lmgmusic.fr/releases",
   },
 };
 

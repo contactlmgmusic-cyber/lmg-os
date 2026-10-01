@@ -61,7 +61,7 @@ export async function generateMetadata({
   description,
 
   alternates: {
-    canonical: `https://legacymusicgroup.fr/site/projets/${slug}`,
+    canonical: `https://www.lmgmusic.fr/projets/${slug}`,
   },
 
   openGraph: {
@@ -69,7 +69,7 @@ export async function generateMetadata({
       artist?.nom ? ` — ${artist.nom}` : ""
     } | Legacy Music Group`,
     description,
-    url: `https://legacymusicgroup.fr/site/projets/${slug}`,
+    url: `https://www.lmgmusic.fr/projets/${slug}`,
     siteName: "Legacy Music Group",
     type: "music.song",
     images: image
@@ -149,7 +149,7 @@ export default async function ProjectPage({
   description:
     projet.description ||
     `Release publiée par Legacy Music Group.`,
-  url: `https://legacymusicgroup.fr/site/projets/${slug}`,
+  url: `https://www.lmgmusic.fr/projets/${slug}`,
   image: projet.cover_url || heroImage || undefined,
   datePublished: projet.date_sortie || undefined,
   byArtist: artist?.nom
@@ -157,7 +157,7 @@ export default async function ProjectPage({
         "@type": "MusicGroup",
         name: artist.nom,
         url: artist.slug
-          ? `https://legacymusicgroup.fr/site/artistes/${artist.slug}`
+          ? `https://www.lmgmusic.fr/artistes/${artist.slug}`
           : undefined,
       }
     : undefined,

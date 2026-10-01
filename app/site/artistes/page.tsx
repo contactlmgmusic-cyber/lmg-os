@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description:
     "Découvrez les artistes accompagnés par Legacy Music Group et leurs projets.",
   alternates: {
-    canonical: "https://legacymusicgroup.fr/site/artistes",
+    canonical: "https://www.lmgmusic.fr/artistes",
   },
 };
 
