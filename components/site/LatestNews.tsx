@@ -24,7 +24,7 @@ type NewsArticle = {
 export default function LatestNews() {
   const { locale, t } = useSiteLanguage();
 
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [article, setArticle] = useState<NewsArticle | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -53,19 +53,19 @@ export default function LatestNews() {
           ascending: false,
           nullsFirst: false,
         })
-        .limit(3);
+        .limit(1)
+        .maybeSingle();
 
       if (!active) return;
 
       if (error) {
         console.error(
-          "Impossible de charger les actualités LMG Music:",
+          "Impossible de charger la dernière actualité:",
           error
         );
-
-        setArticles([]);
+        setArticle(null);
       } else {
-        setArticles((data || []) as NewsArticle[]);
+        setArticle(data as NewsArticle | null);
       }
 
       setLoading(false);
@@ -78,154 +78,150 @@ export default function LatestNews() {
     };
   }, []);
 
+  const title = article
+    ? locale === "en"
+      ? article.title_en || article.title_fr
+      : article.title_fr || article.title_en
+    : "";
+
+  const excerpt = article
+    ? locale === "en"
+      ? article.excerpt_en || article.excerpt_fr
+      : article.excerpt_fr || article.excerpt_en
+    : "";
+
+  const category = article
+    ? locale === "en"
+      ? article.category_en ||
+        article.category_fr ||
+        "News"
+      : article.category_fr ||
+        article.category_en ||
+        "Actualité"
+    : "";
+
+  const date =
+    article?.published_at
+      ? new Intl.DateTimeFormat(
+          locale === "en" ? "en-GB" : "fr-FR",
+          {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          }
+        ).format(new Date(article.published_at))
+      : null;
+
   return (
-    <section className="border-t border-zinc-900 bg-black px-6 py-20 md:px-8 md:py-24">
+    <section className="border-t border-zinc-900 bg-[#070707] px-6 py-16 md:px-8 md:py-20">
       <div className="mx-auto max-w-7xl">
-        <div className="flex items-end justify-between gap-8">
+        <div className="mb-10 grid items-end gap-6 md:grid-cols-[1fr_auto]">
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.32em] text-yellow-500">
+            <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-yellow-500">
               {t.home.newsEyebrow}
             </p>
 
-            <h2 className="text-3xl font-semibold uppercase tracking-[-0.025em] md:text-5xl">
+            <h2 className="text-3xl font-medium tracking-[-0.035em] md:text-5xl">
               {t.home.newsTitle}
             </h2>
           </div>
 
           <Link
             href="/news"
-            className="hidden text-sm font-semibold text-zinc-400 transition hover:text-yellow-500 md:block"
+            className="w-fit border-b border-yellow-500 pb-2 text-xs font-semibold text-zinc-300 transition hover:text-yellow-500"
           >
             {t.home.newsAll} ↗
           </Link>
         </div>
 
         {loading ? (
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {[0, 1, 2].map((item) => (
-              <div key={item}>
-                <div className="aspect-[16/10] animate-pulse rounded-[1.5rem] bg-zinc-900" />
-                <div className="mt-5 h-3 w-24 animate-pulse rounded bg-zinc-900" />
-                <div className="mt-4 h-6 w-4/5 animate-pulse rounded bg-zinc-900" />
-              </div>
-            ))}
+          <div className="grid min-h-[330px] animate-pulse border border-zinc-900 bg-black md:grid-cols-[0.9fr_1.1fr]">
+            <div className="bg-zinc-900" />
+            <div className="p-8 md:p-12">
+              <div className="h-3 w-24 bg-zinc-900" />
+              <div className="mt-8 h-8 w-4/5 bg-zinc-900" />
+              <div className="mt-4 h-8 w-2/3 bg-zinc-900" />
+            </div>
           </div>
-        ) : articles.length > 0 ? (
-          <>
-            <div className="mt-12 grid gap-x-7 gap-y-12 md:grid-cols-3">
-              {articles.map((article) => {
-                const title =
-                  locale === "en"
-                    ? article.title_en || article.title_fr
-                    : article.title_fr || article.title_en;
+        ) : article ? (
+          <Link
+            href={`/news/${article.slug}`}
+            className="group grid overflow-hidden border border-zinc-800 bg-black transition-colors hover:border-zinc-700 md:grid-cols-[0.9fr_1.1fr]"
+          >
+            <div className="relative min-h-[260px] overflow-hidden bg-[#0c0c0c] md:min-h-[330px]">
+              {article.image_url ? (
+                <>
+                  <Image
+                    src={article.image_url}
+                    alt=""
+                    fill
+                    className="object-cover transition duration-700 group-hover:scale-[1.025]"
+                  />
 
-                const excerpt =
-                  locale === "en"
-                    ? article.excerpt_en || article.excerpt_fr
-                    : article.excerpt_fr || article.excerpt_en;
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/50" />
 
-                const category =
-                  locale === "en"
-                    ? article.category_en ||
-                      article.category_fr ||
-                      "News"
-                    : article.category_fr ||
-                      article.category_en ||
-                      "Actualité";
+                  <div className="absolute left-7 right-7 top-7 flex justify-between gap-6 text-[9px] font-semibold uppercase tracking-[0.2em] text-white">
+                    <span>LMG MUSIC</span>
+                    <span>{category}</span>
+                  </div>
 
-                const date = article.published_at
-                  ? new Date(
-                      article.published_at
-                    ).toLocaleDateString(
-                      locale === "en" ? "en-GB" : "fr-FR",
-                      {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      }
-                    )
-                  : null;
+                  <div className="absolute bottom-7 left-7 text-[9px] font-semibold uppercase tracking-[0.2em] text-white">
+                    LMG MUSIC JOURNAL ↗
+                  </div>
+                </>
+              ) : (
+                <div className="flex h-full min-h-[260px] flex-col justify-between p-8 md:min-h-[330px] md:p-10">
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-yellow-500">
+                    LMG MUSIC
+                  </span>
 
-                return (
-                  <Link
-                    key={article.id}
-                    href={`/news/${article.slug}`}
-                    className="group"
-                  >
-                    <div className="relative aspect-[16/10] overflow-hidden rounded-[1.5rem] border border-zinc-900 bg-zinc-950">
-                      {article.image_url ? (
-                        <Image
-                          src={article.image_url}
-                          alt={title || "LMG Music"}
-                          fill
-                          className="object-cover object-center transition duration-700 group-hover:scale-[1.03]"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-xs font-semibold uppercase tracking-[0.35em] text-zinc-700">
-                            LMG Music
-                          </span>
-                        </div>
-                      )}
+                  <strong className="text-3xl font-medium leading-[1.05] tracking-[-0.04em] md:text-5xl">
+                    Music.
+                    <br />
+                    Artists.
+                    <br />
+                    Culture.
+                  </strong>
 
-                      {article.featured && (
-                        <div className="absolute left-4 top-4 rounded-full bg-yellow-500 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-black">
-                          Featured
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="pt-5">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-yellow-500">
-                          {category}
-                        </span>
-
-                        {date && (
-                          <>
-                            <span className="text-zinc-700">
-                              •
-                            </span>
-
-                            <span className="text-xs text-zinc-600">
-                              {date}
-                            </span>
-                          </>
-                        )}
-                      </div>
-
-                      <h3 className="mt-4 text-xl font-semibold leading-snug tracking-[-0.02em] transition group-hover:text-yellow-500 md:text-2xl">
-                        {title}
-                      </h3>
-
-                      {excerpt && (
-                        <p className="mt-4 line-clamp-2 text-sm leading-6 text-zinc-500">
-                          {excerpt}
-                        </p>
-                      )}
-
-                      <p className="mt-5 text-xs font-semibold text-zinc-300 transition group-hover:text-yellow-500">
-                        {locale === "en"
-                          ? "Read story"
-                          : "Lire l’actualité"}{" "}
-                        ↗
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                    LMG MUSIC JOURNAL ↗
+                  </span>
+                </div>
+              )}
             </div>
 
-            <Link
-              href="/news"
-              className="mt-12 inline-flex text-sm font-semibold text-zinc-400 transition hover:text-yellow-500 md:hidden"
-            >
-              {t.home.newsAll} ↗
-            </Link>
-          </>
+            <div className="flex flex-col justify-center p-7 md:p-10 lg:p-12">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-yellow-500">
+                {category}
+              </p>
+
+              {date && (
+                <time className="mt-4 text-[11px] text-zinc-500">
+                  {date}
+                </time>
+              )}
+
+              <h3 className="mt-5 max-w-2xl text-2xl font-medium leading-[1.12] tracking-[-0.035em] transition group-hover:text-yellow-500 md:text-4xl">
+                {title}
+              </h3>
+
+              {excerpt && (
+                <p className="mt-5 max-w-xl text-sm leading-7 text-zinc-500">
+                  {excerpt}
+                </p>
+              )}
+
+              <span className="mt-7 w-fit border-b border-yellow-500 pb-2 text-xs font-semibold text-zinc-300 transition group-hover:text-yellow-500">
+                {locale === "en"
+                  ? "Read article"
+                  : "Lire l’article"}{" "}
+                ↗
+              </span>
+            </div>
+          </Link>
         ) : (
-          <div className="mt-12 border-y border-zinc-900 py-16">
-            <p className="text-sm uppercase tracking-[0.2em] text-zinc-600">
+          <div className="border-y border-zinc-900 py-12">
+            <p className="text-sm text-zinc-600">
               {t.home.newsEmpty}
             </p>
           </div>
