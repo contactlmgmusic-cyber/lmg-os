@@ -19,6 +19,7 @@ export default async function SiteInternetPage() {
     { count: featuredArtistsCount },
     { count: carouselCount },
     { count: candidaturesCount },
+    { count: publishedNewsCount },
   ] = await Promise.all([
     supabase
       .from("artistes")
@@ -45,6 +46,11 @@ export default async function SiteInternetPage() {
     supabase
       .from("candidatures")
       .select("*", { count: "exact", head: true }),
+
+    supabase
+      .from("site_news")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "published"),
   ]);
 
   return (
@@ -68,7 +74,7 @@ export default async function SiteInternetPage() {
           </div>
 
           <a
-            href="https://legacymusicgroup.fr/site"
+            href="https://www.lmgmusic.fr"
             target="_blank"
             rel="noopener noreferrer"
             className="w-fit rounded-full border border-zinc-700 px-5 py-3 text-sm font-semibold transition hover:border-yellow-500 hover:text-yellow-500"
@@ -137,6 +143,13 @@ export default async function SiteInternetPage() {
               description="Choisir précisément les releases affichées dans le Hero de la homepage."
               href="/site-internet/releases?filter=carousel"
               status={`${carouselCount || 0} actives`}
+            />
+
+            <ControlCard
+              title="News"
+              description="Créer, modifier et publier les actualités officielles de LMG Music."
+              href="/site-internet/news"
+              status={`${publishedNewsCount || 0} publiées`}
             />
 
             <ControlCard
