@@ -11,15 +11,90 @@ export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const hostname = request.headers.get("host")?.split(":")[0] ?? "";
 
+  /*
+   * ─────────────────────────────────────────────
+   * DOMAIN ROUTING
+   * ─────────────────────────────────────────────
+   */
+
+  const isMusicDomain =
+    hostname === "lmgmusic.fr" ||
+    hostname === "www.lmgmusic.fr";
+
+  const isOsDomain =
+    hostname === "os.lmgmusic.fr";
+
   const isAgencyDomain =
     hostname === "agency.legacymusicgroup.fr" ||
     hostname === "www.agency.legacymusicgroup.fr";
 
+  /*
+   * LMG MUSIC PUBLIC WEBSITE
+   *
+   * lmgmusic.fr/          -> /site
+   * lmgmusic.fr/artistes  -> /site/artistes
+   * lmgmusic.fr/releases  -> /site/releases
+   *
+   * /site remains an internal namespace only.
+   */
+  if (isMusicDomain) {
+    /*
+     * Avoid rewriting an already-internal URL.
+     * We will redirect those URLs publicly below.
+     */
+    if (!path.startsWith("/site")) {
+      const url = request.nextUrl.clone();
+
+      url.pathname =
+        path === "/"
+          ? "/site"
+          : `/site${path}`;
+
+      return NextResponse.rewrite(url);
+    }
+
+    /*
+     * Prevent /site from appearing publicly.
+     *
+     * lmgmusic.fr/site/artistes
+     * -> lmgmusic.fr/artistes
+     */
+    const url = request.nextUrl.clone();
+
+    const publicPath = path.replace(/^\/site/, "");
+
+    url.pathname =
+      publicPath === ""
+        ? "/"
+        : publicPath;
+
+    return NextResponse.redirect(url);
+  }
+
+  /*
+   * LMG AGENCY
+   */
   if (isAgencyDomain && !path.startsWith("/agency")) {
     const url = request.nextUrl.clone();
-    url.pathname = path === "/" ? "/agency" : `/agency${path}`;
+
+    url.pathname =
+      path === "/"
+        ? "/agency"
+        : `/agency${path}`;
+
     return NextResponse.rewrite(url);
   }
+
+  /*
+   * ─────────────────────────────────────────────
+   * LMG OS
+   * ─────────────────────────────────────────────
+   *
+   * os.lmgmusic.fr keeps the native OS routes.
+   *
+   * We deliberately continue through the existing
+   * authentication / role logic below.
+   */
 
   const maintenanceMode =
     process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
@@ -55,21 +130,29 @@ export async function proxy(request: NextRequest) {
     "/mon-espace-artiste",
     "/manager",
     "/agency",
+    "/site-internet",
   ];
 
   const isMaintenanceAllowed =
     path === "/maintenance" ||
     maintenancePrefixes.some(
-      (prefix) => path === prefix || path.startsWith(`${prefix}/`)
+      (prefix) =>
+        path === prefix ||
+        path.startsWith(`${prefix}/`)
     );
 
   if (maintenanceMode && !isMaintenanceAllowed) {
     const url = request.nextUrl.clone();
     url.pathname = "/maintenance";
+
     return NextResponse.redirect(url);
   }
 
   const isPublicRoute =
+    /*
+     * Keep the legacy/public paths available on
+     * non-Music domains when needed.
+     */
     path === "/" ||
     path === "/site" ||
     path.startsWith("/site/") ||
@@ -78,11 +161,17 @@ export async function proxy(request: NextRequest) {
     path === "/login" ||
     path === "/signup";
 
-  if (isPublicRoute && path !== "/login" && path !== "/signup") {
+  if (
+    isPublicRoute &&
+    path !== "/login" &&
+    path !== "/signup"
+  ) {
     return NextResponse.next();
   }
 
-  let response = NextResponse.next({ request });
+  let response = NextResponse.next({
+    request,
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -92,16 +181,34 @@ export async function proxy(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
+
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value);
+          cookiesToSet.forEach(
+            ({ name, value }) => {
+              request.cookies.set(
+                name,
+                value
+              );
+            }
+          );
+
+          response = NextResponse.next({
+            request,
           });
 
-          response = NextResponse.next({ request });
-
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options);
-          });
+          cookiesToSet.forEach(
+            ({
+              name,
+              value,
+              options,
+            }) => {
+              response.cookies.set(
+                name,
+                value,
+                options
+              );
+            }
+          );
         },
       },
     }
@@ -114,6 +221,7 @@ export async function proxy(request: NextRequest) {
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+
     return NextResponse.redirect(url);
   }
 
@@ -129,28 +237,43 @@ export async function proxy(request: NextRequest) {
 
   if (!isUserRole(profile?.role)) {
     if (path !== "/") {
-      const url = request.nextUrl.clone();
+      const url =
+        request.nextUrl.clone();
+
       url.pathname = "/";
+
       return NextResponse.redirect(url);
     }
 
     return response;
   }
 
-  const roleHome = getRoleHome(profile.role);
+  const roleHome =
+    getRoleHome(profile.role);
 
-  if (path === "/login" || path === "/signup") {
-    const url = request.nextUrl.clone();
+  if (
+    path === "/login" ||
+    path === "/signup"
+  ) {
+    const url =
+      request.nextUrl.clone();
+
     url.pathname = roleHome;
+
     return NextResponse.redirect(url);
   }
 
   if (
     path === "/dashboard" &&
-    !EXECUTIVE_ROLES.includes(profile.role)
+    !EXECUTIVE_ROLES.includes(
+      profile.role
+    )
   ) {
-    const url = request.nextUrl.clone();
+    const url =
+      request.nextUrl.clone();
+
     url.pathname = roleHome;
+
     return NextResponse.redirect(url);
   }
 
@@ -158,5 +281,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*|api).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\..*|api).*)",
+  ],
 };
