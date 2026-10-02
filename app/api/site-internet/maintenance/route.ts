@@ -1,113 +1,93 @@
 import { NextResponse } from "next/server";
 
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
+import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
-const ALLOWED_ROLES = new Set([
-  ROLES.SUPER_ADMIN,
-  ROLES.ADMIN,
-]);
+async function authorize() {
+  await requireRole([
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+  ]);
 
-async function getAuthorizedClient() {
-  const supabase = await createAuthenticatedSupabaseClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return {
-      error: NextResponse.json(
-        { error: "Non authentifié." },
-        { status: 401 }
-      ),
-    };
-  }
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profils")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (
-    profileError ||
-    !profile?.role ||
-    !ALLOWED_ROLES.has(profile.role)
-  ) {
-    return {
-      error: NextResponse.json(
-        { error: "Accès refusé." },
-        { status: 403 }
-      ),
-    };
-  }
-
-  return { supabase };
+  return createAuthenticatedSupabaseClient();
 }
 
 export async function GET() {
-  const auth = await getAuthorizedClient();
+  try {
+    const supabase = await authorize();
 
-  if ("error" in auth) {
-    return auth.error;
-  }
+    const { data, error } = await supabase
+      .from("site_settings")
+      .select("*")
+      .eq("id", "lmg_music")
+      .single();
 
-  const { data, error } = await auth.supabase
-    .from("site_settings")
-    .select("*")
-    .eq("id", "lmg_music")
-    .single();
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      );
+    }
 
-  if (error) {
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Maintenance GET authorization error:", error);
+
     return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
+      { error: "Accès refusé." },
+      { status: 403 }
     );
   }
-
-  return NextResponse.json(data);
 }
 
 export async function PATCH(request: Request) {
-  const auth = await getAuthorizedClient();
+  try {
+    const supabase = await authorize();
+    const body = await request.json();
 
-  if ("error" in auth) {
-    return auth.error;
-  }
+    const update = {
+      maintenance_enabled:
+        body.maintenance_enabled === true,
 
-  const body = await request.json();
+      maintenance_title_fr:
+        String(body.maintenance_title_fr || "").trim() ||
+        "Site en maintenance",
 
-  const update = {
-    maintenance_enabled:
-      body.maintenance_enabled === true,
-    maintenance_title_fr:
-      String(body.maintenance_title_fr || "").trim() ||
-      "Site en maintenance",
-    maintenance_title_en:
-      String(body.maintenance_title_en || "").trim() ||
-      "Website under maintenance",
-    maintenance_message_fr:
-      String(body.maintenance_message_fr || "").trim() ||
-      "Nous travaillons actuellement sur LMG Music. Revenez très bientôt.",
-    maintenance_message_en:
-      String(body.maintenance_message_en || "").trim() ||
-      "We are currently working on LMG Music. Please check back soon.",
-  };
+      maintenance_title_en:
+        String(body.maintenance_title_en || "").trim() ||
+        "Website under maintenance",
 
-  const { data, error } = await auth.supabase
-    .from("site_settings")
-    .update(update)
-    .eq("id", "lmg_music")
-    .select("*")
-    .single();
+      maintenance_message_fr:
+        String(body.maintenance_message_fr || "").trim() ||
+        "Nous travaillons actuellement sur LMG Music. Revenez très bientôt.",
 
-  if (error) {
+      maintenance_message_en:
+        String(body.maintenance_message_en || "").trim() ||
+        "We are currently working on LMG Music. Please check back soon.",
+    };
+
+    const { data, error } = await supabase
+      .from("site_settings")
+      .update(update)
+      .eq("id", "lmg_music")
+      .select("*")
+      .single();
+
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Maintenance PATCH authorization error:", error);
+
     return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
+      { error: "Accès refusé." },
+      { status: 403 }
     );
   }
-
-  return NextResponse.json(data);
 }
