@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 
+import CareersLanguageProvider from "@/components/careers/CareersLanguageProvider";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://careers.lmgmusic.fr"),
+  metadataBase: new URL(
+    "https://careers.lmgmusic.fr"
+  ),
 
   title: {
     default: "Careers | LMG",
@@ -15,8 +19,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "LMG Careers",
     title: "Careers | LMG",
-    description:
-      "Build what's next with LMG.",
+    description: "Build what's next with LMG.",
     url: "https://careers.lmgmusic.fr",
   },
 
@@ -31,5 +34,9 @@ export default function CareersLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return children;
+  return (
+    <CareersLanguageProvider>
+      {children}
+    </CareersLanguageProvider>
+  );
 }
