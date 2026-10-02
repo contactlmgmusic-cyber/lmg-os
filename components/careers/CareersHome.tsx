@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCareersLanguage } from "@/components/careers/CareersLanguageProvider";
 
 const worlds = [
   {
@@ -57,7 +57,9 @@ const principles = [
 ];
 
 export default function CareersHome() {
-  const [locale, setLocale] = useState<"EN" | "FR">("EN");
+  const { locale, toggleLocale } = useCareersLanguage();
+
+  const fr = locale === "fr";
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -78,13 +80,13 @@ export default function CareersHome() {
 
           <nav className="hidden items-center gap-8 text-xs font-semibold uppercase tracking-[0.12em] md:flex">
             <a href="#life" className="transition-opacity hover:opacity-50">
-              Life at LMG
+              {fr ? "La vie chez LMG" : "Life at LMG"}
             </a>
             <a href="#worlds" className="transition-opacity hover:opacity-50">
-              What you can do
+              {fr ? "Nos métiers" : "What you can do"}
             </a>
             <Link href="/jobs" className="transition-opacity hover:opacity-50">
-              Jobs
+              {fr ? "Offres" : "Jobs"}
             </Link>
             <Link href="/faq" className="transition-opacity hover:opacity-50">
               FAQ
@@ -93,17 +95,17 @@ export default function CareersHome() {
 
           <div className="flex items-center gap-4">
             <button
-              onClick={() => setLocale(locale === "EN" ? "FR" : "EN")}
+              onClick={toggleLocale}
               className="text-xs font-semibold"
             >
-              {locale}
+              {locale === "en" ? "FR" : "EN"}
             </button>
 
             <Link
               href="/jobs"
               className="rounded-full bg-[#d5ad58] px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-black transition hover:opacity-80"
             >
-              View jobs
+              {fr ? "Voir les offres" : "View jobs"}
             </Link>
           </div>
         </div>
