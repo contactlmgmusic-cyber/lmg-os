@@ -105,6 +105,16 @@ const executiveSections: SidebarSection[] = [
       { href: "/admin", label: "Console admin" },
     ],
   },
+  {
+    title: "Careers",
+    eyebrow: "08",
+    links: [
+      { href: "/recrutement", label: "Vue d’ensemble" },
+      { href: "/recrutement/offres", label: "Offres" },
+      { href: "/recrutement/candidatures", label: "Candidatures" },
+      { href: "/recrutement/spontanees", label: "Spontanées" },
+    ],
+  },
 ];
 
 const artisticDirectorSections: SidebarSection[] = [
