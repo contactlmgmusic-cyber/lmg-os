@@ -6,274 +6,360 @@ import { useSiteLanguage } from "@/components/site/LanguageProvider";
 
 export default function AboutMusicContent() {
   const { locale } = useSiteLanguage();
+  const en = locale === "en";
 
-  const content =
-    locale === "en"
-      ? {
-          label: "About LMG Music",
-          title: "Music first.\nBuilt for what comes next.",
-          intro:
-            "LMG Music is the music division of LMG Group. We develop artists, projects and creative strategies designed to grow over time — from artistic direction to releases, live opportunities and long-term career development.",
+  const c = en
+    ? {
+        label: "About LMG Music",
+        title: "Music first.\nBuilt for what comes next.",
+        intro:
+          "LMG Music is the music division of LMG Group. We work with artists to develop coherent projects, connect creative vision with strategy and build the foundations for long-term development.",
 
-          identityLabel: "WHO WE ARE",
-          identityTitle:
-            "An independent structure built around artists.",
-          identityText:
-            "LMG Music brings together artistic development, project strategy and execution within one ecosystem. Our role is not simply to release music. We work alongside artists to build coherent identities, stronger projects and sustainable trajectories.",
+        whoLabel: "WHO WE ARE",
+        whoTitle:
+          "An artist-focused music structure built around development.",
+        whoText:
+          "LMG Music works at the intersection of artistic direction, music strategy and project development. Our role is to understand the identity and ambitions behind each project, then help transform that vision into a clear direction.",
+        whoStatement:
+          "Every artist is different. The structure around them should be too.",
 
-          visionLabel: "OUR VISION",
-          visionTitle:
-            "Develop the artist. Structure the project. Build the future.",
-          visionText:
-            "Every artist and every project has its own direction. Our approach starts there. We connect creative vision with strategy, organisation and the right opportunities to help projects move forward without losing what makes them distinctive.",
+        visionLabel: "OUR VISION",
+        visionTitle:
+          "Build projects that can grow without losing what makes them unique.",
+        visionText:
+          "We believe sustainable development begins with clarity: a clear artistic identity, a coherent direction and decisions that serve the project over time. Growth matters, but it should never come at the expense of the artist's identity.",
 
-          approachLabel: "OUR APPROACH",
-          approachTitle:
-            "Creative direction meets real development.",
-          approachText:
-            "Music development requires more than isolated services. LMG Music works across the different stages of an artist's project, creating continuity between artistic choices, image, releases, audience development, live opportunities and professional growth.",
+        approachLabel: "OUR APPROACH",
+        approachTitle: "One project.\nFour connected dimensions.",
+        approachIntro:
+          "We connect the different dimensions of an artist's development rather than treating them as isolated subjects.",
 
-          points: [
-            {
-              number: "01",
-              title: "Artist development",
-              text:
-                "Supporting artistic identity, positioning and the long-term direction of each project.",
-            },
-            {
-              number: "02",
-              title: "Music & releases",
-              text:
-                "Structuring releases and the creative, strategic and operational work surrounding them.",
-            },
-            {
-              number: "03",
-              title: "Image & audience",
-              text:
-                "Building coherence between music, visual identity, communication and the relationship with audiences.",
-            },
-            {
-              number: "04",
-              title: "Live & opportunities",
-              text:
-                "Connecting projects with live formats, collaborations and opportunities that contribute to their development.",
-            },
-          ],
+        approach: [
+          {
+            number: "01",
+            title: "Artist Development",
+            text:
+              "Identity, artistic positioning and long-term direction.",
+          },
+          {
+            number: "02",
+            title: "Music & Releases",
+            text:
+              "Repertoire, musical direction and release strategy.",
+          },
+          {
+            number: "03",
+            title: "Image & Audience",
+            text:
+              "Visual universe, communication and audience development.",
+          },
+          {
+            number: "04",
+            title: "Live & Opportunities",
+            text:
+              "Performance, collaborations and professional opportunities.",
+          },
+        ],
 
-          groupLabel: "PART OF LMG GROUP",
-          groupTitle:
-            "One music division. A wider creative ecosystem.",
-          groupText:
-            "LMG Music operates within LMG Group, alongside complementary expertise designed to connect music, communication, creative development and new opportunities. This structure allows projects to access broader capabilities while keeping a dedicated music-focused direction.",
+        groupLabel: "PART OF LMG GROUP",
+        groupTitle:
+          "Independent in its direction. Connected to a wider creative ecosystem.",
+        groupText:
+          "LMG Music is part of LMG Group, allowing music projects to connect with complementary expertise when needed — from communication and branding to digital development and creative production.",
+        groupLink: "Discover LMG Group",
 
-          nextLabel: "DISCOVER OUR WORK",
-          nextTitle: "See how LMG Music works.",
-          nextText:
-            "Explore our areas of expertise and the way we support music projects from development to execution.",
-          nextLink: "What We Do",
-        }
-      : {
-          label: "À propos de LMG Music",
-          title: "La musique d’abord.\nConstruire la suite.",
-          intro:
-            "LMG Music est le pôle musical de LMG Group. Nous développons des artistes, des projets et des stratégies créatives pensées pour évoluer dans le temps — de la direction artistique aux sorties, au live et au développement de carrière.",
+        nextLabel: "WHAT WE DO",
+        nextTitle:
+          "See how we turn artistic direction into development.",
+        nextText:
+          "Explore the areas in which LMG Music works alongside artists and their projects.",
+        nextLink: "Explore What We Do",
+      }
+    : {
+        label: "À propos de LMG Music",
+        title: "La musique d’abord.\nConstruire la suite.",
+        intro:
+          "LMG Music est le pôle musique de LMG Group. Nous accompagnons les artistes dans le développement de projets cohérents, en reliant vision créative, stratégie et construction à long terme.",
 
-          identityLabel: "QUI SOMMES-NOUS",
-          identityTitle:
-            "Une structure indépendante construite autour des artistes.",
-          identityText:
-            "LMG Music réunit développement artistique, stratégie de projet et exécution au sein d’un même écosystème. Notre rôle ne se limite pas à sortir de la musique. Nous travaillons aux côtés des artistes pour construire des identités cohérentes, renforcer leurs projets et développer des trajectoires durables.",
+        whoLabel: "QUI SOMMES-NOUS",
+        whoTitle:
+          "Une structure musicale centrée sur le développement des artistes.",
+        whoText:
+          "LMG Music se situe à la rencontre de la direction artistique, de la stratégie musicale et du développement de projet. Notre rôle est de comprendre l’identité et les ambitions derrière chaque projet, puis de transformer cette vision en une direction claire.",
+        whoStatement:
+          "Chaque artiste est différent. La structure qui l’entoure doit l’être aussi.",
 
-          visionLabel: "NOTRE VISION",
-          visionTitle:
-            "Développer l’artiste. Structurer le projet. Construire la suite.",
-          visionText:
-            "Chaque artiste et chaque projet possède sa propre direction. Notre approche commence par là. Nous relions vision créative, stratégie, organisation et opportunités afin de faire avancer les projets sans perdre ce qui les rend singuliers.",
+        visionLabel: "NOTRE VISION",
+        visionTitle:
+          "Construire des projets capables de grandir sans perdre ce qui les rend uniques.",
+        visionText:
+          "Nous pensons qu’un développement durable commence par de la clarté : une identité artistique définie, une direction cohérente et des décisions qui servent le projet dans le temps. La croissance compte, mais elle ne doit jamais se faire au détriment de l’identité de l’artiste.",
 
-          approachLabel: "NOTRE APPROCHE",
-          approachTitle:
-            "La direction créative au service du développement.",
-          approachText:
-            "Le développement musical ne peut pas reposer sur une succession de prestations isolées. LMG Music intervient sur les différentes étapes du projet afin de créer une continuité entre choix artistiques, image, sorties, développement d’audience, live et évolution professionnelle.",
+        approachLabel: "NOTRE APPROCHE",
+        approachTitle: "Un projet.\nQuatre dimensions connectées.",
+        approachIntro:
+          "Nous relions les différentes dimensions du développement d’un artiste plutôt que de les traiter comme des sujets indépendants.",
 
-          points: [
-            {
-              number: "01",
-              title: "Développement artistique",
-              text:
-                "Accompagner l’identité artistique, le positionnement et la direction à long terme de chaque projet.",
-            },
-            {
-              number: "02",
-              title: "Musique & sorties",
-              text:
-                "Structurer les sorties et le travail créatif, stratégique et opérationnel qui les accompagne.",
-            },
-            {
-              number: "03",
-              title: "Image & audience",
-              text:
-                "Construire une cohérence entre musique, identité visuelle, communication et relation avec les publics.",
-            },
-            {
-              number: "04",
-              title: "Live & opportunités",
-              text:
-                "Connecter les projets à des formats live, des collaborations et des opportunités utiles à leur développement.",
-            },
-          ],
+        approach: [
+          {
+            number: "01",
+            title: "Développement artistique",
+            text:
+              "Identité, positionnement artistique et direction à long terme.",
+          },
+          {
+            number: "02",
+            title: "Musique & sorties",
+            text:
+              "Répertoire, direction musicale et stratégie de sortie.",
+          },
+          {
+            number: "03",
+            title: "Image & audience",
+            text:
+              "Univers visuel, communication et développement du public.",
+          },
+          {
+            number: "04",
+            title: "Live & opportunités",
+            text:
+              "Performance, collaborations et opportunités professionnelles.",
+          },
+        ],
 
-          groupLabel: "AU SEIN DE LMG GROUP",
-          groupTitle:
-            "Un pôle musical. Un écosystème créatif plus large.",
-          groupText:
-            "LMG Music évolue au sein de LMG Group, aux côtés d’expertises complémentaires qui permettent de relier musique, communication, développement créatif et nouvelles opportunités. Cette organisation donne aux projets accès à des compétences plus larges tout en conservant une direction entièrement dédiée à la musique.",
+        groupLabel: "AU SEIN DE LMG GROUP",
+        groupTitle:
+          "Une direction propre. Un écosystème créatif plus large.",
+        groupText:
+          "LMG Music fait partie de LMG Group, ce qui permet aux projets musicaux de mobiliser des expertises complémentaires lorsque cela est pertinent — de la communication et du branding au développement digital et à la production créative.",
+        groupLink: "Découvrir LMG Group",
 
-          nextLabel: "DÉCOUVRIR NOTRE TRAVAIL",
-          nextTitle: "Découvrez comment travaille LMG Music.",
-          nextText:
-            "Explorez nos expertises et notre manière d’accompagner les projets musicaux, du développement à l’exécution.",
-          nextLink: "What We Do",
-        };
+        nextLabel: "CE QUE NOUS FAISONS",
+        nextTitle:
+          "Découvrez comment nous transformons une direction artistique en développement.",
+        nextText:
+          "Explorez les domaines dans lesquels LMG Music accompagne les artistes et leurs projets.",
+        nextLink: "Découvrir notre approche",
+      };
 
   return (
     <>
-      <section className="border-b border-zinc-900 bg-[#070707] px-6 py-14 md:px-8 md:py-20">
-        <div className="mx-auto max-w-7xl">
+      {/* HERO */}
+      <section className="relative overflow-hidden border-b border-zinc-900 bg-[#050505] px-6 py-14 md:px-8 md:py-20">
+        <div className="pointer-events-none absolute -right-20 top-4 text-[16rem] font-medium leading-none tracking-[-0.1em] text-white/[0.015] md:text-[26rem]">
+          LMG
+        </div>
+
+        <div className="relative mx-auto max-w-7xl">
           <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-yellow-500">
-            {content.label}
+            {c.label}
           </p>
 
-          <h1 className="mt-7 max-w-5xl whitespace-pre-line text-[clamp(2.7rem,5.5vw,5.2rem)] font-medium leading-[1.02] tracking-[-0.05em]">
-            {content.title}
+          <h1 className="mt-8 max-w-5xl whitespace-pre-line text-[clamp(3rem,6vw,5.8rem)] font-medium leading-[0.98] tracking-[-0.055em]">
+            {c.title}
           </h1>
 
-          <p className="mt-8 max-w-3xl text-base leading-8 text-zinc-400 md:text-lg">
-            {content.intro}
+          <p className="mt-9 max-w-3xl text-base leading-8 text-zinc-400 md:text-lg">
+            {c.intro}
           </p>
         </div>
       </section>
 
-      <section className="px-6 py-16 md:px-8 md:py-24">
-        <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[0.7fr_1.3fr] md:gap-20">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
-            {content.identityLabel}
-          </p>
-
-          <div>
-            <h2 className="max-w-3xl text-3xl font-medium leading-[1.1] tracking-[-0.04em] md:text-5xl">
-              {content.identityTitle}
-            </h2>
-
-            <p className="mt-7 max-w-2xl text-sm leading-8 text-zinc-400 md:text-base">
-              {content.identityText}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-y border-zinc-900 bg-[#080808] px-6 py-16 md:px-8 md:py-24">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
-            {content.visionLabel}
-          </p>
-
-          <div className="mt-8 grid gap-8 md:grid-cols-2 md:gap-20">
-            <h2 className="max-w-xl text-3xl font-medium leading-[1.1] tracking-[-0.04em] md:text-5xl">
-              {content.visionTitle}
-            </h2>
-
-            <p className="max-w-xl text-sm leading-8 text-zinc-400 md:text-base">
-              {content.visionText}
-            </p>
-          </div>
-        </div>
-      </section>
-
+      {/* WHO WE ARE */}
       <section className="px-6 py-16 md:px-8 md:py-24">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-8 md:grid-cols-2 md:gap-20">
-            <div>
+          <div className="grid overflow-hidden border border-zinc-800 bg-[#0d0d0d] md:grid-cols-[1.05fr_0.95fr]">
+            <div className="flex min-h-[430px] flex-col p-7 md:p-10 lg:p-12">
               <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
-                {content.approachLabel}
+                {c.whoLabel}
               </p>
 
-              <h2 className="mt-6 max-w-xl text-3xl font-medium leading-[1.1] tracking-[-0.04em] md:text-5xl">
-                {content.approachTitle}
+              <div className="my-auto py-12">
+                <h2 className="max-w-2xl text-3xl font-medium leading-[1.08] tracking-[-0.04em] md:text-5xl">
+                  {c.whoTitle}
+                </h2>
+
+                <p className="mt-7 max-w-xl text-sm leading-8 text-zinc-400 md:text-base">
+                  {c.whoText}
+                </p>
+              </div>
+            </div>
+
+            <div className="relative flex min-h-[320px] items-end overflow-hidden border-t border-zinc-800 bg-[#090909] p-7 md:min-h-[430px] md:border-l md:border-t-0 md:p-10">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_30%,rgba(234,179,8,0.14),transparent_34%),linear-gradient(145deg,#171717,#080808_72%)]" />
+
+              <div className="absolute left-[22%] top-0 h-full w-px bg-zinc-800/70" />
+              <div className="absolute left-[66%] top-0 h-full w-px bg-zinc-800/70" />
+
+              <div className="relative">
+                <p className="max-w-lg text-2xl font-medium leading-[1.15] tracking-[-0.035em] md:text-4xl">
+                  {c.whoStatement}
+                </p>
+
+                <p className="mt-7 text-[9px] font-semibold uppercase tracking-[0.24em] text-yellow-500">
+                  LMG MUSIC / ARTIST FIRST
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* VISION MANIFESTO */}
+      <section className="border-y border-zinc-900 bg-[#080808] px-6 py-20 md:px-8 md:py-32">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-10 md:grid-cols-[0.35fr_1.65fr] md:gap-20">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
+              {c.visionLabel}
+            </p>
+
+            <div>
+              <h2 className="max-w-5xl text-[clamp(2.5rem,5vw,5.3rem)] font-medium leading-[1.03] tracking-[-0.055em]">
+                {c.visionTitle}
+              </h2>
+
+              <div className="mt-12 flex justify-end">
+                <p className="max-w-2xl border-l border-yellow-500/60 pl-6 text-sm leading-8 text-zinc-400 md:text-base">
+                  {c.visionText}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* APPROACH / ECOSYSTEM */}
+      <section className="px-6 py-16 md:px-8 md:py-24">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-10 md:grid-cols-[0.7fr_1.3fr] md:gap-20">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
+                {c.approachLabel}
+              </p>
+
+              <h2 className="mt-6 whitespace-pre-line text-3xl font-medium leading-[1.08] tracking-[-0.04em] md:text-5xl">
+                {c.approachTitle}
+              </h2>
+
+              <p className="mt-6 max-w-lg text-sm leading-8 text-zinc-500">
+                {c.approachIntro}
+              </p>
+            </div>
+
+            <div className="relative">
+              {/* desktop connecting lines */}
+              <div className="absolute left-1/2 top-0 hidden h-full w-px bg-zinc-800 md:block" />
+              <div className="absolute left-0 top-1/2 hidden h-px w-full bg-zinc-800 md:block" />
+
+              <div className="relative grid gap-px overflow-hidden border border-zinc-800 bg-zinc-800 md:grid-cols-2">
+                {c.approach.map((item, index) => (
+                  <div
+                    key={item.number}
+                    className="group relative min-h-[240px] bg-[#0c0c0c] p-7 transition duration-300 hover:bg-[#111111] md:p-8"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-semibold text-yellow-500">
+                        {item.number}
+                      </span>
+
+                      <span className="text-zinc-800 transition group-hover:text-yellow-500/50">
+                        +
+                      </span>
+                    </div>
+
+                    <div className="mt-16">
+                      <h3 className="text-xl font-medium tracking-[-0.025em] md:text-2xl">
+                        {item.title}
+                      </h3>
+
+                      <p className="mt-4 max-w-xs text-sm leading-7 text-zinc-500">
+                        {item.text}
+                      </p>
+                    </div>
+
+                    <span className="absolute bottom-5 right-6 text-[5rem] font-medium leading-none tracking-[-0.08em] text-white/[0.018]">
+                      0{index + 1}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mx-auto mt-6 flex w-fit items-center gap-3">
+                <span className="h-px w-8 bg-zinc-700" />
+                <span className="text-[9px] font-semibold tracking-[0.22em] text-zinc-600">
+                  ONE ARTIST / ONE DIRECTION
+                </span>
+                <span className="h-px w-8 bg-zinc-700" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* GROUP CONNECTION */}
+      <section className="border-y border-zinc-900 bg-[#080808] px-6 py-16 md:px-8 md:py-24">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-12 md:grid-cols-[1fr_0.9fr] md:gap-24">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
+                {c.groupLabel}
+              </p>
+
+              <h2 className="mt-7 max-w-3xl text-3xl font-medium leading-[1.08] tracking-[-0.04em] md:text-5xl">
+                {c.groupTitle}
               </h2>
             </div>
 
-            <p className="max-w-xl self-end text-sm leading-8 text-zinc-400 md:text-base">
-              {content.approachText}
-            </p>
-          </div>
+            <div className="self-end">
+              <p className="max-w-xl text-sm leading-8 text-zinc-400 md:text-base">
+                {c.groupText}
+              </p>
 
-          <div className="mt-14 grid border-t border-zinc-800 md:grid-cols-2">
-            {content.points.map((point, index) => (
-              <div
-                key={point.number}
-                className={[
-                  "border-b border-zinc-800 py-8 md:p-10",
-                  index % 2 === 0
-                    ? "md:border-r md:pl-0"
-                    : "md:pr-0",
-                ].join(" ")}
+              <Link
+                href="https://www.legacymusicgroup.fr"
+                className="mt-8 inline-flex border-b border-yellow-500 pb-2 text-xs font-semibold text-zinc-300 transition hover:text-yellow-500"
               >
-                <span className="text-[10px] font-semibold tracking-[0.2em] text-yellow-500">
-                  {point.number}
-                </span>
+                {c.groupLink} ↗
+              </Link>
+            </div>
+          </div>
 
-                <h3 className="mt-5 text-xl font-medium tracking-[-0.025em] md:text-2xl">
-                  {point.title}
-                </h3>
+          <div className="mt-16 grid grid-cols-3 border-y border-zinc-800 py-7 text-center">
+            <div>
+              <span className="text-[10px] font-semibold tracking-[0.18em] text-zinc-500">
+                MUSIC
+              </span>
+            </div>
 
-                <p className="mt-4 max-w-lg text-sm leading-7 text-zinc-500">
-                  {point.text}
-                </p>
-              </div>
-            ))}
+            <div className="border-x border-zinc-800">
+              <span className="text-[10px] font-semibold tracking-[0.18em] text-zinc-500">
+                AGENCY
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] font-semibold tracking-[0.18em] text-zinc-500">
+                GROUP
+              </span>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-zinc-900 bg-[#080808] px-6 py-16 md:px-8 md:py-24">
-        <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[0.7fr_1.3fr] md:gap-20">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
-            {content.groupLabel}
-          </p>
-
-          <div>
-            <h2 className="max-w-3xl text-3xl font-medium leading-[1.1] tracking-[-0.04em] md:text-5xl">
-              {content.groupTitle}
-            </h2>
-
-            <p className="mt-7 max-w-2xl text-sm leading-8 text-zinc-400 md:text-base">
-              {content.groupText}
-            </p>
-
-            <Link
-              href="https://www.legacymusicgroup.fr"
-              className="mt-8 inline-flex border-b border-yellow-500 pb-2 text-xs font-semibold text-zinc-300 transition hover:text-yellow-500"
-            >
-              LMG Group ↗
-            </Link>
-          </div>
-        </div>
-      </section>
-
+      {/* NEXT */}
       <section className="px-6 py-14 md:px-8 md:py-16">
         <div className="mx-auto grid max-w-7xl items-end gap-8 md:grid-cols-[1fr_auto]">
           <div>
             <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
-              {content.nextLabel}
+              {c.nextLabel}
             </p>
 
-            <h2 className="mt-4 text-3xl font-medium tracking-[-0.035em] md:text-4xl">
-              {content.nextTitle}
+            <h2 className="mt-4 max-w-3xl text-3xl font-medium tracking-[-0.035em] md:text-4xl">
+              {c.nextTitle}
             </h2>
 
             <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-500">
-              {content.nextText}
+              {c.nextText}
             </p>
           </div>
 
@@ -281,7 +367,7 @@ export default function AboutMusicContent() {
             href="/about/what-we-do"
             className="w-fit border-b border-yellow-500 pb-2 text-xs font-semibold text-zinc-300 transition hover:text-yellow-500"
           >
-            {content.nextLink} ↗
+            {c.nextLink} ↗
           </Link>
         </div>
       </section>
