@@ -27,6 +27,7 @@ export default function LiveEntertainmentContent() {
             "We see live performance as part of artist development. The objective is not simply to put an artist on a stage, but to build formats and opportunities that make sense for their identity, their audience and the stage of their career.",
 
           formatsLabel: "LIVE FORMATS",
+          formatsTitle: "Different formats.\nOne artistic direction.",
 
           formats: [
             {
@@ -34,24 +35,32 @@ export default function LiveEntertainmentContent() {
               title: "Live Performances",
               text:
                 "Performance opportunities designed to showcase the artist, their music and their stage identity.",
+              tag: "PERFORMANCE",
+              visual: "LIVE",
             },
             {
               number: "02",
               title: "Showcases",
               text:
                 "Focused formats built around discovery, project presentation and direct connection with audiences and industry professionals.",
+              tag: "DISCOVERY",
+              visual: "SHOWCASE",
             },
             {
               number: "03",
               title: "LMG Sessions",
               text:
                 "Original content and performance formats combining music, image and storytelling around artists and their projects.",
+              tag: "ORIGINAL FORMAT",
+              visual: "SESSIONS",
             },
             {
               number: "04",
               title: "Events & Experiences",
               text:
                 "Music-led events and collaborative experiences connecting artists, audiences, venues and creative partners.",
+              tag: "EXPERIENCE",
+              visual: "EVENTS",
             },
           ],
 
@@ -60,12 +69,6 @@ export default function LiveEntertainmentContent() {
             "The stage is part of the artist's development.",
           developmentText:
             "Live reveals dimensions of a project that cannot exist through a release alone. Performance, presence, audience response and experience all contribute to the way an artist develops. We integrate these elements into the broader direction of the project.",
-
-          networkLabel: "COLLABORATION",
-          networkTitle:
-            "Artists, venues, creatives and partners.",
-          networkText:
-            "Live projects are built through collaboration. LMG Music develops relationships with venues, studios, event professionals, creative partners and other industry actors to create relevant opportunities around its artists and projects.",
 
           processLabel: "FROM IDEA TO EXPERIENCE",
           process: [
@@ -94,6 +97,12 @@ export default function LiveEntertainmentContent() {
                 "Extend the experience through images, video and storytelling.",
             },
           ],
+
+          networkLabel: "COLLABORATION",
+          networkTitle:
+            "Artists, venues, creatives and partners.",
+          networkText:
+            "Live projects are built through collaboration. LMG Music develops relationships with venues, studios, event professionals, creative partners and other industry actors to create relevant opportunities around its artists and projects.",
 
           opportunityLabel: "OPPORTUNITIES",
           opportunityTitle:
@@ -126,6 +135,7 @@ export default function LiveEntertainmentContent() {
             "Nous considérons la scène comme une composante du développement artistique. L’objectif n’est pas simplement de placer un artiste sur une scène, mais de construire des formats et des opportunités cohérents avec son identité, son public et le stade de son développement.",
 
           formatsLabel: "NOS FORMATS",
+          formatsTitle: "Plusieurs formats.\nUne même direction artistique.",
 
           formats: [
             {
@@ -133,24 +143,32 @@ export default function LiveEntertainmentContent() {
               title: "Performances live",
               text:
                 "Des opportunités de performance pensées pour mettre en valeur l’artiste, sa musique et son identité scénique.",
+              tag: "PERFORMANCE",
+              visual: "LIVE",
             },
             {
               number: "02",
               title: "Showcases",
               text:
                 "Des formats ciblés autour de la découverte, de la présentation de projets et de la rencontre avec le public ou les professionnels.",
+              tag: "DÉCOUVERTE",
+              visual: "SHOWCASE",
             },
             {
               number: "03",
               title: "LMG Sessions",
               text:
                 "Des formats originaux mêlant performance, image et narration autour des artistes et de leurs projets.",
+              tag: "FORMAT ORIGINAL",
+              visual: "SESSIONS",
             },
             {
               number: "04",
               title: "Événements & expériences",
               text:
                 "Des événements musicaux et expériences collaboratives reliant artistes, publics, lieux et partenaires créatifs.",
+              tag: "EXPÉRIENCE",
+              visual: "EVENTS",
             },
           ],
 
@@ -159,12 +177,6 @@ export default function LiveEntertainmentContent() {
             "La scène fait partie du développement de l’artiste.",
           developmentText:
             "Le live révèle des dimensions d’un projet qu’une sortie seule ne peut pas exprimer. Performance, présence, réaction du public et expérience participent à l’évolution de l’artiste. Nous intégrons ces éléments à la direction globale du projet.",
-
-          networkLabel: "COLLABORATION",
-          networkTitle:
-            "Artistes, lieux, créatifs et partenaires.",
-          networkText:
-            "Les projets live se construisent par la collaboration. LMG Music développe des relations avec des lieux, studios, professionnels de l’événementiel, partenaires créatifs et autres acteurs de l’industrie afin de créer des opportunités pertinentes autour de ses artistes et de ses projets.",
 
           processLabel: "DE L’IDÉE À L’EXPÉRIENCE",
           process: [
@@ -194,6 +206,12 @@ export default function LiveEntertainmentContent() {
             },
           ],
 
+          networkLabel: "COLLABORATION",
+          networkTitle:
+            "Artistes, lieux, créatifs et partenaires.",
+          networkText:
+            "Les projets live se construisent par la collaboration. LMG Music développe des relations avec des lieux, studios, professionnels de l’événementiel, partenaires créatifs et autres acteurs de l’industrie afin de créer des opportunités pertinentes autour de ses artistes et de ses projets.",
+
           opportunityLabel: "OPPORTUNITÉS",
           opportunityTitle:
             "Créer des connexions par la musique.",
@@ -211,10 +229,8 @@ export default function LiveEntertainmentContent() {
   return (
     <>
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-zinc-900 bg-[#050505] px-6 py-14 md:px-8 md:py-20">
-        <div className="pointer-events-none absolute -right-40 top-1/2 h-[500px] w-[500px] -translate-y-1/2 rounded-full bg-yellow-500/[0.035] blur-3xl" />
-
-        <div className="relative mx-auto max-w-7xl">
+      <section className="border-b border-zinc-900 bg-[#050505] px-6 py-14 md:px-8 md:py-20">
+        <div className="mx-auto max-w-7xl">
           <div className="flex items-center gap-3 text-[10px] text-zinc-600">
             <Link
               href="/about"
@@ -244,63 +260,108 @@ export default function LiveEntertainmentContent() {
         </div>
       </section>
 
-      {/* STATEMENT */}
-      <section className="px-6 py-20 md:px-8 md:py-32">
+      {/* STATEMENT + APPROACH */}
+      <section className="px-6 py-20 md:px-8 md:py-28">
         <div className="mx-auto max-w-7xl">
-          <p className="max-w-5xl text-[clamp(2rem,4.5vw,4.4rem)] font-medium leading-[1.08] tracking-[-0.045em]">
+          <p className="max-w-5xl text-[clamp(2rem,4vw,4rem)] font-medium leading-[1.08] tracking-[-0.045em]">
             {content.statement}
           </p>
-        </div>
-      </section>
 
-      {/* APPROACH */}
-      <section className="border-y border-zinc-900 bg-[#080808] px-6 py-16 md:px-8 md:py-24">
-        <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[0.7fr_1.3fr] md:gap-20">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
-            {content.roleLabel}
-          </p>
-
-          <div>
-            <h2 className="max-w-3xl text-3xl font-medium leading-[1.1] tracking-[-0.04em] md:text-5xl">
-              {content.roleTitle}
-            </h2>
-
-            <p className="mt-7 max-w-2xl text-sm leading-8 text-zinc-400 md:text-base">
-              {content.roleText}
+          <div className="mt-20 grid gap-10 border-t border-zinc-800 pt-10 md:grid-cols-[0.7fr_1.3fr] md:gap-20">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
+              {content.roleLabel}
             </p>
+
+            <div>
+              <h2 className="max-w-3xl text-3xl font-medium leading-[1.1] tracking-[-0.04em] md:text-5xl">
+                {content.roleTitle}
+              </h2>
+
+              <p className="mt-6 max-w-2xl text-sm leading-8 text-zinc-400 md:text-base">
+                {content.roleText}
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* FORMATS */}
-      <section className="px-6 py-16 md:px-8 md:py-24">
+      {/* STICKY FORMAT STACK */}
+      <section className="border-y border-zinc-900 bg-[#080808] px-6 py-16 md:px-8 md:py-24">
         <div className="mx-auto max-w-7xl">
           <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
             {content.formatsLabel}
           </p>
 
-          <div className="mt-10 grid border-t border-zinc-800 md:grid-cols-2">
+          <h2 className="mt-6 max-w-3xl whitespace-pre-line text-3xl font-medium leading-[1.1] tracking-[-0.04em] md:text-5xl">
+            {content.formatsTitle}
+          </h2>
+
+          <div className="mt-14">
             {content.formats.map((format, index) => (
               <div
                 key={format.number}
-                className={[
-                  "border-b border-zinc-800 py-10 md:min-h-[300px] md:p-10",
-                  index % 2 === 0
-                    ? "md:border-r md:pl-0"
-                    : "md:pr-0",
-                ].join(" ")}
+                className="sticky mb-8 md:mb-12"
+                style={{
+                  top: `${96 + index * 18}px`,
+                  zIndex: index + 1,
+                }}
               >
-                <span className="text-[10px] font-semibold tracking-[0.2em] text-yellow-500">
-                  {format.number}
-                </span>
+                <div className="overflow-hidden rounded-[22px] border border-zinc-800 bg-[#111315] shadow-[0_-12px_40px_rgba(0,0,0,0.32)]">
+                  <div className="grid min-h-[440px] md:grid-cols-[1fr_0.95fr]">
+                    <div className="flex flex-col p-7 md:p-10 lg:p-12">
+                      <div className="flex items-center justify-between gap-6">
+                        <span className="text-[10px] font-semibold tracking-[0.2em] text-yellow-500">
+                          {format.number}
+                        </span>
 
-                <h2 className="mt-16 text-2xl font-medium tracking-[-0.035em] md:text-3xl">
-                  {format.title}
-                </h2>
+                        <span className="text-[9px] font-semibold uppercase tracking-[0.22em] text-zinc-600">
+                          {format.tag}
+                        </span>
+                      </div>
 
-                <p className="mt-5 max-w-lg text-sm leading-7 text-zinc-500">
-                  {format.text}
-                </p>
+                      <div className="my-auto py-12">
+                        <h3 className="max-w-xl text-3xl font-medium leading-[1.05] tracking-[-0.04em] md:text-4xl lg:text-5xl">
+                          {format.title}
+                        </h3>
+
+                        <p className="mt-6 max-w-xl text-sm leading-8 text-zinc-400 md:text-base">
+                          {format.text}
+                        </p>
+                      </div>
+
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-zinc-600">
+                        LMG MUSIC / LIVE & ENTERTAINMENT
+                      </p>
+                    </div>
+
+                    {/* VISUAL PLACEHOLDER */}
+                    <div className="relative min-h-[280px] overflow-hidden border-t border-zinc-800 bg-[#0b0b0b] md:min-h-full md:border-l md:border-t-0">
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(234,179,8,0.14),transparent_38%),linear-gradient(135deg,#151515,#080808_70%)]" />
+
+                      <div className="absolute inset-0 opacity-30">
+                        <div className="absolute left-[15%] top-0 h-full w-px bg-zinc-700" />
+                        <div className="absolute left-[50%] top-0 h-full w-px bg-zinc-800" />
+                        <div className="absolute left-[82%] top-0 h-full w-px bg-zinc-800" />
+                      </div>
+
+                      <div className="relative flex h-full min-h-[280px] flex-col justify-between p-7 md:min-h-[440px] md:p-10">
+                        <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
+                          LMG MUSIC
+                        </span>
+
+                        <div>
+                          <span className="block text-[clamp(3rem,6vw,6rem)] font-medium leading-none tracking-[-0.07em] text-white/[0.12]">
+                            {format.visual}
+                          </span>
+
+                          <p className="mt-4 text-[9px] uppercase tracking-[0.22em] text-zinc-600">
+                            Visual / {format.number}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -308,7 +369,7 @@ export default function LiveEntertainmentContent() {
       </section>
 
       {/* DEVELOPMENT */}
-      <section className="border-y border-zinc-900 bg-[#080808] px-6 py-16 md:px-8 md:py-24">
+      <section className="px-6 py-16 md:px-8 md:py-24">
         <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-2 md:gap-20">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
@@ -327,7 +388,7 @@ export default function LiveEntertainmentContent() {
       </section>
 
       {/* PROCESS */}
-      <section className="px-6 py-16 md:px-8 md:py-24">
+      <section className="border-y border-zinc-900 bg-[#080808] px-6 py-16 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
           <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
             {content.processLabel}
@@ -338,7 +399,7 @@ export default function LiveEntertainmentContent() {
               <div
                 key={step.number}
                 className={[
-                  "border-b border-zinc-800 py-8 md:min-h-[270px] md:px-7 md:py-9",
+                  "border-b border-zinc-800 py-8 md:min-h-[230px] md:px-7 md:py-8",
                   index < content.process.length - 1
                     ? "md:border-r"
                     : "",
@@ -349,7 +410,7 @@ export default function LiveEntertainmentContent() {
                   {step.number}
                 </span>
 
-                <h3 className="mt-12 text-xl font-medium tracking-[-0.025em]">
+                <h3 className="mt-9 text-xl font-medium tracking-[-0.025em]">
                   {step.title}
                 </h3>
 
@@ -362,41 +423,36 @@ export default function LiveEntertainmentContent() {
         </div>
       </section>
 
-      {/* NETWORK */}
-      <section className="border-y border-zinc-900 bg-[#080808] px-6 py-16 md:px-8 md:py-24">
-        <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[0.7fr_1.3fr] md:gap-20">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
-            {content.networkLabel}
-          </p>
-
+      {/* COLLABORATION + OPPORTUNITIES */}
+      <section className="px-6 py-16 md:px-8 md:py-24">
+        <div className="mx-auto grid max-w-7xl gap-14 md:grid-cols-2 md:gap-20">
           <div>
-            <h2 className="max-w-3xl text-3xl font-medium leading-[1.1] tracking-[-0.04em] md:text-5xl">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
+              {content.networkLabel}
+            </p>
+
+            <h2 className="mt-6 max-w-xl text-3xl font-medium leading-[1.1] tracking-[-0.04em] md:text-4xl">
               {content.networkTitle}
             </h2>
 
-            <p className="mt-7 max-w-2xl text-sm leading-8 text-zinc-400 md:text-base">
+            <p className="mt-6 max-w-xl text-sm leading-8 text-zinc-500">
               {content.networkText}
             </p>
           </div>
-        </div>
-      </section>
 
-      {/* OPPORTUNITIES */}
-      <section className="px-6 py-16 md:px-8 md:py-24">
-        <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-2 md:gap-20">
-          <div>
+          <div className="border-t border-zinc-800 pt-10 md:border-l md:border-t-0 md:pl-16 md:pt-0">
             <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-yellow-500">
               {content.opportunityLabel}
             </p>
 
-            <h2 className="mt-6 max-w-xl text-3xl font-medium leading-[1.1] tracking-[-0.04em] md:text-5xl">
+            <h2 className="mt-6 max-w-xl text-3xl font-medium leading-[1.1] tracking-[-0.04em] md:text-4xl">
               {content.opportunityTitle}
             </h2>
-          </div>
 
-          <p className="max-w-xl self-end text-sm leading-8 text-zinc-400 md:text-base">
-            {content.opportunityText}
-          </p>
+            <p className="mt-6 max-w-xl text-sm leading-8 text-zinc-500">
+              {content.opportunityText}
+            </p>
+          </div>
         </div>
       </section>
 
