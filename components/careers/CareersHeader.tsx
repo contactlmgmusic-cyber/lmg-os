@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { useCareersLanguage } from "@/components/careers/CareersLanguageProvider";
+import CareersLanguageSwitcher from "@/components/careers/CareersLanguageSwitcher";
 
 const translations = {
   en: {
@@ -23,8 +24,7 @@ const translations = {
 } as const;
 
 export default function CareersHeader() {
-  const { locale, toggleLocale } =
-    useCareersLanguage();
+  const { locale } = useCareersLanguage();
 
   const t = translations[locale];
 
@@ -79,18 +79,7 @@ export default function CareersHeader() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={toggleLocale}
-            aria-label={
-              locale === "en"
-                ? "Passer en français"
-                : "Switch to English"
-            }
-            className="text-xs font-semibold uppercase"
-          >
-            {locale === "en" ? "FR" : "EN"}
-          </button>
+          <CareersLanguageSwitcher />
 
           <Link
             href="/jobs"
