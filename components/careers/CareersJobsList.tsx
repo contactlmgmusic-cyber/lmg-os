@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { useCareersLanguage } from "@/components/careers/CareersLanguageProvider";
+
 type Job = {
   id: string;
   title: string;
@@ -14,41 +16,80 @@ type Job = {
   short_description: string | null;
 };
 
-const departments = [
-  { value: "all", label: "All" },
-  { value: "music", label: "Music" },
-  { value: "creative", label: "Creative" },
-  { value: "business", label: "Business" },
-  { value: "tech_digital", label: "Tech & Digital" },
-];
+const translations = {
+  en: {
+    departments: {
+      all: "All",
+      music: "Music",
+      creative: "Creative",
+      business: "Business",
+      tech_digital: "Tech & Digital",
+    },
+    contracts: {
+      cdi: "CDI",
+      cdd: "CDD",
+      stage: "Internship",
+      alternance: "Apprenticeship",
+      freelance: "Freelance",
+      project: "Project",
+    },
+    remote: {
+      onsite: "On-site",
+      hybrid: "Hybrid",
+      remote: "Remote",
+    },
+    opportunities: "Opportunities",
+    empty: "Nothing open here right now.",
+    emptyText:
+      "We're always interested in meeting people who want to build what's next.",
+    introduce: "Introduce yourself →",
+  },
 
-const departmentLabels: Record<string, string> = {
-  music: "Music",
-  creative: "Creative",
-  business: "Business",
-  tech_digital: "Tech & Digital",
-};
+  fr: {
+    departments: {
+      all: "Tout",
+      music: "Musique",
+      creative: "Créatif",
+      business: "Business",
+      tech_digital: "Tech & Digital",
+    },
+    contracts: {
+      cdi: "CDI",
+      cdd: "CDD",
+      stage: "Stage",
+      alternance: "Alternance",
+      freelance: "Freelance",
+      project: "Projet",
+    },
+    remote: {
+      onsite: "Sur site",
+      hybrid: "Hybride",
+      remote: "À distance",
+    },
+    opportunities: "Opportunités",
+    empty: "Aucune opportunité ouverte ici pour le moment.",
+    emptyText:
+      "Nous sommes toujours intéressés par les personnes qui souhaitent construire la suite avec nous.",
+    introduce: "Présentez-vous →",
+  },
+} as const;
 
-const contractLabels: Record<string, string> = {
-  cdi: "CDI",
-  cdd: "CDD",
-  stage: "Internship",
-  alternance: "Apprenticeship",
-  freelance: "Freelance",
-  project: "Project",
-};
-
-const remoteLabels: Record<string, string> = {
-  onsite: "On-site",
-  hybrid: "Hybrid",
-  remote: "Remote",
-};
+const departmentValues = [
+  "all",
+  "music",
+  "creative",
+  "business",
+  "tech_digital",
+] as const;
 
 export default function CareersJobsList({
   jobs,
 }: {
   jobs: Job[];
 }) {
+  const { locale } = useCareersLanguage();
+  const t = translations[locale];
+
   const [department, setDepartment] = useState("all");
 
   const filteredJobs = useMemo(() => {
@@ -63,21 +104,21 @@ export default function CareersJobsList({
     <>
       <div className="border-y border-white/15">
         <div className="mx-auto flex max-w-[1500px] flex-wrap gap-x-8 gap-y-2 px-6 py-5 md:px-10 lg:px-14">
-          {departments.map((item) => {
-            const active = department === item.value;
+          {departmentValues.map((value) => {
+            const active = department === value;
 
             return (
               <button
-                key={item.value}
+                key={value}
                 type="button"
-                onClick={() => setDepartment(item.value)}
+                onClick={() => setDepartment(value)}
                 className={`relative py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ${
                   active
                     ? "text-[#d6ae5d]"
                     : "text-white/50 hover:text-white"
                 }`}
               >
-                {item.label}
+                {t.departments[value]}
 
                 {active && (
                   <span className="absolute inset-x-0 -bottom-[21px] h-px bg-[#d6ae5d]" />
@@ -92,23 +133,22 @@ export default function CareersJobsList({
         {filteredJobs.length === 0 ? (
           <div className="py-28 md:py-36">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d6ae5d]">
-              Opportunities
+              {t.opportunities}
             </p>
 
             <h2 className="mt-5 max-w-xl text-4xl font-semibold tracking-[-0.04em] md:text-5xl">
-              Nothing open here right now.
+              {t.empty}
             </h2>
 
             <p className="mt-6 max-w-xl text-base leading-7 text-white/55">
-              We&apos;re always interested in meeting people who
-              want to build what&apos;s next.
+              {t.emptyText}
             </p>
 
             <Link
               href="/spontaneous"
               className="mt-8 inline-flex border-b border-[#d6ae5d] pb-1 text-sm font-semibold text-[#d6ae5d]"
             >
-              Introduce yourself →
+              {t.introduce}
             </Link>
           </div>
         ) : (
@@ -116,27 +156,31 @@ export default function CareersJobsList({
             {filteredJobs.map((job) => (
               <Link
                 key={job.id}
-                href={`/careers/jobs/${job.slug}`}
+                href={`/jobs/${job.slug}`}
                 className="group grid gap-8 py-10 transition md:grid-cols-[220px_1fr_auto] md:items-start md:py-12"
               >
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#d6ae5d]">
-                    {departmentLabels[job.department] ??
-                      job.department}
+                    {t.departments[
+                      job.department as keyof typeof t.departments
+                    ] ?? job.department}
                   </p>
 
                   <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs uppercase tracking-[0.12em] text-white/40">
                     <span>
-                      {contractLabels[job.employment_type] ??
-                        job.employment_type}
+                      {t.contracts[
+                        job.employment_type as keyof typeof t.contracts
+                      ] ?? job.employment_type}
                     </span>
 
                     {job.remote_policy && (
                       <>
                         <span>·</span>
+
                         <span>
-                          {remoteLabels[job.remote_policy] ??
-                            job.remote_policy}
+                          {t.remote[
+                            job.remote_policy as keyof typeof t.remote
+                          ] ?? job.remote_policy}
                         </span>
                       </>
                     )}

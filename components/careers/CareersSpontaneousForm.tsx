@@ -2,7 +2,82 @@
 
 import { FormEvent, useState } from "react";
 
+import { useCareersLanguage } from "@/components/careers/CareersLanguageProvider";
+
+const translations = {
+  en: {
+    error: "Unable to submit your application.",
+    received: "Application received",
+    thanks: "Thanks for making the first move.",
+    success:
+      "Your profile is now with the LMG team. We'll get in touch if an opportunity matches what you can bring.",
+    firstName: "First name *",
+    lastName: "Last name *",
+    email: "Email *",
+    phone: "Phone",
+    location: "Location",
+    locationPlaceholder: "City, country",
+    availability: "Availability",
+    availabilityPlaceholder: "Now, September 2027...",
+    impact: "Where could you make an impact? *",
+    select: "Select an area",
+    music: "Music",
+    creative: "Creative",
+    business: "Business",
+    tech: "Tech & Digital",
+    multiple: "Across several areas",
+    portfolio: "Portfolio / website",
+    cv: "CV *",
+    cvHelp: "PDF, DOC or DOCX — maximum 10 MB.",
+    build: "Tell us what you want to build",
+    buildPlaceholder:
+      "Tell us about your perspective, your work and where you think you could contribute at LMG.",
+    privacy:
+      "By submitting your application, you acknowledge that LMG will process the information you provide for recruitment purposes. Learn more about how we handle candidate data in our",
+    privacyLink: "Candidate Privacy Notice",
+    sending: "Sending...",
+    submit: "Introduce yourself",
+  },
+
+  fr: {
+    error: "Impossible d’envoyer votre candidature. Veuillez réessayer.",
+    received: "Candidature reçue",
+    thanks: "Merci d’avoir fait le premier pas.",
+    success:
+      "Votre profil a bien été transmis à l’équipe LMG. Nous vous contacterons si une opportunité correspond à ce que vous pouvez apporter.",
+    firstName: "Prénom *",
+    lastName: "Nom *",
+    email: "E-mail *",
+    phone: "Téléphone",
+    location: "Localisation",
+    locationPlaceholder: "Ville, pays",
+    availability: "Disponibilité",
+    availabilityPlaceholder: "Maintenant, septembre 2027...",
+    impact: "Où pourriez-vous avoir un impact ? *",
+    select: "Sélectionnez un domaine",
+    music: "Musique",
+    creative: "Créatif",
+    business: "Business",
+    tech: "Tech & Digital",
+    multiple: "Plusieurs domaines",
+    portfolio: "Portfolio / site web",
+    cv: "CV *",
+    cvHelp: "PDF, DOC ou DOCX — 10 Mo maximum.",
+    build: "Dites-nous ce que vous voulez construire",
+    buildPlaceholder:
+      "Parlez-nous de votre vision, de votre travail et de la manière dont vous pourriez contribuer à LMG.",
+    privacy:
+      "En envoyant votre candidature, vous reconnaissez que LMG traitera les informations fournies à des fins de recrutement. Découvrez comment nous traitons les données des candidats dans notre",
+    privacyLink: "Politique de confidentialité des candidats",
+    sending: "Envoi...",
+    submit: "Présentez-vous",
+  },
+} as const;
+
 export default function CareersSpontaneousForm() {
+  const { locale } = useCareersLanguage();
+  const t = translations[locale];
+
   const [sending, setSending] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -31,8 +106,9 @@ export default function CareersSpontaneousForm() {
 
       if (!response.ok) {
         throw new Error(
-          result.error ||
-            "Unable to submit your application."
+          locale === "fr"
+            ? t.error
+            : result.error || t.error
         );
       }
 
@@ -40,9 +116,11 @@ export default function CareersSpontaneousForm() {
       form.reset();
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to submit your application."
+        locale === "fr"
+          ? t.error
+          : err instanceof Error
+            ? err.message
+            : t.error
       );
     } finally {
       setSending(false);
@@ -53,17 +131,15 @@ export default function CareersSpontaneousForm() {
     return (
       <div className="border-t border-white/20 pt-10">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#d5ad58]">
-          Application received
+          {t.received}
         </p>
 
         <h2 className="mt-5 max-w-2xl text-4xl font-black uppercase leading-[0.95] tracking-[-0.05em] md:text-6xl">
-          Thanks for making the first move.
+          {t.thanks}
         </h2>
 
         <p className="mt-6 max-w-xl text-base leading-7 text-white/60">
-          Your profile is now with the LMG team.
-          We&apos;ll get in touch if an opportunity
-          matches what you can bring.
+          {t.success}
         </p>
       </div>
     );
@@ -74,7 +150,7 @@ export default function CareersSpontaneousForm() {
       onSubmit={submit}
       className="grid gap-x-6 gap-y-7 md:grid-cols-2"
     >
-      <Field label="First name *">
+      <Field label={t.firstName}>
         <input
           name="first_name"
           required
@@ -82,7 +158,7 @@ export default function CareersSpontaneousForm() {
         />
       </Field>
 
-      <Field label="Last name *">
+      <Field label={t.lastName}>
         <input
           name="last_name"
           required
@@ -90,7 +166,7 @@ export default function CareersSpontaneousForm() {
         />
       </Field>
 
-      <Field label="Email *">
+      <Field label={t.email}>
         <input
           type="email"
           name="email"
@@ -99,31 +175,31 @@ export default function CareersSpontaneousForm() {
         />
       </Field>
 
-      <Field label="Phone">
+      <Field label={t.phone}>
         <input
           name="phone"
           className={inputClass}
         />
       </Field>
 
-      <Field label="Location">
+      <Field label={t.location}>
         <input
           name="location"
-          placeholder="City, country"
+          placeholder={t.locationPlaceholder}
           className={inputClass}
         />
       </Field>
 
-      <Field label="Availability">
+      <Field label={t.availability}>
         <input
           name="availability"
-          placeholder="Now, September 2027..."
+          placeholder={t.availabilityPlaceholder}
           className={inputClass}
         />
       </Field>
 
       <div className="md:col-span-2">
-        <Field label="Where could you make an impact? *">
+        <Field label={t.impact}>
           <select
             name="department_interest"
             required
@@ -131,17 +207,13 @@ export default function CareersSpontaneousForm() {
             defaultValue=""
           >
             <option value="" disabled>
-              Select an area
+              {t.select}
             </option>
-            <option value="music">Music</option>
-            <option value="creative">Creative</option>
-            <option value="business">Business</option>
-            <option value="tech_digital">
-              Tech & Digital
-            </option>
-            <option value="multiple">
-              Across several areas
-            </option>
+            <option value="music">{t.music}</option>
+            <option value="creative">{t.creative}</option>
+            <option value="business">{t.business}</option>
+            <option value="tech_digital">{t.tech}</option>
+            <option value="multiple">{t.multiple}</option>
           </select>
         </Field>
       </div>
@@ -155,7 +227,7 @@ export default function CareersSpontaneousForm() {
         />
       </Field>
 
-      <Field label="Portfolio / website">
+      <Field label={t.portfolio}>
         <input
           type="url"
           name="portfolio_url"
@@ -165,7 +237,7 @@ export default function CareersSpontaneousForm() {
       </Field>
 
       <div className="md:col-span-2">
-        <Field label="CV *">
+        <Field label={t.cv}>
           <input
             type="file"
             name="cv"
@@ -175,17 +247,17 @@ export default function CareersSpontaneousForm() {
           />
 
           <p className="mt-2 text-xs text-white/40">
-            PDF, DOC or DOCX — maximum 10 MB.
+            {t.cvHelp}
           </p>
         </Field>
       </div>
 
       <div className="md:col-span-2">
-        <Field label="Tell us what you want to build">
+        <Field label={t.build}>
           <textarea
             name="cover_letter"
             rows={7}
-            placeholder="Tell us about your perspective, your work and where you think you could contribute at LMG."
+            placeholder={t.buildPlaceholder}
             className={`${inputClass} resize-none`}
           />
         </Field>
@@ -200,28 +272,22 @@ export default function CareersSpontaneousForm() {
       )}
 
       <div className="border-t border-white/20 pt-7 md:col-span-2">
-
         <p className="max-w-2xl text-xs leading-5 text-white/40">
-          By submitting your application, you acknowledge that LMG
-          will process the information you provide for recruitment
-          purposes. Learn more about how we handle candidate data in
-          our{" "}
+          {t.privacy}{" "}
           <a
             href="/privacy"
             className="text-white underline decoration-white/30 underline-offset-4 transition hover:decoration-white"
           >
-            Candidate Privacy Notice
+            {t.privacyLink}
           </a>.
         </p>
 
         <button
           type="submit"
           disabled={sending}
-          className="rounded-full bg-[#d5ad58] px-8 py-4 text-xs font-black uppercase tracking-[0.16em] text-black transition hover:bg-white disabled:opacity-50"
+          className="mt-7 rounded-full bg-[#d5ad58] px-8 py-4 text-xs font-black uppercase tracking-[0.16em] text-black transition hover:bg-white disabled:opacity-50"
         >
-          {sending
-            ? "Sending..."
-            : "Introduce yourself"}
+          {sending ? t.sending : t.submit}
         </button>
       </div>
     </form>

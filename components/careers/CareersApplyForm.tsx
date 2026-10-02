@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from "react";
 
+import { useCareersLanguage } from "@/components/careers/CareersLanguageProvider";
+
 type Job = {
   title: string;
   slug: string;
@@ -10,11 +12,97 @@ type Job = {
   location: string | null;
 };
 
+const translations = {
+  en: {
+    submitError: "Unable to submit application.",
+    received: "Application received",
+    thanks: "Thank you for making the first move.",
+    receivedText1: "Your application for",
+    receivedText2: "has been received by the LMG team.",
+    back: "Back to opportunities",
+
+    about: "About you",
+    firstName: "First name",
+    lastName: "Last name",
+    email: "Email",
+    phone: "Phone",
+    location: "Location",
+    locationPlaceholder: "City, country",
+    availability: "Availability",
+    availabilityPlaceholder: "Immediately, September 2027...",
+
+    work: "Your work",
+    portfolio: "Portfolio / website",
+
+    cv: "Your CV",
+    cvHelp: "PDF, DOC or DOCX · 10 MB maximum",
+
+    why: "Why this role?",
+    tellMore: "Tell us more",
+    messagePlaceholder:
+      "Tell us what brings you here, what you've built and what you'd like to bring to LMG.",
+
+    accuracy:
+      "By submitting your application, you confirm that the information provided is accurate and may be reviewed by the LMG team for recruitment purposes.",
+
+    privacyBefore:
+      "By submitting your application, you acknowledge that LMG will process the information you provide for recruitment purposes. Learn more about how we handle candidate data in our",
+    privacyLink: "Candidate Privacy Notice",
+
+    sending: "Sending...",
+    submit: "Submit application",
+  },
+
+  fr: {
+    submitError:
+      "Impossible d’envoyer votre candidature. Veuillez réessayer.",
+    received: "Candidature reçue",
+    thanks: "Merci d’avoir fait le premier pas.",
+    receivedText1: "Votre candidature pour",
+    receivedText2: "a bien été reçue par l’équipe LMG.",
+    back: "Retour aux opportunités",
+
+    about: "À propos de vous",
+    firstName: "Prénom",
+    lastName: "Nom",
+    email: "E-mail",
+    phone: "Téléphone",
+    location: "Localisation",
+    locationPlaceholder: "Ville, pays",
+    availability: "Disponibilité",
+    availabilityPlaceholder: "Immédiatement, septembre 2027...",
+
+    work: "Votre travail",
+    portfolio: "Portfolio / site web",
+
+    cv: "Votre CV",
+    cvHelp: "PDF, DOC ou DOCX · 10 Mo maximum",
+
+    why: "Pourquoi ce rôle ?",
+    tellMore: "Dites-nous en plus",
+    messagePlaceholder:
+      "Dites-nous ce qui vous amène ici, ce que vous avez construit et ce que vous aimeriez apporter à LMG.",
+
+    accuracy:
+      "En envoyant votre candidature, vous confirmez que les informations fournies sont exactes et peuvent être examinées par l’équipe LMG à des fins de recrutement.",
+
+    privacyBefore:
+      "En envoyant votre candidature, vous reconnaissez que LMG traitera les informations fournies à des fins de recrutement. Découvrez comment nous traitons les données des candidats dans notre",
+    privacyLink: "Politique de confidentialité des candidats",
+
+    sending: "Envoi...",
+    submit: "Envoyer ma candidature",
+  },
+} as const;
+
 export default function CareersApplyForm({
   job,
 }: {
   job: Job;
 }) {
+  const { locale } = useCareersLanguage();
+  const t = translations[locale];
+
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -43,21 +131,26 @@ export default function CareersApplyForm({
 
       if (!response.ok) {
         throw new Error(
-          result.error || "Unable to submit application."
+          locale === "fr"
+            ? t.submitError
+            : result.error || t.submitError
         );
       }
 
       setSuccess(true);
       form.reset();
+
       window.scrollTo({
         top: 0,
         behavior: "smooth",
       });
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to submit application."
+        locale === "fr"
+          ? t.submitError
+          : err instanceof Error
+            ? err.message
+            : t.submitError
       );
     } finally {
       setSubmitting(false);
@@ -68,23 +161,22 @@ export default function CareersApplyForm({
     return (
       <div className="border-t border-[#d5ad58] pt-8">
         <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#d5ad58]">
-          Application received
+          {t.received}
         </p>
 
         <h2 className="mt-8 max-w-3xl text-5xl font-medium leading-[0.95] tracking-[-0.055em] md:text-7xl">
-          Thank you for making the first move.
+          {t.thanks}
         </h2>
 
         <p className="mt-8 max-w-xl text-sm leading-7 text-white/50">
-          Your application for {job.title} has been
-          received by the LMG team.
+          {t.receivedText1} {job.title} {t.receivedText2}
         </p>
 
         <a
           href="/jobs"
           className="mt-10 inline-flex rounded-full bg-[#d5ad58] px-7 py-4 text-[10px] font-bold uppercase tracking-[0.16em] text-black"
         >
-          Back to opportunities
+          {t.back}
         </a>
       </div>
     );
@@ -96,48 +188,48 @@ export default function CareersApplyForm({
       className="space-y-16"
       encType="multipart/form-data"
     >
-      <FormSection number="01" title="About you">
+      <FormSection number="01" title={t.about}>
         <div className="grid gap-8 md:grid-cols-2">
           <Field
-            label="First name"
+            label={t.firstName}
             name="first_name"
             required
           />
 
           <Field
-            label="Last name"
+            label={t.lastName}
             name="last_name"
             required
           />
 
           <Field
-            label="Email"
+            label={t.email}
             name="email"
             type="email"
             required
           />
 
           <Field
-            label="Phone"
+            label={t.phone}
             name="phone"
             type="tel"
           />
 
           <Field
-            label="Location"
+            label={t.location}
             name="location"
-            placeholder="City, country"
+            placeholder={t.locationPlaceholder}
           />
 
           <Field
-            label="Availability"
+            label={t.availability}
             name="availability"
-            placeholder="Immediately, September 2027..."
+            placeholder={t.availabilityPlaceholder}
           />
         </div>
       </FormSection>
 
-      <FormSection number="02" title="Your work">
+      <FormSection number="02" title={t.work}>
         <div className="grid gap-8 md:grid-cols-2">
           <Field
             label="LinkedIn"
@@ -147,7 +239,7 @@ export default function CareersApplyForm({
           />
 
           <Field
-            label="Portfolio / website"
+            label={t.portfolio}
             name="portfolio_url"
             type="url"
             placeholder="https://"
@@ -155,7 +247,7 @@ export default function CareersApplyForm({
         </div>
       </FormSection>
 
-      <FormSection number="03" title="Your CV">
+      <FormSection number="03" title={t.cv}>
         <div>
           <label className="block">
             <span className="mb-4 block text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
@@ -171,22 +263,22 @@ export default function CareersApplyForm({
             />
 
             <span className="mt-3 block text-xs text-white/30">
-              PDF, DOC or DOCX · 10 MB maximum
+              {t.cvHelp}
             </span>
           </label>
         </div>
       </FormSection>
 
-      <FormSection number="04" title="Why this role?">
+      <FormSection number="04" title={t.why}>
         <label className="block">
           <span className="mb-4 block text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
-            Tell us more
+            {t.tellMore}
           </span>
 
           <textarea
             name="cover_letter"
             rows={8}
-            placeholder="Tell us what brings you here, what you've built and what you'd like to bring to LMG."
+            placeholder={t.messagePlaceholder}
             className="w-full resize-none border border-white/15 bg-transparent px-5 py-5 text-sm leading-7 text-white outline-none transition placeholder:text-white/20 focus:border-[#d5ad58]"
           />
         </label>
@@ -198,36 +290,32 @@ export default function CareersApplyForm({
         </div>
       )}
 
-      <div className="flex flex-col gap-6 border-t border-white/15 pt-8 md:flex-row md:items-center md:justify-between">
-        <p className="max-w-xl text-xs leading-6 text-white/35">
-          By submitting your application, you confirm that
-          the information provided is accurate and may be
-          reviewed by the LMG team for recruitment purposes.
-        </p>
+      <div className="border-t border-white/15 pt-8">
+        <div className="flex flex-col gap-5">
+          <p className="max-w-xl text-xs leading-6 text-white/35">
+            {t.accuracy}
+          </p>
 
+          <p className="max-w-2xl text-xs leading-5 text-white/40">
+            {t.privacyBefore}{" "}
+            <a
+              href="/privacy"
+              className="text-white underline decoration-white/30 underline-offset-4 transition hover:decoration-white"
+            >
+              {t.privacyLink}
+            </a>.
+          </p>
 
-        <p className="max-w-2xl text-xs leading-5 text-white/40">
-          By submitting your application, you acknowledge that LMG
-          will process the information you provide for recruitment
-          purposes. Learn more about how we handle candidate data in
-          our{" "}
-          <a
-            href="/privacy"
-            className="text-white underline decoration-white/30 underline-offset-4 transition hover:decoration-white"
-          >
-            Candidate Privacy Notice
-          </a>.
-        </p>
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className="inline-flex min-w-[190px] items-center justify-center rounded-full bg-[#d5ad58] px-7 py-4 text-[10px] font-bold uppercase tracking-[0.16em] text-black transition hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {submitting
-            ? "Sending..."
-            : "Submit application"}
-        </button>
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex min-w-[190px] items-center justify-center rounded-full bg-[#d5ad58] px-7 py-4 text-[10px] font-bold uppercase tracking-[0.16em] text-black transition hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {submitting ? t.sending : t.submit}
+            </button>
+          </div>
+        </div>
       </div>
     </form>
   );

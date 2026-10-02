@@ -1,6 +1,42 @@
+"use client";
+
 import Link from "next/link";
 
+import { useCareersLanguage } from "@/components/careers/CareersLanguageProvider";
+
+const translations = {
+  en: {
+    tagline: "Build your part of what's next in music.",
+    discover: "Discover LMG Music",
+    jobs: "Jobs",
+    introduce: "Introduce yourself",
+    about: "About",
+    artists: "Artists",
+    news: "News",
+    contact: "Contact",
+    follow: "Follow LMG Music",
+    legal: "Legal",
+    privacy: "Privacy",
+  },
+  fr: {
+    tagline: "Construisez votre place dans la suite de la musique.",
+    discover: "Découvrir LMG Music",
+    jobs: "Offres",
+    introduce: "Présentez-vous",
+    about: "À propos",
+    artists: "Artistes",
+    news: "Actualités",
+    contact: "Contact",
+    follow: "Suivre LMG Music",
+    legal: "Mentions légales",
+    privacy: "Confidentialité",
+  },
+} as const;
+
 export default function CareersFooter() {
+  const { locale } = useCareersLanguage();
+  const t = translations[locale];
+
   return (
     <footer className="border-t border-white/10 bg-black px-6 pb-8 pt-16 text-white md:px-10 md:pt-20">
       <div className="mx-auto max-w-[1600px]">
@@ -21,14 +57,14 @@ export default function CareersFooter() {
             </div>
 
             <p className="mt-8 max-w-sm text-sm leading-7 text-white/45">
-              Build your part of what&apos;s next in music.
+              {t.tagline}
             </p>
 
             <a
               href="https://www.lmgmusic.fr"
               className="mt-7 inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#d5ad58]"
             >
-              Discover LMG Music
+              {t.discover}
               <span>↗</span>
             </a>
           </div>
@@ -43,14 +79,14 @@ export default function CareersFooter() {
                 href="/jobs"
                 className="transition hover:text-[#d5ad58]"
               >
-                Jobs
+                {t.jobs}
               </Link>
 
               <Link
                 href="/spontaneous"
                 className="transition hover:text-[#d5ad58]"
               >
-                Introduce yourself
+                {t.introduce}
               </Link>
 
               <Link
@@ -72,35 +108,35 @@ export default function CareersFooter() {
                 href="https://www.lmgmusic.fr/about"
                 className="transition hover:text-[#d5ad58]"
               >
-                About
+                {t.about}
               </a>
 
               <a
-                href="https://www.lmgmusic.fr/artistes"
+                href="https://www.lmgmusic.fr/artists"
                 className="transition hover:text-[#d5ad58]"
               >
-                Artists
+                {t.artists}
               </a>
 
               <a
                 href="https://www.lmgmusic.fr/news"
                 className="transition hover:text-[#d5ad58]"
               >
-                News
+                {t.news}
               </a>
 
               <a
                 href="https://www.lmgmusic.fr/contact"
                 className="transition hover:text-[#d5ad58]"
               >
-                Contact
+                {t.contact}
               </a>
             </div>
           </div>
 
           <div className="md:col-span-3 md:text-right">
             <p className="mb-6 text-[9px] font-bold uppercase tracking-[0.22em] text-white/30">
-              Follow LMG Music
+              {t.follow}
             </p>
 
             <div className="flex flex-col items-start gap-4 text-sm md:items-end">
@@ -144,14 +180,14 @@ export default function CareersFooter() {
               href="https://www.lmgmusic.fr/mentions-legales"
               className="transition hover:text-white"
             >
-              Legal
+              {t.legal}
             </a>
 
             <a
               href="https://www.lmgmusic.fr/confidentialite"
               className="transition hover:text-white"
             >
-              Privacy
+              {t.privacy}
             </a>
 
             <a

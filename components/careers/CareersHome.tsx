@@ -603,7 +603,7 @@ export default function CareersHome() {
                 </a>
 
                 <a
-                  href="https://www.lmgmusic.fr/artistes"
+                  href="https://www.lmgmusic.fr/artists"
                   className="transition hover:text-[#d5ad58]"
                 >
                   {fr ? "Artistes" : "Artists"}
