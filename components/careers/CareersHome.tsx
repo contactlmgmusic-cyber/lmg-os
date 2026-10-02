@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCareersLanguage } from "@/components/careers/CareersLanguageProvider";
+import CareersLanguageSwitcher from "@/components/careers/CareersLanguageSwitcher";
 
 const worlds = [
   {
@@ -57,7 +58,7 @@ const principles = [
 ];
 
 export default function CareersHome() {
-  const { locale, toggleLocale } = useCareersLanguage();
+  const { locale } = useCareersLanguage();
 
   const fr = locale === "fr";
 
@@ -94,12 +95,7 @@ export default function CareersHome() {
           </nav>
 
           <div className="flex items-center gap-4">
-            <button
-              onClick={toggleLocale}
-              className="text-xs font-semibold"
-            >
-              {locale === "en" ? "FR" : "EN"}
-            </button>
+            <CareersLanguageSwitcher />
 
             <Link
               href="/jobs"
@@ -115,22 +111,32 @@ export default function CareersHome() {
       <section className="relative flex min-h-[92vh] flex-col justify-end overflow-hidden px-6 pb-10 pt-36 md:px-10 md:pb-14">
         <div className="relative mx-auto w-full max-w-[1600px]">
           <p className="mb-8 text-[10px] font-bold uppercase tracking-[0.32em]">
-            Careers at LMG
+            {fr ? "Carrières chez LMG" : "Careers at LMG"}
           </p>
 
           <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
             <h1 className="max-w-[900px] text-[16vw] font-black uppercase leading-[0.78] tracking-[-0.075em] sm:text-[13vw] lg:text-[7.5vw]">
-              Build
-              <br />
-              what&apos;s
-              <br />
-              next.
+              {fr ? (
+                <>
+                  Construisez
+                  <br />
+                  la suite.
+                </>
+              ) : (
+                <>
+                  Build
+                  <br />
+                  what&apos;s
+                  <br />
+                  next.
+                </>
+              )}
             </h1>
 
             <div className="hidden min-h-[430px] items-end overflow-hidden rounded-[0.35rem] bg-white/[0.06] lg:flex">
               <div className="w-full border-t border-white/10 p-7">
                 <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/35">
-                  People behind the music
+                  {fr ? "Les talents derrière la musique" : "People behind the music"}
                 </p>
               </div>
             </div>
@@ -138,21 +144,21 @@ export default function CareersHome() {
 
           <div className="mt-12 grid gap-8 border-t border-white/20 pt-8 md:grid-cols-2">
             <p className="max-w-xl text-xl leading-8 tracking-[-0.02em] md:text-2xl">
-              Music moves because people do.
+              {fr ? "La musique avance grâce à celles et ceux qui la font." : "Music moves because people do."}
             </p>
 
             <div className="max-w-xl md:justify-self-end">
               <p className="text-sm leading-7 text-white/60 md:text-base">
-                Behind every release, every image and every opportunity are
-                people building the next chapter. Bring your perspective.
-                Build your part of it.
+                {fr
+                  ? "Derrière chaque sortie, chaque image et chaque opportunité, il y a des personnes qui construisent la suite. Apportez votre regard. Prenez part à l'histoire."
+                  : "Behind every release, every image and every opportunity are people building the next chapter. Bring your perspective. Build your part of it."}
               </p>
 
               <Link
                 href="/jobs"
                 className="mt-7 inline-flex items-center gap-4 text-xs font-bold uppercase tracking-[0.18em]"
               >
-                Explore opportunities
+                {fr ? "Découvrir les opportunités" : "Explore opportunities"}
                 <span className="text-lg">↗</span>
               </Link>
             </div>
@@ -167,11 +173,11 @@ export default function CareersHome() {
       >
         <div className="mb-20 flex items-end justify-between border-b border-white/15 pb-6">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#d5ad58]">
-            Inside LMG
+            {fr ? "Au cœur de LMG" : "Inside LMG"}
           </p>
 
           <span className="text-[10px] uppercase tracking-[0.2em] text-white/35">
-            People · Ideas · Music
+            {fr ? "Talents · Idées · Musique" : "People · Ideas · Music"}
           </span>
         </div>
 
@@ -180,7 +186,7 @@ export default function CareersHome() {
           <div className="relative min-h-[650px] overflow-hidden bg-white/[0.06]">
             <div className="absolute inset-x-0 bottom-0 border-t border-white/10 p-7">
               <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/35">
-                Life behind the projects
+                {fr ? "La vie derrière les projets" : "Life behind the projects"}
               </p>
             </div>
           </div>
@@ -188,35 +194,35 @@ export default function CareersHome() {
           <div className="flex flex-col justify-between">
             <div>
               <p className="mb-7 text-[10px] font-bold uppercase tracking-[0.28em] text-[#d5ad58]">
-                Life at LMG
+                {fr ? "La vie chez LMG" : "Life at LMG"}
               </p>
 
               <h2 className="max-w-4xl text-5xl font-medium leading-[0.98] tracking-[-0.055em] md:text-7xl xl:text-8xl">
-                We&apos;re building the company while building the work.
+                {fr
+                  ? "Nous construisons l'entreprise en même temps que nous construisons les projets."
+                  : <>We&apos;re building the company while building the work.</>}
               </h2>
             </div>
 
             <div className="mt-16 lg:mt-24">
               <div className="grid gap-8 border-t border-white/15 pt-8 md:grid-cols-2">
                 <p className="text-sm leading-7 text-white/55">
-                  LMG is an independent music ecosystem in development.
-                  There&apos;s room to propose, experiment and take real
-                  ownership of what you build.
+                  {fr
+                    ? "LMG est un écosystème musical indépendant en développement. Ici, chacun peut proposer, expérimenter et prendre pleinement part à ce qu'il construit."
+                    : <>LMG is an independent music ecosystem in development. There&apos;s room to propose, experiment and take real ownership of what you build.</>}
                 </p>
 
                 <p className="text-sm leading-7 text-white/55">
-                  Music, image, business and technology work together here.
-                  Different expertise, shared ambition, one direction.
+                  {fr
+                    ? "Musique, image, business et technologie avancent ensemble. Des expertises différentes, une ambition commune, une même direction."
+                    : "Music, image, business and technology work together here. Different expertise, shared ambition, one direction."}
                 </p>
               </div>
 
               <div className="mt-12 flex flex-wrap gap-x-8 gap-y-4 border-t border-white/15 pt-6">
-                {[
-                  "Independent",
-                  "Collaborative",
-                  "Music-first",
-                  "Building",
-                ].map((item) => (
+                {(fr
+                  ? ["Indépendant", "Collaboratif", "Music-first", "En construction"]
+                  : ["Independent", "Collaborative", "Music-first", "Building"]).map((item) => (
                   <span
                     key={item}
                     className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70"
@@ -230,11 +236,17 @@ export default function CareersHome() {
         </div>
 
         <div className="mt-28 grid border-t border-white/20 md:grid-cols-3">
-          {[
-            ["01", "Bring your perspective."],
-            ["02", "Take ownership."],
-            ["03", "Build with others."],
-          ].map(([number, text], index) => (
+          {(fr
+            ? [
+                ["01", "Apportez votre regard."],
+                ["02", "Prenez des initiatives."],
+                ["03", "Construisez avec les autres."],
+              ]
+            : [
+                ["01", "Bring your perspective."],
+                ["02", "Take ownership."],
+                ["03", "Build with others."],
+              ]).map(([number, text], index) => (
             <div
               key={number}
               className={`py-8 ${
@@ -264,24 +276,66 @@ export default function CareersHome() {
           <div className="mb-20 grid gap-10 md:grid-cols-12 md:items-end">
             <div className="md:col-span-8">
               <p className="mb-7 text-[10px] font-bold uppercase tracking-[0.3em] text-[#d5ad58]">
-                Find your place
+                {fr ? "Trouvez votre place" : "Find your place"}
               </p>
 
               <h2 className="text-5xl font-medium leading-[0.95] tracking-[-0.055em] md:text-8xl">
-                What can you
-                <br />
-                build here?
+                {fr ? (
+                  <>
+                    Que pouvez-vous
+                    <br />
+                    construire ici ?
+                  </>
+                ) : (
+                  <>
+                    What can you
+                    <br />
+                    build here?
+                  </>
+                )}
               </h2>
             </div>
 
             <p className="max-w-sm text-sm leading-7 text-white/50 md:col-span-4 md:justify-self-end">
-              Careers at LMG can take different forms. Explore the disciplines
+              {fr ? "Carrières chez LMG" : "Careers at LMG"} can take different forms. Explore the disciplines
               working together behind the music.
             </p>
           </div>
 
           <div className="border-t border-white/20">
-            {worlds.map((world, index) => (
+            {(fr
+              ? [
+                  {
+                    number: "01",
+                    title: "MUSIC",
+                    subtitle: "Façonnez le son.",
+                    description: "Développement artistique, A&R, sorties, production et live. Travaillez aux côtés de celles et ceux qui construisent la prochaine étape des artistes.",
+                    roles: ["A&R", "Projets artistes", "Production", "Live"],
+                  },
+                  {
+                    number: "02",
+                    title: "CREATIVE",
+                    subtitle: "Construisez l'image.",
+                    description: "Transformez les idées en identités, campagnes et moments. Du contenu social à la direction visuelle, la créativité traverse tout ce que nous faisons.",
+                    roles: ["Communication", "Contenu", "Design", "Social"],
+                  },
+                  {
+                    number: "03",
+                    title: "BUSINESS",
+                    subtitle: "Créez des opportunités.",
+                    description: "Développez les relations, partenariats et stratégies qui font avancer les projets et créent de nouvelles opportunités pour les artistes et LMG.",
+                    roles: ["Partenariats", "Développement", "Booking", "Opérations"],
+                  },
+                  {
+                    number: "04",
+                    title: "TECH & DIGITAL",
+                    subtitle: "Construisez les outils.",
+                    description: "Créez les plateformes et systèmes digitaux qui soutiennent notre écosystème. La technologie fait partie de la manière dont LMG travaille, évolue et expérimente.",
+                    roles: ["Développement", "Plateformes", "Data", "Digital"],
+                  },
+                ]
+              : worlds
+            ).map((world, index) => (
               <article
                 key={world.number}
                 className="group relative grid gap-8 overflow-hidden border-b border-white/20 py-12 md:grid-cols-12 md:items-start md:py-16"
@@ -327,15 +381,16 @@ export default function CareersHome() {
 
           <div className="mt-16 flex flex-col justify-between gap-8 md:flex-row md:items-center">
             <p className="max-w-xl text-xl leading-8 tracking-[-0.025em] text-white/75">
-              Your role may sit in one discipline. Your work probably
-              won&apos;t.
+              {fr
+                ? "Votre rôle peut appartenir à une discipline. Votre travail, lui, dépassera probablement ses frontières."
+                : <>Your role may sit in one discipline. Your work probably won&apos;t.</>}
             </p>
 
             <Link
               href="/jobs"
               className="inline-flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[#d5ad58]"
             >
-              Explore all opportunities
+              {fr ? "Découvrir toutes les opportunités" : "Explore all opportunities"}
               <span className="text-base">↗</span>
             </Link>
           </div>
@@ -348,22 +403,44 @@ export default function CareersHome() {
           <div className="grid gap-12 lg:grid-cols-12">
             <div className="lg:col-span-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#d5ad58]">
-                How we work
+                {fr ? "Notre façon de travailler" : "How we work"}
               </p>
 
               <p className="mt-8 max-w-xs text-sm leading-7 text-white/45">
-                We keep the way we work simple: responsibility, curiosity
-                and collaboration.
+                {fr
+                  ? "Notre façon de travailler repose sur trois principes simples : responsabilité, curiosité et collaboration."
+                  : "We keep the way we work simple: responsibility, curiosity and collaboration."}
               </p>
             </div>
 
             <div className="lg:col-span-8">
               <h2 className="max-w-4xl text-5xl font-medium leading-[0.95] tracking-[-0.055em] md:text-8xl">
-                Good work starts with how we work together.
+                {fr
+                  ? "Le bon travail commence par notre façon de travailler ensemble."
+                  : "Good work starts with how we work together."}
               </h2>
 
               <div className="mt-20 border-t border-white/20">
-                {principles.map((principle) => (
+                {(fr
+                  ? [
+                      {
+                        number: "01",
+                        title: "Prenez votre place.",
+                        text: "Vous n'avez pas besoin de tout savoir. Mais ce qui vous appartient, vous le faites avancer.",
+                      },
+                      {
+                        number: "02",
+                        title: "Pensez au-delà de votre rôle.",
+                        text: "Musique, image, business et technologie se croisent. Nous aussi.",
+                      },
+                      {
+                        number: "03",
+                        title: "Construisez ensemble.",
+                        text: "Les idées avancent plus vite lorsqu'elles sont partagées, challengées et améliorées ensemble.",
+                      },
+                    ]
+                  : principles
+                ).map((principle) => (
                   <article
                     key={principle.number}
                     className="group grid gap-8 border-b border-white/15 py-10 md:grid-cols-[80px_1fr_1fr] md:items-start md:py-12"
@@ -387,10 +464,14 @@ export default function CareersHome() {
 
           <div className="mt-28 border-t border-white/10 pt-8">
             <p className="max-w-4xl text-2xl leading-[1.35] tracking-[-0.035em] text-white/75 md:text-4xl">
-              Different perspectives make the work stronger.
+              {fr
+                ? "Des perspectives différentes rendent le travail plus fort."
+                : "Different perspectives make the work stronger."}
               <span className="text-white/30">
-                {" "}What matters is what you bring, what you learn and what
-                you build with the people around you.
+                {" "}
+                {fr
+                  ? "Ce qui compte, c'est ce que vous apportez, ce que vous apprenez et ce que vous construisez avec les personnes qui vous entourent."
+                  : "What matters is what you bring, what you learn and what you build with the people around you."}
               </span>
             </p>
           </div>
@@ -402,20 +483,31 @@ export default function CareersHome() {
         <div className="rounded-[2rem] bg-[#d5ad58] px-6 py-20 md:px-12 md:py-28">
           <div className="mx-auto max-w-[1500px]">
             <p className="mb-8 text-[10px] font-bold uppercase tracking-[0.3em]">
-              Open opportunities
+              {fr ? "Opportunités ouvertes" : "Open opportunities"}
             </p>
 
             <div className="grid gap-12 md:grid-cols-2">
               <h2 className="text-6xl font-black uppercase leading-[0.82] tracking-[-0.07em] md:text-8xl">
-                Your next
-                <br />
-                chapter?
+                {fr ? (
+                  <>
+                    Votre prochain
+                    <br />
+                    chapitre ?
+                  </>
+                ) : (
+                  <>
+                    Your next
+                    <br />
+                    chapter?
+                  </>
+                )}
               </h2>
 
               <div className="flex flex-col justify-end md:items-start">
                 <p className="max-w-md text-sm leading-7 text-white/60">
-                  Explore current opportunities across LMG. If nothing matches
-                  your profile today, you can still introduce yourself.
+                  {fr
+                    ? "Découvrez les opportunités actuellement ouvertes chez LMG. Si aucune ne correspond à votre profil aujourd'hui, vous pouvez toujours nous présenter votre parcours."
+                    : "Explore current opportunities across LMG. If nothing matches your profile today, you can still introduce yourself."}
                 </p>
 
                 <div className="mt-8 flex flex-wrap gap-3">
@@ -423,14 +515,14 @@ export default function CareersHome() {
                     href="/jobs"
                     className="rounded-full bg-black px-6 py-4 text-[10px] font-bold uppercase tracking-[0.16em] text-white"
                   >
-                    View open positions
+                    {fr ? "Voir les offres" : "View open positions"}
                   </Link>
 
                   <Link
                     href="/spontaneous"
                     className="rounded-full border border-black/30 px-6 py-4 text-[10px] font-bold uppercase tracking-[0.16em]"
                   >
-                    Introduce yourself
+                    {fr ? "Présentez-vous" : "Introduce yourself"}
                   </Link>
                 </div>
               </div>
@@ -460,14 +552,14 @@ export default function CareersHome() {
               </div>
 
               <p className="mt-8 max-w-sm text-sm leading-7 text-white/45">
-                Build your part of what&apos;s next in music.
+                {fr ? "Construisez votre place dans la suite de la musique." : <>Build your part of what&apos;s next in music.</>}
               </p>
 
               <a
                 href="https://www.lmgmusic.fr"
                 className="mt-7 inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#d5ad58]"
               >
-                Discover LMG Music
+                {fr ? "Découvrir LMG Music" : "Discover LMG Music"}
                 <span>↗</span>
               </a>
             </div>
@@ -480,14 +572,14 @@ export default function CareersHome() {
 
               <div className="flex flex-col items-start gap-4 text-sm">
                 <Link href="/jobs" className="transition hover:text-[#d5ad58]">
-                  Jobs
+                  {fr ? "Offres" : "Jobs"}
                 </Link>
 
                 <Link
                   href="/spontaneous"
                   className="transition hover:text-[#d5ad58]"
                 >
-                  Introduce yourself
+                  {fr ? "Présentez-vous" : "Introduce yourself"}
                 </Link>
 
                 <Link href="/faq" className="transition hover:text-[#d5ad58]">
@@ -507,21 +599,21 @@ export default function CareersHome() {
                   href="https://www.lmgmusic.fr/about"
                   className="transition hover:text-[#d5ad58]"
                 >
-                  About
+                  {fr ? "À propos" : "About"}
                 </a>
 
                 <a
                   href="https://www.lmgmusic.fr/artistes"
                   className="transition hover:text-[#d5ad58]"
                 >
-                  Artists
+                  {fr ? "Artistes" : "Artists"}
                 </a>
 
                 <a
                   href="https://www.lmgmusic.fr/news"
                   className="transition hover:text-[#d5ad58]"
                 >
-                  News
+                  {fr ? "Actualités" : "News"}
                 </a>
 
                 <a
@@ -536,7 +628,7 @@ export default function CareersHome() {
             {/* Follow */}
             <div className="md:col-span-3 md:text-right">
               <p className="mb-6 text-[9px] font-bold uppercase tracking-[0.22em] text-white/30">
-                Follow LMG Music
+                {fr ? "Suivre LMG Music" : "Follow LMG Music"}
               </p>
 
               <div className="flex flex-col items-start gap-4 text-sm md:items-end">
@@ -580,14 +672,14 @@ export default function CareersHome() {
                 href="https://www.lmgmusic.fr/mentions-legales"
                 className="transition hover:text-white"
               >
-                Legal
+                {fr ? "Mentions légales" : "Legal"}
               </a>
 
               <a
                 href="https://www.lmgmusic.fr/confidentialite"
                 className="transition hover:text-white"
               >
-                Privacy
+                {fr ? "Confidentialité" : "Privacy"}
               </a>
 
               <a
