@@ -39,6 +39,60 @@ export async function proxy(request: NextRequest) {
    */
   if (isMusicDomain) {
     /*
+     * Maintenance is controlled from LMG OS through
+     * public.site_settings.
+     *
+     * Only the public LMG Music domain is affected.
+     * os.lmgmusic.fr never enters this block.
+     */
+    if (path !== "/maintenance") {
+      try {
+        const supabaseUrl =
+          process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+        const supabaseAnonKey =
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (supabaseUrl && supabaseAnonKey) {
+          const maintenanceResponse = await fetch(
+            `${supabaseUrl}/rest/v1/site_settings?id=eq.lmg_music&select=maintenance_enabled`,
+            {
+              headers: {
+                apikey: supabaseAnonKey,
+                Authorization: `Bearer ${supabaseAnonKey}`,
+              },
+              cache: "no-store",
+            }
+          );
+
+          if (maintenanceResponse.ok) {
+            const settings = (await maintenanceResponse.json()) as Array<{
+              maintenance_enabled: boolean;
+            }>;
+
+            if (settings[0]?.maintenance_enabled) {
+              const url = request.nextUrl.clone();
+
+              url.pathname = "/maintenance";
+
+              return NextResponse.rewrite(url);
+            }
+          }
+        }
+      } catch (error) {
+        /*
+         * Fail open:
+         * if Supabase cannot be reached, the public website
+         * remains available instead of becoming unavailable.
+         */
+        console.error(
+          "Unable to read LMG Music maintenance state:",
+          error
+        );
+      }
+    }
+
+    /*
      * Avoid rewriting an already-internal URL.
      * We will redirect those URLs publicly below.
      */
@@ -95,58 +149,6 @@ export async function proxy(request: NextRequest) {
    * We deliberately continue through the existing
    * authentication / role logic below.
    */
-
-  const maintenanceMode =
-    process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
-
-  const maintenancePrefixes = [
-    "/login",
-    "/signup",
-    "/dashboard",
-    "/admin",
-    "/artistes",
-    "/projets",
-    "/sorties",
-    "/release-planner",
-    "/booking",
-    "/medias",
-    "/influenceurs",
-    "/campagnes",
-    "/contrats",
-    "/splits",
-    "/royalties",
-    "/finances",
-    "/taches",
-    "/mes-taches",
-    "/calendrier",
-    "/rollout",
-    "/drive",
-    "/assistant",
-    "/portail-groupe",
-    "/chat",
-    "/equipe",
-    "/notifications",
-    "/invitations",
-    "/mon-espace-artiste",
-    "/manager",
-    "/agency",
-    "/site-internet",
-  ];
-
-  const isMaintenanceAllowed =
-    path === "/maintenance" ||
-    maintenancePrefixes.some(
-      (prefix) =>
-        path === prefix ||
-        path.startsWith(`${prefix}/`)
-    );
-
-  if (maintenanceMode && !isMaintenanceAllowed) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/maintenance";
-
-    return NextResponse.redirect(url);
-  }
 
   const isPublicRoute =
     /*
