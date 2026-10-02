@@ -158,6 +158,13 @@ export default async function SiteInternetPage() {
               href="/candidatures"
               status={`${candidaturesCount || 0} reçues`}
             />
+
+            <ControlCard
+              title="Maintenance"
+              description="Mettre temporairement le site public LMG Music en maintenance et gérer le message affiché aux visiteurs."
+              href="/site-internet/maintenance"
+              status="Configurer"
+            />
           </div>
         </section>
 
