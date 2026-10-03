@@ -1,9 +1,12 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Rejoindre LMG | Legacy Music Group",
+  title: "Present Your Project | LMG Music",
   description:
-    "Candidatez pour rejoindre Legacy Music Group et présenter votre projet artistique.",
+    "Present your music and artistic project to the LMG Music team.",
+  alternates: {
+    canonical: "/rejoindre",
+  },
 };
 
 export default function Layout({
