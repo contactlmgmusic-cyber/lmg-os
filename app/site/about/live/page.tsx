@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 
-import Navbar from "@/components/site/Navbar";
-import Footer from "@/components/site/Footer";
 import LiveEntertainmentContent from "@/components/site/LiveEntertainmentContent";
 
 export const metadata: Metadata = {
@@ -16,9 +14,9 @@ export const metadata: Metadata = {
 export default function LivePage() {
   return (
     <main className="min-h-screen bg-black text-white">
-      <Navbar />
+      
       <LiveEntertainmentContent />
-      <Footer />
+      
     </main>
   );
 }

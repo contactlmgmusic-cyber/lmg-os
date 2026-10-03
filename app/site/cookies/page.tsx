@@ -1,7 +1,5 @@
 "use client";
 
-import Navbar from "@/components/site/Navbar";
-import Footer from "@/components/site/Footer";
 import { useSiteLanguage } from "@/components/site/LanguageProvider";
 
 export default function CookiesPage() {
@@ -16,7 +14,7 @@ export default function CookiesPage() {
 
   return (
     <>
-      <Navbar />
+      
 
       <main className="min-h-screen bg-black text-white">
         {/* HERO */}
@@ -219,7 +217,7 @@ export default function CookiesPage() {
         </section>
       </main>
 
-      <Footer />
+      
     </>
   );
 }

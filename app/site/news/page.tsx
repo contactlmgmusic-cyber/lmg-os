@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 
-import Navbar from "@/components/site/Navbar";
-import Footer from "@/components/site/Footer";
 import MusicNewsContent from "@/components/site/MusicNewsContent";
 import { supabase } from "@/lib/supabase";
 
@@ -42,9 +40,9 @@ export default async function NewsPage() {
 
   return (
     <main className="min-h-screen bg-black text-white">
-      <Navbar />
+      
       <MusicNewsContent articles={data || []} />
-      <Footer />
+      
     </main>
   );
 }

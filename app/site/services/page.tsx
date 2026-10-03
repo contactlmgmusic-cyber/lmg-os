@@ -1,8 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import Navbar from "@/components/site/Navbar";
-import Footer from "@/components/site/Footer";
 
 export const metadata: Metadata = {
   title: "Accompagnement artistique | Legacy Music Group",
@@ -83,7 +81,7 @@ const method = [
 export default function ServicesPage() {
   return (
     <main className="min-h-screen bg-black text-white">
-      <Navbar />
+      
 
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-zinc-900 px-6 pb-24 pt-36 md:px-8 md:pb-32">
@@ -277,7 +275,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <Footer />
+      
     </main>
   );
 }

@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 import { supabase } from "@/lib/supabase";
-import Navbar from "@/components/site/Navbar";
-import Footer from "@/components/site/Footer";
 import MusicNewsArticle from "@/components/site/MusicNewsArticle";
 
 type Params = Promise<{
@@ -148,11 +146,11 @@ export default async function NewsArticlePage({
         }}
       />
 
-      <Navbar />
+      
 
       <MusicNewsArticle article={article} />
 
-      <Footer />
+      
     </main>
   );
 }

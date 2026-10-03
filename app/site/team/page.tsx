@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 
-import Navbar from "@/components/site/Navbar";
-import Footer from "@/components/site/Footer";
 import TeamContent from "@/components/site/TeamContent";
 
 export const metadata: Metadata = {
@@ -24,9 +22,9 @@ export const metadata: Metadata = {
 export default function TeamPage() {
   return (
     <main className="min-h-screen bg-black text-white">
-      <Navbar />
+      
       <TeamContent />
-      <Footer />
+      
     </main>
   );
 }

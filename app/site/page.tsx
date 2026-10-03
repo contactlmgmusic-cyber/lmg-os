@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 
-import Navbar from "@/components/site/Navbar";
 import LatestReleases from "@/components/site/LatestReleases";
 import LatestNews from "@/components/site/LatestNews";
-import Footer from "@/components/site/Footer";
 import ReleasesCarousel from "@/components/site/ReleasesCarousel";
 import { useSiteLanguage } from "@/components/site/LanguageProvider";
 
@@ -14,7 +12,7 @@ export default function SitePage() {
 
   return (
     <main className="min-h-screen bg-black text-white">
-      <Navbar />
+      
 
       <ReleasesCarousel />
 
@@ -102,7 +100,7 @@ export default function SitePage() {
         </div>
       </section>
 
-      <Footer />
+      
     </main>
   );
 }
