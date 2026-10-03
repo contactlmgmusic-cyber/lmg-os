@@ -35,6 +35,30 @@ export async function proxy(request: NextRequest) {
     hostname === "www.agency.legacymusicgroup.fr";
 
   /*
+   * INTERNAL DOMAIN NAMESPACES
+   *
+   * Public frontend namespaces are implementation details.
+   * They must never be exposed through the OS domain.
+   */
+  if (
+    isOsDomain &&
+    (
+      path === "/site" ||
+      path.startsWith("/site/") ||
+      path === "/agency" ||
+      path.startsWith("/agency/") ||
+      path === "/careers" ||
+      path.startsWith("/careers/") ||
+      path === "/artistportal" ||
+      path.startsWith("/artistportal/")
+    )
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
+  /*
    * LMG MUSIC PUBLIC WEBSITE
    *
    * lmgmusic.fr/          -> /site
