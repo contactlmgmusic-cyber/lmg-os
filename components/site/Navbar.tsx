@@ -71,7 +71,7 @@ export default function Navbar() {
           t.artists.releasesDescription,
         ],
         [
-          "/artist-portal",
+          "https://artistportal.lmgmusic.fr",
           t.artists.portal,
           t.artists.portalDescription,
         ],

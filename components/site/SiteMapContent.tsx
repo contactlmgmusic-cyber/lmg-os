@@ -32,7 +32,7 @@ const content = {
       {
         title: "Artists",
         links: [
-          ["Artist Portal", "/artist-portal"],
+          ["Artist Portal", "https://artistportal.lmgmusic.fr"],
           ["Present a project", "/rejoindre"],
         ],
       },
@@ -78,7 +78,7 @@ const content = {
       {
         title: "Artistes",
         links: [
-          ["Artist Portal", "/artist-portal"],
+          ["Artist Portal", "https://artistportal.lmgmusic.fr"],
           ["Présenter un projet", "/rejoindre"],
         ],
       },
