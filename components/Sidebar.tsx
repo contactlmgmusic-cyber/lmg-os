@@ -43,6 +43,7 @@ const executiveSections: SidebarSection[] = [
       { href: "/artistes", label: "Tous les artistes" },
       { href: "/artistes/ranking", label: "Performances" },
       { href: "/objectifs-artistes", label: "Objectifs artistes" },
+      { href: "/artiste-events", label: "Événements artistes" },
       { href: "/validations-artiste", label: "Validations" },
       { href: "/dashboard/candidatures", label: "Candidatures", badge: "candidatures" },
     ],
@@ -135,6 +136,7 @@ const artisticDirectorSections: SidebarSection[] = [
       { href: "/artistes", label: "Tous les artistes" },
       { href: "/artistes/ranking", label: "Performances" },
       { href: "/objectifs-artistes", label: "Objectifs artistes" },
+      { href: "/artiste-events", label: "Événements artistes" },
       { href: "/validations-artiste", label: "Validations" },
     ],
   },
@@ -190,6 +192,7 @@ const managerSections: SidebarSection[] = [
       { href: "/artistes", label: "Portefeuille artistes" },
       { href: "/artistes/ranking", label: "Performances" },
       { href: "/objectifs-artistes", label: "Objectifs" },
+      { href: "/artiste-events", label: "Événements artistes" },
     ],
   },
   {
