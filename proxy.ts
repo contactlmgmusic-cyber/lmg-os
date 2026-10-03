@@ -27,6 +27,9 @@ export async function proxy(request: NextRequest) {
   const isCareersDomain =
     hostname === "careers.lmgmusic.fr";
 
+  const isArtistPortalDomain =
+    hostname === "artistportal.lmgmusic.fr";
+
   const isAgencyDomain =
     hostname === "agency.legacymusicgroup.fr" ||
     hostname === "www.agency.legacymusicgroup.fr";
@@ -162,6 +165,36 @@ export async function proxy(request: NextRequest) {
   }
 
   /*
+   * LMG ARTIST PORTAL
+   *
+   * artistportal.lmgmusic.fr/ -> /artistportal
+   *
+   * /artistportal remains an internal namespace only.
+   */
+  if (isArtistPortalDomain) {
+    if (!path.startsWith("/artistportal")) {
+      const url = request.nextUrl.clone();
+
+      url.pathname =
+        path === "/"
+          ? "/artistportal"
+          : `/artistportal${path}`;
+
+      return NextResponse.rewrite(url);
+    }
+
+    const url = request.nextUrl.clone();
+    const publicPath = path.replace(/^\/artistportal/, "");
+
+    url.pathname =
+      publicPath === ""
+        ? "/"
+        : publicPath;
+
+    return NextResponse.redirect(url);
+  }
+
+  /*
    * LMG AGENCY
    */
   if (isAgencyDomain && !path.startsWith("/agency")) {
@@ -198,6 +231,8 @@ export async function proxy(request: NextRequest) {
     path.startsWith("/agency/") ||
     path === "/careers" ||
     path.startsWith("/careers/") ||
+    path === "/artistportal" ||
+    path.startsWith("/artistportal/") ||
     path === "/login" ||
     path === "/signup";
 
