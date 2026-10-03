@@ -1,5 +1,3 @@
-"use client";
-
 const GOLD = "#D4AF5A";
 
 const features = [
