@@ -8,6 +8,11 @@ import { useSiteLanguage } from "@/components/site/LanguageProvider";
 type Artist = {
   nom?: string | null;
   slug?: string | null;
+  style?: string | null;
+  ville?: string | null;
+  photo_url?: string | null;
+  spotify_image_url?: string | null;
+  youtube_image_url?: string | null;
 };
 
 type Release = {
