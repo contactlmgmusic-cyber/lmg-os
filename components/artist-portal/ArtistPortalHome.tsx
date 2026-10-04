@@ -232,7 +232,7 @@ function Phone({
 }) {
   return (
     <div
-      className={`relative mx-auto aspect-[430/880] w-full max-w-[340px] rounded-[3rem] border border-white/15 bg-[#090909] p-[7px] shadow-[0_40px_100px_rgba(0,0,0,.7)] ${className}`}
+      className={`relative mx-auto aspect-[430/880] w-full max-w-[340px] rounded-[3rem] border border-white/15 bg-[#090909] p-[7px]  ${className}`}
     >
       <div className="absolute left-1/2 top-[14px] z-20 h-[20px] w-[82px] -translate-x-1/2 rounded-full bg-black" />
       <div className="h-full overflow-hidden rounded-[2.6rem]">{children}</div>
@@ -243,7 +243,7 @@ function Phone({
 export default function ArtistPortalHome() {
   return (
     <main className="min-h-screen overflow-hidden bg-[#030303] text-white">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.08] bg-black/80 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.08] bg-black/80 ">
         <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-6 md:px-10">
           <a
             href="https://www.lmgmusic.fr"
@@ -272,7 +272,7 @@ export default function ArtistPortalHome() {
 
       <section className="relative px-6 pb-24 pt-36 md:px-10 md:pb-32 md:pt-44">
         <div
-          className="pointer-events-none absolute right-[-15%] top-[10%] h-[650px] w-[650px] rounded-full blur-[180px]"
+          className="pointer-events-none absolute right-[-15%] top-[10%] h-[650px] w-[650px] rounded-full "
           style={{ background: "rgba(212,175,90,.08)" }}
         />
 
@@ -336,7 +336,7 @@ export default function ArtistPortalHome() {
             </div>
 
             <div
-              className="absolute bottom-[3%] right-[0%] z-20 hidden rounded-2xl border px-5 py-4 backdrop-blur-xl md:block xl:right-[5%]"
+              className="absolute bottom-[3%] right-[0%] z-20 hidden rounded-2xl border px-5 py-4  md:block xl:right-[5%]"
               style={{
                 borderColor: "rgba(212,175,90,.2)",
                 background: "rgba(10,10,10,.82)",
@@ -407,7 +407,7 @@ export default function ArtistPortalHome() {
         <div className="mx-auto grid max-w-[1250px] gap-20 lg:grid-cols-2 lg:items-center">
           <div className="relative">
             <div
-              className="absolute inset-20 rounded-full blur-[130px]"
+              className="absolute inset-20 rounded-full "
               style={{ background: "rgba(212,175,90,.08)" }}
             />
             <Phone className="relative">
@@ -472,7 +472,7 @@ export default function ArtistPortalHome() {
           </div>
 
           <div className="relative lg:order-2">
-            <div className="mx-auto w-full max-w-[390px] rounded-[34px] border border-white/10 bg-black p-7 shadow-2xl">
+            <div className="mx-auto w-full max-w-[390px] rounded-[34px] border border-white/10 bg-black p-7 ">
               <p
                 className="text-[8px] font-bold uppercase tracking-[0.28em]"
                 style={{ color: GOLD }}
