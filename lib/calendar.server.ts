@@ -18,14 +18,14 @@ export async function loadCalendar(profile: Profile) {
   if (artistAccess) {
     sources.push(
       { label: "Projets", query: db.from("projets").select("id,titre,date_sortie").not("date_sortie", "is", null), map: row => [entry("project", row, row.titre, row.date_sortie, "Sortie", "Sortie", `/projets/${row.id}`)] },
-      { label: "Rollout", query: db.from("rollout_events").select("id,titre,date_event,statut,projet_id").not("date_event", "is", null), map: row => [entry("rollout", row, row.titre, row.date_event, "Rollout", "Rollout", row.projet_id ? `/projets/${row.projet_id}` : "/rollout")] },
+      { label: "Rollout", query: db.from("rollout_events").select("id,titre,date_event,statut,projet_id").not("date_event", "is", null), map: row => [entry("rollout", row, row.titre, row.date_event, "Rollout", "Rollout", staff ? `/rollout/${row.id}` : row.projet_id ? `/projets/${row.projet_id}` : "/mon-espace-artiste/calendrier")] },
       { label: "Bookings", query: db.from("bookings").select("id,evenement,date_event,statut,prochaine_relance"), map: row => [
         ...(row.date_event ? [entry("booking", row, row.evenement, row.date_event, "Booking", "Booking", `/booking/${row.id}`)] : []),
         ...(row.prochaine_relance && staff ? [entry("booking-followup", row, `Relance : ${row.evenement}`, row.prochaine_relance, "Relance booking", "Relance", `/booking/${row.id}`)] : []),
       ] },
-      { label: "Dates artistes", query: db.from("artiste_events").select("id,titre,date_event,statut").not("date_event", "is", null), map: row => [entry("artist", row, row.titre, row.date_event, "Artiste", "Artiste", "/calendrier")] },
+      { label: "Dates artistes", query: db.from("artiste_events").select("id,titre,date_event,statut").not("date_event", "is", null), map: row => [entry("artist", row, row.titre, row.date_event, "Artiste", "Artiste", staff ? `/artiste-events/${row.id}/modifier` : "/mon-espace-artiste/evenements")] },
       { label: "Contrats", query: db.from("contrats").select("id,titre,date_signature,statut").not("date_signature", "is", null), map: row => [entry("contract", row, row.titre, row.date_signature, "Contrat", "Contrat", `/contrats/${row.id}`)] },
-      { label: "Release Planner", query: db.from("release_tasks").select("id,titre,date_prevue,statut,sortie_id").not("date_prevue", "is", null), map: row => [entry("release-task", row, row.titre, row.date_prevue, "Release Planner", "Sortie", `/release-planner/${row.sortie_id}`)] },
+      { label: "Release Planner", query: db.from("release_tasks").select("id,titre,date_prevue,statut,sortie_id").not("date_prevue", "is", null), map: row => [entry("release-task", row, row.titre, row.date_prevue, "Release Planner", "Sortie", row.sortie_id ? `/release-planner/${row.sortie_id}` : "/release-planner")] },
     );
   }
   if (staff) {

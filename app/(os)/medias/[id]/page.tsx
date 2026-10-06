@@ -1,3 +1,4 @@
+import { socialProfileUrl } from "@/lib/social-links";
 import Link from "next/link";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import MediaRelances from "@/components/MediaRelances";
@@ -325,9 +326,10 @@ if (error || !media) {
                 </a>
               )}
 
-              {media.instagram && (
+              {socialProfileUrl("Instagram", media.instagram) && (
                 <a
-                  href={`https://instagram.com/${media.instagram.replace("@", "")}`}
+                  href={socialProfileUrl("Instagram", media.instagram)!}
+                  rel="noopener noreferrer"
                   target="_blank"
                   className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800"
                 >

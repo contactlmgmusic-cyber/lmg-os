@@ -155,7 +155,7 @@ export default async function SiteInternetPage() {
             <ControlCard
               title="Candidatures"
               description="Consulter les candidatures envoyées depuis le site public."
-              href="/candidatures"
+              href="/dashboard/candidatures"
               status={`${candidaturesCount || 0} reçues`}
             />
 
