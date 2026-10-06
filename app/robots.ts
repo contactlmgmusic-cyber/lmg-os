@@ -1,41 +1,8 @@
 import type { MetadataRoute } from "next";
-
-export default function robots(): MetadataRoute.Robots {
-  return {
-    rules: {
-      userAgent: "*",
-      allow: [
-        "/",
-        "/site",
-        "/site/",
-      ],
-      disallow: [
-        "/login",
-        "/signup",
-        "/dashboard",
-        "/admin",
-        "/artistes",
-        "/projets",
-        "/booking",
-        "/medias",
-        "/influenceurs",
-        "/campagnes",
-        "/contrats",
-        "/splits",
-        "/royalties",
-        "/finances",
-        "/taches",
-        "/mes-taches",
-        "/calendrier",
-        "/rollout",
-        "/drive",
-        "/assistant",
-        "/chat",
-        "/equipe",
-        "/api/",
-      ],
-    },
-    sitemap: "https://legacymusicgroup.fr/sitemap.xml",
-    host: "https://legacymusicgroup.fr",
-  };
+import { publicDomain } from "@/lib/public-domains.server";
+export const dynamic = "force-dynamic";
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const { kind, origin } = await publicDomain();
+  if (kind === "os" || kind === "preview") return { rules: { userAgent: "*", disallow: "/" } };
+  return { rules: { userAgent: "*", allow: "/", disallow: ["/api/", "/site/", "/careers/", "/artistportal/"] }, sitemap: `${origin}/sitemap.xml`, host: origin };
 }

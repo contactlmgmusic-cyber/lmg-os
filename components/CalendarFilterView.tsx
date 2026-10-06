@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { calendarDateKey } from "@/lib/calendar-dates";
 import { useMemo, useState } from "react";
 
 type CalendarEvent = {
@@ -44,7 +45,7 @@ export default function CalendarFilterView({ days, events }: { days: { key: stri
 
   const visibleDayKeys = new Set(days.filter((day) => day.day).map((day) => day.key));
   const monthEvents = filteredEvents.filter((event) => visibleDayKeys.has(event.date));
-  const todayKey = new Date().toISOString().split("T")[0];
+  const todayKey = calendarDateKey(new Date());
   const upcoming = monthEvents.filter((event) => event.date >= todayKey).length;
 
   function toggleCategory(category: string) {

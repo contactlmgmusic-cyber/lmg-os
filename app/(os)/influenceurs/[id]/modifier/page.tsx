@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
-export default async function ModifierInfluenceurPage() {
+export default function ModifierInfluenceurPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -314,7 +314,7 @@ export default async function ModifierInfluenceurPage() {
           onClick={handleDelete}
           className="w-full rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-4 font-medium text-red-400 hover:bg-red-500/20"
         >
-          Supprimer l'influenceur
+          Supprimer l&apos;influenceur
         </button>
       </form>
     </main>

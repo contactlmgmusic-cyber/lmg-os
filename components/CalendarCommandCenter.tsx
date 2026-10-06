@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { calendarDateKey } from "@/lib/calendar-dates";
 import { useMemo, useState } from "react";
 
 export type CalendarCommandItem = {
@@ -14,6 +15,10 @@ export type CalendarCommandItem = {
 };
 
 const typeStyles: Record<string, string> = {
+  Artiste: "border-blue-500/30 bg-blue-500/10 text-blue-200",
+  Sortie: "border-violet-500/30 bg-violet-500/10 text-violet-200",
+  Contrat: "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
+  "Relance booking": "border-yellow-500/30 bg-yellow-500/10 text-yellow-200",
   Rollout: "border-cyan-500/30 bg-cyan-500/10 text-cyan-200",
   Booking: "border-pink-500/30 bg-pink-500/10 text-pink-200",
   "Relance média": "border-amber-500/30 bg-amber-500/10 text-amber-200",
@@ -27,7 +32,7 @@ const resolvedStatuses = ["Terminé", "Publié", "Refusé", "Confirmé", "Annul�
 const excludedUpcomingStatuses = ["Terminé", "Annulé", "Refusé"];
 
 function startOfDay(value: string | Date) {
-  const date = new Date(value);
+  const date = new Date(`${calendarDateKey(value)}T12:00:00`);
   date.setHours(0, 0, 0, 0);
   return date;
 }
@@ -60,7 +65,7 @@ export default function CalendarCommandCenter({ items }: { items: CalendarComman
   }, [activeTypes, items, late, search, upcoming, view]);
 
   const grouped = useMemo(() => visibleItems.reduce<Record<string, CalendarCommandItem[]>>((groups, item) => {
-    const key = item.date.slice(0, 10);
+    const key = calendarDateKey(item.date);
     (groups[key] ||= []).push(item);
     return groups;
   }, {}), [visibleItems]);

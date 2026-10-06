@@ -288,11 +288,11 @@ const relancesEnRetard = allMedias
   </div>
 </div>
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-          <h2 className="mb-6 text-3xl font-bold">Relances aujourd'hui</h2>
+          <h2 className="mb-6 text-3xl font-bold">Relances aujourd&apos;hui</h2>
 
           <div className="space-y-4">
             {relancesAujourdhui.length === 0 && (
-              <p className="text-zinc-500">Aucune relance prévue aujourd'hui.</p>
+              <p className="text-zinc-500">Aucune relance prévue aujourd&apos;hui.</p>
             )}
 
             {relancesAujourdhui.map((media: any) => (

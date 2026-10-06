@@ -152,7 +152,7 @@ const translations = {
   },
 } as const;
 
-export default function CareersPrivacyContent() {
+export default function CareersPrivacyContent({ identity }: { identity: { name: string; address: string; registration: string; email: string } }) {
   const { locale } = useCareersLanguage();
   const t = translations[locale];
 
@@ -200,7 +200,7 @@ export default function CareersPrivacyContent() {
               </h2>
 
               <div className="max-w-3xl text-base leading-7 text-white/55 md:text-lg md:leading-8">
-                {section.paragraphs.map((paragraph, index) => (
+                {(section.number === "01" ? [identity.name && identity.address ? `${identity.name} — ${identity.address}${identity.registration ? ` — ${identity.registration}` : ""}` : (locale === "fr" ? "La collecte des candidatures est suspendue jusqu’à la finalisation des informations du responsable du traitement." : "Applications are paused until the data controller information is complete.")] : section.number === "08" ? [identity.email ? `${locale === "fr" ? "Contact pour vos données" : "Privacy contact"} : ${identity.email}` : (locale === "fr" ? "Le contact sera communiqué avant la reprise des candidatures." : "A contact will be provided before applications reopen."), locale === "fr" ? "Vous pouvez adresser une réclamation à la CNIL." : "You may lodge a complaint with the CNIL."] : section.paragraphs).map((paragraph, index) => (
                   <p
                     key={index}
                     className={index > 0 ? "mt-5" : undefined}

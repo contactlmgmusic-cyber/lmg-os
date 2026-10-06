@@ -1,260 +1,59 @@
+import { createHmac, randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const MAX_CV_SIZE = 10 * 1024 * 1024;
-
-const allowedCvTypes = new Set([
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-]);
-
-const allowedDepartments = new Set([
-  "music",
-  "creative",
-  "business",
-  "tech_digital",
-  "multiple",
-]);
-
-function createPublicClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    }
-  );
-}
-
-function clean(value: FormDataEntryValue | null) {
-  if (typeof value !== "string") return null;
-
-  const trimmed = value.trim();
-  return trimmed || null;
-}
-
-function safeFilename(filename: string) {
-  const extension = filename.includes(".")
-    ? `.${filename.split(".").pop()?.toLowerCase()}`
-    : "";
-
-  return `cv${extension}`;
-}
-
+import { createServiceSupabaseClient } from "@/lib/service-supabase.server";
+import { careersIdentityReady } from "@/lib/careers-identity.server";
+import { readLimitedFormData, PayloadTooLarge } from "@/lib/limited-form-data";
+import { MAX_CV_SIZE, validateApplication, validateCv } from "@/lib/careers-validation";
+export const runtime = "nodejs";
 export async function POST(request: Request) {
-  const supabase = createPublicClient();
-
+  const id = randomUUID();
+  const failure = (status: number, message: string) => NextResponse.json({ error: message, reference: id }, { status });
+  if (!careersIdentityReady()) return failure(503, "Les candidatures sont temporairement indisponibles.");
+  if (request.headers.get("origin") !== new URL(request.url).origin) return failure(403, "Origine de la demande invalide.");
+  const length = Number(request.headers.get("content-length"));
+  if (length > MAX_CV_SIZE + 128 * 1024) return failure(413, "Le fichier est trop volumineux.");
+  let cvPath: string | null = null;
+  let db: ReturnType<typeof createServiceSupabaseClient> | null = null;
   try {
-    const formData = await request.formData();
-
-    const firstName = clean(formData.get("first_name"));
-    const lastName = clean(formData.get("last_name"));
-    const email = clean(formData.get("email"));
-    const phone = clean(formData.get("phone"));
-    const location = clean(formData.get("location"));
-    const linkedinUrl = clean(formData.get("linkedin_url"));
-    const portfolioUrl = clean(formData.get("portfolio_url"));
-    const coverLetter = clean(formData.get("cover_letter"));
-    const availability = clean(formData.get("availability"));
-    const jobSlug = clean(formData.get("job_slug"));
-    const departmentInterest = clean(
-      formData.get("department_interest")
-    );
-
-    const applicationType =
-      clean(formData.get("application_type")) === "spontaneous"
-        ? "spontaneous"
-        : "job";
-
-    const cv = formData.get("cv");
-
-    /*
-     * Champs communs aux deux types de candidature.
-     */
-    if (!firstName || !lastName || !email) {
-      return NextResponse.json(
-        {
-          error:
-            "First name, last name and email are required.",
-        },
-        { status: 400 }
-      );
-    }
-
-    /*
-     * Une candidature liée à une offre doit avoir un job_slug.
-     */
-    if (applicationType === "job" && !jobSlug) {
-      return NextResponse.json(
-        {
-          error: "A job is required.",
-        },
-        { status: 400 }
-      );
-    }
-
-    /*
-     * Une candidature spontanée doit préciser un univers.
-     */
-    if (
-      applicationType === "spontaneous" &&
-      (!departmentInterest ||
-        !allowedDepartments.has(departmentInterest))
-    ) {
-      return NextResponse.json(
-        {
-          error: "Please select an area of interest.",
-        },
-        { status: 400 }
-      );
-    }
-
-    if (!(cv instanceof File) || cv.size === 0) {
-      return NextResponse.json(
-        { error: "A CV is required." },
-        { status: 400 }
-      );
-    }
-
-    if (cv.size > MAX_CV_SIZE) {
-      return NextResponse.json(
-        { error: "The CV must be 10 MB or less." },
-        { status: 400 }
-      );
-    }
-
-    if (!allowedCvTypes.has(cv.type)) {
-      return NextResponse.json(
-        {
-          error:
-            "The CV must be a PDF, DOC or DOCX file.",
-        },
-        { status: 400 }
-      );
-    }
-
-    /*
-     * On ne recherche une offre que pour une candidature
-     * envoyée depuis une fiche de poste.
-     */
+    db = createServiceSupabaseClient();
+    // Vercel supplies x-real-ip. Fail closed if a trusted client address is unavailable.
+    const ip = request.headers.get("x-real-ip");
+    if (!ip || !process.env.CAREERS_RATE_LIMIT_SECRET) return failure(503, "Les candidatures sont temporairement indisponibles.");
+    const key = createHmac("sha256", process.env.CAREERS_RATE_LIMIT_SECRET).update(ip).digest("hex");
+    const { data: allowed, error: limitError } = await db.rpc("consume_careers_submission_quota", { client_key: key });
+    if (limitError) throw limitError;
+    if (!allowed) return NextResponse.json({ error: "Trop de tentatives. Réessayez dans une heure." }, { status: 429, headers: { "Retry-After": "3600" } });
+    const form = await readLimitedFormData(request, MAX_CV_SIZE + 128 * 1024);
+    if (form.get("website")) return failure(400, "Demande invalide.");
+    let fields: ReturnType<typeof validateApplication>, extension: string;
+    const cv = form.get("cv");
+    try {
+      fields = validateApplication(form);
+      if (!(cv instanceof File)) throw new Error("Missing CV");
+      extension = await validateCv(cv);
+    } catch { return failure(400, "Vérifiez les champs et votre CV (PDF, DOC ou DOCX, 4 Mo maximum)."); }
     let jobId: string | null = null;
-
-    if (applicationType === "job") {
-      const { data: job, error: jobError } =
-        await supabase
-          .from("careers_jobs")
-          .select("id, slug, status")
-          .eq("slug", jobSlug as string)
-          .eq("status", "published")
-          .maybeSingle();
-
-      if (jobError || !job) {
-        return NextResponse.json(
-          {
-            error:
-              "This opportunity is no longer available.",
-          },
-          { status: 404 }
-        );
-      }
-
+    if (fields.application_type === "job") {
+      const { data: job, error } = await db.from("careers_jobs").select("id, published_at, closes_at").eq("slug", fields.job_slug!).eq("status", "published").maybeSingle();
+      if (error) throw error;
+      const now = Date.now();
+      if (!job || (job.published_at && Date.parse(job.published_at) > now) || (job.closes_at && Date.parse(job.closes_at) <= now)) return failure(404, "Cette offre n’est plus disponible.");
       jobId = job.id;
     }
-
-    /*
-     * Upload privé du CV.
-     */
-    const folder = crypto.randomUUID();
-    const cvPath =
-      `applications/${folder}/${safeFilename(cv.name)}`;
-
-    const { error: uploadError } =
-      await supabase.storage
-        .from("careers-cv")
-        .upload(cvPath, cv, {
-          contentType: cv.type,
-          upsert: false,
-        });
-
-    if (uploadError) {
-      console.error(uploadError);
-
-      return NextResponse.json(
-        {
-          error:
-            `CV upload failed: ${uploadError.message}`,
-        },
-        { status: 500 }
-      );
-    }
-
-    /*
-     * Enregistrement de la candidature.
-     *
-     * JOB:
-     * job_id = offre
-     * department_interest = null
-     *
-     * SPONTANEOUS:
-     * job_id = null
-     * department_interest = choix candidat
-     */
-    const { error: applicationError } =
-      await supabase
-        .from("careers_applications")
-        .insert({
-          job_id: jobId,
-          application_type: applicationType,
-          first_name: firstName,
-          last_name: lastName,
-          email,
-          phone,
-          location,
-          linkedin_url: linkedinUrl,
-          portfolio_url: portfolioUrl,
-          cv_url: cvPath,
-          cover_letter: coverLetter,
-          department_interest:
-            applicationType === "spontaneous"
-              ? departmentInterest
-              : null,
-          availability,
-          status: "new",
-          internal_notes: null,
-        });
-
-    if (applicationError) {
-      console.error(applicationError);
-
-      await supabase.storage
-        .from("careers-cv")
-        .remove([cvPath]);
-
-      return NextResponse.json(
-        {
-          error:
-            `Application failed: ${applicationError.message}`,
-        },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      ok: true,
-      applicationType,
-    });
+    cvPath = `applications/${randomUUID()}/cv.${extension}`;
+    const { error: uploadError } = await db.storage.from("careers-cv").upload(cvPath, cv as File, { contentType: (cv as File).type, upsert: false });
+    if (uploadError) throw uploadError;
+    const { job_slug: _slug, ...application } = fields;
+    const { error } = await db.from("careers_applications").insert({ ...application, job_id: jobId, cv_url: cvPath, status: "new", internal_notes: null });
+    if (error) throw error;
+    return NextResponse.json({ ok: true, applicationType: fields.application_type });
   } catch (error) {
-    console.error(error);
-
-    return NextResponse.json(
-      {
-        error: "Unable to submit your application.",
-      },
-      { status: 500 }
-    );
+    if (error instanceof PayloadTooLarge) return failure(413, "Le fichier est trop volumineux.");
+    console.error("Careers submission failed", id, error instanceof Error ? error.message : error);
+    if (db && cvPath) {
+      const { error: cleanupError } = await db.storage.from("careers-cv").remove([cvPath]);
+      if (cleanupError) console.error("Careers CV cleanup failed", id, cvPath, cleanupError.message);
+    }
+    return failure(500, "Impossible d’envoyer votre candidature. Réessayez plus tard.");
   }
 }

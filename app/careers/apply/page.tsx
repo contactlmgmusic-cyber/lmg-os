@@ -1,3 +1,5 @@
+import { careersIdentityReady } from "@/lib/careers-identity.server";
+import CareersUnavailable from "@/components/careers/CareersUnavailable";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -23,6 +25,7 @@ type PageProps = {
 export default async function ApplyPage({
   searchParams,
 }: PageProps) {
+  if (!careersIdentityReady()) return <CareersUnavailable />;
   const { job: slug } = await searchParams;
 
   if (!slug) {

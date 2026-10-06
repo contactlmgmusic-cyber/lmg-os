@@ -16,7 +16,7 @@ export default function MentionsLegalesPage() {
           <div>
             <h2 className="text-2xl font-bold text-white">Éditeur du site</h2>
             <p className="mt-4">
-              Le site legacymusicgroup.fr est édité par Legacy Music Group.
+              Le site www.lmgmusic.fr est édité par Legacy Music Group.
             </p>
             <p className="mt-2">
               Responsable de publication : Legacy Music Group

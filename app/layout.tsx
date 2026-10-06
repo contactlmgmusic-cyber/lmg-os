@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { headers } from "next/headers";
+import { publicDomain } from "@/lib/public-domains.server";
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
+  metadataBase: new URL("https://www.lmgmusic.fr"),
   title: {
     default: "Legacy Music Group | Artist Management, Marketing & Booking",
     template: "%s | Legacy Music Group",
@@ -27,7 +30,7 @@ export const metadata: Metadata = {
     title: "Legacy Music Group",
     description:
       "Management, marketing, booking et développement artistique pour les talents de demain.",
-    url: "https://legacymusicgroup.fr",
+    url: "https://www.lmgmusic.fr",
     siteName: "Legacy Music Group",
     images: [
       {
@@ -49,30 +52,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export async function generateMetadata(): Promise<Metadata> {
+  const domain = await publicDomain();
+  return { ...defaultMetadata, ...(domain.kind === "os" || domain.kind === "preview" ? { robots: { index: false, follow: false } } : {}) };
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const language = (await headers()).get("x-lmg-language") === "en" ? "en" : "fr";
   return (
-    <html lang="fr">
+    <html lang={language}>
       <body>
-  <script
-    async
-    src="https://www.googletagmanager.com/gtag/js?id=G-WX2YGFMR7B"
-  />
-
-  <script
-    dangerouslySetInnerHTML={{
-      __html: `
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-WX2YGFMR7B');
-      `,
-    }}
-  />
-
   {children}
 </body>
     </html>

@@ -466,7 +466,6 @@ export default function Sidebar() {
           <Link href="/profil" className={`flex min-w-0 flex-1 items-center gap-3 rounded-xl p-2 transition ${pathname === "/profil" ? "bg-zinc-900" : "hover:bg-zinc-950"}`}>
             <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-zinc-800 bg-white">
               {avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={avatarUrl} alt={userName || "Photo de profil"} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-xs font-black text-black">{userInitials}</div>

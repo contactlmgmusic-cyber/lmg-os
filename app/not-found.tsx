@@ -13,7 +13,7 @@ export default function NotFound() {
         </h1>
 
         <p className="mx-auto mt-6 max-w-xl text-lg text-zinc-400">
-          La page que vous recherchez n'existe pas ou a été déplacée.
+          La page que vous recherchez n&apos;existe pas ou a été déplacée.
         </p>
 
         <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
@@ -21,7 +21,7 @@ export default function NotFound() {
             href="/site"
             className="rounded-full bg-yellow-500 px-8 py-4 font-bold text-black hover:bg-yellow-400"
           >
-            Retour à l'accueil
+            Retour à l&apos;accueil
           </Link>
 
           <Link

@@ -58,7 +58,7 @@ export function canViewRoyalties(role?: string | null) {
 }
 
 export function canUseAssistant(role?: string | null) {
-  return role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN;
+  return role === ROLES.SUPER_ADMIN;
 }
 
 export function canManagePartenaires(role?: string | null) {

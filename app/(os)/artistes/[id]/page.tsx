@@ -1665,7 +1665,7 @@ const revenusParProjet = projets
   href={`/artistes/${artiste.id}/equipe`}
   className="block rounded-xl border border-zinc-700 px-5 py-4 text-center text-zinc-300 hover:bg-zinc-800 hover:text-white"
 >
-  Gérer l'équipe
+  Gérer l&apos;équipe
 </Link>
 
 <Link

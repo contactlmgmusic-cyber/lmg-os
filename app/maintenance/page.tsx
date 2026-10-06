@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
@@ -58,12 +61,12 @@ export default async function MaintenancePage() {
         </p>
 
         <div className="mt-12 flex flex-wrap justify-center gap-5">
-          <a
+          <Link
             href="/"
             className="rounded-full border border-zinc-800 px-6 py-3 text-sm font-semibold transition hover:border-yellow-500 hover:text-yellow-500"
           >
             Réessayer
-          </a>
+          </Link>
 
           <a
             href="https://os.lmgmusic.fr"

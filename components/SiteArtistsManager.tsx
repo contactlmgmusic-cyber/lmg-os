@@ -12,13 +12,13 @@ export default function SiteArtistsManager() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
-  useEffect(() => { void load(); }, []);
   async function load() {
     const response = await fetch("/api/site-internet/artistes", { cache: "no-store" });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) { setMessage(result.error || "Chargement impossible."); setLoading(false); return; }
     setArtists(result.artists || []); setLoading(false);
   }
+  useEffect(() => { void load(); }, []);
   async function update(id: string, patch: Partial<Artist>) {
     setSavingId(id); setMessage("");
     const response = await fetch("/api/site-internet/artistes", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...patch }) });

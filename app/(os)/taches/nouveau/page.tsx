@@ -10,8 +10,8 @@ export default async function NouvelleTachePage() {
   const supabase = await createAuthenticatedSupabaseClient();
   const isAdmin = profile.role === ROLES.SUPER_ADMIN || profile.role === ROLES.ADMIN;
 
-  let profilesQuery = supabase.from("profiles").select("id, nom, role, artiste_id").order("nom");
-  let projectsQuery = supabase.from("projets").select("id, titre, artiste_id").order("titre");
+  const profilesQuery = supabase.from("profiles").select("id, nom, role, artiste_id").order("nom");
+  const projectsQuery = supabase.from("projets").select("id, titre, artiste_id").order("titre");
 
   const [{ data: profiles }, { data: projets }, internalResult] = await Promise.all([
     profilesQuery,

@@ -28,7 +28,7 @@ const translations = {
     multiple: "Across several areas",
     portfolio: "Portfolio / website",
     cv: "CV *",
-    cvHelp: "PDF, DOC or DOCX — maximum 10 MB.",
+    cvHelp: "PDF, DOC or DOCX — maximum 4 MB.",
     build: "Tell us what you want to build",
     buildPlaceholder:
       "Tell us about your perspective, your work and where you think you could contribute at LMG.",
@@ -62,7 +62,7 @@ const translations = {
     multiple: "Plusieurs domaines",
     portfolio: "Portfolio / site web",
     cv: "CV *",
-    cvHelp: "PDF, DOC ou DOCX — 10 Mo maximum.",
+    cvHelp: "PDF, DOC ou DOCX — 4 Mo maximum.",
     build: "Dites-nous ce que vous voulez construire",
     buildPlaceholder:
       "Parlez-nous de votre vision, de votre travail et de la manière dont vous pourriez contribuer à LMG.",
@@ -150,6 +150,7 @@ export default function CareersSpontaneousForm() {
       onSubmit={submit}
       className="grid gap-x-6 gap-y-7 md:grid-cols-2"
     >
+      <div className="hidden" aria-hidden="true"><label>Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label></div>
       <Field label={t.firstName}>
         <input
           name="first_name"
