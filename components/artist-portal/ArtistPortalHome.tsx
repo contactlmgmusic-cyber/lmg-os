@@ -568,29 +568,11 @@ export default function ArtistPortalHome() {
           </div>
 
           <nav aria-label="Informations et contact" className="flex flex-wrap items-center gap-x-6 gap-y-4">
-            <a href="#mentions-legales" className="rounded hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Mentions légales</a>
-            <a href="#confidentialite" className="rounded hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Confidentialité</a>
+            <a href="/mentions-legales" className="rounded hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Mentions légales</a>
+            <a href="/confidentialite" className="rounded hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Confidentialité</a>
             <a href="mailto:contact@legacymusicgroup.fr" className="rounded hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Contact</a>
             <a href="https://www.lmgmusic.fr" className="rounded hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Retour sur LMG Music ↗</a>
           </nav>
-        </div>
-        <div className="mx-auto mt-8 grid max-w-[1440px] gap-8 border-t border-white/10 pt-8 text-sm leading-7 text-zinc-300 md:grid-cols-2">
-          <section id="mentions-legales" className="scroll-mt-24" aria-labelledby="legal-title">
-            <h2 id="legal-title" className="font-semibold text-white">Mentions légales</h2>
-            <p className="mt-3">Éditeur : LMG Music, société en cours de création. Les informations d’immatriculation seront ajoutées après sa création.</p>
-            <p>Responsable de publication : Joseph Kayaya, fondateur de LMG.</p>
-            <p>Adresse de contact : 138 avenue Victor-Hugo, 75016 Paris, France.</p>
-            <p>Téléphone : <a href="tel:+33615953374" className="underline underline-offset-4">06 15 95 33 74</a>.</p>
-            <p>Contact : <a href="mailto:contact@legacymusicgroup.fr" className="break-words underline underline-offset-4">contact@legacymusicgroup.fr</a>.</p>
-            <p>Hébergement de cette page : Vercel Inc.</p>
-          </section>
-          <section id="confidentialite" className="scroll-mt-24" aria-labelledby="privacy-title">
-            <h2 id="privacy-title" className="font-semibold text-white">Confidentialité de cette page</h2>
-            <p className="mt-3">Cette page présente l’application LMG For Artist. Elle ne propose ni connexion artiste ni formulaire de collecte de données, et n’intègre pas d’outil de mesure d’audience.</p>
-            <p>L’hébergeur peut traiter des données techniques liées aux requêtes pour assurer le fonctionnement et la sécurité du site.</p>
-            <p>Les informations relatives aux données de votre compte artiste concernent l’application et doivent être consultées dans celle-ci.</p>
-            <p>Pour toute question concernant vos données ou pour exercer vos droits, contactez <a href="mailto:contact@legacymusicgroup.fr" className="break-words underline underline-offset-4">contact@legacymusicgroup.fr</a>.</p>
-          </section>
         </div>
       </footer>
     </main>

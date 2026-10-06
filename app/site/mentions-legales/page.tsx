@@ -19,7 +19,7 @@ export default function MentionsLegalesPage() {
               Le site www.lmgmusic.fr présente LMG Music, société en cours de création.
             </p>
             <p className="mt-2">
-              Responsable de publication : Joseph Kayaya, fondateur de LMG.
+              Responsable de publication : LMG.
             </p>
             <p className="mt-2">
               Adresse de contact : 138 avenue Victor-Hugo, 75016 Paris, France.
