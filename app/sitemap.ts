@@ -1,91 +1,29 @@
 import type { MetadataRoute } from "next";
-import { supabase } from "@/lib/supabase";
-
+import { createClient } from "@supabase/supabase-js";
+import { publicDomain } from "@/lib/public-domains.server";
+export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://legacymusicgroup.fr";
-
-  const [{ data: artists }, { data: releases }] = await Promise.all([
-    supabase
-      .from("public_artistes")
-      .select("slug, updated_at")
-      .eq("is_public", true)
-      .not("slug", "is", null),
-
-    supabase
-      .from("public_projets")
-      .select("slug, updated_at, date_sortie")
-      .eq("is_public", true)
-      .not("slug", "is", null),
+  const { kind, origin } = await publicDomain();
+  if (kind === "os" || kind === "preview") return [];
+  const paths = kind === "careers" ? ["", "/jobs", "/spontaneous", "/faq", "/privacy"] : kind === "artist" ? [""] : ["", "/artistes", "/releases", "/about", "/services", "/team", "/news", "/press", "/contact", "/faq", "/mentions-legales", "/confidentialite", "/cookies"];
+  const pages: MetadataRoute.Sitemap = paths.map(path => ({ url: `${origin}${path}`, changeFrequency: "weekly" }));
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL, key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key || kind === "artist") return pages;
+  const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  if (kind === "careers") {
+    const { data, error } = await db.from("careers_jobs").select("slug").eq("status", "published");
+    if (error) console.error("Careers sitemap unavailable", error.code);
+    return [...pages, ...(data ?? []).map(job => ({ url: `${origin}/jobs/${encodeURIComponent(job.slug)}` }))];
+  }
+  const [artists, releases, news] = await Promise.all([
+    db.from("public_artistes").select("slug").not("slug", "is", null),
+    db.from("public_projets").select("slug").not("slug", "is", null),
+    db.from("site_news").select("slug").eq("status", "published"),
   ]);
-
-  const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/site`,
-      changeFrequency: "weekly",
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/site/artistes`,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/site/releases`,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/site/services`,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/site/team`,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/site/rejoindre`,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/site/mentions-legales`,
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/site/confidentialite`,
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-  ];
-
-  const artistPages: MetadataRoute.Sitemap =
-    artists?.map((artist) => ({
-      url: `${baseUrl}/site/artistes/${artist.slug}`,
-      lastModified: artist.updated_at
-        ? new Date(artist.updated_at)
-        : undefined,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    })) || [];
-
-  const releasePages: MetadataRoute.Sitemap =
-    releases?.map((release) => ({
-      url: `${baseUrl}/site/projets/${release.slug}`,
-      lastModified: release.updated_at
-        ? new Date(release.updated_at)
-        : release.date_sortie
-          ? new Date(release.date_sortie)
-          : undefined,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    })) || [];
-
-  return [
-    ...staticPages,
-    ...artistPages,
-    ...releasePages,
+  for (const result of [artists, releases, news]) if (result.error) console.error("Music sitemap source unavailable", result.error.code);
+  return [...pages,
+    ...(artists.data ?? []).map(row => ({ url: `${origin}/artistes/${encodeURIComponent(row.slug)}` })),
+    ...(releases.data ?? []).map(row => ({ url: `${origin}/projets/${encodeURIComponent(row.slug)}` })),
+    ...(news.data ?? []).map(row => ({ url: `${origin}/news/${encodeURIComponent(row.slug)}` })),
   ];
 }

@@ -12,10 +12,12 @@ export default function InvitationSignupForm({ token }: { token: string }) {
 
   async function submit(event: React.FormEvent) {
     event.preventDefault(); setLoading(true); setError("");
+    try {
     const response = await fetch("/api/invitations/accept", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, name, password }) });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) { setError(result.error || "Création du compte impossible."); setLoading(false); return; }
     router.replace("/login?compte=cree");
+    } catch { setError("Service indisponible. Réessayez."); } finally { setLoading(false); }
   }
 
   return <form onSubmit={submit} className="mt-8 space-y-4">

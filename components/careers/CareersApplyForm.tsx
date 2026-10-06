@@ -35,7 +35,7 @@ const translations = {
     portfolio: "Portfolio / website",
 
     cv: "Your CV",
-    cvHelp: "PDF, DOC or DOCX · 10 MB maximum",
+    cvHelp: "PDF, DOC or DOCX · 4 MB maximum",
 
     why: "Why this role?",
     tellMore: "Tell us more",
@@ -76,7 +76,7 @@ const translations = {
     portfolio: "Portfolio / site web",
 
     cv: "Votre CV",
-    cvHelp: "PDF, DOC ou DOCX · 10 Mo maximum",
+    cvHelp: "PDF, DOC ou DOCX · 4 Mo maximum",
 
     why: "Pourquoi ce rôle ?",
     tellMore: "Dites-nous en plus",
@@ -188,6 +188,7 @@ export default function CareersApplyForm({
       className="space-y-16"
       encType="multipart/form-data"
     >
+      <div className="hidden" aria-hidden="true"><label>Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label></div>
       <FormSection number="01" title={t.about}>
         <div className="grid gap-8 md:grid-cols-2">
           <Field

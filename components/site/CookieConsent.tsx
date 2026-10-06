@@ -26,45 +26,35 @@ export default function CookieConsent() {
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
-
-      if (!saved) {
-        setOpen(true);
-        return;
-      }
-
-      const parsed = JSON.parse(saved) as Consent;
-
-      setConsent(parsed);
-      setAnalytics(Boolean(parsed.analytics));
-    } catch {
-      setOpen(true);
-    }
-
-    const handleOpen = () => {
-      setCustomize(true);
-      setOpen(true);
-    };
-
+      const parsed = saved ? JSON.parse(saved) : null;
+      if (parsed?.necessary === true && typeof parsed.analytics === "boolean") {
+        setConsent(parsed); setAnalytics(parsed.analytics);
+      } else setOpen(true);
+    } catch { setOpen(true); }
+    const handleOpen = () => { setCustomize(true); setOpen(true); };
     window.addEventListener("lmg-open-cookie-settings", handleOpen);
-
-    return () => {
-      window.removeEventListener(
-        "lmg-open-cookie-settings",
-        handleOpen
-      );
-    };
+    return () => window.removeEventListener("lmg-open-cookie-settings", handleOpen);
   }, []);
 
-  function save(next: Consent) {
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(next)
-    );
+  useEffect(() => {
+    (window as unknown as Record<string, unknown>)[`ga-disable-${GA_ID}`] = consent?.analytics !== true;
+  }, [consent]);
 
-    setConsent(next);
-    setAnalytics(next.analytics);
-    setOpen(false);
-    setCustomize(false);
+  function save(next: Consent) {
+    (window as unknown as Record<string, unknown>)[`ga-disable-${GA_ID}`] = !next.analytics;
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* The choice remains effective for this page. */ }
+    setConsent(next); setAnalytics(next.analytics); setOpen(false); setCustomize(false);
+    if (!next.analytics) {
+      for (const part of document.cookie.split(";")) {
+        const name = part.trim().split("=")[0];
+        if (!name.startsWith("_ga") && name !== "_gid" && !name.startsWith("_gat")) continue;
+        document.cookie = `${name}=; Max-Age=0; path=/`;
+        const labels = location.hostname.split(".");
+        for (let i = 0; i < labels.length - 1; i++) document.cookie = `${name}=; Max-Age=0; path=/; domain=.${labels.slice(i).join(".")}`;
+      }
+      // A loaded analytics library cannot be unloaded safely; a fresh document prevents further measurement.
+      if (consent?.analytics) window.location.reload();
+    }
   }
 
   function acceptAll() {

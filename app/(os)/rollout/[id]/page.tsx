@@ -135,12 +135,12 @@ export default async function RolloutDetailPage({
                 Modifier action
               </a>
 
-              <a
+              <Link
                 href="/rollout/nouveau"
                 className="block rounded-xl border border-zinc-700 px-5 py-3 text-center text-zinc-300 hover:bg-zinc-800"
               >
                 Nouvelle action
-              </a>
+              </Link>
             </div>
           </div>
         </aside>

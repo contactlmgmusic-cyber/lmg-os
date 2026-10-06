@@ -97,30 +97,6 @@ export default function AssistantGenerator() {
     alert("Tâches + rollout ajoutés avec succès !");
   }
 
-  function SectionBlock({
-    title,
-    items,
-  }: {
-    title: string;
-    items: string[];
-  }) {
-    return (
-      <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-        <h2 className="text-2xl font-bold">{title}</h2>
-
-        <div className="mt-5 space-y-3">
-          {items.map((item, index) => (
-            <div
-              key={index}
-              className="rounded-2xl border border-zinc-800 bg-black p-4 text-zinc-300"
-            >
-              {item}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -172,3 +148,27 @@ export default function AssistantGenerator() {
     </div>
   );
 }
+function SectionBlock({
+    title,
+    items,
+  }: {
+    title: string;
+    items: string[];
+  }) {
+    return (
+      <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+        <h2 className="text-2xl font-bold">{title}</h2>
+
+        <div className="mt-5 space-y-3">
+          {items.map((item, index) => (
+            <div
+              key={index}
+              className="rounded-2xl border border-zinc-800 bg-black p-4 text-zinc-300"
+            >
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }

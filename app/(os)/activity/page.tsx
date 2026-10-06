@@ -30,7 +30,7 @@ export default async function ActivityPage() {
             LMG OS
           </p>
 
-          <h1 className="text-5xl font-bold">Historique d'activité</h1>
+          <h1 className="text-5xl font-bold">Historique d&apos;activité</h1>
 
           <p className="mt-3 text-zinc-400">
             Toutes les actions importantes du workspace.

@@ -16,13 +16,25 @@ export default function MentionsLegalesPage() {
           <div>
             <h2 className="text-2xl font-bold text-white">Éditeur du site</h2>
             <p className="mt-4">
-              Le site legacymusicgroup.fr est édité par Legacy Music Group.
+              Le site www.lmgmusic.fr présente LMG Music, société en cours de création.
             </p>
             <p className="mt-2">
-              Responsable de publication : Legacy Music Group
+              Responsable de publication : Joseph Kayaya, fondateur de LMG.
             </p>
             <p className="mt-2">
-              Email : contact@legacymusicgroup.fr
+              Adresse de contact : 138 avenue Victor-Hugo, 75016 Paris, France.
+            </p>
+            <p className="mt-2">
+              Téléphone : 06 15 95 33 74.
+            </p>
+            <p className="mt-2">
+              Candidatures et données des candidats : candidature@lmgmusic.fr.
+            </p>
+            <p className="mt-2">
+              Contact général : contact@legacymusicgroup.fr.
+            </p>
+            <p className="mt-2">
+              Les informations d’immatriculation seront ajoutées après la création de la société.
             </p>
           </div>
 

@@ -1,3 +1,4 @@
+import { careersIdentity } from "@/lib/careers-identity.server";
 import type { Metadata } from "next";
 
 import CareersPrivacyContent from "@/components/careers/CareersPrivacyContent";
@@ -12,5 +13,5 @@ export const metadata: Metadata = {
 };
 
 export default function CareersPrivacyPage() {
-  return <CareersPrivacyContent />;
+  return <CareersPrivacyContent identity={careersIdentity()} />;
 }

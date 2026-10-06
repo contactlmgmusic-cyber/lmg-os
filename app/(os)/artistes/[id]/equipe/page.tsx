@@ -165,7 +165,7 @@ export default function EquipeArtistePage() {
           <h1 className="mt-6 text-5xl font-bold">Équipe artiste</h1>
 
           <p className="mt-3 text-zinc-400">
-            {artiste?.nom || "Artiste"} — gestion de l'équipe proche.
+            {artiste?.nom || "Artiste"} — gestion de l&apos;équipe proche.
           </p>
         </div>
       </div>

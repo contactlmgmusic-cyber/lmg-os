@@ -6,7 +6,7 @@ import { ROLES, isUserRole } from "@/lib/roles";
 
 export const runtime = "nodejs";
 
-const allowedRoles = [ROLES.ADMIN, ROLES.MANAGER, ROLES.ARTISTE, ROLES.PRESTATAIRE];
+const allowedRoles = [ROLES.ADMIN, ROLES.MANAGER, ROLES.ARTISTIC_DIRECTOR, ROLES.ARTISTE, ROLES.PRESTATAIRE];
 
 async function adminContext() {
   const supabase = await createAuthenticatedSupabaseClient();

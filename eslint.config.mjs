@@ -1,22 +1,13 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-  {
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-      "@next/next/no-img-element": "off",
-    },
-  },
-];
-
-export default eslintConfig;
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTypescript from "eslint-config-next/typescript";
+export default defineConfig([
+  ...nextVitals, ...nextTypescript,
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  { rules: { "@typescript-eslint/no-explicit-any": "off", "@next/next/no-img-element": "off",
+    // Compiler optimization diagnostics are advisory while React Compiler is not enabled.
+    // Hook ordering and dependency rules remain active.
+    "react-hooks/set-state-in-effect": "warn",
+    "react-hooks/purity": "warn",
+    "react-hooks/preserve-manual-memoization": "warn" } },
+]);

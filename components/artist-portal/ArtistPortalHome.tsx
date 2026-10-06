@@ -318,8 +318,9 @@ export default function ArtistPortalHome() {
             </div>
 
             <p className="mt-5 text-xs text-zinc-700">
-              Accès réservé aux artistes accompagnés par LMG Music.
+              Accès réservé aux artistes accompagnés par LMG Music. Les écrans présentés sont des exemples.
             </p>
+            <a href="https://os.lmgmusic.fr/login" className="mt-5 inline-flex rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white">Accéder à mon espace web ↗</a>
           </div>
 
           <div className="relative min-h-[660px] md:min-h-[760px]">
@@ -549,7 +550,7 @@ export default function ArtistPortalHome() {
             <span>•</span>
             <span>Compte personnel</span>
             <span>•</span>
-            <span>Face ID compatible</span>
+            <span>Application mobile en préparation</span>
           </div>
         </div>
       </section>

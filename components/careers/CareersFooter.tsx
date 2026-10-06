@@ -112,7 +112,7 @@ export default function CareersFooter() {
               </a>
 
               <a
-                href="https://www.lmgmusic.fr/artists"
+                href="https://www.lmgmusic.fr/artistes"
                 className="transition hover:text-[#d5ad58]"
               >
                 {t.artists}

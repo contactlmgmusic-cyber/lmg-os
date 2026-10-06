@@ -19,7 +19,7 @@ export default async function ModifierTachePage({ params }: { params: Promise<{ 
   const isAdmin = profile.role === ROLES.SUPER_ADMIN || profile.role === ROLES.ADMIN;
   if (!isAdmin && task.created_by !== profile.id) redirect(`/taches/${id}`);
 
-  let profilesQuery = supabase.from("profiles").select("id, nom, full_name, role, artiste_id").order("nom");
+  const profilesQuery = supabase.from("profiles").select("id, nom, full_name, role, artiste_id").order("nom");
   const [{ data: profiles }, { data: assignees }] = await Promise.all([
     profilesQuery,
     supabase.from("task_assignees").select("user_id").eq("task_id", id),
