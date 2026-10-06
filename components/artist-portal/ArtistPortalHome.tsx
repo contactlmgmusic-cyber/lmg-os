@@ -295,7 +295,7 @@ export default function ArtistPortalHome() {
 
             <p className="mt-8 max-w-lg text-base leading-7 text-zinc-400 md:text-lg md:leading-8">
               LMG For Artist centralise ce qui compte pour ton développement
-              artistique, directement depuis ton téléphone.
+              artistique dans une application à télécharger sur ton téléphone.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-3">
@@ -320,7 +320,6 @@ export default function ArtistPortalHome() {
             <p className="mt-5 text-xs text-zinc-700">
               Accès réservé aux artistes accompagnés par LMG Music. Les écrans présentés sont des exemples.
             </p>
-            <a href="https://os.lmgmusic.fr/login" className="mt-5 inline-flex rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white">Accéder à mon espace web ↗</a>
           </div>
 
           <div className="relative min-h-[660px] md:min-h-[760px]">
@@ -540,7 +539,8 @@ export default function ArtistPortalHome() {
           </h2>
 
           <p className="mx-auto mt-7 max-w-xl text-base leading-7 text-zinc-500">
-            LMG For Artist est réservé aux artistes disposant d&apos;un accès
+            L&apos;accès artiste se fait depuis l&apos;application téléchargeable
+            LMG For Artist, réservée aux artistes disposant d&apos;un accès
             actif. Chaque compte est personnel et relié au profil de
             l&apos;artiste concerné.
           </p>
@@ -550,7 +550,7 @@ export default function ArtistPortalHome() {
             <span>•</span>
             <span>Compte personnel</span>
             <span>•</span>
-            <span>Application mobile en préparation</span>
+            <span>Accès depuis l&apos;application</span>
           </div>
         </div>
       </section>
