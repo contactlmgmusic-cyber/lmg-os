@@ -23,7 +23,7 @@ function MiniHomeScreen() {
           <h3 className="mt-3 text-[25px] font-bold tracking-[-0.05em]">
             Bonjour, NOVA
           </h3>
-          <p className="mt-1 text-[10px] text-zinc-600">
+          <p className="mt-1 text-[10px] text-zinc-400">
             Voici ce qui compte aujourd&apos;hui.
           </p>
         </div>
@@ -76,17 +76,17 @@ function MiniHomeScreen() {
               key={title}
               className="flex items-center justify-between border-b border-white/10 py-3 last:border-0"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
                 <div className="h-7 w-7 rounded-lg bg-white/[0.035]" />
                 <div>
                   <p className="text-[9px] font-semibold">{title}</p>
-                  <p className="mt-1 text-[7px] text-zinc-600">
+                  <p className="mt-1 text-[7px] text-zinc-400">
                     Projet NOVA
                   </p>
                 </div>
               </div>
 
-              <span className="rounded-full border border-white/10 px-2 py-1 text-[6px] text-zinc-500">
+              <span className="rounded-full border border-white/10 px-2 py-1 text-[6px] text-zinc-400">
                 {status}
               </span>
             </div>
@@ -102,7 +102,7 @@ function MiniHomeScreen() {
           PROCHAINE ÉCHÉANCE
         </p>
         <p className="mt-2 text-[13px] font-semibold">Session studio</p>
-        <p className="mt-1 text-[8px] text-zinc-600">Événement · 18 oct.</p>
+        <p className="mt-1 text-[8px] text-zinc-400">Événement · 18 oct.</p>
       </div>
 
       <div className="mt-6">
@@ -125,7 +125,7 @@ function MiniHomeScreen() {
               key={label}
               className="rounded-[14px] border border-white/10 p-3"
             >
-              <p className="text-[7px] text-zinc-600">{label}</p>
+              <p className="text-[7px] text-zinc-400">{label}</p>
               <p className="mt-2 text-[15px] font-semibold">{value}</p>
             </div>
           ))}
@@ -168,7 +168,7 @@ function MiniCalendarScreen() {
           PROCHAINE DATE
         </p>
         <p className="mt-2 text-[15px] font-semibold">Session studio</p>
-        <p className="mt-1 text-[8px] text-zinc-600">18 octobre 2026</p>
+        <p className="mt-1 text-[8px] text-zinc-400">18 octobre 2026</p>
       </div>
 
       <div className="mt-5 flex gap-2">
@@ -214,7 +214,7 @@ function MiniCalendarScreen() {
                 ÉVÉNEMENT
               </p>
               <p className="mt-1 text-[10px] font-semibold">{title}</p>
-              <p className="mt-1 text-[7px] text-zinc-600">{place}</p>
+              <p className="mt-1 text-[7px] text-zinc-400">{place}</p>
             </div>
           </div>
         ))}
@@ -232,6 +232,7 @@ function Phone({
 }) {
   return (
     <div
+      aria-hidden="true"
       className={`relative mx-auto aspect-[430/880] w-full max-w-[340px] rounded-[3rem] border border-white/15 bg-[#090909] p-[7px]  ${className}`}
     >
       <div className="absolute left-1/2 top-[14px] z-20 h-[20px] w-[82px] -translate-x-1/2 rounded-full bg-black" />
@@ -247,7 +248,7 @@ export default function ArtistPortalHome() {
         <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-6 md:px-10">
           <a
             href="https://www.lmgmusic.fr"
-            className="flex items-center gap-3"
+            className="flex items-center gap-3 rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
             aria-label="LMG Music"
           >
             <img
@@ -256,7 +257,7 @@ export default function ArtistPortalHome() {
               className="h-7 w-auto object-contain"
             />
             <span className="h-4 w-px bg-white/20" />
-            <span className="text-[10px] font-semibold tracking-[0.22em] text-zinc-500">
+            <span className="text-[10px] font-semibold tracking-[0.22em] text-zinc-400">
               FOR ARTIST
             </span>
           </a>
@@ -290,7 +291,7 @@ export default function ArtistPortalHome() {
               <br />
               Ton équipe.
               <br />
-              <span className="text-zinc-500">Un seul espace.</span>
+              <span className="text-zinc-400">Un seul espace.</span>
             </h1>
 
             <p className="mt-8 max-w-lg text-base leading-7 text-zinc-400 md:text-lg md:leading-8">
@@ -307,7 +308,7 @@ export default function ArtistPortalHome() {
                   key={store}
                   className="min-w-[170px] rounded-2xl border border-white/10 bg-white/[0.025] px-5 py-4"
                 >
-                  <span className="block text-[9px] uppercase tracking-[0.16em] text-zinc-600">
+                  <span className="block text-[9px] uppercase tracking-[0.16em] text-zinc-400">
                     {status}
                   </span>
                   <strong className="mt-1 block text-[15px] font-semibold">
@@ -317,7 +318,7 @@ export default function ArtistPortalHome() {
               ))}
             </div>
 
-            <p className="mt-5 text-xs text-zinc-700">
+            <p className="mt-5 text-xs text-zinc-400">
               Accès réservé aux artistes accompagnés par LMG Music. Les écrans présentés sont des exemples.
             </p>
           </div>
@@ -372,7 +373,7 @@ export default function ArtistPortalHome() {
               </h2>
             </div>
 
-            <p className="max-w-lg self-end text-base leading-7 text-zinc-500 lg:justify-self-end">
+            <p className="max-w-lg self-end text-base leading-7 text-zinc-400 lg:justify-self-end">
               Plus besoin de chercher une information entre plusieurs
               conversations ou documents. Ton espace LMG rassemble ton
               activité, tes prochaines dates et les éléments qui nécessitent
@@ -394,7 +395,7 @@ export default function ArtistPortalHome() {
                 </span>
 
                 <h3 className="mt-14 text-xl font-semibold">{title}</h3>
-                <p className="mt-4 max-w-sm text-sm leading-6 text-zinc-600">
+                <p className="mt-4 max-w-sm text-sm leading-6 text-zinc-400">
                   {text}
                 </p>
               </article>
@@ -427,7 +428,7 @@ export default function ArtistPortalHome() {
               Garde toujours une longueur d&apos;avance.
             </h2>
 
-            <p className="mt-7 text-base leading-7 text-zinc-500">
+            <p className="mt-7 text-base leading-7 text-zinc-400">
               Sessions studio, shootings, rendez-vous, tâches et sorties :
               retrouve les prochaines étapes de ton projet dans un calendrier
               pensé pour ton activité artistique.
@@ -450,7 +451,7 @@ export default function ArtistPortalHome() {
               Plus de visibilité sur ce qui compte.
             </h2>
 
-            <p className="mt-7 text-base leading-7 text-zinc-500">
+            <p className="mt-7 text-base leading-7 text-zinc-400">
               Validations, contrats, documents et royalties sont intégrés à
               ton espace pour faciliter le suivi entre toi et l&apos;équipe
               LMG.
@@ -482,7 +483,7 @@ export default function ArtistPortalHome() {
 
               <h3 className="mt-4 text-3xl font-semibold">Mes royalties</h3>
 
-              <p className="mt-3 text-sm leading-6 text-zinc-600">
+              <p className="mt-3 text-sm leading-6 text-zinc-400">
                 Suis les montants qui te concernent et leur état de paiement.
               </p>
 
@@ -491,14 +492,14 @@ export default function ArtistPortalHome() {
                   className="rounded-2xl border p-5"
                   style={{ borderColor: "rgba(212,175,90,.2)" }}
                 >
-                  <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-zinc-600">
+                  <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-zinc-400">
                     À recevoir
                   </p>
                   <p className="mt-5 text-2xl font-semibold">—</p>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 p-5">
-                  <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-zinc-600">
+                  <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-zinc-400">
                     Déjà payé
                   </p>
                   <p className="mt-5 text-2xl font-semibold">—</p>
@@ -515,7 +516,7 @@ export default function ArtistPortalHome() {
                 <p className="mt-3 text-xl font-semibold">Répartitions</p>
 
                 <div className="mt-12 flex min-h-[150px] items-center justify-center rounded-2xl border border-dashed border-white/[0.08]">
-                  <p className="text-xs text-zinc-700">
+                  <p className="text-xs text-zinc-400">
                     Tes répartitions apparaissent ici.
                   </p>
                 </div>
@@ -538,14 +539,14 @@ export default function ArtistPortalHome() {
             Ton espace reste ton espace.
           </h2>
 
-          <p className="mx-auto mt-7 max-w-xl text-base leading-7 text-zinc-500">
+          <p className="mx-auto mt-7 max-w-xl text-base leading-7 text-zinc-400">
             L&apos;accès artiste se fait depuis l&apos;application téléchargeable
             LMG For Artist, réservée aux artistes disposant d&apos;un accès
             actif. Chaque compte est personnel et relié au profil de
             l&apos;artiste concerné.
           </p>
 
-          <div className="mt-12 flex flex-wrap justify-center gap-x-8 gap-y-4 text-xs text-zinc-600">
+          <div className="mt-12 flex flex-wrap justify-center gap-x-8 gap-y-4 text-xs text-zinc-400">
             <span>Accès sécurisé</span>
             <span>•</span>
             <span>Compte personnel</span>
@@ -556,7 +557,7 @@ export default function ArtistPortalHome() {
       </section>
 
       <footer className="border-t border-white/[0.08] px-6 py-8 md:px-10">
-        <div className="mx-auto flex max-w-[1440px] flex-col gap-4 text-xs text-zinc-700 md:flex-row md:items-center md:justify-between">
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-4 text-xs text-zinc-400 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <img
               src="/logo-lmg-v2.png"
@@ -566,12 +567,30 @@ export default function ArtistPortalHome() {
             <span>© 2026 LMG Music · LMG For Artist</span>
           </div>
 
-          <a
-            href="https://www.lmgmusic.fr"
-            className="transition hover:text-white"
-          >
-            Retour sur LMG Music ↗
-          </a>
+          <nav aria-label="Informations et contact" className="flex flex-wrap items-center gap-x-6 gap-y-4">
+            <a href="#mentions-legales" className="rounded hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Mentions légales</a>
+            <a href="#confidentialite" className="rounded hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Confidentialité</a>
+            <a href="mailto:contact@legacymusicgroup.fr" className="rounded hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Contact</a>
+            <a href="https://www.lmgmusic.fr" className="rounded hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Retour sur LMG Music ↗</a>
+          </nav>
+        </div>
+        <div className="mx-auto mt-8 grid max-w-[1440px] gap-8 border-t border-white/10 pt-8 text-sm leading-7 text-zinc-300 md:grid-cols-2">
+          <section id="mentions-legales" className="scroll-mt-24" aria-labelledby="legal-title">
+            <h2 id="legal-title" className="font-semibold text-white">Mentions légales</h2>
+            <p className="mt-3">Éditeur : LMG Music, société en cours de création. Les informations d’immatriculation seront ajoutées après sa création.</p>
+            <p>Responsable de publication : Joseph Kayaya, fondateur de LMG.</p>
+            <p>Adresse de contact : 138 avenue Victor-Hugo, 75016 Paris, France.</p>
+            <p>Téléphone : <a href="tel:+33615953374" className="underline underline-offset-4">06 15 95 33 74</a>.</p>
+            <p>Contact : <a href="mailto:contact@legacymusicgroup.fr" className="break-words underline underline-offset-4">contact@legacymusicgroup.fr</a>.</p>
+            <p>Hébergement de cette page : Vercel Inc.</p>
+          </section>
+          <section id="confidentialite" className="scroll-mt-24" aria-labelledby="privacy-title">
+            <h2 id="privacy-title" className="font-semibold text-white">Confidentialité de cette page</h2>
+            <p className="mt-3">Cette page présente l’application LMG For Artist. Elle ne propose ni connexion artiste ni formulaire de collecte de données, et n’intègre pas d’outil de mesure d’audience.</p>
+            <p>L’hébergeur peut traiter des données techniques liées aux requêtes pour assurer le fonctionnement et la sécurité du site.</p>
+            <p>Les informations relatives aux données de votre compte artiste concernent l’application et doivent être consultées dans celle-ci.</p>
+            <p>Pour toute question concernant vos données ou pour exercer vos droits, contactez <a href="mailto:contact@legacymusicgroup.fr" className="break-words underline underline-offset-4">contact@legacymusicgroup.fr</a>.</p>
+          </section>
         </div>
       </footer>
     </main>
