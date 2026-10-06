@@ -1,4 +1,4 @@
-import { careersIdentityReady } from "@/lib/careers-identity.server";
+import { careersSubmissionsReady } from "@/lib/careers-identity.server";
 import CareersUnavailable from "@/components/careers/CareersUnavailable";
 import type { Metadata } from "next";
 
@@ -14,6 +14,6 @@ export const metadata: Metadata = {
 };
 
 export default function SpontaneousApplicationPage() {
-  if (!careersIdentityReady()) return <CareersUnavailable />;
+  if (!careersSubmissionsReady()) return <CareersUnavailable />;
   return <CareersSpontaneousPageContent />;
 }

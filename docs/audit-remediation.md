@@ -65,3 +65,9 @@ Aucune validation de production, sauvegarde, MFA ou application mobile n'est rev
 - Build : compilation et TypeScript validés avec variables publiques fictives de test, sans secret de production ; cela ne valide pas les intégrations réelles.
 - Audit des dépendances de production : 0 alerte lors du contrôle.
 - Les six images optimisées passent au total d’environ 8,9 Mo à 1,45 Mo (mêmes fichiers et transparence des logos conservée).
+
+## Informations provisoires confirmées le 6 octobre
+
+LMG Music — société en cours de création ; adresse de contact : 138 avenue Victor-Hugo, 75016 Paris, France ; téléphone : 06 15 95 33 74 ; candidatures/confidentialité : candidature@lmgmusic.fr. Aucun numéro d’immatriculation n’est inventé. Ces valeurs servent de valeurs par défaut, remplaçables par les variables serveur existantes et `CAREERS_PRIVACY_PHONE`.
+
+La publication du code ne réalise pas la migration Supabase. Sans les fonctions SQL, les nouvelles acceptations d’invitations répondent 503 avant de créer un compte. Les comptes existants restent utilisables. Les formulaires de candidature restent fermés jusqu’à configuration du secret, de la clé serveur et de `CAREERS_SUBMISSIONS_ENABLED=true`, à activer uniquement après migration et recette.

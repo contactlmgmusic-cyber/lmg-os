@@ -1,14 +1,14 @@
 import { createHmac, randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createServiceSupabaseClient } from "@/lib/service-supabase.server";
-import { careersIdentityReady } from "@/lib/careers-identity.server";
+import { careersSubmissionsReady } from "@/lib/careers-identity.server";
 import { readLimitedFormData, PayloadTooLarge } from "@/lib/limited-form-data";
 import { MAX_CV_SIZE, validateApplication, validateCv } from "@/lib/careers-validation";
 export const runtime = "nodejs";
 export async function POST(request: Request) {
   const id = randomUUID();
   const failure = (status: number, message: string) => NextResponse.json({ error: message, reference: id }, { status });
-  if (!careersIdentityReady()) return failure(503, "Les candidatures sont temporairement indisponibles.");
+  if (!careersSubmissionsReady()) return failure(503, "Les candidatures sont temporairement indisponibles.");
   if (request.headers.get("origin") !== new URL(request.url).origin) return failure(403, "Origine de la demande invalide.");
   const length = Number(request.headers.get("content-length"));
   if (length > MAX_CV_SIZE + 128 * 1024) return failure(413, "Le fichier est trop volumineux.");
