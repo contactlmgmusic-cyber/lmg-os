@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import SiteLanguageSwitcher from "@/components/site/SiteLanguageSwitcher";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -9,7 +10,7 @@ import { useSiteLanguage } from "@/components/site/LanguageProvider";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { locale, setLocale, t } = useSiteLanguage();
+  const { locale, t } = useSiteLanguage();
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -117,11 +118,6 @@ export default function Navbar() {
   const closePanel = () => {
     setExpanded(null);
     lastTrigger.current?.focus();
-  };
-
-  const changeLanguage = (language: "en" | "fr") => {
-    setLocale(language);
-    setExpanded(null);
   };
 
   useEffect(() => {
@@ -291,29 +287,8 @@ export default function Navbar() {
         </Link>
       </nav>
 
-      <div
-        className="music-language-switcher"
-        aria-label={locale === "en" ? "Language" : "Langue"}
-      >
-        <button
-          type="button"
-          className={locale === "en" ? "is-active" : ""}
-          aria-pressed={locale === "en"}
-          onClick={() => changeLanguage("en")}
-        >
-          EN
-        </button>
-
-        <span aria-hidden="true">/</span>
-
-        <button
-          type="button"
-          className={locale === "fr" ? "is-active" : ""}
-          aria-pressed={locale === "fr"}
-          onClick={() => changeLanguage("fr")}
-        >
-          FR
-        </button>
+      <div className="music-language-control">
+        <SiteLanguageSwitcher />
       </div>
 
       <Link

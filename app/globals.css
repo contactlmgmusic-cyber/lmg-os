@@ -239,34 +239,11 @@ body {
   font-size: 20px;
 }
 
-.music-language-switcher {
+.music-language-control {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  white-space: nowrap;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.035em;
-}
-
-.music-language-switcher button {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  padding: 4px 1px;
-  color: #666;
-  font: inherit;
-  cursor: pointer;
-}
-
-.music-language-switcher button:hover,
-.music-language-switcher button.is-active {
-  color: #fff;
-}
-
-.music-language-switcher span {
-  color: #444;
 }
 
 .music-header-search {
@@ -357,7 +334,7 @@ body {
     justify-content: center;
   }
 
-  .music-site-header > .music-language-switcher {
+  .music-site-header > .music-language-control {
     grid-column: 3;
     grid-row: 1;
   }
@@ -392,7 +369,7 @@ body {
     display: none;
   }
 
-  .music-site-header > .music-language-switcher {
+  .music-site-header > .music-language-control {
     margin-left: auto;
     font-size: 11px;
   }
