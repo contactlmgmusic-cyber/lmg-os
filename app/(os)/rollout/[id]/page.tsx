@@ -10,7 +10,7 @@ export default async function RolloutDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER]);
+  const profile = await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR, ROLES.MANAGER]);
   const supabase = await createAuthenticatedSupabaseClient();
   const { id } = await params;
 
@@ -128,19 +128,19 @@ export default async function RolloutDetailPage({
             <h2 className="text-2xl font-bold">Actions</h2>
 
             <div className="mt-5 space-y-3">
-              <a
+              {profile.role !== ROLES.MANAGER && <Link
                 href={`/rollout/${event.id}/modifier`}
                 className="block rounded-xl bg-white px-5 py-3 text-center font-medium text-black"
               >
                 Modifier action
-              </a>
+              </Link>}
 
-              <Link
+              {profile.role !== ROLES.MANAGER && <Link
                 href="/rollout/nouveau"
                 className="block rounded-xl border border-zinc-700 px-5 py-3 text-center text-zinc-300 hover:bg-zinc-800"
               >
                 Nouvelle action
-              </Link>
+              </Link>}
             </div>
           </div>
         </aside>

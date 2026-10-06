@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { socialProfileUrl } from "@/lib/social-links";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { requireRole } from "@/lib/require-role.server";
@@ -434,7 +435,7 @@ const revenusParProjet = projets
     { label: "Spotify", value: artiste.spotify, prefix: "" },
     { label: "Deezer", value: artiste.deezer, prefix: "" },
     { label: "Apple Music", value: artiste.apple_music, prefix: "" },
-  ].filter((social) => social.value);
+  ].map((social) => ({ ...social, href: socialProfileUrl(social.label, social.value) })).filter((social) => social.href);
 
   return (
     <main className="mx-auto max-w-[1600px] scroll-smooth px-5 py-8 text-white md:px-8 lg:px-10">
@@ -1484,7 +1485,8 @@ const revenusParProjet = projets
                 {socials.map((social) => (
                   <a
                     key={social.label}
-                    href={`${social.prefix}${social.value}`}
+                    rel="noopener noreferrer"
+                    href={social.href!}
                     target="_blank"
                     className="block rounded-xl border border-zinc-700 px-5 py-4 text-zinc-300 hover:bg-zinc-800 hover:text-white"
                   >

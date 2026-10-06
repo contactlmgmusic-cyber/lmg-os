@@ -25,3 +25,7 @@ test("Music aliases and explicit maintenance route do not enter namespace loops"
   const maintenance=await proxy(new NextRequest("https://www.lmgmusic.fr/maintenance"));
   assert.equal(maintenance.headers.get("x-middleware-next"),"1");
 });
+test("old OS candidate links keep their query and reach the existing module", async () => {
+  const response = await proxy(new NextRequest("https://os.lmgmusic.fr/candidatures?statut=nouveau"));
+  assert.equal(response.headers.get("location"), "https://os.lmgmusic.fr/dashboard/candidatures?statut=nouveau");
+});

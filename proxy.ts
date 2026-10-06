@@ -39,6 +39,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.rewrite(target, options);
   }
   if (os && ["/site", "/agency", "/careers", "/artistportal"].some(prefix => path === prefix || path.startsWith(`${prefix}/`))) return redirectTo("/");
+  if (os && path === "/candidatures") return redirectTo("/dashboard/candidatures");
   const publicRoute = ["/login", "/signup", "/forgot-password", "/reset-password", "/auth/callback"].includes(path);
   if (!os && ["/site", "/agency", "/careers", "/artistportal"].some(prefix => path === prefix || path.startsWith(`${prefix}/`))) return NextResponse.next(options);
   let response = NextResponse.next(options);
