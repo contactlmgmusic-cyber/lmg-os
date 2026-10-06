@@ -1,5 +1,6 @@
 "use client";
 
+import { publicReleaseArtist } from "@/lib/public-release-artist";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -113,7 +114,7 @@ export default function ReleaseDetailContent({
   const { locale } = useSiteLanguage();
   const c = copy[locale];
 
-  const artist = getArtist(release.artistes);
+  const artist = getArtist(publicReleaseArtist(release.artistes, release.slug));
 
   const heroImage = release.hero_image_url || release.cover_url;
 

@@ -1,3 +1,4 @@
+import { publicReleaseArtist } from "@/lib/public-release-artist";
 import type { Metadata } from "next";
 
 import MusicSearchContent from "@/components/site/MusicSearchContent";
@@ -80,7 +81,7 @@ export default async function MusicSearchPage() {
   }
 
   for (const release of releasesResponse.data || []) {
-    const artist = getArtist(release.artistes);
+    const artist = getArtist(publicReleaseArtist(release.artistes, release.slug));
 
     items.push({
       id: String(release.id),

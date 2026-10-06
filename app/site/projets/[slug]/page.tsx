@@ -1,3 +1,4 @@
+import { publicReleaseArtist } from "@/lib/public-release-artist";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -46,7 +47,7 @@ export async function generateMetadata({
     };
   }
 
-  const artist = getArtist(release.artistes);
+  const artist = getArtist(publicReleaseArtist(release.artistes, slug));
 
   const description =
     release.description?.slice(0, 160) ||
@@ -128,7 +129,7 @@ export default async function ProjectPage({
     notFound();
   }
 
-  const artist = getArtist(release.artistes);
+  const artist = getArtist(publicReleaseArtist(release.artistes, slug));
 
   const { data: otherReleases } = release.artiste_id
     ? await supabase

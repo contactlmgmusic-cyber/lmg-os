@@ -1,5 +1,6 @@
 "use client";
 
+import { publicReleaseArtist } from "@/lib/public-release-artist";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -69,7 +70,7 @@ export default function LatestReleases() {
 
         <div className="grid gap-8 md:grid-cols-3">
           {releases.map((release) => {
-            const artist = getArtist(release.artistes);
+            const artist = getArtist(publicReleaseArtist(release.artistes, release.slug));
 
             return (
               <Link

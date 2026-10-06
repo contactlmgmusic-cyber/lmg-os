@@ -1,5 +1,6 @@
 "use client";
 
+import { publicReleaseArtist } from "@/lib/public-release-artist";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -100,11 +101,11 @@ export default function ReleasesCarousel() {
         <div className="relative z-20 flex w-full flex-col items-center justify-center px-6 lg:flex-row">
          <div className="hidden lg:absolute lg:left-[7%] lg:top-1/2 lg:block lg:max-w-[280px] lg:-translate-y-1/2 lg:text-left">
   <p className="mb-3 text-sm uppercase tracking-[0.4em] text-zinc-400">
-    {(Array.isArray(release.artistes) ? release.artistes[0] : release.artistes)?.nom ? (locale === "fr" ? "Artiste" : "Artist") : (locale === "fr" ? "Sortie à la une" : "Featured release")}
+    {publicReleaseArtist<{nom?: string}>(release.artistes, release.slug)?.nom ? (locale === "fr" ? "Artiste" : "Artist") : (locale === "fr" ? "Sortie à la une" : "Featured release")}
   </p>
 
   <p className="text-3xl font-black uppercase text-white">
-    {(Array.isArray(release.artistes) ? release.artistes[0] : release.artistes)?.nom || release.titre}
+    {publicReleaseArtist<{nom?: string}>(release.artistes, release.slug)?.nom || release.titre}
   </p>
 </div>
 
@@ -133,7 +134,7 @@ export default function ReleasesCarousel() {
     </h3>
 
     <p className="mt-2 uppercase tracking-[0.25em] text-zinc-300">
-      {(Array.isArray(release.artistes) ? release.artistes[0] : release.artistes)?.nom || release.titre}
+      {publicReleaseArtist<{nom?: string}>(release.artistes, release.slug)?.nom || release.titre}
     </p>
   </div>
 </div>

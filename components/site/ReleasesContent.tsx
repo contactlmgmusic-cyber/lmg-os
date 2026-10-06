@@ -1,5 +1,6 @@
 "use client";
 
+import { publicReleaseArtist } from "@/lib/public-release-artist";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -125,13 +126,13 @@ export default function ReleasesContent({
   );
 
   const filteredReleases = releases.filter((release) => {
-    const artist = getArtist(release.artistes);
+    const artist = getArtist(publicReleaseArtist(release.artistes, release.slug));
 
     const releaseYear = release.date_sortie
       ? String(new Date(release.date_sortie).getFullYear())
       : null;
 
-    if (selectedArtist && artist?.slug !== selectedArtist) return false;
+    if (selectedArtist && (artist?.slug || artist?.nom) !== selectedArtist) return false;
     if (selectedYear && releaseYear !== selectedYear) return false;
     if (selectedType && release.type !== selectedType) return false;
 
@@ -233,7 +234,7 @@ export default function ReleasesContent({
                   </h2>
 
                   <p className="mt-4 text-sm text-white/45">
-                    {getArtist(featuredRelease.artistes)?.nom || ""}
+                    {getArtist(publicReleaseArtist(featuredRelease.artistes, featuredRelease.slug))?.nom || ""}
                   </p>
                 </div>
 
@@ -423,7 +424,7 @@ export default function ReleasesContent({
 
                   <div className="grid gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                     {releasesByYear[year].map((release) => {
-                      const artist = getArtist(release.artistes);
+                      const artist = getArtist(publicReleaseArtist(release.artistes, release.slug));
 
                       return (
                         <Link

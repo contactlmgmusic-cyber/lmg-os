@@ -1,3 +1,4 @@
+import { publicReleaseArtist } from "@/lib/public-release-artist";
 import type { Metadata } from "next";
 
 import ReleasesContent from "@/components/site/ReleasesContent";
@@ -56,10 +57,10 @@ export default async function ReleasesPage({
   const artistsMap = new Map<string, string>();
 
   releases.forEach((release) => {
-    const artist = getArtist(release.artistes);
+    const artist = getArtist(publicReleaseArtist(release.artistes, release.slug));
 
-    if (artist?.slug && artist?.nom) {
-      artistsMap.set(artist.slug, artist.nom);
+    if (artist?.nom) {
+      artistsMap.set(artist.slug || artist.nom, artist.nom);
     }
   });
 
