@@ -28,6 +28,7 @@ async function getArticle(slug: string) {
     `)
     .eq("slug", slug)
     .eq("status", "published")
+    .neq("slug", "test")
     .limit(1);
 
   return data?.[0] || null;

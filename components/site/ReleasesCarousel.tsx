@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSiteLanguage } from "@/components/site/LanguageProvider";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
 export default function ReleasesCarousel() {
+  const { locale } = useSiteLanguage();
   const [releases, setReleases] = useState<any[]>([]);
   const [current, setCurrent] = useState(0);
 
@@ -79,6 +81,7 @@ export default function ReleasesCarousel() {
 
         <button
           type="button"
+          aria-label={locale === "fr" ? "Sortie précédente" : "Previous release"}
           onClick={prevSlide}
           className="absolute left-8 top-1/2 z-30 -translate-y-1/2 text-8xl font-thin text-white/50 transition hover:text-white"
         >
@@ -87,6 +90,7 @@ export default function ReleasesCarousel() {
 
         <button
           type="button"
+          aria-label={locale === "fr" ? "Sortie suivante" : "Next release"}
           onClick={nextSlide}
           className="absolute right-8 top-1/2 z-30 -translate-y-1/2 text-8xl font-thin text-white/50 transition hover:text-white"
         >
@@ -96,11 +100,11 @@ export default function ReleasesCarousel() {
         <div className="relative z-20 flex w-full flex-col items-center justify-center px-6 lg:flex-row">
          <div className="hidden lg:absolute lg:left-[7%] lg:top-1/2 lg:block lg:max-w-[280px] lg:-translate-y-1/2 lg:text-left">
   <p className="mb-3 text-sm uppercase tracking-[0.4em] text-zinc-400">
-    Artist
+    {(Array.isArray(release.artistes) ? release.artistes[0] : release.artistes)?.nom ? (locale === "fr" ? "Artiste" : "Artist") : (locale === "fr" ? "Sortie à la une" : "Featured release")}
   </p>
 
   <p className="text-3xl font-black uppercase text-white">
-    {release.artistes?.nom}
+    {(Array.isArray(release.artistes) ? release.artistes[0] : release.artistes)?.nom || release.titre}
   </p>
 </div>
 
@@ -116,7 +120,7 @@ export default function ReleasesCarousel() {
         className="object-cover object-center"
       />
     ) : (
-      <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-500">
+      <div className="flex h-full items-center justify-center bg-zinc-900 text-zinc-400">
         No Cover
       </div>
     )}
@@ -129,7 +133,7 @@ export default function ReleasesCarousel() {
     </h3>
 
     <p className="mt-2 uppercase tracking-[0.25em] text-zinc-300">
-      {release.artistes?.nom}
+      {(Array.isArray(release.artistes) ? release.artistes[0] : release.artistes)?.nom || release.titre}
     </p>
   </div>
 </div>

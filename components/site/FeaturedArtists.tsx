@@ -53,7 +53,7 @@ export default function FeaturedArtists() {
                     className="object-cover transition duration-500 group-hover:scale-110"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-zinc-600">
+                  <div className="flex h-full items-center justify-center text-zinc-400">
                     Aucune photo
                   </div>
                 )}
@@ -80,7 +80,7 @@ export default function FeaturedArtists() {
         </div>
 
         {artists.length === 0 && (
-          <p className="mt-10 text-zinc-500">
+          <p className="mt-10 text-zinc-400">
             Aucun artiste mis en avant pour le moment.
           </p>
         )}

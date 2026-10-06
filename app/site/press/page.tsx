@@ -16,11 +16,12 @@ export default async function PressPage() {
   const { data } = await supabase
     .from("site_news")
     .select(
-      "id, slug, title_fr, title_en, excerpt_fr, excerpt_en, published_at"
+      "id, slug, title_fr, title_en, excerpt_fr, excerpt_en, published_at, category_fr, category_en"
     )
     .eq("status", "published")
+    .neq("slug", "test")
     .order("published_at", { ascending: false })
-    .limit(6);
+    .limit(100);
 
-  return <MusicPressContent articles={data || []} />;
+  return <MusicPressContent articles={(data || []).filter(article => [article.category_fr, article.category_en].some(category => category && /^(presse|press|communiqué(?: de presse)?|press release)$/i.test(category.trim())))} />;
 }

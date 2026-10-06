@@ -143,7 +143,7 @@ export default function SiteMapContent() {
                   >
                     <span>{label}</span>
 
-                    <span className="text-zinc-700 transition group-hover:text-yellow-500">
+                    <span className="text-zinc-400 transition group-hover:text-yellow-500">
                       →
                     </span>
                   </Link>

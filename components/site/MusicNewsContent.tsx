@@ -73,7 +73,7 @@ export default function MusicNewsContent({
           </p>
 
           {!articles.length && (
-            <p className="border-t border-zinc-800 py-10 text-sm text-zinc-500">
+            <p className="border-t border-zinc-800 py-10 text-sm text-zinc-400">
               {content.empty}
             </p>
           )}
@@ -151,7 +151,7 @@ export default function MusicNewsContent({
                           Culture.
                         </strong>
 
-                        <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                        <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
                           LMG MUSIC JOURNAL ↗
                         </span>
                       </div>
@@ -164,7 +164,7 @@ export default function MusicNewsContent({
                     </p>
 
                     {date && (
-                      <time className="mt-5 text-[11px] text-zinc-500">
+                      <time className="mt-5 text-[11px] text-zinc-400">
                         {date}
                       </time>
                     )}
@@ -174,7 +174,7 @@ export default function MusicNewsContent({
                     </h2>
 
                     {excerpt && (
-                      <p className="mt-5 max-w-xl text-sm leading-7 text-zinc-500">
+                      <p className="mt-5 max-w-xl text-sm leading-7 text-zinc-400">
                         {excerpt}
                       </p>
                     )}

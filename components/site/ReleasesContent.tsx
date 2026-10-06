@@ -65,7 +65,7 @@ const copy = {
 
   fr: {
     eyebrow: "LMG Music / Sorties",
-    title: "Releases",
+    title: "Sorties",
     intro:
       "Découvrez les dernières sorties et le catalogue des artistes développés aux côtés de LMG Music.",
     featured: "À la une",
@@ -80,7 +80,7 @@ const copy = {
     releases: "sorties",
     empty: "Aucune sortie ne correspond à ces filtres.",
     resetFilters: "Réinitialiser les filtres",
-    unavailable: "Cover indisponible",
+    unavailable: "Pochette indisponible",
   },
 } as const;
 
@@ -233,7 +233,7 @@ export default function ReleasesContent({
                   </h2>
 
                   <p className="mt-4 text-sm text-white/45">
-                    {getArtist(featuredRelease.artistes)?.nom || "LMG Music"}
+                    {getArtist(featuredRelease.artistes)?.nom || ""}
                   </p>
                 </div>
 
@@ -469,7 +469,7 @@ export default function ReleasesContent({
                               </h3>
 
                               <p className="mt-2 text-xs uppercase tracking-[0.12em] text-white/35">
-                                {artist?.nom || "LMG Music"}
+                                {artist?.nom || ""}
                               </p>
                             </div>
 

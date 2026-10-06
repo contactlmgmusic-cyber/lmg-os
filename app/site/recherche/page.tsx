@@ -52,6 +52,7 @@ export default async function MusicSearchPage() {
           "id, slug, title_fr, title_en, excerpt_fr, excerpt_en, status, published_at"
         )
         .eq("status", "published")
+    .neq("slug", "test")
         .order("published_at", { ascending: false }),
     ]);
 

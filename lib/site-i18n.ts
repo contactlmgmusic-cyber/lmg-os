@@ -108,7 +108,7 @@ export const siteTranslations = {
       about: "À propos",
       artists: "Artistes",
       news: "Actualités",
-      careers: "Careers",
+      careers: "Carrières",
       faq: "FAQ",
       search: "Rechercher",
       menu: "Menu",

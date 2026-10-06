@@ -31,6 +31,7 @@ export default async function NewsPage() {
       published_at
     `)
     .eq("status", "published")
+    .neq("slug", "test")
     .not("slug", "is", null)
     .order("featured", { ascending: false })
     .order("published_at", {

@@ -20,27 +20,7 @@ export default function SitePage() {
 
       {/* LIVE & ENTERTAINMENT */}
       <section className="border-t border-zinc-900 bg-[#070707]">
-        <div className="mx-auto grid min-h-[620px] max-w-[1600px] lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="relative min-h-[420px] overflow-hidden bg-zinc-950 lg:min-h-[620px]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,184,0,0.14),transparent_45%)]" />
-
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.4em] text-yellow-500">
-                  LMG MUSIC
-                </p>
-
-                <p className="mt-5 text-5xl font-black uppercase tracking-[-0.05em] text-white/10 md:text-7xl">
-                  LIVE
-                </p>
-              </div>
-            </div>
-
-            <div className="absolute bottom-8 left-8 text-[10px] uppercase tracking-[0.3em] text-zinc-600">
-              Live image
-            </div>
-          </div>
-
+        <div className="mx-auto grid min-h-[360px] max-w-[1600px] lg:grid-cols-1">
           <div className="flex items-center px-6 py-16 md:px-12 lg:px-16">
             <div className="max-w-xl">
               <p className="text-xs font-semibold uppercase tracking-[0.32em] text-yellow-500">

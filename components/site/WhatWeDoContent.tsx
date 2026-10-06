@@ -223,7 +223,7 @@ export default function WhatWeDoContent() {
       {/* HERO */}
       <section className="border-b border-zinc-900 bg-[#050505] px-6 py-14 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
-          <div className="flex items-center gap-3 text-[10px] text-zinc-600">
+          <div className="flex items-center gap-3 text-[10px] text-zinc-400">
             <Link href="/about" className="transition hover:text-white">
               {c.parent}
             </Link>
@@ -317,7 +317,7 @@ export default function WhatWeDoContent() {
                   <span className="text-[10px] font-semibold tracking-[0.2em] text-yellow-500">
                     02
                   </span>
-                  <span className="text-[9px] uppercase tracking-[0.22em] text-zinc-600">
+                  <span className="text-[9px] uppercase tracking-[0.22em] text-zinc-400">
                     MUSIC DEVELOPMENT
                   </span>
                 </div>
@@ -382,7 +382,7 @@ export default function WhatWeDoContent() {
                       </p>
 
                       {index < 3 && (
-                        <span className="absolute bottom-5 right-5 hidden text-zinc-700 md:block">
+                        <span className="absolute bottom-5 right-5 hidden text-zinc-400 md:block">
                           →
                         </span>
                       )}
@@ -413,7 +413,7 @@ export default function WhatWeDoContent() {
                       {c.image.items.map((item) => (
                         <span
                           key={item}
-                          className="border border-zinc-700 px-3 py-2 text-[9px] tracking-[0.16em] text-zinc-500"
+                          className="border border-zinc-700 px-3 py-2 text-[9px] tracking-[0.16em] text-zinc-400"
                         >
                           {item}
                         </span>
@@ -445,7 +445,7 @@ export default function WhatWeDoContent() {
                   <span className="text-[10px] font-semibold tracking-[0.2em] text-yellow-500">
                     05
                   </span>
-                  <span className="text-[9px] uppercase tracking-[0.22em] text-zinc-600">
+                  <span className="text-[9px] uppercase tracking-[0.22em] text-zinc-400">
                     OPPORTUNITIES
                   </span>
                 </div>
@@ -514,7 +514,7 @@ export default function WhatWeDoContent() {
                     {c.career.items.map((item) => (
                       <span
                         key={item}
-                        className="text-[9px] uppercase tracking-[0.16em] text-zinc-600"
+                        className="text-[9px] uppercase tracking-[0.16em] text-zinc-400"
                       >
                         {item}
                       </span>
@@ -556,7 +556,7 @@ export default function WhatWeDoContent() {
                   {title}
                 </h3>
 
-                <p className="mt-4 text-sm leading-7 text-zinc-500">
+                <p className="mt-4 text-sm leading-7 text-zinc-400">
                   {text}
                 </p>
               </div>
@@ -605,7 +605,7 @@ export default function WhatWeDoContent() {
               {c.nextTitle}
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-500">
+            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-400">
               {c.nextText}
             </p>
           </div>

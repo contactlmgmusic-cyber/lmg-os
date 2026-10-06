@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { socialProfileUrl } from "@/lib/social-links";
 
 import { useSiteLanguage } from "@/components/site/LanguageProvider";
 
@@ -118,7 +119,7 @@ export default function ArtistDetailContent({
     ["YouTube", youtubeLink],
     ["Instagram", artist.instagram],
     ["TikTok", artist.tiktok],
-  ].filter((item): item is [string, string] => Boolean(item[1]));
+  ].map(([platform, value]) => [platform, socialProfileUrl(platform || "", value)]).filter((item): item is [string, string] => Boolean(item[1]));
 
   return (
     <main className="bg-black text-white">

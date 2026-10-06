@@ -46,7 +46,7 @@ export default function FeaturedReleases() {
                     className="object-cover transition duration-500 group-hover:scale-105"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-zinc-600">
+                  <div className="flex h-full items-center justify-center text-zinc-400">
                     No Cover
                   </div>
                 )}
@@ -66,7 +66,7 @@ export default function FeaturedReleases() {
                 </p>
 
                 <div className="mt-6 flex items-center justify-between border-t border-zinc-900 pt-5">
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-sm text-zinc-400">
                     {projet.date_sortie || "Date à venir"}
                   </p>
 
@@ -80,7 +80,7 @@ export default function FeaturedReleases() {
         </div>
 
         {projets.length === 0 && (
-          <p className="mt-10 text-zinc-500">
+          <p className="mt-10 text-zinc-400">
             Aucune sortie publiée pour le moment.
           </p>
         )}

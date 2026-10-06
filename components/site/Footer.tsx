@@ -111,7 +111,7 @@ export default function Footer() {
               href="https://careers.lmgmusic.fr"
               className="transition hover:text-yellow-500"
             >
-              Careers
+              {fr ? "Carrières" : "Careers"}
             </a>
 
             <Link href="/faq" className="transition hover:text-yellow-500">
@@ -132,7 +132,7 @@ export default function Footer() {
 
                     {/* LEGAL / COOKIES */}
           <div className="mt-8 pt-7">
-            <div className="grid gap-5 text-xs text-zinc-600 md:grid-cols-[1fr_auto_1fr] md:items-center">
+            <div className="grid gap-5 text-xs text-zinc-400 md:grid-cols-[1fr_auto_1fr] md:items-center">
               <div className="flex justify-center md:justify-start">
   <button
     type="button"
@@ -151,7 +151,7 @@ export default function Footer() {
         ? "Gérer les cookies"
         : "Manage cookies"
     }
-    className="group flex h-9 w-9 items-center justify-center rounded-full border border-zinc-800 text-zinc-500 transition hover:border-yellow-500 hover:text-yellow-500"
+    className="group flex h-9 w-9 items-center justify-center rounded-full border border-zinc-800 text-zinc-400 transition hover:border-yellow-500 hover:text-yellow-500"
   >
     <svg
       viewBox="0 0 24 24"
@@ -227,7 +227,7 @@ export default function Footer() {
                 </Link>
               </div>
 
-              <p className="text-center text-[11px] text-zinc-700 md:justify-self-end md:text-right">
+              <p className="text-center text-[11px] text-zinc-400 md:justify-self-end md:text-right">
                 © 2026 LMG Music
               </p>
             </div>

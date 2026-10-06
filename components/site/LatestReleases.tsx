@@ -86,7 +86,7 @@ export default function LatestReleases() {
                       className="object-cover transition duration-700 group-hover:scale-[1.03]"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-zinc-600">
+                    <div className="flex h-full items-center justify-center text-zinc-400">
                       No Cover
                     </div>
                   )}
@@ -98,7 +98,7 @@ export default function LatestReleases() {
 
                     {release.date_sortie && (
                       <>
-                        <span className="text-zinc-700">•</span>
+                        <span className="text-zinc-400">•</span>
                         <span>
                           {new Date(release.date_sortie).getFullYear()}
                         </span>
@@ -111,7 +111,7 @@ export default function LatestReleases() {
                   </h3>
 
                   <p className="mt-3 text-xs uppercase tracking-[0.18em] text-zinc-400">
-                    {artist?.nom || "LMG Music"}
+                    {artist?.nom || ""}
                   </p>
                 </div>
               </Link>

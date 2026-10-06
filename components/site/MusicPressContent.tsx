@@ -36,7 +36,7 @@ const copy = {
     resourcesLabel: "Media resources",
     resourcesTitle: "LOOKING FOR ASSETS?",
     resourcesText:
-      "Logos, approved visuals, artist materials and other media assets can be requested directly from the LMG Music team.",
+      "Download the LMG Music logo below. Approved artist materials and other media assets are available on request.",
     request: "Request media assets",
   },
 
@@ -58,7 +58,7 @@ const copy = {
     resourcesLabel: "Ressources médias",
     resourcesTitle: "BESOIN DE CONTENUS ?",
     resourcesText:
-      "Logos, visuels validés, éléments artistes et autres ressources médias peuvent être demandés directement auprès de l’équipe LMG Music.",
+      "Le logo LMG Music est disponible ci-dessous. Les visuels et ressources artistes sont transmis sur demande après validation.",
     request: "Demander des ressources",
   },
 } as const;
@@ -91,7 +91,7 @@ export default function MusicPressContent({ articles }: Props) {
           <div className="mt-10 grid gap-12 lg:grid-cols-[1.35fr_0.65fr] lg:items-end">
             <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.045em] sm:text-6xl md:text-7xl lg:text-8xl">
               <span className="block">{c.title1}</span>
-              <span className="block text-zinc-600">{c.title2}</span>
+              <span className="block text-zinc-400">{c.title2}</span>
             </h1>
 
             <p className="max-w-md text-lg leading-8 text-zinc-400">
@@ -116,7 +116,7 @@ export default function MusicPressContent({ articles }: Props) {
 
             <Link
               href="/news"
-              className="hidden text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 transition hover:text-white md:block"
+              className="hidden text-xs font-bold uppercase tracking-[0.18em] text-zinc-400 transition hover:text-white md:block"
             >
               {c.allNews} ↗
             </Link>
@@ -141,7 +141,7 @@ export default function MusicPressContent({ articles }: Props) {
                     href={`/news/${article.slug}`}
                     className="group grid gap-5 border-b border-zinc-900 py-9 transition hover:border-zinc-600 md:grid-cols-[80px_1fr_180px_40px] md:items-center md:py-12"
                   >
-                    <span className="text-[10px] font-bold tracking-[0.2em] text-zinc-700">
+                    <span className="text-[10px] font-bold tracking-[0.2em] text-zinc-400">
                       {String(index + 1).padStart(2, "0")}
                     </span>
 
@@ -151,17 +151,17 @@ export default function MusicPressContent({ articles }: Props) {
                       </h3>
 
                       {excerpt && (
-                        <p className="mt-4 max-w-2xl line-clamp-2 text-sm leading-6 text-zinc-500">
+                        <p className="mt-4 max-w-2xl line-clamp-2 text-sm leading-6 text-zinc-400">
                           {excerpt}
                         </p>
                       )}
                     </div>
 
-                    <div className="text-xs uppercase tracking-[0.14em] text-zinc-600">
+                    <div className="text-xs uppercase tracking-[0.14em] text-zinc-400">
                       {formatDate(article.published_at, locale)}
                     </div>
 
-                    <span className="text-xl text-zinc-700 transition group-hover:translate-x-1 group-hover:text-yellow-500">
+                    <span className="text-xl text-zinc-400 transition group-hover:translate-x-1 group-hover:text-yellow-500">
                       ↗
                     </span>
                   </Link>
@@ -169,14 +169,14 @@ export default function MusicPressContent({ articles }: Props) {
               })}
             </div>
           ) : (
-            <p className="border-b border-zinc-900 py-16 text-zinc-500">
+            <p className="border-b border-zinc-900 py-16 text-zinc-400">
               {c.empty}
             </p>
           )}
 
           <Link
             href="/news"
-            className="mt-10 inline-block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 transition hover:text-white md:hidden"
+            className="mt-10 inline-block text-xs font-bold uppercase tracking-[0.18em] text-zinc-400 transition hover:text-white md:hidden"
           >
             {c.allNews} ↗
           </Link>
@@ -219,12 +219,11 @@ export default function MusicPressContent({ articles }: Props) {
               {c.resourcesText}
             </p>
 
-            <Link
-              href="/contact"
-              className="mt-10 inline-flex border-b border-yellow-500 pb-2 text-xs font-bold uppercase tracking-[0.2em] transition hover:text-yellow-500"
-            >
-              {c.request} ↗
-            </Link>
+            <a href="/logo-lmg-v2.png" download="LMG-Music-logo.png" className="mt-8 inline-flex border-b border-yellow-500 pb-2 text-sm font-semibold hover:text-yellow-500">
+              {locale === "fr" ? "Télécharger le logo LMG Music (PNG)" : "Download the LMG Music logo (PNG)"} ↓
+            </a>
+            <p className="mt-4 text-sm leading-7 text-zinc-400">{locale === "fr" ? "Pour les portraits, biographies et visuels artistes, demandez les éléments validés à l’équipe." : "Contact the team for approved artist portraits, biographies and artwork."}</p>
+            <Link href="/contact" className="mt-6 inline-flex border-b border-yellow-500 pb-2 text-xs font-bold uppercase tracking-[0.2em] transition hover:text-yellow-500">{c.request} ↗</Link>
           </div>
         </div>
       </section>

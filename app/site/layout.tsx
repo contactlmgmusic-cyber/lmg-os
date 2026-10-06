@@ -8,7 +8,7 @@ import Navbar from "@/components/site/Navbar";
 export async function generateMetadata(): Promise<Metadata> {
   const raw = (await headers()).get("x-lmg-public-path") || "/";
   const path = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
-  return { metadataBase: new URL("https://www.lmgmusic.fr"), alternates: { canonical: `https://www.lmgmusic.fr${path}` } };
+  return { title: { default: "LMG Music | Artistes, musique et développement artistique", template: "%s" }, metadataBase: new URL("https://www.lmgmusic.fr"), alternates: { canonical: `https://www.lmgmusic.fr${path}` } };
 }
 
 export default function SiteLayout({

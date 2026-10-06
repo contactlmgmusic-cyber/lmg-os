@@ -10,7 +10,7 @@ const content = {
     title2: "Your space.",
     intro:
       "Your private LMG Music workspace. Follow your projects, releases, schedule, documents and key decisions from one place.",
-    login: "Open Artist Portal",
+    login: "Discover the app",
     secure: "Secure artist access",
 
     previewLabel: "Artist Portal",
@@ -72,7 +72,7 @@ const content = {
     accessText:
       "Artist Portal access is reserved for artists with an active LMG Music account. If you need help accessing your space, contact the team.",
     contact: "Contact the team",
-    enter: "Access your space",
+    enter: "Discover the app",
   },
 
   fr: {
@@ -81,7 +81,7 @@ const content = {
     title2: "Votre espace.",
     intro:
       "Votre espace privé LMG Music. Suivez vos projets, sorties, échéances, documents et décisions essentielles depuis un seul endroit.",
-    login: "Ouvrir Artist Portal",
+    login: "Découvrir l’application",
     secure: "Accès artiste sécurisé",
 
     previewLabel: "Artist Portal",
@@ -143,7 +143,7 @@ const content = {
     accessText:
       "Artist Portal est réservé aux artistes disposant d’un compte LMG Music actif. Si vous rencontrez un problème d’accès, contactez l’équipe.",
     contact: "Contacter l’équipe",
-    enter: "Accéder à votre espace",
+    enter: "Découvrir l’application",
   },
 } as const;
 
@@ -174,14 +174,14 @@ export default function ArtistPortalContent() {
 
             <div className="mt-9 flex flex-wrap items-center gap-5">
               <a
-                href="https://os.lmgmusic.fr/login"
+                href="https://artistportal.lmgmusic.fr"
                 className="inline-flex items-center gap-3 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-black transition hover:bg-yellow-500"
               >
                 {c.login}
                 <span aria-hidden="true">↗</span>
               </a>
 
-              <span className="flex items-center gap-2 text-xs text-zinc-600">
+              <span className="flex items-center gap-2 text-xs text-zinc-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
                 {c.secure}
               </span>
@@ -205,14 +205,14 @@ export default function ArtistPortalContent() {
 
                 <div className="flex items-center gap-2 rounded-full border border-zinc-800 px-3 py-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
-                  <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                  <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-400">
                     {c.previewStatus}
                   </span>
                 </div>
               </div>
 
               <div className="p-6 md:p-7">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
                   {c.current}
                 </p>
 
@@ -225,14 +225,14 @@ export default function ArtistPortalContent() {
 
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{c.project}</p>
-                    <p className="mt-1 text-xs text-zinc-600">
+                    <p className="mt-1 text-xs text-zinc-400">
                       LMG Music
                     </p>
                   </div>
 
                   <div className="hidden items-center gap-2 sm:flex">
                     <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
-                    <span className="text-[10px] font-semibold text-zinc-500">
+                    <span className="text-[10px] font-semibold text-zinc-400">
                       {c.projectStatus}
                     </span>
                   </div>
@@ -240,7 +240,7 @@ export default function ArtistPortalContent() {
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <div className="rounded-2xl border border-zinc-800 bg-black p-4">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-600">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-400">
                       {c.next}
                     </p>
 
@@ -248,7 +248,7 @@ export default function ArtistPortalContent() {
                       <p className="text-xl font-semibold tracking-[-0.03em]">
                         {c.nextDate}
                       </p>
-                      <p className="text-right text-[10px] text-zinc-500">
+                      <p className="text-right text-[10px] text-zinc-400">
                         {c.nextTask}
                       </p>
                     </div>
@@ -256,7 +256,7 @@ export default function ArtistPortalContent() {
 
                   <div className="rounded-2xl border border-zinc-800 bg-black p-4">
                     <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-xs text-zinc-400">
                         {c.documents}
                       </span>
                       <span className="text-[10px] font-semibold text-zinc-300">
@@ -265,7 +265,7 @@ export default function ArtistPortalContent() {
                     </div>
 
                     <div className="flex items-center justify-between pt-3">
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-xs text-zinc-400">
                         {c.schedule}
                       </span>
                       <span className="text-[10px] font-semibold text-zinc-300">
@@ -296,7 +296,7 @@ export default function ArtistPortalContent() {
               </h2>
             </div>
 
-            <p className="max-w-xl text-sm leading-7 text-zinc-500 md:justify-self-end">
+            <p className="max-w-xl text-sm leading-7 text-zinc-400 md:justify-self-end">
               {c.sectionText}
             </p>
           </div>
@@ -312,7 +312,7 @@ export default function ArtistPortalContent() {
                     {item.number}
                   </span>
 
-                  <span className="rounded-full border border-zinc-800 px-3 py-1 text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600">
+                  <span className="rounded-full border border-zinc-800 px-3 py-1 text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-400">
                     {item.tag}
                   </span>
                 </div>
@@ -322,7 +322,7 @@ export default function ArtistPortalContent() {
                     {item.title}
                   </h3>
 
-                  <p className="mt-4 max-w-lg text-sm leading-7 text-zinc-500">
+                  <p className="mt-4 max-w-lg text-sm leading-7 text-zinc-400">
                     {item.text}
                   </p>
                 </div>
@@ -344,13 +344,13 @@ export default function ArtistPortalContent() {
               {c.accessTitle}
             </h2>
 
-            <p className="mt-5 max-w-2xl text-sm leading-7 text-zinc-500">
+            <p className="mt-5 max-w-2xl text-sm leading-7 text-zinc-400">
               {c.accessText}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-5">
               <a
-                href="https://os.lmgmusic.fr/login"
+                href="https://artistportal.lmgmusic.fr"
                 className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-5 py-3 text-xs font-semibold transition hover:border-white hover:bg-white hover:text-black"
               >
                 {c.enter} ↗
@@ -358,7 +358,7 @@ export default function ArtistPortalContent() {
 
               <Link
                 href="/contact"
-                className="inline-flex items-center px-1 py-3 text-xs font-semibold text-zinc-500 transition hover:text-yellow-500"
+                className="inline-flex items-center px-1 py-3 text-xs font-semibold text-zinc-400 transition hover:text-yellow-500"
               >
                 {c.contact} →
               </Link>

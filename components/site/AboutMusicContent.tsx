@@ -241,7 +241,7 @@ export default function AboutMusicContent() {
                 {c.approachTitle}
               </h2>
 
-              <p className="mt-6 max-w-lg text-sm leading-8 text-zinc-500">
+              <p className="mt-6 max-w-lg text-sm leading-8 text-zinc-400">
                 {c.approachIntro}
               </p>
             </div>
@@ -272,7 +272,7 @@ export default function AboutMusicContent() {
                         {item.title}
                       </h3>
 
-                      <p className="mt-4 max-w-xs text-sm leading-7 text-zinc-500">
+                      <p className="mt-4 max-w-xs text-sm leading-7 text-zinc-400">
                         {item.text}
                       </p>
                     </div>
@@ -286,7 +286,7 @@ export default function AboutMusicContent() {
 
               <div className="mx-auto mt-6 flex w-fit items-center gap-3">
                 <span className="h-px w-8 bg-zinc-700" />
-                <span className="text-[9px] font-semibold tracking-[0.22em] text-zinc-600">
+                <span className="text-[9px] font-semibold tracking-[0.22em] text-zinc-400">
                   ONE ARTIST / ONE DIRECTION
                 </span>
                 <span className="h-px w-8 bg-zinc-700" />
@@ -326,19 +326,19 @@ export default function AboutMusicContent() {
 
           <div className="mt-16 grid grid-cols-3 border-y border-zinc-800 py-7 text-center">
             <div>
-              <span className="text-[10px] font-semibold tracking-[0.18em] text-zinc-500">
+              <span className="text-[10px] font-semibold tracking-[0.18em] text-zinc-400">
                 MUSIC
               </span>
             </div>
 
             <div className="border-x border-zinc-800">
-              <span className="text-[10px] font-semibold tracking-[0.18em] text-zinc-500">
+              <span className="text-[10px] font-semibold tracking-[0.18em] text-zinc-400">
                 AGENCY
               </span>
             </div>
 
             <div>
-              <span className="text-[10px] font-semibold tracking-[0.18em] text-zinc-500">
+              <span className="text-[10px] font-semibold tracking-[0.18em] text-zinc-400">
                 GROUP
               </span>
             </div>
@@ -358,7 +358,7 @@ export default function AboutMusicContent() {
               {c.nextTitle}
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-500">
+            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-400">
               {c.nextText}
             </p>
           </div>

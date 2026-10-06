@@ -190,7 +190,7 @@ export default function TeamContent() {
                   Kayaya
                 </h2>
 
-                <p className="mt-5 text-sm uppercase tracking-[0.15em] text-zinc-500">
+                <p className="mt-5 text-sm uppercase tracking-[0.15em] text-zinc-400">
                   {c.joseph.title}
                 </p>
 
@@ -203,7 +203,7 @@ export default function TeamContent() {
                 {c.joseph.areas.map((area) => (
                   <span
                     key={area}
-                    className="border border-zinc-800 px-3 py-2 text-[9px] uppercase tracking-[0.14em] text-zinc-500"
+                    className="border border-zinc-800 px-3 py-2 text-[9px] uppercase tracking-[0.14em] text-zinc-400"
                   >
                     {area}
                   </span>
@@ -231,7 +231,7 @@ export default function TeamContent() {
                 {c.yli.name}
               </h2>
 
-              <p className="mt-5 text-sm uppercase tracking-[0.14em] text-zinc-500">
+              <p className="mt-5 text-sm uppercase tracking-[0.14em] text-zinc-400">
                 {c.yli.title}
               </p>
 
@@ -308,7 +308,7 @@ export default function TeamContent() {
                   {c.marie.name}
                 </h2>
 
-                <p className="mt-5 text-sm uppercase tracking-[0.14em] text-zinc-500">
+                <p className="mt-5 text-sm uppercase tracking-[0.14em] text-zinc-400">
                   {c.marie.title}
                 </p>
 
@@ -372,7 +372,7 @@ export default function TeamContent() {
                   {title}
                 </h3>
 
-                <p className="mt-4 text-sm leading-7 text-zinc-500">
+                <p className="mt-4 text-sm leading-7 text-zinc-400">
                   {text}
                 </p>
               </div>
@@ -393,7 +393,7 @@ export default function TeamContent() {
               {c.nextTitle}
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-500">
+            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-400">
               {c.nextText}
             </p>
           </div>

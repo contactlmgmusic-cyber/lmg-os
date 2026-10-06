@@ -92,7 +92,7 @@ export default function MusicNewsArticle({
         <div className="mx-auto max-w-7xl">
           <nav
             aria-label="Breadcrumb"
-            className="mb-12 flex items-center gap-3 text-[10px] text-zinc-600"
+            className="mb-12 flex items-center gap-3 text-[10px] text-zinc-400"
           >
             <Link
               href="/news"
@@ -126,7 +126,7 @@ export default function MusicNewsArticle({
 
       {/* Metadata */}
       <div className="border-b border-zinc-900">
-        <div className="mx-auto flex max-w-7xl flex-wrap gap-x-8 gap-y-3 px-6 py-5 text-[11px] text-zinc-500 md:px-8">
+        <div className="mx-auto flex max-w-7xl flex-wrap gap-x-8 gap-y-3 px-6 py-5 text-[11px] text-zinc-400 md:px-8">
           <span className="text-yellow-500">
             {category}
           </span>
@@ -174,7 +174,7 @@ export default function MusicNewsArticle({
                 </p>
 
                 {date && (
-                  <p className="mt-2 text-xs leading-6 text-zinc-600">
+                  <p className="mt-2 text-xs leading-6 text-zinc-400">
                     {date}
                   </p>
                 )}
@@ -217,7 +217,7 @@ export default function MusicNewsArticle({
               {ui.discoverTitle}
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-500">
+            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-400">
               {ui.discoverText}
             </p>
           </div>

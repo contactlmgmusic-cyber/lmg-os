@@ -169,14 +169,14 @@ export default function MusicSearchContent({ items }: Props) {
                 placeholder={c.placeholder}
                 autoComplete="off"
                 autoFocus
-                className="w-full bg-transparent text-2xl font-semibold tracking-[-0.03em] text-white outline-none placeholder:text-zinc-600 md:text-4xl"
+                className="w-full bg-transparent text-2xl font-semibold tracking-[-0.03em] text-white outline-none placeholder:text-zinc-400 md:text-4xl"
               />
 
               {query && (
                 <button
                   type="button"
                   onClick={() => setQuery("")}
-                  className="text-2xl font-light text-zinc-500 transition hover:text-white"
+                  className="text-2xl font-light text-zinc-400 transition hover:text-white"
                   aria-label={
                     locale === "fr"
                       ? "Effacer la recherche"
@@ -195,7 +195,7 @@ export default function MusicSearchContent({ items }: Props) {
         <div className="mx-auto max-w-[1500px]">
           {!normalizedQuery ? (
             <div className="border-t border-zinc-900 py-16">
-              <p className="text-sm uppercase tracking-[0.18em] text-zinc-600">
+              <p className="text-sm uppercase tracking-[0.18em] text-zinc-400">
                 {c.instruction}
               </p>
             </div>
@@ -206,7 +206,7 @@ export default function MusicSearchContent({ items }: Props) {
                   {c.results}
                 </p>
 
-                <span className="text-xs text-zinc-600">
+                <span className="text-xs text-zinc-400">
                   {String(results.length).padStart(2, "0")}
                 </span>
               </div>
@@ -218,7 +218,7 @@ export default function MusicSearchContent({ items }: Props) {
                     href={item.href}
                     className="group grid grid-cols-[42px_1fr_auto] items-center gap-4 border-b border-zinc-800 py-7 transition hover:border-zinc-600 md:grid-cols-[75px_1fr_180px_auto] md:py-9"
                   >
-                    <span className="text-[10px] font-bold tracking-[0.18em] text-zinc-600">
+                    <span className="text-[10px] font-bold tracking-[0.18em] text-zinc-400">
                       {String(index + 1).padStart(2, "0")}
                     </span>
 
@@ -228,18 +228,18 @@ export default function MusicSearchContent({ items }: Props) {
                       </h2>
 
                       {item.subtitle && (
-                        <p className="mt-2 line-clamp-1 text-sm text-zinc-500">
+                        <p className="mt-2 line-clamp-1 text-sm text-zinc-400">
                           {item.subtitle}
                         </p>
                       )}
                     </div>
 
-                    <span className="hidden text-[9px] font-bold uppercase tracking-[0.22em] text-zinc-600 md:block">
+                    <span className="hidden text-[9px] font-bold uppercase tracking-[0.22em] text-zinc-400 md:block">
                       {c.labels[item.type]}
                     </span>
 
                     <span
-                      className="text-zinc-600 transition group-hover:translate-x-1 group-hover:text-yellow-500"
+                      className="text-zinc-400 transition group-hover:translate-x-1 group-hover:text-yellow-500"
                       aria-hidden="true"
                     >
                       ↗
@@ -258,7 +258,7 @@ export default function MusicSearchContent({ items }: Props) {
                 {c.noResult}
               </h2>
 
-              <p className="mt-5 max-w-lg leading-7 text-zinc-500">
+              <p className="mt-5 max-w-lg leading-7 text-zinc-400">
                 {c.noResultText}
               </p>
             </div>

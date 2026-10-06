@@ -91,7 +91,7 @@ export default function AccessibilityContent() {
                   {section.title}
                 </h2>
 
-                <p className="mt-4 max-w-2xl text-sm leading-7 text-zinc-500">
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-zinc-400">
                   {section.text}
                 </p>
               </div>

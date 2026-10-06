@@ -205,13 +205,13 @@ export default function ContactContent() {
                       {card.number}
                     </span>
 
-                    <span className="text-xl text-zinc-700 transition group-hover:text-yellow-500">
+                    <span className="text-xl text-zinc-400 transition group-hover:text-yellow-500">
                       ↗
                     </span>
                   </div>
 
                   <div className="my-auto py-10">
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-zinc-600">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-zinc-400">
                       {card.label}
                     </p>
 
@@ -219,7 +219,7 @@ export default function ContactContent() {
                       {card.title}
                     </h3>
 
-                    <p className="mt-5 max-w-lg text-sm leading-7 text-zinc-500">
+                    <p className="mt-5 max-w-lg text-sm leading-7 text-zinc-400">
                       {card.text}
                     </p>
                   </div>
@@ -264,13 +264,13 @@ export default function ContactContent() {
               {c.directTitle}
             </h2>
 
-            <p className="mt-5 max-w-lg text-sm leading-7 text-zinc-500">
+            <p className="mt-5 max-w-lg text-sm leading-7 text-zinc-400">
               {c.directText}
             </p>
           </div>
 
           <div className="self-end border-t border-zinc-800 pt-7">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-600">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
               {c.emailLabel}
             </p>
 
@@ -315,7 +315,7 @@ export default function ContactContent() {
               {c.careersTitle}
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-500">
+            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-400">
               {c.careersText}
             </p>
           </div>

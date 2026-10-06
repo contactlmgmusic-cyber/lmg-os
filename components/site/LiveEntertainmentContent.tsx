@@ -231,7 +231,7 @@ export default function LiveEntertainmentContent() {
       {/* HERO */}
       <section className="border-b border-zinc-900 bg-[#050505] px-6 py-14 md:px-8 md:py-20">
         <div className="mx-auto max-w-7xl">
-          <div className="flex items-center gap-3 text-[10px] text-zinc-600">
+          <div className="flex items-center gap-3 text-[10px] text-zinc-400">
             <Link
               href="/about"
               className="transition hover:text-white"
@@ -314,7 +314,7 @@ export default function LiveEntertainmentContent() {
                           {format.number}
                         </span>
 
-                        <span className="text-[9px] font-semibold uppercase tracking-[0.22em] text-zinc-600">
+                        <span className="text-[9px] font-semibold uppercase tracking-[0.22em] text-zinc-400">
                           {format.tag}
                         </span>
                       </div>
@@ -329,7 +329,7 @@ export default function LiveEntertainmentContent() {
                         </p>
                       </div>
 
-                      <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-zinc-600">
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-zinc-400">
                         LMG MUSIC / LIVE & ENTERTAINMENT
                       </p>
                     </div>
@@ -354,7 +354,7 @@ export default function LiveEntertainmentContent() {
                             {format.visual}
                           </span>
 
-                          <p className="mt-4 text-[9px] uppercase tracking-[0.22em] text-zinc-600">
+                          <p className="mt-4 text-[9px] uppercase tracking-[0.22em] text-zinc-400">
                             Visual / {format.number}
                           </p>
                         </div>
@@ -414,7 +414,7 @@ export default function LiveEntertainmentContent() {
                   {step.title}
                 </h3>
 
-                <p className="mt-4 text-sm leading-7 text-zinc-500">
+                <p className="mt-4 text-sm leading-7 text-zinc-400">
                   {step.text}
                 </p>
               </div>
@@ -435,7 +435,7 @@ export default function LiveEntertainmentContent() {
               {content.networkTitle}
             </h2>
 
-            <p className="mt-6 max-w-xl text-sm leading-8 text-zinc-500">
+            <p className="mt-6 max-w-xl text-sm leading-8 text-zinc-400">
               {content.networkText}
             </p>
           </div>
@@ -449,7 +449,7 @@ export default function LiveEntertainmentContent() {
               {content.opportunityTitle}
             </h2>
 
-            <p className="mt-6 max-w-xl text-sm leading-8 text-zinc-500">
+            <p className="mt-6 max-w-xl text-sm leading-8 text-zinc-400">
               {content.opportunityText}
             </p>
           </div>
@@ -468,7 +468,7 @@ export default function LiveEntertainmentContent() {
               {content.nextTitle}
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-500">
+            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-400">
               {content.nextText}
             </p>
           </div>

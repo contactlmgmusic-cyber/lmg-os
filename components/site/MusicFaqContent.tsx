@@ -194,7 +194,7 @@ export default function MusicFaqContent() {
             <h1 className="max-w-[950px] text-[15vw] font-black uppercase leading-[0.78] tracking-[-0.075em] sm:text-[11vw] lg:text-[7vw]">
               {c.title1}
               <br />
-              <span className="text-zinc-600">{c.title2}</span>
+              <span className="text-zinc-400">{c.title2}</span>
             </h1>
 
             <p className="max-w-md text-base leading-7 text-zinc-400 md:text-lg">
@@ -217,7 +217,7 @@ export default function MusicFaqContent() {
               </h2>
             </div>
 
-            <span className="text-xs font-medium text-zinc-600">
+            <span className="text-xs font-medium text-zinc-400">
               01 — {String(c.items.length).padStart(2, "0")}
             </span>
           </div>
@@ -237,7 +237,7 @@ export default function MusicFaqContent() {
                     {item.question}
                   </h3>
 
-                  <span className="ml-4 text-xl font-light text-zinc-500 transition-transform duration-300 group-open:rotate-45 group-open:text-yellow-500">
+                  <span className="ml-4 text-xl font-light text-zinc-400 transition-transform duration-300 group-open:rotate-45 group-open:text-yellow-500">
                     +
                   </span>
                 </summary>

@@ -18,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [artists, releases, news] = await Promise.all([
     db.from("public_artistes").select("slug").not("slug", "is", null),
     db.from("public_projets").select("slug").not("slug", "is", null),
-    db.from("site_news").select("slug").eq("status", "published"),
+    db.from("site_news").select("slug").eq("status", "published").neq("slug", "test"),
   ]);
   for (const result of [artists, releases, news]) if (result.error) console.error("Music sitemap source unavailable", result.error.code);
   return [...pages,
