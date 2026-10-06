@@ -54,7 +54,7 @@ const defaultMetadata: Metadata = {
 
 export async function generateMetadata(): Promise<Metadata> {
   const domain = await publicDomain();
-  return { ...defaultMetadata, ...(domain.kind === "music" ? { title: { default: "LMG Music | Artistes, musique et développement artistique", template: "%s" }, openGraph: { ...defaultMetadata.openGraph, title: "LMG Music", siteName: "LMG Music" }, twitter: { ...defaultMetadata.twitter, title: "LMG Music" } } : {}), ...(domain.kind === "os" || domain.kind === "preview" ? { robots: { index: false, follow: false } } : {}) };
+  return { ...defaultMetadata, ...(domain.kind === "music" ? { title: { default: "LMG Music | Artistes, musique et développement artistique", template: "%s" }, openGraph: { ...defaultMetadata.openGraph, title: "LMG Music", siteName: "LMG Music" }, twitter: { ...defaultMetadata.twitter, title: "LMG Music" } } : {}), ...(domain.kind === "careers" ? { title: { default: "Careers | LMG", template: "%s" } } : {}), ...(domain.kind === "os" || domain.kind === "preview" ? { robots: { index: false, follow: false } } : {}) };
 }
 
 export default async function RootLayout({
