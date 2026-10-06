@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   ),
 
   title: {
-    default: "Careers | LMG",
-    template: "%s | LMG",
+    absolute: "Careers | LMG",
+    template: "%s",
   },
 
   description:
