@@ -23,7 +23,7 @@ const defaultMetadata: Metadata = {
   ],
 
   verification: {
-  google: "SNckPjUVJwb5yHuLC0C45-DKhiUOUKrkQQfiYU1MWHU",
+  google: ["SNckPjUVJwb5yHuLC0C45-DKhiUOUKrkQQfiYU1MWHU", "ryNTUwA1iKtdMWJXWOP3z_ySB6MKzoWvJXCpwL8PJc4"],
 },
 
   openGraph: {
