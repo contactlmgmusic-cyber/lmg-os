@@ -13,6 +13,7 @@ export default function ConfidentialitePage() {
         </h1>
 
         <div className="mt-12 space-y-10 text-zinc-300">
+          <p>Responsable du traitement : LMG Music, société en cours de création. Domiciliation confirmée : 138 Avenue Victor Hugo, 75016 Paris, France.</p>
           <div>
             <h2 className="text-2xl font-bold text-white">Données collectées</h2>
             <p className="mt-4 leading-8">

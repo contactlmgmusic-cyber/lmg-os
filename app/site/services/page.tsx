@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 
 export const metadata: Metadata = {
-  title: "Accompagnement artistique | Legacy Music Group",
+  title: "Accompagnement artistique | LMG Music",
   description:
     "Artist development, management, marketing et booking : découvrez l'accompagnement proposé par Legacy Music Group.",
 };

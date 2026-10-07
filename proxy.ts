@@ -10,6 +10,11 @@ export async function proxy(request: NextRequest) {
   const artist = hostname === "artistportal.lmgmusic.fr";
   const os = hostname === "os.lmgmusic.fr";
   const agency = ["agency.legacymusicgroup.fr", "www.agency.legacymusicgroup.fr"].includes(hostname);
+  if (agency) {
+    const target = new URL(request.nextUrl.pathname + request.nextUrl.search, "https://www.lmgagency.fr");
+    if (path === "/agency" || path.startsWith("/agency/")) target.pathname = path.slice(7) || "/";
+    return NextResponse.redirect(target, 308);
+  }
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-lmg-language", careers ? "en" : "fr");
   requestHeaders.set("x-lmg-public-path", path);
@@ -17,8 +22,14 @@ export async function proxy(request: NextRequest) {
   const redirectTo = (pathname: string) => { const url = request.nextUrl.clone(); url.pathname = pathname; return NextResponse.redirect(url); };
   const namespace = music ? "/site" : careers ? "/careers" : artist ? "/artistportal" : agency ? "/agency" : null;
   if (namespace) {
-    if (path === namespace || path.startsWith(`${namespace}/`)) return redirectTo(path.slice(namespace.length) || "/");
-    if (music && path === "/artists") return redirectTo("/artistes");
+    if (path === namespace || path.startsWith(`${namespace}/`)) {
+      const target = request.nextUrl.clone(); target.pathname = path.slice(namespace.length) || "/";
+      return NextResponse.redirect(target, 308);
+    }
+    if (music && path === "/artists") {
+      const target = request.nextUrl.clone(); target.pathname = "/artistes";
+      return NextResponse.redirect(target, 308);
+    }
     if (music && path === "/maintenance") return NextResponse.next(options);
     if (music) {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL, key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

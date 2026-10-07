@@ -5,6 +5,7 @@ import MusicSearchContent from "@/components/site/MusicSearchContent";
 import { supabase } from "@/lib/supabase";
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: true },
   title: "Search | LMG Music",
   description:
     "Search artists, releases, news and pages across LMG Music.",

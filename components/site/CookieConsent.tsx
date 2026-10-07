@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Script from "next/script";
+import PublicAnalytics from "@/components/PublicAnalytics";
 import { useEffect, useState } from "react";
 
 import { useSiteLanguage } from "@/components/site/LanguageProvider";
@@ -80,26 +80,7 @@ export default function CookieConsent() {
 
   return (
     <>
-      {consent?.analytics && (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-            strategy="afterInteractive"
-          />
-
-          <Script id="lmg-google-analytics" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${GA_ID}', {
-                anonymize_ip: true
-              });
-            `}
-          </Script>
-        </>
-      )}
-
+      <PublicAnalytics enabled={consent?.analytics === true} />
       {open && (
         <div className="fixed inset-x-0 bottom-0 z-[200] border-t border-zinc-800 bg-[#080808] text-white shadow-[0_-20px_60px_rgba(0,0,0,0.45)]">
           <div className="mx-auto max-w-7xl px-6 py-7 md:px-8">

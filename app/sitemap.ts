@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { kind, origin } = await publicDomain();
   if (kind === "os" || kind === "preview") return [];
-  const paths = kind === "careers" ? ["", "/jobs", "/spontaneous", "/faq", "/privacy"] : kind === "artist" ? [""] : ["", "/artistes", "/releases", "/about", "/services", "/team", "/news", "/press", "/contact", "/faq", "/mentions-legales", "/confidentialite", "/cookies"];
+  const paths = kind === "careers" ? ["", "/jobs", "/spontaneous", "/faq", "/privacy"] : kind === "artist" ? ["", "/mentions-legales", "/confidentialite"] : ["", "/artistes", "/releases", "/about", "/about/what-we-do", "/about/live", "/services", "/team", "/news", "/press", "/contact", "/faq", "/rejoindre", "/mentions-legales", "/confidentialite", "/cookies", "/accessibilite", "/plan-du-site"];
   const pages: MetadataRoute.Sitemap = paths.map(path => ({ url: `${origin}${path}`, changeFrequency: "weekly" }));
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL, key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key || kind === "artist") return pages;

@@ -22,7 +22,7 @@ export default function MentionsLegalesPage() {
               Responsable de publication : LMG.
             </p>
             <p className="mt-2">
-              Adresse de contact : 138 avenue Victor-Hugo, 75016 Paris, France.
+              Domiciliation confirmée : 138 Avenue Victor Hugo, 75016 Paris, France.
             </p>
             <p className="mt-2">
               Téléphone : 06 15 95 33 74.
