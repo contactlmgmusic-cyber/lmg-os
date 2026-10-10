@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
 type CurrentProfile = {
@@ -60,6 +60,8 @@ function formatMessageDate(value: string) {
 }
 
 function ChatContent() {
+  const pathname = usePathname();
+  const mobile = pathname.startsWith("/mobile/");
   const searchParams = useSearchParams();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [profile, setProfile] =
@@ -102,7 +104,7 @@ function ChatContent() {
 
     const currentProfile = profileData as CurrentProfile;
     if (currentProfile.role === "prestataire") {
-      window.location.href = "/chat/prive";
+      window.location.href = mobile ? "/mobile/messages/prives" : "/chat/prive";
       return;
     }
     setProfile(currentProfile);
@@ -132,7 +134,7 @@ function ChatContent() {
 
     setActiveChannel(selectedChannel);
     setLoading(false);
-  }, [searchParams]);
+  }, [mobile, searchParams]);
 
   const fetchMessages = useCallback(
     async (channelSlug: string) => {
@@ -338,13 +340,13 @@ function ChatContent() {
 
           <nav className="flex flex-wrap gap-2">
             {!isManager && !isArtist && <Link
-              href="/communication"
+              href={mobile ? "/mobile/equipe" : "/communication"}
               className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-zinc-300 transition hover:border-zinc-600"
             >
               Vue globale
             </Link>}
             <Link
-              href="/chat/prive"
+              href={mobile ? "/mobile/messages/prives" : "/chat/prive"}
               className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-black transition hover:bg-zinc-200"
             >
               Messages privés
