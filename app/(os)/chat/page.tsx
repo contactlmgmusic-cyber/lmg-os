@@ -253,7 +253,7 @@ function ChatContent() {
 
     setSearch("");
     setActiveChannel(slug);
-    window.history.replaceState(null, "", `/chat?channel=${slug}`);
+    window.history.replaceState(null, "", `${mobile ? "/mobile/messages" : "/chat"}?channel=${slug}`);
   }
 
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
@@ -323,22 +323,22 @@ function ChatContent() {
   }
 
   return (
-    <main className="min-h-screen bg-black px-4 py-6 text-white sm:px-6 xl:px-10 xl:py-8">
+    <main className={mobile ? "bg-black px-5 py-6 text-white" : "min-h-screen bg-black px-4 py-6 text-white sm:px-6 xl:px-10 xl:py-8"}>
       <div className="mx-auto max-w-[1500px]">
-        <header className="mb-5 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <header className={mobile ? "mb-5" : "mb-5 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"}>
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.32em] text-yellow-400">
               Communication · Équipe
             </p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">
+            <h1 className={mobile ? "mt-2 text-2xl font-black tracking-tight" : "mt-3 text-3xl font-bold tracking-tight md:text-5xl"}>
               {workspaceTitle}
             </h1>
-            <p className="mt-3 text-zinc-400">
+            <p className={mobile ? "mt-2 text-sm leading-5 text-zinc-500" : "mt-3 text-zinc-400"}>
               {workspaceDescription}
             </p>
           </div>
 
-          <nav className="flex flex-wrap gap-2">
+          <nav className={mobile ? "mt-4 flex gap-2 overflow-x-auto pb-1" : "flex flex-wrap gap-2"}>
             {!isManager && !isArtist && <Link
               href={mobile ? "/mobile/equipe" : "/communication"}
               className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-zinc-300 transition hover:border-zinc-600"
@@ -368,7 +368,7 @@ function ChatContent() {
           </div>
         )}
 
-        <div className="grid min-h-[680px] gap-4 xl:h-[calc(100vh-220px)] xl:min-h-[620px] xl:grid-cols-[290px_1fr]">
+        <div className={mobile ? "grid min-w-0 grid-cols-1 gap-4" : "grid min-h-[680px] gap-4 xl:h-[calc(100vh-220px)] xl:min-h-[620px] xl:grid-cols-[290px_1fr]"}>
           <aside className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-bold">Canaux</h2>
@@ -382,13 +382,13 @@ function ChatContent() {
                 Aucun canal accessible avec votre rôle.
               </p>
             ) : (
-              <div className="mt-4 flex gap-2 overflow-x-auto pb-1 xl:block xl:space-y-2 xl:overflow-visible">
+              <div className={mobile ? "mt-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]" : "mt-4 flex gap-2 overflow-x-auto pb-1 xl:block xl:space-y-2 xl:overflow-visible"}>
                 {channels.map((channel) => (
                   <button
                     key={channel.id}
                     type="button"
                     onClick={() => changeChannel(channel.slug)}
-                    className={`min-w-fit rounded-2xl px-4 py-3 text-left transition xl:w-full ${
+                    className={`${mobile ? "min-w-[150px]" : "min-w-fit xl:w-full"} rounded-2xl px-4 py-3 text-left transition ${
                       activeChannel === channel.slug
                         ? "bg-yellow-400 font-bold text-black"
                         : "border border-zinc-800 bg-black text-zinc-300 hover:border-zinc-600 hover:text-white"
@@ -410,8 +410,8 @@ function ChatContent() {
             )}
           </aside>
 
-          <section className="flex min-h-[560px] min-w-0 flex-col overflow-hidden rounded-[26px] border border-zinc-800 bg-zinc-950">
-            <div className="flex flex-col gap-4 border-b border-zinc-800 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <section className={`${mobile ? "h-[min(620px,calc(100dvh-250px))] min-h-[480px]" : "min-h-[560px]"} flex min-w-0 flex-col overflow-hidden rounded-[26px] border border-zinc-800 bg-zinc-950`}>
+            <div className={mobile ? "border-b border-zinc-800 p-4" : "flex flex-col gap-4 border-b border-zinc-800 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"}>
               <div>
                 <p className="font-bold">
                   #{activeChannelData?.name || "Aucun canal"}
@@ -421,14 +421,14 @@ function ChatContent() {
                 </p>
               </div>
 
-              <input
+              {!mobile && <input
                 type="search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Rechercher dans ce canal..."
                 disabled={!activeChannel}
                 className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-2.5 text-sm outline-none placeholder:text-zinc-600 focus:border-yellow-400/50 sm:max-w-72"
-              />
+              />}
             </div>
 
             <div className="flex-1 space-y-3 overflow-y-auto p-4 sm:p-5">
@@ -504,7 +504,7 @@ function ChatContent() {
               onSubmit={sendMessage}
               className="border-t border-zinc-800 p-4 sm:p-5"
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className={mobile ? "flex items-end gap-2" : "flex flex-col gap-3 sm:flex-row sm:items-end"}>
                 <div className="flex-1">
                   <textarea
                     value={message}
@@ -516,17 +516,17 @@ function ChatContent() {
                     }
                     disabled={!activeChannelData || sending}
                     maxLength={2000}
-                    rows={2}
+                    rows={mobile ? 1 : 2}
                     className="w-full resize-none rounded-2xl border border-zinc-800 bg-black px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-yellow-400/50 disabled:opacity-50"
                   />
-                  <p className="mt-1 text-right text-xs text-zinc-700">
+                  <p className={mobile ? "hidden" : "mt-1 text-right text-xs text-zinc-700"}>
                     {message.length}/2 000
                   </p>
                 </div>
                 <button
                   type="submit"
                   disabled={!message.trim() || !activeChannelData || sending}
-                  className="rounded-2xl bg-yellow-400 px-6 py-3 font-bold text-black transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40"
+                  className={mobile ? "h-12 shrink-0 rounded-2xl bg-yellow-400 px-4 text-sm font-black text-black disabled:opacity-40" : "rounded-2xl bg-yellow-400 px-6 py-3 font-bold text-black transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40"}
                 >
                   {sending ? "Envoi..." : "Envoyer"}
                 </button>
