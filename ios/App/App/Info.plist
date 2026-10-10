@@ -45,6 +45,10 @@
 	</dict>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>LMG Admin utilise votre calendrier pour y ajouter uniquement vos événements et échéances professionnels.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>LMG Admin synchronise votre agenda personnel LMG avec le calendrier de votre iPhone.</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>

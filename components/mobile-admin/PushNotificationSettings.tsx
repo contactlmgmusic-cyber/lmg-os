@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 
 export default function PushNotificationSettings() {
   const [supported, setSupported] = useState(true); const [enabled, setEnabled] = useState(false); const [busy, setBusy] = useState(false); const [message, setMessage] = useState("");
 
   useEffect(() => {
+    if (Capacitor.isNativePlatform()) { setSupported(false); return; }
     const available = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
     setSupported(available); if (!available) return;
     navigator.serviceWorker.register("/sw.js").then(async (registration) => setEnabled(Boolean(await registration.pushManager.getSubscription()))).catch(() => setSupported(false));
@@ -27,7 +29,7 @@ export default function PushNotificationSettings() {
     finally { setBusy(false); }
   }
 
-  if (!supported) return <div className="border-b border-white/[0.06] py-4"><p className="text-sm font-black">Notifications push</p><p className="mt-1 text-xs leading-5 text-zinc-600">Ajoute LMG ADMIN à l’écran d’accueil puis ouvre l’application installée pour les activer.</p></div>;
+  if (!supported) return Capacitor.isNativePlatform() ? null : <div className="border-b border-white/[0.06] py-4"><p className="text-sm font-black">Notifications push</p><p className="mt-1 text-xs leading-5 text-zinc-600">Ajoute LMG ADMIN à l’écran d’accueil puis ouvre l’application installée pour les activer.</p></div>;
   return <div className="border-b border-white/[0.06] py-4"><div className="flex items-center justify-between gap-4"><div><p className="text-sm font-black">Notifications push</p><p className="mt-1 text-xs text-zinc-600">{enabled ? "Actives sur cet appareil" : "Recevoir les alertes même quand l’app est fermée"}</p></div><button type="button" disabled={busy} onClick={toggle} className={`shrink-0 rounded-full px-4 py-2 text-xs font-black ${enabled ? "border border-red-500/30 text-red-400" : "bg-[#f2b705] text-black"}`}>{busy ? "…" : enabled ? "Désactiver" : "Activer"}</button></div>{message && <p className="mt-3 text-xs leading-5 text-zinc-500">{message}</p>}</div>;
 }
 
