@@ -1,0 +1,21 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
+import { requireRole } from "@/lib/require-role.server";
+import { ROLES } from "@/lib/roles";
+
+export const dynamic = "force-dynamic";
+
+export default async function MobileInternalEventPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER, ROLES.ARTISTIC_DIRECTOR]);
+  const { id } = await params;
+  const supabase = await createAuthenticatedSupabaseClient();
+  const { data: event } = await supabase.from("internal_events").select("*").eq("id", id).maybeSingle();
+  if (!event) notFound();
+
+  return <div className="px-5 py-6"><Link href="/mobile/agenda" className="text-xs font-bold text-zinc-600">‹ Agenda</Link><section className="mt-5 rounded-[26px] border border-white/[0.07] bg-white/[0.025] p-6"><p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#f2b705]">{event.type || "Événement LMG"}</p><h1 className="mt-4 text-2xl font-black">{event.titre}</h1><div className="mt-6 grid grid-cols-2 gap-3"><Info label="Début" value={formatDate(event.date_debut)} /><Info label="Fin" value={event.date_fin ? formatDate(event.date_fin) : "Non définie"} /><Info label="Lieu" value={event.lieu || "Non défini"} /><Info label="Statut" value={event.statut || "Confirmé"} /></div>{event.description && <div className="mt-5 border-t border-white/[0.07] pt-5"><p className="whitespace-pre-wrap text-sm leading-6 text-zinc-400">{event.description}</p></div>}{event.lien_visio && <a href={event.lien_visio} target="_blank" rel="noreferrer" className="mt-5 block rounded-[16px] bg-[#f2b705] px-4 py-3 text-center text-sm font-black text-black">Rejoindre la visioconférence</a>}</section></div>;
+}
+
+function Info({ label, value }: { label: string; value: string }) { return <div className="rounded-[16px] bg-black/50 p-3"><p className="text-[8px] uppercase tracking-wider text-zinc-700">{label}</p><p className="mt-1.5 text-xs font-bold text-zinc-300">{value}</p></div>; }
+function formatDate(value: string) { return new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
