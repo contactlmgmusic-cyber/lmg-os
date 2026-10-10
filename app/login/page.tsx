@@ -14,7 +14,11 @@ export default function LoginPage() {
       if (loginError || !data.user) throw new Error("Email ou mot de passe incorrect.");
       const { data: profile, error: profileError } = await supabaseBrowser.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
       if (profileError || !isUserRole(profile?.role)) { await supabaseBrowser.auth.signOut(); throw new Error("Votre accès n’est pas encore configuré. Contactez un administrateur."); }
-      router.replace(getRoleHome(profile.role)); router.refresh();
+      const requestedPath = new URLSearchParams(window.location.search).get("next");
+      const destination = requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
+        ? requestedPath
+        : getRoleHome(profile.role);
+      router.replace(destination); router.refresh();
     } catch (failure) { setError(failure instanceof Error ? failure.message : "Connexion indisponible. Réessayez."); }
     finally { setLoading(false); }
   }
