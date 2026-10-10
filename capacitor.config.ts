@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: "LMG ADMIN",
   webDir: "public",
   server: {
-    url: "https://os.lmgmusic.fr/mobile",
+    url: "https://os.lmgmusic.fr/mobile-auth",
+    allowNavigation: ["os.lmgmusic.fr"],
     cleartext: false,
   },
   ios: {
