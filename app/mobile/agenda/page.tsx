@@ -14,8 +14,8 @@ export default async function MobileAgendaPage() {
   ]);
 
   const items = [
-    ...(events || []).map((event: any) => ({ id: `event-${event.id}`, title: event.titre, date: event.date_event, detail: event.lieu || event.type || "Événement artiste", href: `/artiste-events/${event.id}/modifier`, kind: "Événement" })),
-    ...(bookings || []).map((booking: any) => ({ id: `booking-${booking.id}`, title: booking.evenement || "Booking", date: booking.date_event, detail: booking.ville || booking.statut || "Booking", href: `/booking/${booking.id}`, kind: "Booking" })),
+    ...(events || []).map((event: any) => ({ id: `event-${event.id}`, title: event.titre, date: event.date_event, detail: event.lieu || event.type || "Événement artiste", href: `/mobile/agenda/evenements/${event.id}`, kind: "Événement" })),
+    ...(bookings || []).map((booking: any) => ({ id: `booking-${booking.id}`, title: booking.evenement || "Booking", date: booking.date_event, detail: booking.ville || booking.statut || "Booking", href: `/mobile/agenda/bookings/${booking.id}`, kind: "Booking" })),
     ...(tasks || []).map((task: any) => ({ id: `task-${task.id}`, title: task.titre, date: task.deadline, detail: task.priorite || "Tâche", href: `/taches/${task.id}`, kind: "Échéance" })),
   ].filter((item) => item.date).sort((a, b) => String(a.date).localeCompare(String(b.date))).slice(0, 30);
 
