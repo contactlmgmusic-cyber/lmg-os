@@ -17,7 +17,9 @@ export default function PushNotificationSettings() {
       const registration = await navigator.serviceWorker.register("/sw.js"); const existing = await registration.pushManager.getSubscription();
       if (existing) { await fetch("/api/push/subscribe", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ endpoint: existing.endpoint }) }); await existing.unsubscribe(); setEnabled(false); setMessage("Notifications désactivées sur cet appareil."); return; }
       const permission = await Notification.requestPermission(); if (permission !== "granted") throw new Error("Autorisation refusée. Tu peux la réactiver dans les réglages du téléphone.");
-      const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY; if (!publicKey) throw new Error("Les notifications ne sont pas encore configurées sur le serveur.");
+      const keyResponse = await fetch("/api/push/public-key", { cache: "no-store" });
+      const keyPayload = await keyResponse.json();
+      const publicKey = keyPayload?.publicKey; if (!keyResponse.ok || !publicKey) throw new Error(keyPayload?.error || "Les notifications ne sont pas encore configurées sur le serveur.");
       const subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource });
       const response = await fetch("/api/push/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(subscription.toJSON()) }); if (!response.ok) throw new Error("Impossible d’enregistrer cet appareil.");
       setEnabled(true); setMessage("Notifications activées. Un test vient d’être envoyé."); await fetch("/api/push/test", { method: "POST" });
