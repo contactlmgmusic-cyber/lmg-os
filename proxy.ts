@@ -70,7 +70,16 @@ export async function proxy(request: NextRequest) {
     response.cookies.getAll().forEach(cookie => target.cookies.set(cookie));
     return target;
   };
-  if (!user) return publicRoute ? response : redirectWithCookies("/login");
+  if (!user) {
+    if (publicRoute) return response;
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.search = "";
+    loginUrl.searchParams.set("next", `${path}${request.nextUrl.search}`);
+    const target = NextResponse.redirect(loginUrl);
+    response.cookies.getAll().forEach(cookie => target.cookies.set(cookie));
+    return target;
+  }
   // Recovery and OAuth callbacks must remain reachable with an authenticated session.
   if (["/reset-password", "/auth/callback", "/forgot-password"].includes(path)) return response;
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
@@ -78,6 +87,12 @@ export async function proxy(request: NextRequest) {
     if (publicRoute) return response;
     await supabase.auth.signOut();
     return redirectWithCookies("/login");
+  }
+  if (path === "/login") {
+    const requestedPath = request.nextUrl.searchParams.get("next");
+    if (requestedPath?.startsWith("/") && !requestedPath.startsWith("//")) {
+      return redirectWithCookies(requestedPath);
+    }
   }
   if (path === "/" || path === "/login" || path === "/signup" || (path === "/dashboard" && !EXECUTIVE_ROLES.includes(profile.role))) return redirectWithCookies(getRoleHome(profile.role));
   return response;
