@@ -21,6 +21,7 @@ function mobileNotificationLink(value: string | null) {
   const task = value.match(/^\/taches\/([^/?#]+)/); if (task) return `/mobile/taches/${task[1]}`;
   const project = value.match(/^\/projets-internes\/([^/?#]+)/); if (project) return `/mobile/projets/${project[1]}`;
   const booking = value.match(/^\/booking\/([^/?#]+)/); if (booking) return `/mobile/agenda/bookings/${booking[1]}`;
+  const internalEvent = value.match(/^\/evenements\/([^/?#]+)/); if (internalEvent) return `/mobile/agenda/interne/${internalEvent[1]}`;
   if (value.startsWith("/validations-artiste")) return "/mobile/validations";
   if (value.startsWith("/chat")) return "/mobile/messages";
   return null;
