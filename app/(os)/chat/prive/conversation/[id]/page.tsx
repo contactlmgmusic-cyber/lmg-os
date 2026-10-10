@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
 type Profile = {
@@ -50,6 +50,8 @@ function formatMessageDate(value: string) {
 }
 
 export default function ChatPriveDetailPage() {
+  const pathname = usePathname();
+  const mobile = pathname.startsWith("/mobile/");
   const params = useParams();
   const conversationId = params.id as string;
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -72,7 +74,7 @@ export default function ChatPriveDetailPage() {
           .maybeSingle();
 
       if (membershipError || !membership) {
-        window.location.href = "/chat/prive";
+        window.location.href = mobile ? "/mobile/messages/prives" : "/chat/prive";
         return false;
       }
 
@@ -133,7 +135,7 @@ export default function ChatPriveDetailPage() {
 
       return true;
     },
-    [conversationId]
+    [conversationId, mobile]
   );
 
   useEffect(() => {
@@ -295,13 +297,13 @@ export default function ChatPriveDetailPage() {
       <div className="mx-auto flex min-h-[calc(100vh-64px)] max-w-[1300px] flex-col">
         <nav className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <Link
-            href="/chat/prive"
+            href={mobile ? "/mobile/messages/prives" : "/chat/prive"}
             className="text-sm font-semibold text-zinc-400 transition hover:text-white"
           >
             ← Toutes les conversations
           </Link>
           <Link
-            href="/chat"
+            href={mobile ? "/mobile/messages" : "/chat"}
             className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2 text-sm font-semibold text-zinc-300 transition hover:border-zinc-600"
           >
             Chat d’équipe
