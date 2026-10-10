@@ -50,7 +50,7 @@ export default function MobileAdminShell({
             </Link>
 
             <Link
-              href="/profil"
+              href="/mobile/profil"
               aria-label={`Ouvrir le profil de ${firstName}`}
               className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.05] text-xs font-black uppercase text-[#f2b705]"
             >
