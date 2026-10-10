@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
 type Profile = {
@@ -50,6 +50,8 @@ function formatMessageDate(value: string) {
 }
 
 export default function ChatPriveDetailPage() {
+  const pathname = usePathname();
+  const mobile = pathname.startsWith("/mobile/");
   const params = useParams();
   const conversationId = params.id as string;
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -72,7 +74,7 @@ export default function ChatPriveDetailPage() {
           .maybeSingle();
 
       if (membershipError || !membership) {
-        window.location.href = "/chat/prive";
+        window.location.href = mobile ? "/mobile/messages/prives" : "/chat/prive";
         return false;
       }
 
@@ -133,7 +135,7 @@ export default function ChatPriveDetailPage() {
 
       return true;
     },
-    [conversationId]
+    [conversationId, mobile]
   );
 
   useEffect(() => {
@@ -246,7 +248,9 @@ export default function ChatPriveDetailPage() {
           type: "Chat",
           titre: "Nouveau message privé",
           description: cleanMessage.slice(0, 100),
-          lien: `/chat/prive/conversation/${conversationId}`,
+          lien: mobile
+            ? `/mobile/messages/prives/conversation/${conversationId}`
+            : `/chat/prive/conversation/${conversationId}`,
           niveau: "Info",
           lu: false,
           is_read: false,
@@ -282,7 +286,7 @@ export default function ChatPriveDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-black p-6 text-white">
+      <main className={`${mobile ? "bg-black p-4" : "min-h-screen bg-black p-6"} text-white`}>
         <div className="mx-auto max-w-[1300px] rounded-[26px] border border-zinc-800 bg-zinc-950 p-8 text-zinc-500">
           Chargement de la conversation...
         </div>
@@ -291,18 +295,18 @@ export default function ChatPriveDetailPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black px-4 py-6 text-white sm:px-6 xl:px-10 xl:py-8">
-      <div className="mx-auto flex min-h-[calc(100vh-64px)] max-w-[1300px] flex-col">
-        <nav className="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <main className={`${mobile ? "bg-black px-3 py-3" : "min-h-screen bg-black px-4 py-6 sm:px-6 xl:px-10 xl:py-8"} text-white`}>
+      <div className={`${mobile ? "h-[calc(100dvh-196px)] min-h-[480px]" : "min-h-[calc(100vh-64px)]"} mx-auto flex max-w-[1300px] flex-col`}>
+        <nav className={`${mobile ? "mb-3" : "mb-5"} flex items-center justify-between gap-3`}>
           <Link
-            href="/chat/prive"
-            className="text-sm font-semibold text-zinc-400 transition hover:text-white"
+            href={mobile ? "/mobile/messages/prives" : "/chat/prive"}
+            className="min-w-0 truncate text-sm font-semibold text-zinc-400 transition hover:text-white"
           >
             ← Toutes les conversations
           </Link>
           <Link
-            href="/chat"
-            className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2 text-sm font-semibold text-zinc-300 transition hover:border-zinc-600"
+            href={mobile ? "/mobile/messages" : "/chat"}
+            className={`${mobile ? "shrink-0 px-3" : "px-4"} rounded-xl border border-zinc-800 bg-zinc-950 py-2 text-sm font-semibold text-zinc-300 transition hover:border-zinc-600`}
           >
             Chat d’équipe
           </Link>
@@ -322,16 +326,16 @@ export default function ChatPriveDetailPage() {
           </div>
         )}
 
-        <section className="flex min-h-[650px] flex-1 flex-col overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950">
-          <header className="flex items-center gap-4 border-b border-zinc-800 p-4 sm:p-6">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-violet-400/15 text-lg font-bold text-violet-300">
+        <section className={`${mobile ? "min-h-0 rounded-2xl" : "min-h-[650px] rounded-[28px]"} flex flex-1 flex-col overflow-hidden border border-zinc-800 bg-zinc-950`}>
+          <header className={`${mobile ? "gap-3 p-3" : "gap-4 p-4 sm:p-6"} flex items-center border-b border-zinc-800`}>
+            <span className={`${mobile ? "h-10 w-10 text-base" : "h-12 w-12 text-lg"} flex shrink-0 items-center justify-center rounded-full bg-violet-400/15 font-bold text-violet-300`}>
               {conversationName.charAt(0).toUpperCase()}
             </span>
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
                 Conversation privée
               </p>
-              <h1 className="mt-1 truncate text-xl font-bold sm:text-2xl">
+              <h1 className={`${mobile ? "text-lg" : "text-xl sm:text-2xl"} mt-1 truncate font-bold`}>
                 {conversationName}
               </h1>
               <p className="mt-1 text-xs text-zinc-600">
@@ -340,7 +344,7 @@ export default function ChatPriveDetailPage() {
             </div>
           </header>
 
-          <div className="flex-1 space-y-3 overflow-y-auto p-4 sm:p-6">
+          <div className={`${mobile ? "p-3" : "p-4 sm:p-6"} min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain`}>
             {messages.length === 0 && (
               <div className="flex min-h-72 items-center justify-center text-center">
                 <div>
@@ -365,7 +369,7 @@ export default function ChatPriveDetailPage() {
                   }`}
                 >
                   <div
-                    className={`max-w-[88%] rounded-2xl border p-4 sm:max-w-[72%] ${
+                    className={`${mobile ? "max-w-[86%] p-3" : "max-w-[88%] p-4 sm:max-w-[72%]"} rounded-2xl border ${
                       isMine
                         ? "border-violet-400/25 bg-violet-400/10"
                         : "border-zinc-800 bg-black"
@@ -407,27 +411,27 @@ export default function ChatPriveDetailPage() {
 
           <form
             onSubmit={sendMessage}
-            className="border-t border-zinc-800 p-4 sm:p-5"
+            className={`${mobile ? "p-3 pb-[max(12px,env(safe-area-inset-bottom))]" : "p-4 sm:p-5"} shrink-0 border-t border-zinc-800 bg-zinc-950`}
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className={`${mobile ? "flex-row items-end gap-2" : "flex-col gap-3 sm:flex-row sm:items-end"} flex`}>
               <div className="flex-1">
                 <textarea
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
                   placeholder={`Écrire à ${conversationName}...`}
                   maxLength={2000}
-                  rows={2}
+                  rows={mobile ? 1 : 2}
                   disabled={sending}
                   className="w-full resize-none rounded-2xl border border-zinc-800 bg-black px-4 py-3 text-sm outline-none placeholder:text-zinc-600 focus:border-violet-400/50 disabled:opacity-50"
                 />
-                <p className="mt-1 text-right text-xs text-zinc-700">
+                <p className={`${mobile ? "hidden" : "mt-1 text-right"} text-xs text-zinc-700`}>
                   {message.length}/2 000
                 </p>
               </div>
               <button
                 type="submit"
                 disabled={!message.trim() || sending}
-                className="rounded-2xl bg-violet-300 px-6 py-3 font-bold text-violet-950 transition hover:bg-violet-200 disabled:cursor-not-allowed disabled:opacity-40"
+                className={`${mobile ? "shrink-0 px-4" : "px-6"} rounded-2xl bg-violet-300 py-3 font-bold text-violet-950 transition hover:bg-violet-200 disabled:cursor-not-allowed disabled:opacity-40`}
               >
                 {sending ? "Envoi..." : "Envoyer"}
               </button>

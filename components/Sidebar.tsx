@@ -33,6 +33,7 @@ const executiveSections: SidebarSection[] = [
       { href: "/dashboard/objectifs-lmg", label: "Objectifs LMG" },
       { href: "/dashboard/priorites", label: "Priorités stratégiques" },
       { href: "/calendrier/global", label: "Calendrier global" },
+      { href: "/evenements", label: "Événements LMG" },
       { href: "/assistant", label: "Assistant LMG" },
     ],
   },
@@ -127,6 +128,7 @@ const artisticDirectorSections: SidebarSection[] = [
       { href: "/mon-travail", label: "Mon travail" },
       { href: "/objectifs-artistes", label: "Objectifs artistes" },
       { href: "/calendrier/global", label: "Calendrier global" },
+      { href: "/evenements", label: "Événements LMG" },
     ],
   },
   {
@@ -183,6 +185,7 @@ const managerSections: SidebarSection[] = [
       { href: "/taches", label: "Mes tâches" },
       { href: "/manager/kpi", label: "Mes indicateurs" },
       { href: "/calendrier", label: "Mon calendrier" },
+      { href: "/evenements", label: "Événements LMG" },
     ],
   },
   {

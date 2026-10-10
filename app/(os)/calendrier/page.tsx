@@ -16,10 +16,11 @@ export default async function CalendrierPage({ searchParams }: { searchParams: P
   const today = calendarDateKey(new Date());
   const monthKey = (offset: number) => new Date(Date.UTC(year, month - 1 + offset, 1)).toISOString().slice(0,7);
   const canCreate = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ARTISTIC_DIRECTOR].includes(profile.role as any);
+  const canCreateEvent = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MANAGER, ROLES.ARTISTIC_DIRECTOR].includes(profile.role as any);
   return <main className="min-h-screen bg-black px-5 py-8 text-white md:px-10">
     <div className="mb-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
       <div><p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">LMG Workspace</p><h1 className="text-4xl font-bold capitalize tracking-tight md:text-6xl">{new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" }).format(first)}</h1><p className="mt-3 text-zinc-400">Toutes les dates et échéances accessibles dans ton espace.</p></div>
-      <div className="flex flex-wrap gap-3">{[[monthKey(-1), "← Mois précédent"], [today.slice(0,7), "Aujourd’hui"], [monthKey(1), "Mois suivant →"]].map(([key,label]) => <Link key={label} href={`/calendrier?mois=${key}`} className="rounded-xl border border-zinc-800 px-4 py-3 text-sm font-semibold">{label}</Link>)}{canCreate && <Link href="/taches/nouveau" className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black">+ Nouvelle tâche</Link>}</div>
+      <div className="flex flex-wrap gap-3">{[[monthKey(-1), "← Mois précédent"], [today.slice(0,7), "Aujourd’hui"], [monthKey(1), "Mois suivant →"]].map(([key,label]) => <Link key={label} href={`/calendrier?mois=${key}`} className="rounded-xl border border-zinc-800 px-4 py-3 text-sm font-semibold">{label}</Link>)}{canCreateEvent && <Link href="/evenements/nouveau" className="rounded-xl bg-[#f2b705] px-5 py-3 text-sm font-semibold text-black">+ Nouvel événement</Link>}{canCreate && <Link href="/taches/nouveau" className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black">+ Nouvelle tâche</Link>}</div>
     </div>
     <CalendarDataWarning sources={errors} />
     <CalendarFilterView days={[

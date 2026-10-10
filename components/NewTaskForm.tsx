@@ -17,10 +17,12 @@ export default function NewTaskForm({
   profiles,
   projets,
   internalProjects,
+  successPath = "/taches",
 }: {
   profiles: Profile[];
   projets: Projet[];
   internalProjects: Projet[];
+  successPath?: string;
 }) {
   const [titre, setTitre] = useState("");
   const [description, setDescription] = useState("");
@@ -185,7 +187,7 @@ try {
   );
 }
 
-window.location.href = "/taches";
+window.location.href = successPath;
     } catch (error) {
       alert(
         error instanceof Error

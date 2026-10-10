@@ -6,11 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "ios:sync": "cap sync ios",
+    "ios:open": "cap open ios",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/ios": "^8.5.3",
+    "@capacitor/splash-screen": "^8.0.2",
     "@hello-pangea/dnd": "^18.0.1",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.49.8",
@@ -25,15 +30,18 @@
     "react-big-calendar": "^1.19.4",
     "react-dom": "^19.1.0",
     "react-easy-crop": "^5.5.7",
-    "recharts": "^3.10.1"
+    "recharts": "^3.10.1",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/postcss": "^4.3.0",
     "@types/node": "^22",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "eslint": "^9",
     "eslint-config-next": "^16.3.8",
     "tailwindcss": "^4",

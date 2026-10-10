@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -56,6 +57,8 @@ function formatDate(value?: string) {
 }
 
 export default function ChatPrivePage() {
+  const pathname = usePathname();
+  const mobile = pathname.startsWith("/mobile/");
   const [userId, setUserId] = useState("");
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [conversations, setConversations] =
@@ -258,7 +261,7 @@ export default function ChatPrivePage() {
     );
 
     if (existing) {
-      window.location.href = `/chat/prive/conversation/${existing.conversation_id}`;
+      window.location.href = mobile ? `/mobile/messages/prives/conversation/${existing.conversation_id}` : `/chat/prive/conversation/${existing.conversation_id}`;
       return;
     }
 
@@ -298,12 +301,12 @@ export default function ChatPrivePage() {
       return;
     }
 
-    window.location.href = `/chat/prive/conversation/${conversation.id}`;
+    window.location.href = mobile ? `/mobile/messages/prives/conversation/${conversation.id}` : `/chat/prive/conversation/${conversation.id}`;
   }
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-black p-6 text-white">
+      <main className={`${mobile ? "bg-black p-4" : "min-h-screen bg-black p-6"} text-white`}>
         <div className="mx-auto max-w-[1500px] rounded-[26px] border border-zinc-800 bg-zinc-950 p-8 text-zinc-500">
           Chargement des messages privés...
         </div>
@@ -312,31 +315,31 @@ export default function ChatPrivePage() {
   }
 
   return (
-    <main className="min-h-screen bg-black px-4 py-6 text-white sm:px-6 xl:px-10 xl:py-8">
+    <main className={`${mobile ? "bg-black px-3 py-4" : "min-h-screen bg-black px-4 py-6 sm:px-6 xl:px-10 xl:py-8"} text-white`}>
       <div className="mx-auto max-w-[1500px]">
-        <header className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <header className={`${mobile ? "mb-4 gap-3" : "mb-6 gap-5"} flex flex-col lg:flex-row lg:items-end lg:justify-between`}>
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.32em] text-violet-300">
               Communication · Direct
             </p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">
+            <h1 className={`${mobile ? "mt-2 text-2xl" : "mt-3 text-3xl md:text-5xl"} font-bold tracking-tight`}>
               Messages privés
             </h1>
-            <p className="mt-3 text-zinc-400">
+            <p className={`${mobile ? "mt-2 text-sm leading-5" : "mt-3"} text-zinc-400`}>
               Des échanges confidentiels entre membres LMG, séparés des canaux collectifs.
             </p>
           </div>
 
-          <nav className="flex flex-wrap gap-2">
+          <nav className={`flex gap-2 ${mobile ? "w-full" : "flex-wrap"}`}>
             <Link
-              href="/communication"
-              className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600"
+              href={mobile ? "/mobile/equipe" : "/communication"}
+              className={`${mobile ? "flex-1 text-center" : ""} rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600`}
             >
               Vue globale
             </Link>
             <Link
-              href="/chat"
-              className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-black hover:bg-zinc-200"
+              href={mobile ? "/mobile/messages" : "/chat"}
+              className={`${mobile ? "flex-1 text-center" : ""} rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-black hover:bg-zinc-200`}
             >
               Chat d’équipe
             </Link>
@@ -349,14 +352,14 @@ export default function ChatPrivePage() {
           </div>
         )}
 
-        <section className="grid gap-4 sm:grid-cols-3">
+        <section className={`${mobile ? "hidden" : "grid"} gap-4 sm:grid-cols-3`}>
           <Metric label="Conversations" value={conversations.length} />
           <Metric label="Messages non lus" value={unreadTotal} accent />
           <Metric label="Membres disponibles" value={profiles.length} />
         </section>
 
-        <div className="mt-5 grid gap-5 xl:grid-cols-[370px_1fr]">
-          <section className="h-fit rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 sm:p-6">
+        <div className={`${mobile ? "mt-4" : "mt-5"} grid gap-5 xl:grid-cols-[370px_1fr]`}>
+          <section className={`${mobile ? "order-2 rounded-2xl p-4" : "h-fit rounded-[26px] p-5 sm:p-6"} border border-zinc-800 bg-zinc-950`}>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
               Nouveau message
             </p>
@@ -395,7 +398,7 @@ export default function ChatPrivePage() {
             </button>
           </section>
 
-          <section className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-5 sm:p-6">
+          <section className={`${mobile ? "order-1 rounded-2xl p-4" : "rounded-[26px] p-5 sm:p-6"} border border-zinc-800 bg-zinc-950`}>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
@@ -437,8 +440,8 @@ export default function ChatPrivePage() {
                 return (
                   <Link
                     key={item.conversation_id}
-                    href={`/chat/prive/conversation/${item.conversation_id}`}
-                    className="group flex items-center gap-4 rounded-2xl border border-zinc-800 bg-black p-4 transition hover:border-violet-400/35 hover:bg-zinc-900"
+                    href={mobile ? `/mobile/messages/prives/conversation/${item.conversation_id}` : `/chat/prive/conversation/${item.conversation_id}`}
+                    className={`group flex min-w-0 items-center rounded-2xl border border-zinc-800 bg-black transition hover:border-violet-400/35 hover:bg-zinc-900 ${mobile ? "gap-3 p-3" : "gap-4 p-4"}`}
                   >
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-violet-400/15 font-bold text-violet-300">
                       {(otherMember?.profiles?.nom || "?")
@@ -446,11 +449,11 @@ export default function ChatPrivePage() {
                         .toUpperCase()}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="flex items-center justify-between gap-3">
+                      <span className="flex min-w-0 items-center justify-between gap-2">
                         <span className="truncate font-bold">
                           {otherMember?.profiles?.nom || "Conversation privée"}
                         </span>
-                        <span className="shrink-0 text-xs text-zinc-600">
+                        <span className={`${mobile ? "max-w-20 truncate" : "shrink-0"} text-xs text-zinc-600`}>
                           {formatDate(item.lastMessage?.created_at)}
                         </span>
                       </span>
