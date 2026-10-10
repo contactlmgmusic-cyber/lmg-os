@@ -32,7 +32,7 @@ export default async function MobileHomePage() {
 
   const [profileRes, tasksRes, projectsRes, notificationsRes, activityRes, bookingsRes] =
     await Promise.all([
-      supabase.from("profiles").select("nom, full_name").eq("id", user.id).maybeSingle(),
+      supabase.from("profiles").select("nom, full_name, role").eq("id", user.id).maybeSingle(),
       supabase
         .from("taches")
         .select("id, titre, deadline, priorite, statut")
@@ -72,6 +72,9 @@ export default async function MobileHomePage() {
     (task) => task.deadline && task.deadline >= today && task.deadline <= weekEndIso
   );
   const firstName = (profileRes.data?.nom || profileRes.data?.full_name || "").split(" ")[0];
+  const role = profileRes.data?.role || "";
+  const canCreateTask = ["super_admin", "admin", "artistic_director"].includes(role);
+  const canViewActivity = ["super_admin", "admin"].includes(role);
   const greeting = getGreeting();
 
   return (
@@ -96,12 +99,12 @@ export default async function MobileHomePage() {
       </section>
 
       <section className="mt-7">
-        <SectionHeader eyebrow="À traiter" title="Tes priorités" href="/taches" />
+        <SectionHeader eyebrow="À traiter" title="Tes priorités" href="/mobile/taches" />
         <div className="mt-4 space-y-2">
           {tasks.length ? tasks.slice(0, 4).map((task) => (
             <Link
               key={task.id}
-              href={`/taches/${task.id}`}
+              href={`/mobile/taches/${task.id}`}
               className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 active:scale-[0.99]"
             >
               <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${task.deadline && task.deadline < today ? "bg-red-500" : task.priorite === "Haute" || task.priorite === "Urgente" ? "bg-[#f2b705]" : "bg-zinc-700"}`} />
@@ -121,7 +124,7 @@ export default async function MobileHomePage() {
           {projects.length ? projects.map((project: any) => (
             <Link
               key={project.id}
-              href={`/projets-internes/${project.id}`}
+              href={`/mobile/projets/${project.id}`}
               className="w-[250px] shrink-0 snap-start rounded-[22px] border border-white/[0.07] bg-[#0f0f0f] p-5"
             >
               <div className="flex items-center justify-between gap-2">
@@ -141,14 +144,14 @@ export default async function MobileHomePage() {
       <section className="mt-8">
         <div className="grid grid-cols-2 gap-3">
           <QuickAction href="/chat" label="Écrire à l’équipe" detail="Chat interne" symbol="↗" />
-          <QuickAction href="/taches/nouveau" label="Ajouter une tâche" detail="Action rapide" symbol="+" />
+          <QuickAction href={canCreateTask ? "/taches/nouveau" : "/mobile/taches"} label={canCreateTask ? "Ajouter une tâche" : "Mes tâches"} detail={canCreateTask ? "Action rapide" : "Suivre mes actions"} symbol="+" />
           <QuickAction href="/mobile/agenda" label="Voir l’agenda" detail={`${bookingsRes.count || 0} booking(s) cette semaine`} symbol="→" />
           <QuickAction href="/validations-artiste" label="Validations" detail="À contrôler" symbol="✓" />
         </div>
       </section>
 
       <section className="mt-8">
-        <SectionHeader eyebrow="Temps réel" title="Activité récente" href="/activity" />
+        <SectionHeader eyebrow="Temps réel" title="Activité récente" href={canViewActivity ? "/mobile/activite" : undefined} />
         <div className="mt-4 rounded-[22px] border border-white/[0.07] bg-white/[0.02] px-4">
           {activities.length ? activities.map((activity) => (
             <article key={activity.id} className="flex gap-3 border-b border-white/[0.06] py-4 last:border-0">
@@ -171,8 +174,8 @@ function Metric({ value, label, tone }: { value: number; label: string; tone: "d
   return <div className="rounded-2xl border border-white/[0.06] bg-black/30 px-3 py-4 text-center"><p className={`text-2xl font-black ${tones[tone]}`}>{value}</p><p className="mt-1 text-[9px] font-bold uppercase tracking-[0.12em] text-zinc-600">{label}</p></div>;
 }
 
-function SectionHeader({ eyebrow, title, href }: { eyebrow: string; title: string; href: string }) {
-  return <div className="flex items-end justify-between gap-4"><div><p className="text-[9px] font-black uppercase tracking-[0.22em] text-[#f2b705]">{eyebrow}</p><h2 className="mt-1.5 text-xl font-black tracking-[-0.02em]">{title}</h2></div><Link href={href} className="pb-0.5 text-xs font-bold text-zinc-600">Voir tout</Link></div>;
+function SectionHeader({ eyebrow, title, href }: { eyebrow: string; title: string; href?: string }) {
+  return <div className="flex items-end justify-between gap-4"><div><p className="text-[9px] font-black uppercase tracking-[0.22em] text-[#f2b705]">{eyebrow}</p><h2 className="mt-1.5 text-xl font-black tracking-[-0.02em]">{title}</h2></div>{href && <Link href={href} className="pb-0.5 text-xs font-bold text-zinc-600">Voir tout</Link>}</div>;
 }
 
 function QuickAction({ href, label, detail, symbol }: { href: string; label: string; detail: string; symbol: string }) {
