@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: "LMG ADMIN",
   webDir: "public",
   server: {
-    url: "https://lmg-os-git-feat-lmg-admin-mobile-legacy-music-group.vercel.app/mobile",
+    url: "https://os.lmgmusic.fr/mobile",
     cleartext: false,
   },
   ios: {
