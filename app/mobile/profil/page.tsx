@@ -51,9 +51,8 @@ export default async function MobileProfilePage() {
         <p className="mb-3 text-[9px] font-black uppercase tracking-[0.2em] text-[#f2b705]">Réglages</p>
         <div className="overflow-hidden rounded-[22px] border border-white/[0.07] bg-white/[0.02] px-4">
           <Setting href="/mobile/alertes" title="Notifications" detail="Consulter tes alertes LMG" />
-          <Setting href="/profil" title="Sécurité" detail="Modifier ton mot de passe" />
-          <Setting href="/profil" title="Modifier le profil" detail="Nom, photo et informations du compte" />
-          <Setting href="/dashboard" title="Ouvrir LMG OS" detail="Accéder à l’espace complet sur ordinateur" last />
+          <Setting title="Sécurité" detail="Disponible prochainement dans l’application" />
+          <Setting title="Modifier le profil" detail="Disponible prochainement dans l’application" last />
         </div>
       </section>
 
@@ -72,6 +71,8 @@ function Info({ label, value }: { label: string; value: string }) {
   return <div className="border-b border-white/[0.06] py-4 last:border-0"><p className="text-[9px] font-black uppercase tracking-[0.15em] text-zinc-700">{label}</p><p className="mt-1.5 break-words text-sm font-bold text-zinc-300">{value}</p></div>;
 }
 
-function Setting({ href, title, detail, last = false }: { href: string; title: string; detail: string; last?: boolean }) {
-  return <Link href={href} className={`flex items-center gap-3 py-4 ${last ? "" : "border-b border-white/[0.06]"}`}><div className="min-w-0 flex-1"><p className="text-sm font-black">{title}</p><p className="mt-1 text-xs text-zinc-600">{detail}</p></div><span className="text-zinc-700">›</span></Link>;
+function Setting({ href, title, detail, last = false }: { href?: string; title: string; detail: string; last?: boolean }) {
+  const content = <><div className="min-w-0 flex-1"><p className="text-sm font-black">{title}</p><p className="mt-1 text-xs text-zinc-600">{detail}</p></div>{href && <span className="text-zinc-700">›</span>}</>;
+  const className = `flex items-center gap-3 py-4 ${last ? "" : "border-b border-white/[0.06]"}`;
+  return href ? <Link href={href} className={className}>{content}</Link> : <div className={className}>{content}</div>;
 }
