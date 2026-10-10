@@ -29,6 +29,7 @@ export async function loadCalendar(profile: Profile) {
     );
   }
   if (staff) {
+    sources.push({ label: "Événements LMG", query: db.from("internal_events").select("id,titre,date_debut,statut,type").not("date_debut", "is", null), map: row => [entry("internal-event", row, row.titre, row.date_debut, row.type || "Événement LMG", "Interne", `/evenements/${row.id}`)] });
     for (const [table, label, type, path] of [["medias", "Médias", "Relance média", "/medias"], ["influenceurs", "Influenceurs", "Relance influenceur", "/influenceurs"], ...(admin ? [["partenaires", "Partenaires", "Relance partenaire", "/partenaires"]] : [])]) {
       sources.push({ label, query: db.from(table).select("id,nom,prochaine_relance,statut").not("prochaine_relance", "is", null), map: row => [entry(table, row, row.nom, row.prochaine_relance, type, "Relance", `${path}/${row.id}`)] });
     }
