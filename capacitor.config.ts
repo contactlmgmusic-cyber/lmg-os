@@ -1,0 +1,17 @@
+import type { CapacitorConfig } from "@capacitor/cli";
+
+const config: CapacitorConfig = {
+  appId: "fr.legacymusicgroup.admin",
+  appName: "LMG ADMIN",
+  webDir: "public",
+  server: {
+    url: "https://lmg-os-git-feat-lmg-admin-mobile-legacy-music-group.vercel.app/mobile",
+    cleartext: false,
+  },
+  ios: {
+    contentInset: "automatic",
+    preferredContentMode: "mobile",
+  },
+};
+
+export default config;
