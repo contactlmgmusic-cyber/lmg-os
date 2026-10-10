@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -56,6 +57,8 @@ function formatDate(value?: string) {
 }
 
 export default function ChatPrivePage() {
+  const pathname = usePathname();
+  const mobile = pathname.startsWith("/mobile/");
   const [userId, setUserId] = useState("");
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [conversations, setConversations] =
@@ -258,7 +261,7 @@ export default function ChatPrivePage() {
     );
 
     if (existing) {
-      window.location.href = `/chat/prive/conversation/${existing.conversation_id}`;
+      window.location.href = mobile ? `/mobile/messages/prives/conversation/${existing.conversation_id}` : `/chat/prive/conversation/${existing.conversation_id}`;
       return;
     }
 
@@ -298,7 +301,7 @@ export default function ChatPrivePage() {
       return;
     }
 
-    window.location.href = `/chat/prive/conversation/${conversation.id}`;
+    window.location.href = mobile ? `/mobile/messages/prives/conversation/${conversation.id}` : `/chat/prive/conversation/${conversation.id}`;
   }
 
   if (loading) {
@@ -329,13 +332,13 @@ export default function ChatPrivePage() {
 
           <nav className="flex flex-wrap gap-2">
             <Link
-              href="/communication"
+              href={mobile ? "/mobile/equipe" : "/communication"}
               className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-600"
             >
               Vue globale
             </Link>
             <Link
-              href="/chat"
+              href={mobile ? "/mobile/messages" : "/chat"}
               className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-black hover:bg-zinc-200"
             >
               Chat d’équipe
@@ -437,7 +440,7 @@ export default function ChatPrivePage() {
                 return (
                   <Link
                     key={item.conversation_id}
-                    href={`/chat/prive/conversation/${item.conversation_id}`}
+                    href={mobile ? `/mobile/messages/prives/conversation/${item.conversation_id}` : `/chat/prive/conversation/${item.conversation_id}`}
                     className="group flex items-center gap-4 rounded-2xl border border-zinc-800 bg-black p-4 transition hover:border-violet-400/35 hover:bg-zinc-900"
                   >
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-violet-400/15 font-bold text-violet-300">
