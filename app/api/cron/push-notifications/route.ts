@@ -5,7 +5,8 @@ import { sendPush } from "@/lib/web-push.server";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  if (!process.env.CRON_SECRET || request.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) return NextResponse.json({ error: "Accès refusé" }, { status: 401 });
+  const secret = process.env.PUSH_CRON_SECRET || process.env.CRON_SECRET;
+  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) return NextResponse.json({ error: "Accès refusé" }, { status: 401 });
   const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL as string, process.env.SUPABASE_SERVICE_ROLE_KEY as string, { auth: { persistSession: false } });
   const { data: notifications, error } = await admin.from("notifications").select("id,user_id,titre,description,lien,link").is("push_sent_at", null).order("created_at").limit(100);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
