@@ -143,10 +143,10 @@ export default async function MobileHomePage() {
 
       <section className="mt-8">
         <div className="grid grid-cols-2 gap-3">
-          <QuickAction href="/chat" label="Écrire à l’équipe" detail="Chat interne" symbol="↗" />
-          <QuickAction href={canCreateTask ? "/taches/nouveau" : "/mobile/taches"} label={canCreateTask ? "Ajouter une tâche" : "Mes tâches"} detail={canCreateTask ? "Action rapide" : "Suivre mes actions"} symbol="+" />
+          <QuickAction href="/mobile/messages" label="Écrire à l’équipe" detail="Chat interne" symbol="↗" />
+          <QuickAction href={canCreateTask ? "/mobile/taches/nouveau" : "/mobile/taches"} label={canCreateTask ? "Ajouter une tâche" : "Mes tâches"} detail={canCreateTask ? "Action rapide" : "Suivre mes actions"} symbol="+" />
           <QuickAction href="/mobile/agenda" label="Voir l’agenda" detail={`${bookingsRes.count || 0} booking(s) cette semaine`} symbol="→" />
-          <QuickAction href="/validations-artiste" label="Validations" detail="À contrôler" symbol="✓" />
+          <QuickAction href="/mobile/validations" label="Validations" detail="À contrôler" symbol="✓" />
         </div>
       </section>
 
