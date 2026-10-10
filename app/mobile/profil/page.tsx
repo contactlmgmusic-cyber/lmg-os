@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import MobileLogoutButton from "@/components/mobile-admin/MobileLogoutButton";
 import PushNotificationSettings from "@/components/mobile-admin/PushNotificationSettings";
+import NativeDeviceSettings from "@/components/mobile-admin/NativeDeviceSettings";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 
 export const dynamic = "force-dynamic";
@@ -51,6 +52,7 @@ export default async function MobileProfilePage() {
       <section className="mt-7">
         <p className="mb-3 text-[9px] font-black uppercase tracking-[0.2em] text-[#f2b705]">Réglages</p>
         <div className="overflow-hidden rounded-[22px] border border-white/[0.07] bg-white/[0.02] px-4">
+          <NativeDeviceSettings />
           <PushNotificationSettings />
           <Setting href="/mobile/alertes" title="Notifications" detail="Consulter tes alertes LMG" />
           <Setting title="Sécurité" detail="Disponible prochainement dans l’application" />

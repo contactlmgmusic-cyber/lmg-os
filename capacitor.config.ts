@@ -14,6 +14,12 @@ const config: CapacitorConfig = {
     preferredContentMode: "mobile",
   },
   plugins: {
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "banner", "list"],
+    },
+    LocalNotifications: {
+      presentationOptions: ["badge", "sound", "banner", "list"],
+    },
     SplashScreen: {
       launchShowDuration: 1800,
       launchAutoHide: true,
