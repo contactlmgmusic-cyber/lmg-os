@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
 import "./agency.css";
-import "./agency-home.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://agency.legacymusicgroup.fr"),
   title: {
-    absolute: "LMG Agency — Brands that move",
-  },
+  absolute: "LMG Agency | Agence créative & digitale",
+},
   description:
-    "LMG Agency transforme les visions en marques visibles, crédibles et mémorables — de la stratégie au lancement.",
+    "Identité, communication, contenu, digital et marketing pour les marques, les entreprises, les entrepreneurs et les talents.",
   openGraph: {
-    title: "LMG Agency — Brands that move",
+    title: "LMG Agency | Agence créative & digitale",
     description:
-      "Stratégie, identité, contenu et digital pour des marques qui avancent.",
+      "Votre vision mérite d’être remarquée. Découvrez LMG Agency.",
     url: "https://agency.legacymusicgroup.fr",
     siteName: "LMG Agency",
     locale: "fr_FR",
