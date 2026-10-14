@@ -33,7 +33,7 @@ export default function DevisAgencyPage() {
       setSuccess(true);
     } catch {
       setError(
-        "Une erreur est survenue. Vous pouvez nous écrire directement à contact@legacymusicgroup.fr."
+        "Une erreur est survenue. Vous pouvez nous écrire directement à contact@legacymusicgroup.fr.",
       );
     } finally {
       setSending(false);
@@ -44,8 +44,9 @@ export default function DevisAgencyPage() {
     <main className="agency-quote-page">
       <header className="agency-quote-header">
         <Link href="/" className="agency-quote-logo">
-          <img src="/logo-lmg.png" alt="Legacy Music Group" />
-          <span>AGENCY</span>
+          <span className="agency-quote-logo-frame">
+            <img src="/agency/logo-light.png" alt="LMG Agency" />
+          </span>
         </Link>
 
         <Link href="/" className="agency-quote-back">
@@ -174,9 +175,7 @@ export default function DevisAgencyPage() {
                   </option>
                   <option value="contenu">Création de contenu</option>
                   <option value="site">Site internet et digital</option>
-                  <option value="marketing">
-                    Marketing et développement
-                  </option>
+                  <option value="marketing">Marketing et développement</option>
                   <option value="accompagnement_360">
                     Accompagnement global 360°
                   </option>
@@ -253,9 +252,7 @@ export default function DevisAgencyPage() {
                   <option value="linkedin">LinkedIn</option>
                   <option value="google">Google</option>
                   <option value="recommandation">Recommandation</option>
-                  <option value="legacy_music_group">
-                    Legacy Music Group
-                  </option>
+                  <option value="legacy_music_group">Legacy Music Group</option>
                   <option value="autre">Autre</option>
                 </select>
               </label>
@@ -288,8 +285,8 @@ export default function DevisAgencyPage() {
             </button>
 
             <small>
-              Les informations transmises restent confidentielles. Un acompte
-              de 50 % pourra être demandé après validation du devis.
+              Les informations transmises restent confidentielles. Un acompte de
+              50 % pourra être demandé après validation du devis.
             </small>
           </form>
         )}

@@ -108,8 +108,12 @@
   display: flex;
   align-items: center;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 80% 40%, #34332b 0, #181816 33%, #0d0d0c 68%);
+  background: radial-gradient(
+    circle at 80% 40%,
+    #34332b 0,
+    #181816 33%,
+    #0d0d0c 68%
+  );
   color: white;
 }
 
@@ -809,9 +813,9 @@
   }
 
   .agency-logo-mark {
-  width: 42px;
-  height: 42px;
-}
+    width: 42px;
+    height: 42px;
+  }
 }
 
 /* =========================================================
@@ -851,11 +855,18 @@
   letter-spacing: 0.22em;
 }
 
-.agency-quote-logo img {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-  border-radius: 50%;
+.agency-quote-logo-frame {
+  display: block;
+  width: 112px;
+  height: 68px;
+  overflow: hidden;
+}
+
+.agency-quote-logo-frame img {
+  width: 112px;
+  height: 112px;
+  object-fit: cover;
+  transform: translateY(-22px);
 }
 
 .agency-quote-back {
