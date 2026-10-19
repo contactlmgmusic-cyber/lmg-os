@@ -1,12 +1,12 @@
 import "server-only";
 export function careersIdentity() {
   return {
-    name: process.env.CAREERS_CONTROLLER_NAME?.trim() || "LMG Music",
+    name: process.env.CAREERS_CONTROLLER_NAME?.trim() || "Legacy Music Group",
     address: process.env.CAREERS_CONTROLLER_ADDRESS?.trim() || "138 avenue Victor-Hugo, 75016 Paris, France",
     registration: process.env.CAREERS_CONTROLLER_REGISTRATION?.trim() || "",
-    status: process.env.CAREERS_CONTROLLER_REGISTRATION?.trim() ? "" : "Société en cours de création",
+    status: process.env.CAREERS_CONTROLLER_REGISTRATION?.trim() ? "" : "Société en cours de formation",
+    representative: process.env.CAREERS_CONTROLLER_REPRESENTATIVE?.trim() || "Joseph Kayaya",
     email: process.env.CAREERS_PRIVACY_EMAIL?.trim() || "candidature@lmgmusic.fr",
-    phone: process.env.CAREERS_PRIVACY_PHONE?.trim() || "06 15 95 33 74",
   };
 }
 export function careersIdentityReady() {
