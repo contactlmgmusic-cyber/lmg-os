@@ -14,7 +14,7 @@ export default function ReleasesCarousel() {
 
   useEffect(() => {
     async function loadReleases() {
-      const { data } = await supabaseBrowser
+      const carouselQuery = () => supabaseBrowser
   .from("public_projets")
   .select(`
     id,
@@ -34,6 +34,37 @@ export default function ReleasesCarousel() {
   .order("display_order", { ascending: true })
   .order("date_sortie", { ascending: false })
   .limit(6);
+
+      let { data, error } = await carouselQuery();
+
+      // Compatibilité pendant le déploiement de la migration Supabase :
+      // l'ancienne vue publique ne contient pas encore show_in_carousel.
+      if (error) {
+        const fallback = await supabaseBrowser
+          .from("public_projets")
+          .select(`
+            id,
+            titre,
+            slug,
+            type,
+            cover_url,
+            hero_image_url,
+            date_sortie,
+            display_order,
+            artistes
+          `)
+          .eq("is_public", true)
+          .eq("featured", true)
+          .not("slug", "is", null)
+          .order("display_order", { ascending: true })
+          .order("date_sortie", { ascending: false })
+          .limit(6);
+
+        data = fallback.data?.map((item) => ({
+          ...item,
+          show_in_carousel: true,
+        })) || null;
+      }
 
       setReleases(data || []);
     }
