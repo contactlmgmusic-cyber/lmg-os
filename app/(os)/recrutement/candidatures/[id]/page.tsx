@@ -62,6 +62,31 @@ export default async function ApplicationPage({
     notFound();
   }
 
+  const [{ data: rawEvents }, { data: rawNotes }] = await Promise.all([
+    supabase
+      .from("careers_application_events")
+      .select("id, event_type, from_status, to_status, actor_id, created_at")
+      .eq("application_id", id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("careers_application_notes")
+      .select("id, body, author_id, created_at")
+      .eq("application_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const peopleIds = Array.from(new Set([
+    ...(rawEvents || []).map((item) => item.actor_id),
+    ...(rawNotes || []).map((item) => item.author_id),
+  ].filter(Boolean))) as string[];
+
+  const { data: people } = peopleIds.length
+    ? await supabase.from("profiles").select("id, nom, email").in("id", peopleIds)
+    : { data: [] };
+  const peopleById = new Map((people || []).map((person) => [person.id, person.nom || person.email]));
+  const events = (rawEvents || []).map((item) => ({ ...item, actor_name: item.actor_id ? peopleById.get(item.actor_id) || null : null }));
+  const notes = (rawNotes || []).map((item) => ({ ...item, author_name: peopleById.get(item.author_id) || null }));
+
   const job = Array.isArray(
     application.careers_jobs
   )
@@ -258,9 +283,9 @@ export default async function ApplicationPage({
               <CareersApplicationManager
                 id={application.id}
                 initialStatus={application.status}
-                initialNotes={
-                  application.internal_notes
-                }
+                legacyNotes={application.internal_notes}
+                events={events}
+                notes={notes}
               />
             </div>
           </div>

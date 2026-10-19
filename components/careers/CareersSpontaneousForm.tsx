@@ -96,6 +96,7 @@ export default function CareersSpontaneousForm() {
     const formData = new FormData(form);
 
     formData.set("application_type", "spontaneous");
+    formData.set("locale", locale);
 
     try {
       const response = await fetch(

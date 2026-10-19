@@ -12,6 +12,7 @@ const statusLabels: Record<string, string> = {
   interview: "Entretien",
   selected: "Retenue",
   rejected: "Refusée",
+  talent_pool: "Vivier",
 };
 
 const statusClasses: Record<string, string> = {
@@ -24,6 +25,8 @@ const statusClasses: Record<string, string> = {
     "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
   rejected:
     "bg-red-500/10 text-red-700 dark:text-red-300",
+  talent_pool:
+    "bg-cyan-500/10 text-cyan-700 dark:text-cyan-300",
 };
 
 export default async function CareersApplicationsPage() {

@@ -12,6 +12,7 @@ const statusLabels: Record<string, string> = {
   interview: "Entretien",
   selected: "Retenue",
   rejected: "Refusée",
+  talent_pool: "Vivier",
 };
 
 const departmentLabels: Record<string, string> = {

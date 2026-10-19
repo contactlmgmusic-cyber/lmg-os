@@ -10,6 +10,7 @@ const allowedStatuses = [
   "interview",
   "selected",
   "rejected",
+  "talent_pool",
 ] as const;
 
 async function authorize() {
@@ -74,10 +75,8 @@ export async function PATCH(
     const { id } = await context.params;
     const body = await request.json();
 
-    const updates: {
-      status?: string;
-      internal_notes?: string | null;
-    } = {};
+    let status: string | null = null;
+    let note: string | null = null;
 
     if (body.status !== undefined) {
       if (!allowedStatuses.includes(body.status)) {
@@ -87,29 +86,28 @@ export async function PATCH(
         );
       }
 
-      updates.status = body.status;
+      status = body.status;
     }
 
-    if (body.internal_notes !== undefined) {
-      updates.internal_notes =
-        typeof body.internal_notes === "string"
-          ? body.internal_notes.trim() || null
-          : null;
+    if (body.note !== undefined) {
+      if (typeof body.note !== "string" || body.note.trim().length > 5000) {
+        return NextResponse.json({ error: "Invalid note" }, { status: 400 });
+      }
+      note = body.note.trim() || null;
     }
 
-    if (Object.keys(updates).length === 0) {
+    if (status === null && note === null) {
       return NextResponse.json(
         { error: "Nothing to update" },
         { status: 400 }
       );
     }
 
-    const { data, error } = await supabase
-      .from("careers_applications")
-      .update(updates)
-      .eq("id", id)
-      .select("*")
-      .single();
+    const { error } = await supabase.rpc("manage_careers_application", {
+      p_application_id: id,
+      p_status: status,
+      p_note: note,
+    });
 
     if (error) {
       return NextResponse.json(
@@ -118,7 +116,7 @@ export async function PATCH(
       );
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(
       { error: "Unauthorized" },

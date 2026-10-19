@@ -115,6 +115,7 @@ export default function CareersApplyForm({
     const data = new FormData(form);
 
     data.set("job_slug", job.slug);
+    data.set("locale", locale);
 
     try {
       const response = await fetch(

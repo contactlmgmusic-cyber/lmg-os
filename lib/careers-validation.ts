@@ -13,6 +13,8 @@ export function validateApplication(form: FormData) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Invalid email");
   const application_type = text("application_type", 20) || "job";
   if (!["job", "spontaneous"].includes(application_type)) throw new Error("Invalid application type");
+  const locale = text("locale", 2) || "fr";
+  if (!["fr", "en"].includes(locale)) throw new Error("Invalid locale");
   const job_slug = text("job_slug", 180, application_type === "job");
   if (job_slug && !/^[\p{L}\p{N}_-]+$/u.test(job_slug)) throw new Error("Invalid job");
   const department_interest = text("department_interest", 30, application_type === "spontaneous");
@@ -31,6 +33,7 @@ export function validateApplication(form: FormData) {
   return { first_name, last_name, email, phone: text("phone", 40), location: text("location", 200),
     linkedin_url: url("linkedin_url"), portfolio_url: url("portfolio_url"), cover_letter: text("cover_letter", 10000),
     availability: text("availability", 500), application_type, job_slug,
+    locale: locale as "fr" | "en",
     department_interest: application_type === "spontaneous" ? department_interest : null,
     talent_pool_consent,
     talent_pool_consented_at: talent_pool_consent ? new Date().toISOString() : null };
