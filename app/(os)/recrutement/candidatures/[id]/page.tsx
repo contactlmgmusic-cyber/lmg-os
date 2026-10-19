@@ -147,6 +147,22 @@ export default async function ApplicationPage({
 
           <section className="rounded-2xl border bg-card p-6">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Vivier LMG
+            </p>
+
+            <p className={`mt-3 text-sm font-medium ${application.talent_pool_consent ? "text-emerald-500" : "text-muted-foreground"}`}>
+              {application.talent_pool_consent ? "Conservation autorisée" : "Conservation non autorisée"}
+            </p>
+
+            {application.talent_pool_consented_at && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Accord donné le {new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short" }).format(new Date(application.talent_pool_consented_at))}
+              </p>
+            )}
+          </section>
+
+          <section className="rounded-2xl border bg-card p-6">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Coordonnées
             </p>
 

@@ -33,8 +33,10 @@ const translations = {
     buildPlaceholder:
       "Tell us about your perspective, your work and where you think you could contribute at LMG.",
     privacy:
-      "By submitting your application, you acknowledge that LMG will process the information you provide for recruitment purposes. Learn more about how we handle candidate data in our",
+      "The information you provide is used by Legacy Music Group to review and manage your application. Fields marked with an asterisk are required to process it. You can exercise your rights by writing to candidature@lmgmusic.fr. Read our",
     privacyLink: "Candidate Privacy Notice",
+    talentPool:
+      "I would like my profile to be retained in the LMG talent pool for up to two years so that I may be contacted about future opportunities.",
     sending: "Sending...",
     submit: "Introduce yourself",
   },
@@ -67,8 +69,10 @@ const translations = {
     buildPlaceholder:
       "Parlez-nous de votre vision, de votre travail et de la manière dont vous pourriez contribuer à LMG.",
     privacy:
-      "En envoyant votre candidature, vous reconnaissez que LMG traitera les informations fournies à des fins de recrutement. Découvrez comment nous traitons les données des candidats dans notre",
+      "Les informations transmises sont utilisées par Legacy Music Group pour examiner et suivre votre candidature. Les champs marqués d’un astérisque sont nécessaires à son traitement. Vous pouvez exercer vos droits en écrivant à candidature@lmgmusic.fr. Consultez notre",
     privacyLink: "Politique de confidentialité des candidats",
+    talentPool:
+      "Je souhaite que mon profil soit conservé dans le vivier LMG pendant une durée maximale de deux ans afin d’être contacté(e) pour de futures opportunités.",
     sending: "Envoi...",
     submit: "Présentez-vous",
   },
@@ -282,6 +286,15 @@ export default function CareersSpontaneousForm() {
             {t.privacyLink}
           </a>.
         </p>
+
+        <label className="mt-5 flex max-w-3xl cursor-pointer items-start gap-3 text-xs leading-5 text-white/55">
+          <input
+            type="checkbox"
+            name="talent_pool_consent"
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[#d5ad58]"
+          />
+          <span>{t.talentPool}</span>
+        </label>
 
         <button
           type="submit"

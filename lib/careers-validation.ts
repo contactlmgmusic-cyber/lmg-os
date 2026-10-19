@@ -17,6 +17,10 @@ export function validateApplication(form: FormData) {
   if (job_slug && !/^[\p{L}\p{N}_-]+$/u.test(job_slug)) throw new Error("Invalid job");
   const department_interest = text("department_interest", 30, application_type === "spontaneous");
   if (application_type === "spontaneous" && !departments.has(department_interest!)) throw new Error("Invalid department");
+  const talentPoolValue = form.get("talent_pool_consent");
+  if (talentPoolValue !== null && typeof talentPoolValue !== "string") throw new Error("Invalid consent");
+  if (typeof talentPoolValue === "string" && !["on", "true", "1"].includes(talentPoolValue)) throw new Error("Invalid consent");
+  const talent_pool_consent = talentPoolValue !== null;
   const url = (name: string) => {
     const value = text(name, 2048);
     if (!value) return null;
@@ -27,7 +31,9 @@ export function validateApplication(form: FormData) {
   return { first_name, last_name, email, phone: text("phone", 40), location: text("location", 200),
     linkedin_url: url("linkedin_url"), portfolio_url: url("portfolio_url"), cover_letter: text("cover_letter", 10000),
     availability: text("availability", 500), application_type, job_slug,
-    department_interest: application_type === "spontaneous" ? department_interest : null };
+    department_interest: application_type === "spontaneous" ? department_interest : null,
+    talent_pool_consent,
+    talent_pool_consented_at: talent_pool_consent ? new Date().toISOString() : null };
 }
 export async function validateCv(file: File) {
   if (file.size === 0 || file.size > MAX_CV_SIZE) throw new Error("Invalid CV size");

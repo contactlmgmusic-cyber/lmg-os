@@ -42,12 +42,11 @@ const translations = {
     messagePlaceholder:
       "Tell us what brings you here, what you've built and what you'd like to bring to LMG.",
 
-    accuracy:
-      "By submitting your application, you confirm that the information provided is accurate and may be reviewed by the LMG team for recruitment purposes.",
-
     privacyBefore:
-      "By submitting your application, you acknowledge that LMG will process the information you provide for recruitment purposes. Learn more about how we handle candidate data in our",
+      "The information you provide is used by Legacy Music Group to review and manage your application. Fields marked with an asterisk are required to process it. You can exercise your rights by writing to candidature@lmgmusic.fr. Read our",
     privacyLink: "Candidate Privacy Notice",
+    talentPool:
+      "I would like my profile to be retained in the LMG talent pool for up to two years so that I may be contacted about future opportunities.",
 
     sending: "Sending...",
     submit: "Submit application",
@@ -83,12 +82,11 @@ const translations = {
     messagePlaceholder:
       "Dites-nous ce qui vous amène ici, ce que vous avez construit et ce que vous aimeriez apporter à LMG.",
 
-    accuracy:
-      "En envoyant votre candidature, vous confirmez que les informations fournies sont exactes et peuvent être examinées par l’équipe LMG à des fins de recrutement.",
-
     privacyBefore:
-      "En envoyant votre candidature, vous reconnaissez que LMG traitera les informations fournies à des fins de recrutement. Découvrez comment nous traitons les données des candidats dans notre",
+      "Les informations transmises sont utilisées par Legacy Music Group pour examiner et suivre votre candidature. Les champs marqués d’un astérisque sont nécessaires à son traitement. Vous pouvez exercer vos droits en écrivant à candidature@lmgmusic.fr. Consultez notre",
     privacyLink: "Politique de confidentialité des candidats",
+    talentPool:
+      "Je souhaite que mon profil soit conservé dans le vivier LMG pendant une durée maximale de deux ans afin d’être contacté(e) pour de futures opportunités.",
 
     sending: "Envoi...",
     submit: "Envoyer ma candidature",
@@ -293,10 +291,6 @@ export default function CareersApplyForm({
 
       <div className="border-t border-white/15 pt-8">
         <div className="flex flex-col gap-5">
-          <p className="max-w-xl text-xs leading-6 text-white/35">
-            {t.accuracy}
-          </p>
-
           <p className="max-w-2xl text-xs leading-5 text-white/40">
             {t.privacyBefore}{" "}
             <a
@@ -306,6 +300,15 @@ export default function CareersApplyForm({
               {t.privacyLink}
             </a>.
           </p>
+
+          <label className="flex max-w-3xl cursor-pointer items-start gap-3 text-xs leading-5 text-white/55">
+            <input
+              type="checkbox"
+              name="talent_pool_consent"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[#d5ad58]"
+            />
+            <span>{t.talentPool}</span>
+          </label>
 
           <div className="pt-2">
             <button
