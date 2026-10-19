@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 
 
 type ArtistRelation = {
@@ -51,6 +52,7 @@ export default function SiteReleasesManager() {
   );
 
   const [message, setMessage] = useState("");
+  const [uploadingHeroId, setUploadingHeroId] = useState<string | null>(null);
 
   async function loadReleases() {
     setLoading(true);
@@ -161,6 +163,39 @@ export default function SiteReleasesManager() {
     await updateRelease(release.id, {
       display_order: value,
     });
+  }
+
+  async function uploadHeroImage(release: Release, file: File) {
+    if (!file.type.startsWith("image/")) {
+      alert("Sélectionne une image valide.");
+      return;
+    }
+
+    setUploadingHeroId(release.id);
+    setMessage("");
+
+    const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const filePath = `heroes/${release.id}-${Date.now()}.${extension}`;
+    const { error: uploadError } = await supabaseBrowser.storage
+      .from("lmg-assets")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      alert(uploadError.message);
+      setUploadingHeroId(null);
+      return;
+    }
+
+    const { data } = supabaseBrowser.storage
+      .from("lmg-assets")
+      .getPublicUrl(filePath);
+
+    const saved = await updateRelease(release.id, {
+      hero_image_url: data.publicUrl,
+    });
+
+    setUploadingHeroId(null);
+    if (saved) setMessage("Image Hero remplacée et enregistrée.");
   }
 
   if (loading) {
@@ -292,8 +327,8 @@ export default function SiteReleasesManager() {
               );
 
               const image =
-                release.cover_url ||
-                release.hero_image_url;
+                release.hero_image_url ||
+                release.cover_url;
 
               const saving =
                 savingId === release.id;
@@ -377,6 +412,25 @@ export default function SiteReleasesManager() {
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-3">
+                        <label className="cursor-pointer text-xs font-semibold text-yellow-500 transition hover:text-yellow-300">
+                          {uploadingHeroId === release.id
+                            ? "Import en cours…"
+                            : release.hero_image_url
+                              ? "Remplacer l’image Hero"
+                              : "Ajouter l’image Hero"}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            disabled={saving || uploadingHeroId === release.id}
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              if (file) void uploadHeroImage(release, file);
+                              event.currentTarget.value = "";
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+
                         {release.slug && (
                           <a
                             href={`https://legacymusicgroup.fr/site/projets/${release.slug}`}

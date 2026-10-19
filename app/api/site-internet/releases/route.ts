@@ -27,6 +27,7 @@ export async function PATCH(request: Request) {
     ...(typeof body.is_public === "boolean" ? { is_public: body.is_public } : {}),
     ...(typeof body.featured === "boolean" ? { featured: body.featured } : {}),
     ...(typeof body.show_in_carousel === "boolean" ? { show_in_carousel: body.show_in_carousel } : {}),
+    ...(typeof body.hero_image_url === "string" ? { hero_image_url: body.hero_image_url.trim() || null } : {}),
     ...(Number.isFinite(body.display_order) ? { display_order: Math.max(0, Math.round(body.display_order)) } : {}),
   };
   if (patch.show_in_carousel === true) Object.assign(patch, { is_public: true });

@@ -24,11 +24,14 @@ export default function ReleasesCarousel() {
     cover_url,
     hero_image_url,
     date_sortie,
+    display_order,
+    show_in_carousel,
     artistes
   `)
   .eq("is_public", true)
-  .eq("featured", true)
+  .eq("show_in_carousel", true)
   .not("slug", "is", null)
+  .order("display_order", { ascending: true })
   .order("date_sortie", { ascending: false })
   .limit(6);
 
@@ -73,6 +76,7 @@ export default function ReleasesCarousel() {
               alt=""
               fill
               priority
+              sizes="100vw"
               className="absolute inset-0 scale-[1.8] object-cover object-center opacity-90 blur-[140px]"
             />
 
@@ -118,6 +122,7 @@ export default function ReleasesCarousel() {
         alt={release.titre || "Release LMG"}
         fill
         priority
+        sizes="(max-width: 1023px) 92vw, (max-width: 1279px) 760px, 900px"
         className="object-cover object-center"
       />
     ) : (
