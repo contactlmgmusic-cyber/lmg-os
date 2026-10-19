@@ -318,3 +318,344 @@ export default function CareersHome() {
                     {world.description}
                   </p>
                 </div>
+
+                <div className="flex flex-wrap gap-2 md:col-span-3 md:justify-end">
+                  {world.roles.map((role) => (
+                    <span
+                      key={role}
+                      className="border border-white/15 px-3 py-2 text-[9px] uppercase tracking-[0.16em] text-white/55"
+                    >
+                      {role}
+                    </span>
+                  ))}
+                </div>
+
+                <div
+                  className="pointer-events-none absolute bottom-0 left-0 h-px w-0 bg-[#d5ad58] transition-all duration-700 group-hover:w-full"
+                  aria-hidden="true"
+                />
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-16 flex flex-col justify-between gap-8 md:flex-row md:items-center">
+            <p className="max-w-xl text-xl leading-8 tracking-[-0.025em] text-white/75">
+              {fr
+                ? "Votre rôle peut appartenir à une discipline. Votre travail, lui, dépassera probablement ses frontières."
+                : <>Your role may sit in one discipline. Your work probably won&apos;t.</>}
+            </p>
+
+            <Link
+              href="/jobs"
+              className="inline-flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[#d5ad58]"
+            >
+              {fr ? "Découvrir toutes les opportunités" : "Explore all opportunities"}
+              <span className="text-base">↗</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* HOW WE WORK */}
+      <section className="bg-black px-6 py-28 text-white md:px-10 md:py-40">
+        <div className="mx-auto max-w-[1600px]">
+          <div className="grid gap-12 lg:grid-cols-12">
+            <div className="lg:col-span-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#d5ad58]">
+                {fr ? "Notre façon de travailler" : "How we work"}
+              </p>
+
+              <p className="mt-8 max-w-xs text-sm leading-7 text-white/45">
+                {fr
+                  ? "Notre façon de travailler repose sur trois principes simples : responsabilité, curiosité et collaboration."
+                  : "We keep the way we work simple: responsibility, curiosity and collaboration."}
+              </p>
+            </div>
+
+            <div className="lg:col-span-8">
+              <h2 className="max-w-4xl text-5xl font-medium leading-[0.95] tracking-[-0.055em] md:text-8xl">
+                {fr
+                  ? "Le bon travail commence par notre façon de travailler ensemble."
+                  : "Good work starts with how we work together."}
+              </h2>
+
+              <div className="mt-20 border-t border-white/20">
+                {(fr
+                  ? [
+                      {
+                        number: "01",
+                        title: "Prenez votre place.",
+                        text: "Vous n'avez pas besoin de tout savoir. Mais ce qui vous appartient, vous le faites avancer.",
+                      },
+                      {
+                        number: "02",
+                        title: "Pensez au-delà de votre rôle.",
+                        text: "Musique, image, business et technologie se croisent. Nous aussi.",
+                      },
+                      {
+                        number: "03",
+                        title: "Construisez ensemble.",
+                        text: "Les idées avancent plus vite lorsqu'elles sont partagées, challengées et améliorées ensemble.",
+                      },
+                    ]
+                  : principles
+                ).map((principle) => (
+                  <article
+                    key={principle.number}
+                    className="group grid gap-8 border-b border-white/15 py-10 md:grid-cols-[80px_1fr_1fr] md:items-start md:py-12"
+                  >
+                    <span className="text-[10px] text-[#d5ad58]">
+                      {principle.number}
+                    </span>
+
+                    <h3 className="text-3xl font-medium tracking-[-0.045em] transition-transform duration-500 group-hover:translate-x-2 md:text-4xl">
+                      {principle.title}
+                    </h3>
+
+                    <p className="max-w-md text-sm leading-7 text-white/50">
+                      {principle.text}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-28 border-t border-white/10 pt-8">
+            <p className="max-w-4xl text-2xl leading-[1.35] tracking-[-0.035em] text-white/75 md:text-4xl">
+              {fr
+                ? "Des perspectives différentes rendent le travail plus fort."
+                : "Different perspectives make the work stronger."}
+              <span className="text-white/30">
+                {" "}
+                {fr
+                  ? "Ce qui compte, c'est ce que vous apportez, ce que vous apprenez et ce que vous construisez avec les personnes qui vous entourent."
+                  : "What matters is what you bring, what you learn and what you build with the people around you."}
+              </span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* JOBS */}
+      <section className="px-3 pb-3 md:px-5 md:pb-5">
+        <div className="rounded-[2rem] bg-[#d5ad58] px-6 py-20 md:px-12 md:py-28">
+          <div className="mx-auto max-w-[1500px]">
+            <p className="mb-8 text-[10px] font-bold uppercase tracking-[0.3em]">
+              {fr ? "Opportunités ouvertes" : "Open opportunities"}
+            </p>
+
+            <div className="grid gap-12 md:grid-cols-2">
+              <h2 className="text-6xl font-black uppercase leading-[0.82] tracking-[-0.07em] md:text-8xl">
+                {fr ? (
+                  <>
+                    Votre prochain
+                    <br />
+                    chapitre ?
+                  </>
+                ) : (
+                  <>
+                    Your next
+                    <br />
+                    chapter?
+                  </>
+                )}
+              </h2>
+
+              <div className="flex flex-col justify-end md:items-start">
+                <p className="max-w-md text-sm leading-7 text-white/60">
+                  {fr
+                    ? "Découvrez les opportunités actuellement ouvertes chez LMG. Si aucune ne correspond à votre profil aujourd'hui, vous pouvez toujours nous présenter votre parcours."
+                    : "Explore current opportunities across LMG. If nothing matches your profile today, you can still introduce yourself."}
+                </p>
+
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link
+                    href="/jobs"
+                    className="rounded-full bg-black px-6 py-4 text-[10px] font-bold uppercase tracking-[0.16em] text-white"
+                  >
+                    {fr ? "Voir les offres" : "View open positions"}
+                  </Link>
+
+                  <Link
+                    href="/spontaneous"
+                    className="rounded-full border border-black/30 px-6 py-4 text-[10px] font-bold uppercase tracking-[0.16em]"
+                  >
+                    {fr ? "Présentez-vous" : "Introduce yourself"}
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="border-t border-white/10 bg-black px-6 pb-8 pt-16 text-white md:px-10 md:pt-20">
+        <div className="mx-auto max-w-[1600px]">
+          <div className="grid gap-14 pb-16 md:grid-cols-12">
+            {/* Brand */}
+            <div className="md:col-span-5">
+              <div className="flex items-center gap-4">
+                <img
+                  src="/careers/lmg-music-logo.png"
+                  alt="LMG Music"
+                  className="h-12 w-12 object-contain"
+                />
+
+                <span className="h-6 w-px bg-white/20" />
+
+                <span className="text-xs font-semibold uppercase tracking-[0.22em]">
+                  Careers
+                </span>
+              </div>
+
+              <p className="mt-8 max-w-sm text-sm leading-7 text-white/45">
+                {fr ? "Construisez votre place dans la suite de la musique." : <>Build your part of what&apos;s next in music.</>}
+              </p>
+
+              <a
+                href="https://www.lmgmusic.fr"
+                className="mt-7 inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#d5ad58]"
+              >
+                {fr ? "Découvrir LMG Music" : "Discover LMG Music"}
+                <span>↗</span>
+              </a>
+            </div>
+
+            {/* Careers */}
+            <div className="md:col-span-2">
+              <p className="mb-6 text-[9px] font-bold uppercase tracking-[0.22em] text-white/30">
+                Careers
+              </p>
+
+              <div className="flex flex-col items-start gap-4 text-sm">
+                <Link href="/jobs" className="transition hover:text-[#d5ad58]">
+                  {fr ? "Offres" : "Jobs"}
+                </Link>
+
+                <Link
+                  href="/spontaneous"
+                  className="transition hover:text-[#d5ad58]"
+                >
+                  {fr ? "Présentez-vous" : "Introduce yourself"}
+                </Link>
+
+                <Link href="/faq" className="transition hover:text-[#d5ad58]">
+                  FAQ
+                </Link>
+              </div>
+            </div>
+
+            {/* LMG */}
+            <div className="md:col-span-2">
+              <p className="mb-6 text-[9px] font-bold uppercase tracking-[0.22em] text-white/30">
+                LMG Music
+              </p>
+
+              <div className="flex flex-col items-start gap-4 text-sm">
+                <a
+                  href="https://www.lmgmusic.fr/about"
+                  className="transition hover:text-[#d5ad58]"
+                >
+                  {fr ? "À propos" : "About"}
+                </a>
+
+                <a
+                  href="https://www.lmgmusic.fr/artists"
+                  className="transition hover:text-[#d5ad58]"
+                >
+                  {fr ? "Artistes" : "Artists"}
+                </a>
+
+                <a
+                  href="https://www.lmgmusic.fr/news"
+                  className="transition hover:text-[#d5ad58]"
+                >
+                  {fr ? "Actualités" : "News"}
+                </a>
+
+                <a
+                  href="https://www.lmgmusic.fr/contact"
+                  className="transition hover:text-[#d5ad58]"
+                >
+                  Contact
+                </a>
+              </div>
+            </div>
+
+            {/* Follow */}
+            <div className="md:col-span-3 md:text-right">
+              <p className="mb-6 text-[9px] font-bold uppercase tracking-[0.22em] text-white/30">
+                {fr ? "Suivre LMG Music" : "Follow LMG Music"}
+              </p>
+
+              <div className="flex flex-col items-start gap-4 text-sm md:items-end">
+                <a
+                  href="https://www.instagram.com/music.lmg/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="transition hover:text-[#d5ad58]"
+                >
+                  Instagram ↗
+                </a>
+
+                <a
+                  href="https://www.tiktok.com/@music.lmg"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="transition hover:text-[#d5ad58]"
+                >
+                  TikTok ↗
+                </a>
+
+                <a
+                  href="https://www.youtube.com/@LMGMusic"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="transition hover:text-[#d5ad58]"
+                >
+                  YouTube ↗
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-6 border-t border-white/10 pt-7 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-wrap gap-x-6 gap-y-3 text-[9px] uppercase tracking-[0.16em] text-white/35">
+              <span>
+                © {new Date().getFullYear()} LMG
+              </span>
+
+              <a
+                href="https://www.lmgmusic.fr/mentions-legales"
+                className="transition hover:text-white"
+              >
+                {fr ? "Mentions légales" : "Legal"}
+              </a>
+
+              <a
+                href="https://www.lmgmusic.fr/confidentialite"
+                className="transition hover:text-white"
+              >
+                {fr ? "Confidentialité" : "Privacy"}
+              </a>
+
+              <a
+                href="https://www.lmgmusic.fr/cookies"
+                className="transition hover:text-white"
+              >
+                Cookies
+              </a>
+            </div>
+
+            <p className="text-[9px] font-bold uppercase tracking-[0.24em] text-[#d5ad58]">
+              Build Your Legacy.
+            </p>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  );
+}
