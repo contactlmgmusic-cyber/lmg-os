@@ -23,9 +23,9 @@ export default function SiteArtistsManager() {
     setSavingId(id); setMessage("");
     const response = await fetch("/api/site-internet/artistes", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...patch }) });
     const result = await response.json().catch(() => ({}));
-    if (!response.ok) { setMessage(result.error || "Modification impossible."); setSavingId(null); return; }
+    if (!response.ok) { setMessage(`Erreur : ${result.error || "Modification impossible."}`); setSavingId(null); return; }
     setArtists((items) => items.map((item) => item.id === id ? { ...item, ...patch, ...(result.patch || {}) } : item));
-    setSavingId(null); setMessage("Modification enregistrée.");
+    setSavingId(null); setMessage(patch.is_public === true ? "Page artiste publiée. L’adresse publique est prête." : "Modification enregistrée.");
   }
   if (loading) return <main className="min-h-screen bg-black p-8 text-zinc-400">Chargement des artistes…</main>;
 
