@@ -4,7 +4,6 @@ import {
   createContext,
   useContext,
   useEffect,
-  useMemo,
   useState,
 } from "react";
 
@@ -19,31 +18,19 @@ type CareersLanguageContextValue = {
 const CareersLanguageContext =
   createContext<CareersLanguageContextValue | null>(null);
 
-const STORAGE_KEY = "lmg-careers-locale";
-
 export default function CareersLanguageProvider({
   children,
+  initialLocale = "fr",
 }: {
   children: React.ReactNode;
+  initialLocale?: CareersLocale;
 }) {
   const [locale, setLocaleState] =
-    useState<CareersLocale>("en");
-
-  useEffect(() => {
-    const saved =
-      window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved === "en" || saved === "fr") {
-      setLocaleState(saved);
-    }
-  }, []);
+    useState<CareersLocale>(initialLocale);
 
   function setLocale(nextLocale: CareersLocale) {
     setLocaleState(nextLocale);
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      nextLocale
-    );
+    document.cookie = `lmg-careers-locale=${nextLocale}; Max-Age=31536000; Path=/; SameSite=Lax; Secure`;
     document.documentElement.lang = nextLocale;
   }
 
@@ -55,14 +42,7 @@ export default function CareersLanguageProvider({
     document.documentElement.lang = locale;
   }, [locale]);
 
-  const value = useMemo(
-    () => ({
-      locale,
-      setLocale,
-      toggleLocale,
-    }),
-    [locale]
-  );
+  const value = { locale, setLocale, toggleLocale };
 
   return (
     <CareersLanguageContext.Provider value={value}>
