@@ -300,7 +300,7 @@ export default function CareersSpontaneousForm() {
 }
 
 const inputClass =
-  "w-full border-0 border-b border-white/25 bg-transparent px-0 py-4 text-base text-white outline-none transition placeholder:text-white/30 focus:border-[#d5ad58] focus:ring-0";
+  "w-full border-0 border-b border-white/25 bg-transparent px-0 py-4 text-base text-white outline-none transition placeholder:text-white/30 focus:border-[#d5ad58] focus-visible:ring-2 focus-visible:ring-[#d5ad58]/50";
 
 function Field({
   label,
