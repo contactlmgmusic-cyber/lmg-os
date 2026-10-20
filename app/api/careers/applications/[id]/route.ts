@@ -4,6 +4,7 @@ import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 import { createServiceSupabaseClient } from "@/lib/service-supabase.server";
+import { isSameOriginMutation } from "@/lib/same-origin-request.server";
 
 const allowedStatuses = [
   "new",
@@ -72,6 +73,7 @@ export async function PATCH(
   context: Context
 ) {
   try {
+    if (!isSameOriginMutation(request)) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
     const supabase = await authorize();
     const { id } = await context.params;
     const body = await request.json();
@@ -178,8 +180,9 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(_request: Request, context: Context) {
+export async function DELETE(request: Request, context: Context) {
   try {
+    if (!isSameOriginMutation(request)) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
     await authorize();
     const { id } = await context.params;
     const service = createServiceSupabaseClient();
