@@ -34,6 +34,8 @@ export default async function CareersAdminPage() {
     interviewsResult,
     totalApplicationsResult,
     recentApplicationsResult,
+    overdueActionsResult,
+    upcomingActionsResult,
   ] = await Promise.all([
     supabase
       .from("careers_jobs")
@@ -63,6 +65,17 @@ export default async function CareersAdminPage() {
       `)
       .order("created_at", { ascending: false })
       .limit(6),
+    supabase
+      .from("careers_applications")
+      .select("id", { count: "exact", head: true })
+      .lt("next_action_at", new Date().toISOString())
+      .not("status", "in", '(selected,rejected)'),
+    supabase
+      .from("careers_applications")
+      .select("id, first_name, last_name, next_action, next_action_at")
+      .gte("next_action_at", new Date().toISOString())
+      .order("next_action_at", { ascending: true })
+      .limit(4),
   ]);
 
   const errors = [
@@ -71,6 +84,8 @@ export default async function CareersAdminPage() {
     interviewsResult.error,
     totalApplicationsResult.error,
     recentApplicationsResult.error,
+    overdueActionsResult.error,
+    upcomingActionsResult.error,
   ].filter(Boolean);
 
   const stats = [
@@ -97,6 +112,12 @@ export default async function CareersAdminPage() {
       value: totalApplicationsResult.count ?? 0,
       detail: "depuis le lancement",
       icon: "users" as const,
+    },
+    {
+      label: "Actions en retard",
+      value: overdueActionsResult.count ?? 0,
+      detail: "échéances dépassées",
+      icon: "clock" as const,
     },
   ];
 
@@ -137,7 +158,7 @@ export default async function CareersAdminPage() {
         </div>
       )}
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {stats.map((stat) => {
           return (
             <article
@@ -262,6 +283,19 @@ export default async function CareersAdminPage() {
                 : "Toutes les nouvelles candidatures ont été traitées."}
             </p>
           </div>
+
+          <div className="mt-6 border-t border-white/10 pt-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Prochaines échéances</p>
+            <div className="mt-3 space-y-2">
+              {(upcomingActionsResult.data || []).map((item) => (
+                <Link key={item.id} href={`/recrutement/candidatures/${item.id}`} className="block rounded-xl bg-white/[0.035] p-3 transition hover:bg-white/[0.06]">
+                  <p className="truncate text-xs font-medium">{item.first_name} {item.last_name}</p>
+                  <p className="mt-1 truncate text-[11px] text-zinc-500">{item.next_action || "Action à effectuer"} · {item.next_action_at ? formatDateTime(item.next_action_at) : ""}</p>
+                </Link>
+              ))}
+              {upcomingActionsResult.data?.length === 0 && <p className="text-xs text-zinc-600">Aucune échéance planifiée.</p>}
+            </div>
+          </div>
         </aside>
       </section>
     </main>
@@ -297,6 +331,10 @@ function formatDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(value));
 }
 
 function DashboardIcon({ name }: { name: "briefcase" | "clock" | "check" | "users" }) {
