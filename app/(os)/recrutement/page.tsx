@@ -36,6 +36,9 @@ export default async function CareersAdminPage() {
     recentApplicationsResult,
     overdueActionsResult,
     upcomingActionsResult,
+    selectedApplicationsResult,
+    untrackedApplicationsResult,
+    analyticsResult,
   ] = await Promise.all([
     supabase
       .from("careers_jobs")
@@ -44,14 +47,17 @@ export default async function CareersAdminPage() {
     supabase
       .from("careers_applications")
       .select("id", { count: "exact", head: true })
-      .eq("status", "new"),
+      .eq("status", "new")
+      .is("archived_at", null),
     supabase
       .from("careers_applications")
       .select("id", { count: "exact", head: true })
-      .eq("status", "interview"),
+      .eq("status", "interview")
+      .is("archived_at", null),
     supabase
       .from("careers_applications")
-      .select("id", { count: "exact", head: true }),
+      .select("id", { count: "exact", head: true })
+      .is("archived_at", null),
     supabase
       .from("careers_applications")
       .select(`
@@ -63,19 +69,38 @@ export default async function CareersAdminPage() {
         created_at,
         careers_jobs (title)
       `)
+      .is("archived_at", null)
       .order("created_at", { ascending: false })
       .limit(6),
     supabase
       .from("careers_applications")
       .select("id", { count: "exact", head: true })
       .lt("next_action_at", new Date().toISOString())
-      .not("status", "in", '(selected,rejected)'),
+      .not("status", "in", '(selected,rejected)')
+      .is("archived_at", null),
     supabase
       .from("careers_applications")
       .select("id, first_name, last_name, next_action, next_action_at")
       .gte("next_action_at", new Date().toISOString())
+      .is("archived_at", null)
       .order("next_action_at", { ascending: true })
       .limit(4),
+    supabase
+      .from("careers_applications")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "selected")
+      .is("archived_at", null),
+    supabase
+      .from("careers_applications")
+      .select("id", { count: "exact", head: true })
+      .is("assigned_to", null)
+      .is("next_action_at", null)
+      .not("status", "in", '(selected,rejected)')
+      .is("archived_at", null),
+    supabase
+      .from("careers_applications")
+      .select("application_type, status, created_at, updated_at")
+      .is("archived_at", null),
   ]);
 
   const errors = [
@@ -86,6 +111,9 @@ export default async function CareersAdminPage() {
     recentApplicationsResult.error,
     overdueActionsResult.error,
     upcomingActionsResult.error,
+    selectedApplicationsResult.error,
+    untrackedApplicationsResult.error,
+    analyticsResult.error,
   ].filter(Boolean);
 
   const stats = [
@@ -108,9 +136,9 @@ export default async function CareersAdminPage() {
       icon: "check" as const,
     },
     {
-      label: "Profils reçus",
-      value: totalApplicationsResult.count ?? 0,
-      detail: "depuis le lancement",
+      label: "Conversion",
+      value: `${totalApplicationsResult.count ? Math.round(((selectedApplicationsResult.count ?? 0) / totalApplicationsResult.count) * 100) : 0}%`,
+      detail: "profils retenus",
       icon: "users" as const,
     },
     {
@@ -119,9 +147,22 @@ export default async function CareersAdminPage() {
       detail: "échéances dépassées",
       icon: "clock" as const,
     },
+    {
+      label: "Sans suivi",
+      value: untrackedApplicationsResult.count ?? 0,
+      detail: "ni responsable ni action",
+      icon: "users" as const,
+    },
   ];
 
   const recentApplications = recentApplicationsResult.data ?? [];
+  const analytics = analyticsResult.data ?? [];
+  const jobApplications = analytics.filter((item) => item.application_type === "job").length;
+  const spontaneousApplications = analytics.length - jobApplications;
+  const completedApplications = analytics.filter((item) => ["selected", "rejected"].includes(item.status));
+  const averageProcessingDays = completedApplications.length
+    ? Math.round(completedApplications.reduce((sum, item) => sum + Math.max(0, Date.parse(item.updated_at) - Date.parse(item.created_at)), 0) / completedApplications.length / 86_400_000)
+    : 0;
 
   return (
     <main className="space-y-7 pb-10">
@@ -158,7 +199,7 @@ export default async function CareersAdminPage() {
         </div>
       )}
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {stats.map((stat) => {
           return (
             <article
@@ -180,6 +221,12 @@ export default async function CareersAdminPage() {
             </article>
           );
         })}
+      </section>
+
+      <section className="grid gap-3 md:grid-cols-3">
+        <Insight label="Origine · offres" value={jobApplications} detail={`${analytics.length ? Math.round((jobApplications / analytics.length) * 100) : 0}% des candidatures actives`} />
+        <Insight label="Origine · spontanées" value={spontaneousApplications} detail={`${analytics.length ? Math.round((spontaneousApplications / analytics.length) * 100) : 0}% des candidatures actives`} />
+        <Insight label="Délai moyen" value={`${averageProcessingDays} j`} detail="entre réception et décision" />
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,0.75fr)]">
@@ -271,6 +318,11 @@ export default async function CareersAdminPage() {
               title="Spontanées"
               detail="Talents ayant contacté LMG"
             />
+            <QuickLink
+              href="/recrutement/archives"
+              title="Archives"
+              detail="Restaurer ou supprimer les anciens dossiers"
+            />
           </div>
 
           <div className="mt-6 rounded-xl border border-amber-400/15 bg-amber-400/[0.06] p-4">
@@ -323,6 +375,10 @@ function QuickLink({
       <ArrowIcon className="h-4 w-4 shrink-0 text-zinc-600 transition group-hover:text-amber-400" />
     </Link>
   );
+}
+
+function Insight({ label, value, detail }: { label: string; value: string | number; detail: string }) {
+  return <article className="rounded-2xl border border-white/10 bg-zinc-950 px-5 py-4 text-white"><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{label}</p><p className="mt-2 text-2xl font-semibold">{value}</p><p className="mt-1 text-xs text-zinc-500">{detail}</p></article>;
 }
 
 function formatDate(value: string) {
