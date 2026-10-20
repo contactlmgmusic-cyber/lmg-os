@@ -65,25 +65,25 @@ export default async function CareersJobPage({
   }
 
   return (
-    <main className="space-y-8">
+    <main className="space-y-6 pb-10">
       <div>
         <Link
           href="/recrutement/offres"
-          className="text-sm text-muted-foreground transition hover:text-foreground"
+          className="text-sm text-muted-foreground transition hover:text-amber-400"
         >
           ← Retour aux offres
         </Link>
       </div>
 
-      <div className="flex flex-col gap-6 border-b pb-8 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-6 rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">
               {departmentLabels[job.department] ??
                 job.department}
             </p>
 
-            <span className="rounded-full border px-3 py-1 text-xs font-medium">
+            <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs font-medium text-amber-300">
               {statusLabels[job.status] ??
                 job.status}
             </span>
@@ -93,7 +93,7 @@ export default async function CareersJobPage({
             {job.title}
           </h1>
 
-          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-400">
             <span>
               {contractLabels[job.employment_type] ??
                 job.employment_type}
@@ -149,7 +149,7 @@ export default async function CareersJobPage({
           />
         </div>
 
-        <aside className="h-fit rounded-xl border bg-card p-5">
+        <aside className="h-fit rounded-2xl border border-white/10 bg-zinc-950 p-5 text-white">
           <h2 className="font-semibold">
             Informations
           </h2>
