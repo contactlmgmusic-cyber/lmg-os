@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
+import { isSameOriginMutation } from "@/lib/same-origin-request.server";
 
 async function authorize() {
   const profile = await requireRole([
@@ -54,11 +55,17 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    if (!isSameOriginMutation(request)) return NextResponse.json({ error: "Origine invalide." }, { status: 403 });
     const { supabase, profile } = await authorize();
     const body = await request.json();
 
-    const title = String(body.title || "").trim();
-    const description = String(body.description || "").trim();
+    const bounded = (value: unknown, maximum: number) => {
+      const result = typeof value === "string" ? value.trim() : "";
+      if (result.length > maximum) throw new Error("INVALID_INPUT");
+      return result;
+    };
+    const title = bounded(body.title, 180);
+    const description = bounded(body.description, 15000);
 
     if (!title || !description) {
       return NextResponse.json(
@@ -143,30 +150,35 @@ export async function POST(request: Request) {
       slug = `${baseSlug}-${Date.now().toString().slice(-6)}`;
     }
 
+    const closeDate = body.closes_at ? new Date(String(body.closes_at)) : null;
+    if (closeDate && Number.isNaN(closeDate.getTime())) return NextResponse.json({ error: "Date de clôture invalide." }, { status: 400 });
+    const applicationEmail = bounded(body.application_email, 254);
+    if (applicationEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(applicationEmail)) return NextResponse.json({ error: "Email de contact invalide." }, { status: 400 });
+
     const payload = {
       title,
       slug,
       department,
       employment_type: employmentType,
-      location: String(body.location || "").trim() || null,
+      location: bounded(body.location, 200) || null,
       remote_policy: remotePolicy || null,
 
       short_description:
-        String(body.short_description || "").trim() || null,
+        bounded(body.short_description, 500) || null,
 
       description,
 
       responsibilities:
-        String(body.responsibilities || "").trim() || null,
+        bounded(body.responsibilities, 10000) || null,
 
       profile:
-        String(body.profile || "").trim() || null,
+        bounded(body.profile, 10000) || null,
 
       benefits:
-        String(body.benefits || "").trim() || null,
+        bounded(body.benefits, 10000) || null,
 
       application_email:
-        String(body.application_email || "").trim() || null,
+        applicationEmail || null,
 
       status,
 
@@ -176,9 +188,7 @@ export async function POST(request: Request) {
           : null,
 
       closes_at:
-        body.closes_at
-          ? new Date(body.closes_at).toISOString()
-          : null,
+        closeDate ? closeDate.toISOString() : null,
 
       created_by: profile.id,
     };
@@ -199,6 +209,10 @@ export async function POST(request: Request) {
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
     console.error("Careers jobs POST error:", error);
+
+    if (error instanceof Error && error.message === "INVALID_INPUT") {
+      return NextResponse.json({ error: "Un ou plusieurs champs sont trop longs." }, { status: 400 });
+    }
 
     return NextResponse.json(
       { error: "Accès refusé." },
