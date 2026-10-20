@@ -256,8 +256,9 @@ export default function CareersHome() {
             </div>
 
             <p className="max-w-sm text-sm leading-7 text-white/50 md:col-span-4 md:justify-self-end">
-              {fr ? "Carrières chez LMG" : "Careers at LMG"} can take different forms. Explore the disciplines
-              working together behind the music.
+              {fr
+                ? "Les carrières chez LMG peuvent prendre différentes formes. Découvrez les disciplines qui travaillent ensemble au service de la musique."
+                : "Careers at LMG can take different forms. Explore the disciplines working together behind the music."}
             </p>
           </div>
 
@@ -294,7 +295,7 @@ export default function CareersHome() {
                   },
                 ]
               : worlds
-            ).map((world, index) => (
+            ).map((world) => (
               <article
                 key={world.number}
                 className="group relative grid gap-8 overflow-hidden border-b border-white/20 py-12 md:grid-cols-12 md:items-start md:py-16"
