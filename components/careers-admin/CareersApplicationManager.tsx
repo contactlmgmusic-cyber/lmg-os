@@ -177,8 +177,8 @@ export default function CareersApplicationManager({
         <p className="mt-2 text-right text-xs text-muted-foreground">{note.length}/5000</p>
       </section>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      {saved && <p className="text-sm text-emerald-600">Modifications enregistrées.</p>}
+      {error && <p role="alert" className="text-sm text-red-400">{error}</p>}
+      {saved && <p role="status" className="text-sm text-emerald-500">Modifications enregistrées.</p>}
 
       <button type="button" onClick={save} disabled={saving || (status === initialStatus && !note.trim())} className="w-full rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-amber-300 disabled:opacity-50">
         {saving ? "Enregistrement…" : "Enregistrer"}
