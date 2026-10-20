@@ -129,11 +129,7 @@ export default function CareersApplyForm({
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          locale === "fr"
-            ? t.submitError
-            : result.error || t.submitError
-        );
+        throw new Error(result.error || t.submitError);
       }
 
       setSuccess(true);
@@ -144,13 +140,7 @@ export default function CareersApplyForm({
         behavior: "smooth",
       });
     } catch (err) {
-      setError(
-        locale === "fr"
-          ? t.submitError
-          : err instanceof Error
-            ? err.message
-            : t.submitError
-      );
+      setError(locale === "en" ? t.submitError : err instanceof Error ? err.message : t.submitError);
     } finally {
       setSubmitting(false);
     }
@@ -285,7 +275,7 @@ export default function CareersApplyForm({
       </FormSection>
 
       {error && (
-        <div className="border border-red-400/30 px-5 py-4 text-sm text-red-300">
+        <div role="alert" aria-live="polite" className="border border-red-400/30 px-5 py-4 text-sm text-red-300">
           {error}
         </div>
       )}
