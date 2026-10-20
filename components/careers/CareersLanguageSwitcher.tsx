@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   useCareersLanguage,
   type CareersLocale,
@@ -67,6 +68,7 @@ const languages = [
 
 export default function CareersLanguageSwitcher() {
   const { locale, setLocale } = useCareersLanguage();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -102,6 +104,7 @@ export default function CareersLanguageSwitcher() {
   function selectLanguage(code: CareersLocale) {
     setLocale(code);
     setOpen(false);
+    router.refresh();
   }
 
   return (
@@ -111,7 +114,7 @@ export default function CareersLanguageSwitcher() {
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-haspopup="dialog"
-        className="group flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.12em]"
+        className="group flex items-center gap-3 rounded-sm text-xs font-semibold uppercase tracking-[0.12em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d5ad58]"
       >
         <span className="text-white/45">
           {current.short}
@@ -149,7 +152,7 @@ export default function CareersLanguageSwitcher() {
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close language menu"
-              className="text-lg text-white/40 transition hover:text-white"
+              className="rounded-sm text-lg text-white/40 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d5ad58]"
             >
               ×
             </button>
@@ -171,7 +174,7 @@ export default function CareersLanguageSwitcher() {
                       );
                     }
                   }}
-                  className={`group relative min-h-[128px] border-b border-r border-white/10 p-5 text-left transition ${
+                  className={`group relative min-h-[128px] border-b border-r border-white/10 p-5 text-left transition focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#d5ad58] ${
                     language.enabled
                       ? "hover:bg-white/[0.05]"
                       : "cursor-default opacity-35"
