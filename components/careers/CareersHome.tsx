@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useCareersLanguage } from "@/components/careers/CareersLanguageProvider";
 import CareersHeader from "@/components/careers/CareersHeader";
@@ -58,30 +57,6 @@ const principles = [
   },
 ];
 
-const worldVisuals: Record<
-  string,
-  { src: string; position: string; altFr: string; altEn: string }
-> = {
-  "01": {
-    src: "/careers/careers-world-music-v2.webp",
-    position: "center 64%",
-    altFr: "Technicien préparant un pédalier dans les coulisses d'une scène.",
-    altEn: "Technician preparing a pedalboard backstage.",
-  },
-  "02": {
-    src: "/careers/careers-world-creative-v2.webp",
-    position: "center 52%",
-    altFr: "Équipe créative préparant un shooting photo.",
-    altEn: "Creative team preparing a photo shoot.",
-  },
-  "03": {
-    src: "/careers/careers-world-business-v1.webp",
-    position: "center 50%",
-    altFr: "Responsable de projet en déplacement pendant un appel professionnel.",
-    altEn: "Project lead walking during a business call.",
-  },
-};
-
 export default function CareersHome() {
   const { locale } = useCareersLanguage();
 
@@ -117,21 +92,8 @@ export default function CareersHome() {
               )}
             </h1>
 
-            <div className="relative flex aspect-[4/5] min-h-[360px] items-end overflow-hidden rounded-[0.35rem] bg-white/[0.06] lg:min-h-[430px]">
-              <Image
-                src="/careers/careers-hero-team-v2.webp"
-                alt={
-                  fr
-                    ? "Équipe LMG réunie autour d'un projet musical."
-                    : "LMG team gathered around a music project."
-                }
-                fill
-                priority
-                sizes="(max-width: 1023px) 100vw, 38vw"
-                className="object-cover object-center"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
-              <div className="relative w-full border-t border-white/20 p-7">
+            <div className="hidden min-h-[430px] items-end overflow-hidden rounded-[0.35rem] bg-white/[0.06] lg:flex">
+              <div className="w-full border-t border-white/10 p-7">
                 <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/35">
                   {fr ? "Les talents derrière la musique" : "People behind the music"}
                 </p>
@@ -179,20 +141,9 @@ export default function CareersHome() {
         </div>
 
         <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
+          {/* Future LMG photo */}
           <div className="relative min-h-[650px] overflow-hidden bg-white/[0.06]">
-            <Image
-              src="/careers/careers-inside-studio-v2.webp"
-              alt={
-                fr
-                  ? "Ingénieur du son au travail face à une cabine d'enregistrement."
-                  : "Sound engineer working in front of a recording booth."
-              }
-              fill
-              sizes="(max-width: 1023px) 100vw, 40vw"
-              className="object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/5" />
-            <div className="absolute inset-x-0 bottom-0 border-t border-white/20 p-7">
+            <div className="absolute inset-x-0 bottom-0 border-t border-white/10 p-7">
               <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/35">
                 {fr ? "La vie derrière les projets" : "Life behind the projects"}
               </p>
@@ -363,47 +314,21 @@ export default function CareersHome() {
                   </p>
                 </div>
 
-                <div className="md:col-span-3">
+                <div className="md:col-span-4">
                   <p className="max-w-md text-sm leading-7 text-white/50">
                     {world.description}
                   </p>
                 </div>
 
-                <div className="space-y-5 md:col-span-4">
-                  {worldVisuals[world.number] ? (
-                    <div className="relative aspect-[4/3] overflow-hidden bg-white/[0.06]">
-                      <Image
-                        src={worldVisuals[world.number].src}
-                        alt={
-                          fr
-                            ? worldVisuals[world.number].altFr
-                            : worldVisuals[world.number].altEn
-                        }
-                        fill
-                        sizes="(max-width: 767px) 100vw, 32vw"
-                        style={{ objectPosition: worldVisuals[world.number].position }}
-                        className="object-cover saturate-[0.88] transition duration-700 ease-out group-hover:scale-[1.035] group-hover:saturate-100"
-                      />
-                      <div className="absolute inset-0 bg-black/10 transition duration-700 group-hover:bg-transparent" />
-                    </div>
-                  ) : (
-                    <div className="flex aspect-[4/3] items-end border border-white/10 bg-white/[0.025] p-6">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.26em] text-[#d5ad58]">
-                        {fr ? "Systèmes · Plateformes · Données" : "Systems · Platforms · Data"}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="flex flex-wrap gap-2 md:justify-end">
-                    {world.roles.map((role) => (
-                      <span
-                        key={role}
-                        className="border border-white/15 px-3 py-2 text-[9px] uppercase tracking-[0.16em] text-white/55"
-                      >
-                        {role}
-                      </span>
-                    ))}
-                  </div>
+                <div className="flex flex-wrap gap-2 md:col-span-3 md:justify-end">
+                  {world.roles.map((role) => (
+                    <span
+                      key={role}
+                      className="border border-white/15 px-3 py-2 text-[9px] uppercase tracking-[0.16em] text-white/55"
+                    >
+                      {role}
+                    </span>
+                  ))}
                 </div>
 
                 <div
