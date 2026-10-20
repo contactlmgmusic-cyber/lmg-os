@@ -110,23 +110,13 @@ export default function CareersSpontaneousForm() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          locale === "fr"
-            ? t.error
-            : result.error || t.error
-        );
+        throw new Error(result.error || t.error);
       }
 
       setSuccess(true);
       form.reset();
     } catch (err) {
-      setError(
-        locale === "fr"
-          ? t.error
-          : err instanceof Error
-            ? err.message
-            : t.error
-      );
+      setError(locale === "en" ? t.error : err instanceof Error ? err.message : t.error);
     } finally {
       setSending(false);
     }
@@ -271,7 +261,7 @@ export default function CareersSpontaneousForm() {
 
       {error && (
         <div className="md:col-span-2">
-          <p className="text-sm text-red-400">
+          <p role="alert" aria-live="polite" className="text-sm text-red-400">
             {error}
           </p>
         </div>
