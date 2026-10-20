@@ -1,172 +1,21 @@
-import Link from "next/link";
-
+import CareersApplicationsWorkspace from "@/components/careers-admin/CareersApplicationsWorkspace";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
-
-const statusLabels: Record<string, string> = {
-  new: "Nouvelle",
-  review: "À étudier",
-  interview: "Entretien",
-  selected: "Retenue",
-  rejected: "Refusée",
-  talent_pool: "Vivier",
-};
-
-const departmentLabels: Record<string, string> = {
-  music: "Music",
-  creative: "Creative",
-  business: "Business",
-  tech_digital: "Tech & Digital",
-  multiple: "Plusieurs pôles",
-};
+const departments: Record<string, string> = { music: "Music", creative: "Creative", business: "Business", tech_digital: "Tech & Digital", multiple: "Plusieurs pôles" };
 
 export default async function SpontaneousApplicationsPage() {
-  await requireRole([
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-  ]);
-
-  const supabase =
-    await createAuthenticatedSupabaseClient();
-
-  const { data: applications, error } =
-    await supabase
-      .from("careers_applications")
-      .select(`
-        id,
-        first_name,
-        last_name,
-        email,
-        department_interest,
-        status,
-        created_at,
-        assigned_to,
-        next_action,
-        next_action_at
-      `)
-      .eq("application_type", "spontaneous")
-      .order("created_at", {
-        ascending: false,
-      });
-
-  const assigneeIds = Array.from(new Set((applications || []).map((item) => item.assigned_to).filter(Boolean))) as string[];
-  const { data: assignees } = assigneeIds.length
-    ? await supabase.from("profiles").select("id, nom, email").in("id", assigneeIds)
-    : { data: [] };
-  const assigneeNames = new Map((assignees || []).map((person) => [person.id, person.nom || person.email]));
-
-  return (
-    <main className="space-y-6 pb-10">
-      <div className="rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">
-          LMG Careers
-        </p>
-
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-          Candidatures spontanées
-        </h1>
-
-        <p className="mt-2 max-w-2xl text-sm text-zinc-400">
-          Profils ayant directement pris contact avec
-          LMG en dehors d&apos;une offre publiée.
-        </p>
-      </div>
-
-      {error && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          Impossible de charger les candidatures :{" "}
-          {error.message}
-        </div>
-      )}
-
-      {!error && applications?.length === 0 && (
-        <div className="rounded-2xl border border-white/10 bg-zinc-950 p-10 text-white">
-          <p className="font-medium">
-            Aucune candidature spontanée.
-          </p>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            Les profils envoyés depuis LMG Careers
-            apparaîtront ici.
-          </p>
-        </div>
-      )}
-
-      {!!applications?.length && (
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 text-white">
-          <div className="hidden grid-cols-[1.2fr_1fr_160px_150px] gap-5 border-b border-white/10 bg-white/[0.025] px-6 py-4 text-xs font-medium uppercase tracking-wide text-zinc-500 md:grid">
-            <span>Candidat</span>
-            <span>Univers</span>
-            <span>Statut</span>
-            <span>Date</span>
-          </div>
-
-          <div className="divide-y divide-white/10">
-            {applications.map((application) => (
-              <Link
-                key={application.id}
-                href={`/recrutement/candidatures/${application.id}`}
-                className="grid gap-5 px-6 py-5 transition hover:bg-white/[0.035] md:grid-cols-[1.2fr_1fr_160px_150px] md:items-center"
-              >
-                <div>
-                  <p className="font-medium">
-                    {application.first_name}{" "}
-                    {application.last_name}
-                  </p>
-
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {application.email}
-                  </p>
-                </div>
-
-                <p className="text-sm">
-                  {departmentLabels[
-                    application.department_interest ?? ""
-                  ] ?? "Non précisé"}
-                </p>
-                <div className="text-xs text-zinc-500">
-                  <p>{application.assigned_to ? `Responsable · ${assigneeNames.get(application.assigned_to) || "Équipe LMG"}` : "Non attribuée"}</p>
-                  {application.next_action && <p className={`mt-1 ${isOverdue(application.next_action_at) ? "text-red-400" : ""}`}>{application.next_action}{application.next_action_at ? ` · ${formatDateTime(application.next_action_at)}` : ""}</p>}
-                </div>
-
-                <div>
-                  <span className="inline-flex rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs font-medium text-amber-300">
-                    {statusLabels[
-                      application.status
-                    ] ?? application.status}
-                  </span>
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  {new Intl.DateTimeFormat(
-                    "fr-FR",
-                    {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    }
-                  ).format(
-                    new Date(
-                      application.created_at
-                    )
-                  )}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-    </main>
-  );
-}
-
-function isOverdue(value: string | null) {
-  return Boolean(value && Date.parse(value) < Date.now());
-}
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(value));
+  await requireRole([ROLES.SUPER_ADMIN, ROLES.ADMIN]);
+  const supabase = await createAuthenticatedSupabaseClient();
+  const { data, error } = await supabase.from("careers_applications").select("id, first_name, last_name, email, status, created_at, assigned_to, next_action, next_action_at, archived_at, department_interest").eq("application_type", "spontaneous").is("archived_at", null).order("created_at", { ascending: false });
+  const ids = [...new Set((data || []).map((item) => item.assigned_to).filter(Boolean))] as string[];
+  const { data: profiles } = ids.length ? await supabase.from("profiles").select("id, nom, email").in("id", ids) : { data: [] };
+  const names = new Map((profiles || []).map((person) => [person.id, person.nom || person.email]));
+  const applications = (data || []).map((item) => ({ ...item, assignee_name: item.assigned_to ? names.get(item.assigned_to) || "Équipe LMG" : null, opportunity: "Candidature spontanée", department: departments[item.department_interest || ""] || "Non précisé" }));
+  return <main className="space-y-6 pb-10">
+    <header className="rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">LMG Careers</p><h1 className="mt-1 text-3xl font-semibold tracking-tight">Candidatures spontanées</h1><p className="mt-2 text-sm text-zinc-400">Explorez et pilotez les profils reçus en dehors d’une offre publiée.</p></header>
+    {error ? <p className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-400">Impossible de charger les candidatures : {error.message}</p> : <CareersApplicationsWorkspace applications={applications} />}
+  </main>;
 }
