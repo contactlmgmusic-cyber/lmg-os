@@ -269,7 +269,7 @@ export default function CareersApplyForm({
             name="cover_letter"
             rows={8}
             placeholder={t.messagePlaceholder}
-            className="w-full resize-none border border-white/15 bg-transparent px-5 py-5 text-sm leading-7 text-white outline-none transition placeholder:text-white/20 focus:border-[#d5ad58]"
+            className="w-full resize-none border border-white/15 bg-transparent px-5 py-5 text-sm leading-7 text-white outline-none transition placeholder:text-white/20 focus:border-[#d5ad58] focus-visible:ring-2 focus-visible:ring-[#d5ad58]/50"
           />
         </label>
       </FormSection>
@@ -367,7 +367,7 @@ function Field({
         type={type}
         required={required}
         placeholder={placeholder}
-        className="w-full border-0 border-b border-white/20 bg-transparent px-0 py-4 text-base text-white outline-none transition placeholder:text-white/20 focus:border-[#d5ad58]"
+        className="w-full border-0 border-b border-white/20 bg-transparent px-0 py-4 text-base text-white outline-none transition placeholder:text-white/20 focus:border-[#d5ad58] focus-visible:ring-2 focus-visible:ring-[#d5ad58]/50"
       />
     </label>
   );
