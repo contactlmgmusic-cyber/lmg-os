@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
+import { isSameOriginMutation } from "@/lib/same-origin-request.server";
 
 async function authorize() {
   await requireRole([
@@ -61,6 +62,7 @@ export async function PATCH(
   context: RouteContext
 ) {
   try {
+    if (!isSameOriginMutation(request)) return NextResponse.json({ error: "Origine invalide." }, { status: 403 });
     const supabase = await authorize();
     const { id } = await context.params;
     const body = await request.json();
