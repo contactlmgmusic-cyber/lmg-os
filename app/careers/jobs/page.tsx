@@ -1,16 +1,13 @@
-import type { Metadata } from "next";
-
 import CareersJobsPageContent from "@/components/careers/CareersJobsPageContent";
 import { createCareersPublicClient } from "@/lib/careers-public.server";
+import { careersPageMetadata } from "@/lib/careers-locale.server";
 
-export const metadata: Metadata = {
-  title: "Jobs | LMG Careers",
-  description:
-    "Explore current opportunities across music, creative, business and technology at LMG.",
-  alternates: {
-    canonical: "https://careers.lmgmusic.fr/jobs",
-  },
-};
+export const generateMetadata = () => careersPageMetadata({
+  titleFr: "Offres | LMG Careers", titleEn: "Jobs | LMG Careers",
+  descriptionFr: "Découvrez les opportunités actuellement ouvertes chez LMG.",
+  descriptionEn: "Explore current opportunities across music, creative, business and technology at LMG.",
+  canonical: "https://careers.lmgmusic.fr/jobs",
+});
 
 export const dynamic = "force-dynamic";
 
