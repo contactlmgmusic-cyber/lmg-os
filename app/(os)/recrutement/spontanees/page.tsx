@@ -50,17 +50,17 @@ export default async function SpontaneousApplicationsPage() {
       });
 
   return (
-    <main className="space-y-8">
-      <div>
-        <p className="text-sm text-muted-foreground">
-          Careers
+    <main className="space-y-6 pb-10">
+      <div className="rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">
+          LMG Careers
         </p>
 
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">
           Candidatures spontanées
         </h1>
 
-        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+        <p className="mt-2 max-w-2xl text-sm text-zinc-400">
           Profils ayant directement pris contact avec
           LMG en dehors d&apos;une offre publiée.
         </p>
@@ -74,7 +74,7 @@ export default async function SpontaneousApplicationsPage() {
       )}
 
       {!error && applications?.length === 0 && (
-        <div className="rounded-2xl border bg-card p-10">
+        <div className="rounded-2xl border border-white/10 bg-zinc-950 p-10 text-white">
           <p className="font-medium">
             Aucune candidature spontanée.
           </p>
@@ -87,20 +87,20 @@ export default async function SpontaneousApplicationsPage() {
       )}
 
       {!!applications?.length && (
-        <div className="overflow-hidden rounded-2xl border bg-card">
-          <div className="hidden grid-cols-[1.2fr_1fr_160px_150px] gap-5 border-b bg-muted/30 px-6 py-4 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 text-white">
+          <div className="hidden grid-cols-[1.2fr_1fr_160px_150px] gap-5 border-b border-white/10 bg-white/[0.025] px-6 py-4 text-xs font-medium uppercase tracking-wide text-zinc-500 md:grid">
             <span>Candidat</span>
             <span>Univers</span>
             <span>Statut</span>
             <span>Date</span>
           </div>
 
-          <div className="divide-y">
+          <div className="divide-y divide-white/10">
             {applications.map((application) => (
               <Link
                 key={application.id}
                 href={`/recrutement/candidatures/${application.id}`}
-                className="grid gap-5 px-6 py-5 transition hover:bg-muted/40 md:grid-cols-[1.2fr_1fr_160px_150px] md:items-center"
+                className="grid gap-5 px-6 py-5 transition hover:bg-white/[0.035] md:grid-cols-[1.2fr_1fr_160px_150px] md:items-center"
               >
                 <div>
                   <p className="font-medium">
@@ -120,7 +120,7 @@ export default async function SpontaneousApplicationsPage() {
                 </p>
 
                 <div>
-                  <span className="inline-flex rounded-full bg-muted px-3 py-1 text-xs font-medium">
+                  <span className="inline-flex rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs font-medium text-amber-300">
                     {statusLabels[
                       application.status
                     ] ?? application.status}
