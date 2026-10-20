@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCareersLanguage } from "@/components/careers/CareersLanguageProvider";
 import CareersHeader from "@/components/careers/CareersHeader";
@@ -57,6 +58,24 @@ const principles = [
   },
 ];
 
+const worldVisuals: Record<string, { src: string; position: string; alt: string }> = {
+  "01": {
+    src: "/careers/careers-world-music-v2.webp",
+    position: "center 64%",
+    alt: "Technicien préparant un pédalier dans les coulisses d'une scène",
+  },
+  "02": {
+    src: "/careers/careers-world-creative-v2.webp",
+    position: "center 52%",
+    alt: "Équipe créative préparant un shooting photo",
+  },
+  "03": {
+    src: "/careers/careers-world-business-v1.webp",
+    position: "center 50%",
+    alt: "Responsable de projet en déplacement professionnel",
+  },
+};
+
 export default function CareersHome() {
   const { locale } = useCareersLanguage();
 
@@ -92,8 +111,17 @@ export default function CareersHome() {
               )}
             </h1>
 
-            <div className="hidden min-h-[430px] items-end overflow-hidden rounded-[0.35rem] bg-white/[0.06] lg:flex">
-              <div className="w-full border-t border-white/10 p-7">
+            <div className="relative hidden min-h-[430px] items-end overflow-hidden rounded-[0.35rem] bg-white/[0.06] lg:flex">
+              <Image
+                src="/careers/careers-hero-team-v2.webp"
+                alt={fr ? "Équipe LMG réunie autour d'un projet musical" : "LMG team gathered around a music project"}
+                fill
+                priority
+                sizes="38vw"
+                className="object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              <div className="relative w-full border-t border-white/20 p-7">
                 <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/35">
                   {fr ? "Les talents derrière la musique" : "People behind the music"}
                 </p>
@@ -141,9 +169,16 @@ export default function CareersHome() {
         </div>
 
         <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
-          {/* Future LMG photo */}
           <div className="relative min-h-[650px] overflow-hidden bg-white/[0.06]">
-            <div className="absolute inset-x-0 bottom-0 border-t border-white/10 p-7">
+            <Image
+              src="/careers/careers-inside-studio-v2.webp"
+              alt={fr ? "Ingénieur du son face à une cabine d'enregistrement" : "Sound engineer facing a recording booth"}
+              fill
+              sizes="(max-width: 1023px) 100vw, 40vw"
+              className="object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 border-t border-white/20 p-7">
               <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/35">
                 {fr ? "La vie derrière les projets" : "Life behind the projects"}
               </p>
@@ -300,11 +335,25 @@ export default function CareersHome() {
                 key={world.number}
                 className="group relative grid gap-8 overflow-hidden border-b border-white/20 py-12 md:grid-cols-12 md:items-start md:py-16"
               >
-                <span className="text-[10px] text-[#d5ad58] md:col-span-1">
+                {worldVisuals[world.number] && (
+                  <>
+                    <Image
+                      src={worldVisuals[world.number].src}
+                      alt={worldVisuals[world.number].alt}
+                      fill
+                      sizes="100vw"
+                      style={{ objectPosition: worldVisuals[world.number].position }}
+                      className="pointer-events-none object-cover opacity-[0.16] grayscale transition duration-700 group-hover:opacity-[0.24] group-hover:grayscale-0"
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black via-black/90 to-black/55" />
+                  </>
+                )}
+
+                <span className="relative z-10 text-[10px] text-[#d5ad58] md:col-span-1">
                   {world.number}
                 </span>
 
-                <div className="md:col-span-4">
+                <div className="relative z-10 md:col-span-4">
                   <h3 className="text-4xl font-semibold tracking-[-0.055em] transition-transform duration-500 group-hover:translate-x-2 md:text-6xl">
                     {world.title}
                   </h3>
@@ -314,13 +363,13 @@ export default function CareersHome() {
                   </p>
                 </div>
 
-                <div className="md:col-span-4">
+                <div className="relative z-10 md:col-span-4">
                   <p className="max-w-md text-sm leading-7 text-white/50">
                     {world.description}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-2 md:col-span-3 md:justify-end">
+                <div className="relative z-10 flex flex-wrap gap-2 md:col-span-3 md:justify-end">
                   {world.roles.map((role) => (
                     <span
                       key={role}
@@ -332,7 +381,7 @@ export default function CareersHome() {
                 </div>
 
                 <div
-                  className="pointer-events-none absolute bottom-0 left-0 h-px w-0 bg-[#d5ad58] transition-all duration-700 group-hover:w-full"
+                  className="pointer-events-none absolute bottom-0 left-0 z-20 h-px w-0 bg-[#d5ad58] transition-all duration-700 group-hover:w-full"
                   aria-hidden="true"
                 />
               </article>
