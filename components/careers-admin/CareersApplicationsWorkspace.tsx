@@ -24,6 +24,7 @@ export default function CareersApplicationsWorkspace({ applications }: { applica
   const [deadline, setDeadline] = useState("all");
   const [view, setView] = useState<"list" | "board">("list");
   const [moving, setMoving] = useState<string | null>(null);
+  const [error, setError] = useState("");
   const assignees = useMemo(() => [...new Set(applications.map((item) => item.assignee_name).filter(Boolean))] as string[], [applications]);
   const filtered = useMemo(() => applications.filter((item) => {
     const haystack = `${item.first_name} ${item.last_name} ${item.email} ${item.opportunity} ${item.department || ""}`.toLowerCase();
@@ -38,10 +39,15 @@ export default function CareersApplicationsWorkspace({ applications }: { applica
   }), [applications, query, status, assignee, deadline]);
 
   async function move(id: string, nextStatus: string) {
-    setMoving(id);
-    const response = await fetch(`/api/careers/applications/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: nextStatus }) });
-    setMoving(null);
-    if (response.ok) router.refresh();
+    setMoving(id); setError("");
+    try {
+      const response = await fetch(`/api/careers/applications/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: nextStatus }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Impossible de modifier le statut.");
+      router.refresh();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Impossible de modifier le statut.");
+    } finally { setMoving(null); }
   }
 
   function exportCsv() {
@@ -54,13 +60,14 @@ export default function CareersApplicationsWorkspace({ applications }: { applica
   return <div className="space-y-4">
     <section className="rounded-2xl border border-white/10 bg-zinc-950 p-4 text-white">
       <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_180px_190px_180px_auto]">
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Rechercher un candidat, une offre…" className="rounded-xl border border-white/10 bg-black/30 px-4 py-2.5 text-sm outline-none placeholder:text-zinc-600 focus:border-amber-400/50" />
-        <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm"><option value="all">Tous les statuts</option>{statuses.map(([value, text]) => <option key={value} value={value}>{text}</option>)}</select>
-        <select value={assignee} onChange={(event) => setAssignee(event.target.value)} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm"><option value="all">Tous les responsables</option><option value="unassigned">Non attribuées</option>{assignees.map((name) => <option key={name}>{name}</option>)}</select>
-        <select value={deadline} onChange={(event) => setDeadline(event.target.value)} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm"><option value="all">Toutes les échéances</option><option value="overdue">En retard</option><option value="upcoming">À venir</option><option value="unscheduled">Sans suivi</option></select>
+        <input aria-label="Rechercher dans les candidatures" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Rechercher un candidat, une offre…" className="rounded-xl border border-white/10 bg-black/30 px-4 py-2.5 text-sm outline-none placeholder:text-zinc-600 focus:border-amber-400/50" />
+        <select aria-label="Filtrer par statut" value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm"><option value="all">Tous les statuts</option>{statuses.map(([value, text]) => <option key={value} value={value}>{text}</option>)}</select>
+        <select aria-label="Filtrer par responsable" value={assignee} onChange={(event) => setAssignee(event.target.value)} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm"><option value="all">Tous les responsables</option><option value="unassigned">Non attribuées</option>{assignees.map((name) => <option key={name}>{name}</option>)}</select>
+        <select aria-label="Filtrer par échéance" value={deadline} onChange={(event) => setDeadline(event.target.value)} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm"><option value="all">Toutes les échéances</option><option value="overdue">En retard</option><option value="upcoming">À venir</option><option value="unscheduled">Sans suivi</option></select>
         <button type="button" onClick={exportCsv} className="rounded-xl border border-amber-400/30 px-4 py-2.5 text-sm font-semibold text-amber-300">Exporter CSV</button>
       </div>
-      <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4"><p className="text-xs text-zinc-500">{filtered.length} dossier{filtered.length > 1 ? "s" : ""}</p><div className="flex rounded-lg border border-white/10 p-1 text-xs"><button onClick={() => setView("list")} className={`rounded-md px-3 py-1.5 ${view === "list" ? "bg-amber-400 text-black" : "text-zinc-400"}`}>Liste</button><button onClick={() => setView("board")} className={`rounded-md px-3 py-1.5 ${view === "board" ? "bg-amber-400 text-black" : "text-zinc-400"}`}>Pipeline</button></div></div>
+      {error && <p role="alert" className="mt-3 text-sm text-red-400">{error}</p>}
+      <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4"><p className="text-xs text-zinc-500">{filtered.length} dossier{filtered.length > 1 ? "s" : ""}</p><div className="flex rounded-lg border border-white/10 p-1 text-xs"><button type="button" aria-pressed={view === "list"} onClick={() => setView("list")} className={`rounded-md px-3 py-1.5 ${view === "list" ? "bg-amber-400 text-black" : "text-zinc-400"}`}>Liste</button><button type="button" aria-pressed={view === "board"} onClick={() => setView("board")} className={`rounded-md px-3 py-1.5 ${view === "board" ? "bg-amber-400 text-black" : "text-zinc-400"}`}>Pipeline</button></div></div>
     </section>
     {view === "list" ? <div className="overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 text-white"><div className="divide-y divide-white/10">{filtered.map((item) => <ApplicationRow key={item.id} item={item} />)}{filtered.length === 0 && <Empty />}</div></div> :
       <div className="grid gap-4 xl:grid-cols-3 2xl:grid-cols-6">{statuses.map(([value, text]) => <section key={value} className="min-w-0 rounded-2xl border border-white/10 bg-zinc-950 p-3 text-white"><div className="mb-3 flex items-center justify-between"><h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-400">{text}</h2><span className="rounded-full bg-white/5 px-2 py-1 text-[10px] text-zinc-500">{filtered.filter((item) => item.status === value).length}</span></div><div className="space-y-2">{filtered.filter((item) => item.status === value).map((item) => <article key={item.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3"><Link href={`/recrutement/candidatures/${item.id}`} className="block text-sm font-medium hover:text-amber-300">{item.first_name} {item.last_name}</Link><p className="mt-1 truncate text-[11px] text-zinc-500">{item.opportunity}</p><select disabled={moving === item.id} value={item.status} onChange={(event) => move(item.id, event.target.value)} className="mt-3 w-full rounded-lg border border-white/10 bg-black px-2 py-1.5 text-[11px]">{statuses.map(([state, stateLabel]) => <option key={state} value={state}>{stateLabel}</option>)}</select></article>)}</div></section>)}</div>}
