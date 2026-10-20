@@ -62,10 +62,10 @@ export default async function ApplicationPage({
     notFound();
   }
 
-  const [{ data: rawEvents }, { data: rawNotes }] = await Promise.all([
+  const [{ data: rawEvents }, { data: rawNotes }, { data: staff }, interviewResult] = await Promise.all([
     supabase
       .from("careers_application_events")
-      .select("id, event_type, from_status, to_status, actor_id, created_at")
+      .select("id, event_type, from_status, to_status, actor_id, details, created_at")
       .eq("application_id", id)
       .order("created_at", { ascending: false }),
     supabase
@@ -73,6 +73,18 @@ export default async function ApplicationPage({
       .select("id, body, author_id, created_at")
       .eq("application_id", id)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("profiles")
+      .select("id, nom, email, role")
+      .in("role", ["super_admin", "admin", "manager", "artistic_director"])
+      .order("nom"),
+    application.interview_event_id
+      ? supabase
+          .from("internal_events")
+          .select("id, date_debut, date_fin, lieu, lien_visio, participant_ids, reminder_minutes")
+          .eq("id", application.interview_event_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const peopleIds = Array.from(new Set([
@@ -282,6 +294,14 @@ export default async function ApplicationPage({
                 legacyNotes={application.internal_notes}
                 events={events}
                 notes={notes}
+                staff={(staff || []).map((person) => ({
+                  id: person.id,
+                  name: person.nom || person.email || "Membre LMG",
+                }))}
+                initialAssignee={application.assigned_to}
+                initialNextAction={application.next_action}
+                initialNextActionAt={application.next_action_at}
+                initialInterview={interviewResult.data}
               />
             </div>
           </div>
