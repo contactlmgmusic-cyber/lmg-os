@@ -77,21 +77,21 @@ export default function CareersApplicationManager({
     <div className="space-y-8">
       <section>
         <label className="mb-3 block text-sm font-medium">Statut</label>
-        <select value={status} onChange={(event) => setStatus(event.target.value)} className="w-full rounded-xl border bg-background px-4 py-3 text-sm">
+        <select value={status} onChange={(event) => setStatus(event.target.value)} className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-amber-400/50">
           {statuses.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select>
       </section>
 
       <section>
         <label className="mb-3 block text-sm font-medium">Ajouter une note interne</label>
-        <textarea value={note} onChange={(event) => setNote(event.target.value)} maxLength={5000} rows={5} placeholder="Compte-rendu, points à vérifier, retour entretien…" className="w-full resize-none rounded-xl border bg-background px-4 py-3 text-sm leading-6 outline-none" />
+        <textarea value={note} onChange={(event) => setNote(event.target.value)} maxLength={5000} rows={5} placeholder="Compte-rendu, points à vérifier, retour entretien…" className="w-full resize-none rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm leading-6 text-white outline-none placeholder:text-zinc-600 focus:border-amber-400/50" />
         <p className="mt-2 text-right text-xs text-muted-foreground">{note.length}/5000</p>
       </section>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
       {saved && <p className="text-sm text-emerald-600">Modifications enregistrées.</p>}
 
-      <button type="button" onClick={save} disabled={saving || (status === initialStatus && !note.trim())} className="w-full rounded-xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50">
+      <button type="button" onClick={save} disabled={saving || (status === initialStatus && !note.trim())} className="w-full rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-amber-300 disabled:opacity-50">
         {saving ? "Enregistrement…" : "Enregistrer"}
       </button>
 
@@ -108,7 +108,7 @@ export default function CareersApplicationManager({
         <h3 className="text-sm font-semibold">Historique</h3>
         <div className="mt-4 space-y-4">
           {events.map((item) => (
-            <div key={item.id} className="relative pl-5 text-sm before:absolute before:left-0 before:top-1.5 before:h-2 before:w-2 before:rounded-full before:bg-primary">
+              <div key={item.id} className="relative pl-5 text-sm before:absolute before:left-0 before:top-1.5 before:h-2 before:w-2 before:rounded-full before:bg-amber-400">
               <p>{item.event_type === "created" ? "Candidature reçue" : `${statusLabels[item.from_status || ""] || item.from_status} → ${statusLabels[item.to_status || ""] || item.to_status}`}</p>
               <p className="mt-1 text-xs text-muted-foreground">{item.actor_name || "Système LMG"} · {formatDate(item.created_at)}</p>
             </div>
@@ -121,7 +121,7 @@ export default function CareersApplicationManager({
 }
 
 function TimelineCard({ text, meta }: { text: string; meta: string }) {
-  return <article className="rounded-xl border bg-muted/30 p-4"><p className="whitespace-pre-line text-sm leading-6">{text}</p><p className="mt-3 text-xs text-muted-foreground">{meta}</p></article>;
+  return <article className="rounded-xl border border-white/10 bg-white/[0.035] p-4"><p className="whitespace-pre-line text-sm leading-6">{text}</p><p className="mt-3 text-xs text-zinc-500">{meta}</p></article>;
 }
 
 function formatDate(value: string) {
