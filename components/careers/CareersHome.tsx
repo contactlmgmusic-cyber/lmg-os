@@ -153,6 +153,41 @@ export default function CareersHome() {
         </div>
       </section>
 
+      {/* ABOUT LMG MUSIC */}
+      <section className="border-y border-white/10 px-6 py-20 md:px-10 md:py-28">
+        <div className="mx-auto grid max-w-[1600px] gap-10 lg:grid-cols-12 lg:gap-16">
+          <div className="lg:col-span-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#d5ad58]">
+              {fr ? "LMG Music, concrètement" : "LMG Music, in practice"}
+            </p>
+          </div>
+
+          <div className="lg:col-span-9">
+            <h2 className="max-w-5xl text-4xl font-medium leading-[1.02] tracking-[-0.05em] md:text-6xl xl:text-7xl">
+              {fr
+                ? "Un label indépendant construit autour des artistes et de leurs projets."
+                : "An independent label built around artists and their projects."}
+            </h2>
+
+            <div className="mt-10 grid gap-8 border-t border-white/15 pt-8 md:grid-cols-[1fr_auto] md:items-end">
+              <p className="max-w-3xl text-sm leading-7 text-white/55 md:text-base md:leading-8">
+                {fr
+                  ? "LMG Music accompagne le développement des artistes, de la création à la sortie des projets. Musique, image, live, stratégie et technologie avancent ensemble pour construire des trajectoires artistiques cohérentes et durables."
+                  : "LMG Music supports artist development from creation through release. Music, visual identity, live, strategy and technology move together to build coherent and sustainable artist journeys."}
+              </p>
+
+              <a
+                href="https://lmgmusic.fr/"
+                className="inline-flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[#d5ad58]"
+              >
+                {fr ? "Découvrir LMG Music" : "Discover LMG Music"}
+                <span className="text-base">↗</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* INSIDE LMG */}
       <section
         id="life"
