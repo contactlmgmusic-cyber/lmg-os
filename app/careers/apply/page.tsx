@@ -1,18 +1,17 @@
 import { careersSubmissionsReady } from "@/lib/careers-identity.server";
 import CareersUnavailable from "@/components/careers/CareersUnavailable";
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import CareersApplyPageContent from "@/components/careers/CareersApplyPageContent";
 import { createCareersPublicClient } from "@/lib/careers-public.server";
+import { careersPageMetadata } from "@/lib/careers-locale.server";
 
-export const metadata: Metadata = {
-  title: "Apply | LMG Careers",
-  description: "Apply for an opportunity at LMG.",
-  alternates: {
-    canonical: "https://careers.lmgmusic.fr/apply",
-  },
-};
+export const generateMetadata = () => careersPageMetadata({
+  titleFr: "Postuler | LMG Careers", titleEn: "Apply | LMG Careers",
+  descriptionFr: "Envoyez votre candidature pour une opportunité chez LMG.",
+  descriptionEn: "Apply for an opportunity at LMG.",
+  canonical: "https://careers.lmgmusic.fr/apply", noindex: true,
+});
 
 export const dynamic = "force-dynamic";
 
