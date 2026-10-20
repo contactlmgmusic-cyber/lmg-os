@@ -68,10 +68,10 @@ export default function CareersJobForm() {
   }
 
   const field =
-    "mt-2 w-full rounded-lg border bg-background px-4 py-3 text-sm outline-none transition focus:border-foreground/40";
+    "mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-amber-400/50";
 
   const textarea =
-    "mt-2 min-h-[150px] w-full resize-y rounded-lg border bg-background px-4 py-3 text-sm leading-6 outline-none transition focus:border-foreground/40";
+    "mt-2 min-h-[150px] w-full resize-y rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm leading-6 text-white outline-none transition placeholder:text-zinc-600 focus:border-amber-400/50";
 
   return (
     <form
@@ -84,7 +84,7 @@ export default function CareersJobForm() {
         </div>
       )}
 
-      <section className="rounded-xl border bg-card p-6">
+      <section className="rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white">
         <div className="mb-6">
           <h2 className="text-lg font-semibold">
             Informations principales
@@ -189,7 +189,7 @@ export default function CareersJobForm() {
         </div>
       </section>
 
-      <section className="rounded-xl border bg-card p-6">
+      <section className="rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white">
         <div className="mb-6">
           <h2 className="text-lg font-semibold">
             Contenu de l&apos;offre
@@ -247,7 +247,7 @@ export default function CareersJobForm() {
         </div>
       </section>
 
-      <section className="rounded-xl border bg-card p-6">
+      <section className="rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white">
         <div className="mb-6">
           <h2 className="text-lg font-semibold">
             Candidature & publication
@@ -284,7 +284,7 @@ export default function CareersJobForm() {
         <button
           type="submit"
           disabled={saving !== null}
-          className="rounded-lg border px-5 py-3 text-sm font-medium transition hover:bg-muted disabled:opacity-50"
+          className="rounded-xl border border-white/10 bg-zinc-950 px-5 py-3 text-sm font-medium text-white transition hover:border-amber-400/30 disabled:opacity-50"
         >
           {saving === "draft"
             ? "Enregistrement..."
@@ -308,7 +308,7 @@ export default function CareersJobForm() {
               "published"
             );
           }}
-          className="rounded-lg bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-85 disabled:opacity-50"
+          className="rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-amber-300 disabled:opacity-50"
         >
           {saving === "published"
             ? "Publication..."
