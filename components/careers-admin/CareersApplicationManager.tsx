@@ -16,7 +16,7 @@ const statusLabels: Record<string, string> = Object.fromEntries(statuses);
 
 type Event = {
   id: string;
-  event_type: "created" | "status_changed" | "assignment_changed" | "action_updated" | "interview_scheduled";
+  event_type: "created" | "status_changed" | "assignment_changed" | "action_updated" | "interview_scheduled" | "archived" | "restored";
   from_status: string | null;
   to_status: string | null;
   details?: Record<string, unknown> | null;
@@ -53,6 +53,8 @@ export default function CareersApplicationManager({
   initialNextAction,
   initialNextActionAt,
   initialInterview,
+  initialArchivedAt,
+  retentionUntil,
 }: {
   id: string;
   initialStatus: string;
@@ -64,6 +66,8 @@ export default function CareersApplicationManager({
   initialNextAction: string | null;
   initialNextActionAt: string | null;
   initialInterview: Interview;
+  initialArchivedAt: string | null;
+  retentionUntil: string | null;
 }) {
   const router = useRouter();
   const [status, setStatus] = useState(initialStatus);
@@ -145,6 +149,19 @@ export default function CareersApplicationManager({
     });
   }
 
+  async function toggleArchive() {
+    await submit({ mode: "archive", archived: !initialArchivedAt });
+  }
+
+  async function deleteApplication() {
+    if (!window.confirm("Supprimer définitivement ce dossier et son CV ? Cette action est irréversible.")) return;
+    setSaving(true); setError("");
+    const response = await fetch(`/api/careers/applications/${id}`, { method: "DELETE" });
+    const result = await response.json();
+    if (!response.ok) { setError(result.error || "Suppression impossible."); setSaving(false); return; }
+    router.push("/recrutement/archives"); router.refresh();
+  }
+
   return (
     <div className="space-y-8">
       <section>
@@ -184,6 +201,13 @@ export default function CareersApplicationManager({
           </label>
           <button type="button" onClick={savePlanning} disabled={saving} className="w-full rounded-xl border border-amber-400/30 px-5 py-3 text-sm font-semibold text-amber-300 disabled:opacity-50">Enregistrer le pilotage</button>
         </div>
+      </section>
+
+      <section className="border-t border-white/10 pt-7">
+        <h3 className="text-sm font-semibold">Conservation du dossier</h3>
+        <p className="mt-2 text-xs leading-5 text-zinc-500">{initialArchivedAt ? `Archivé${retentionUntil ? ` · conservation prévue jusqu’au ${formatDate(retentionUntil)}` : ""}` : "Le dossier reste visible dans le pipeline actif."}</p>
+        <button type="button" onClick={toggleArchive} disabled={saving} className="mt-4 w-full rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold text-zinc-300 disabled:opacity-50">{initialArchivedAt ? "Restaurer le dossier" : "Archiver le dossier"}</button>
+        {initialArchivedAt && <button type="button" onClick={deleteApplication} disabled={saving} className="mt-3 w-full rounded-xl border border-red-500/30 px-5 py-3 text-sm font-semibold text-red-400 disabled:opacity-50">Supprimer définitivement</button>}
       </section>
 
       <section className="border-t border-white/10 pt-7">
@@ -253,5 +277,7 @@ function eventLabel(item: Event) {
   if (item.event_type === "assignment_changed") return "Responsable du dossier modifié";
   if (item.event_type === "action_updated") return "Prochaine action mise à jour";
   if (item.event_type === "interview_scheduled") return "Entretien planifié ou déplacé";
+  if (item.event_type === "archived") return "Dossier archivé";
+  if (item.event_type === "restored") return "Dossier restauré";
   return `${statusLabels[item.from_status || ""] || item.from_status} → ${statusLabels[item.to_status || ""] || item.to_status}`;
 }
