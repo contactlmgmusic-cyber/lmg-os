@@ -75,6 +75,49 @@ export async function PATCH(
     const { id } = await context.params;
     const body = await request.json();
 
+    if (body.mode === "planning") {
+      const assignedTo = body.assignedTo || null;
+      const nextAction = typeof body.nextAction === "string" ? body.nextAction.trim() : "";
+      const nextActionAt = body.nextActionAt || null;
+      if (assignedTo !== null && typeof assignedTo !== "string") {
+        return NextResponse.json({ error: "Invalid assignee" }, { status: 400 });
+      }
+      if (nextAction.length > 500 || (nextActionAt && Number.isNaN(Date.parse(nextActionAt)))) {
+        return NextResponse.json({ error: "Invalid planning" }, { status: 400 });
+      }
+      const { error } = await supabase.rpc("manage_careers_planning", {
+        p_application_id: id,
+        p_assigned_to: assignedTo,
+        p_next_action: nextAction || null,
+        p_next_action_at: nextActionAt,
+      });
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ ok: true });
+    }
+
+    if (body.mode === "interview") {
+      const start = typeof body.start === "string" ? body.start : "";
+      const end = typeof body.end === "string" ? body.end : "";
+      const participants = Array.isArray(body.participantIds)
+        ? body.participantIds.filter((value: unknown): value is string => typeof value === "string")
+        : [];
+      const reminder = Number(body.reminderMinutes);
+      if (!start || !end || Number.isNaN(Date.parse(start)) || Number.isNaN(Date.parse(end)) || ![0, 15, 30, 60, 120, 1440].includes(reminder)) {
+        return NextResponse.json({ error: "Invalid interview" }, { status: 400 });
+      }
+      const { data: eventId, error } = await supabase.rpc("schedule_careers_interview", {
+        p_application_id: id,
+        p_start: start,
+        p_end: end,
+        p_location: typeof body.location === "string" ? body.location : "",
+        p_video_link: typeof body.videoLink === "string" ? body.videoLink : "",
+        p_participant_ids: participants,
+        p_reminder_minutes: reminder,
+      });
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ ok: true, eventId });
+    }
+
     let status: string | null = null;
     let note: string | null = null;
 
