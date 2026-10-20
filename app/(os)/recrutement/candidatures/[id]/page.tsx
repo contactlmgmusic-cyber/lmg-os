@@ -302,6 +302,8 @@ export default async function ApplicationPage({
                 initialNextAction={application.next_action}
                 initialNextActionAt={application.next_action_at}
                 initialInterview={interviewResult.data}
+                initialArchivedAt={application.archived_at}
+                retentionUntil={application.retention_until}
               />
             </div>
           </div>
