@@ -48,6 +48,9 @@ export default async function CareersApplicationsPage() {
       status,
       created_at,
       application_type,
+      assigned_to,
+      next_action,
+      next_action_at,
       careers_jobs (
         title,
         department
@@ -55,6 +58,12 @@ export default async function CareersApplicationsPage() {
     `)
     .eq("application_type", "job")
     .order("created_at", { ascending: false });
+
+  const assigneeIds = Array.from(new Set((applications || []).map((item) => item.assigned_to).filter(Boolean))) as string[];
+  const { data: assignees } = assigneeIds.length
+    ? await supabase.from("profiles").select("id, nom, email").in("id", assigneeIds)
+    : { data: [] };
+  const assigneeNames = new Map((assignees || []).map((person) => [person.id, person.nom || person.email]));
 
   return (
     <main className="space-y-6 pb-10">
@@ -141,6 +150,14 @@ export default async function CareersApplicationsPage() {
                         )}
                       </p>
                     )}
+                    <p className="mt-2 text-xs text-zinc-500">
+                      {application.assigned_to ? `Responsable · ${assigneeNames.get(application.assigned_to) || "Équipe LMG"}` : "Non attribuée"}
+                    </p>
+                    {application.next_action && (
+                      <p className={`mt-1 text-xs ${isOverdue(application.next_action_at) ? "text-red-400" : "text-zinc-500"}`}>
+                        {application.next_action}{application.next_action_at ? ` · ${formatDateTime(application.next_action_at)}` : ""}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -174,4 +191,12 @@ export default async function CareersApplicationsPage() {
       )}
     </main>
   );
+}
+
+function isOverdue(value: string | null) {
+  return Boolean(value && Date.parse(value) < Date.now());
+}
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(value));
 }
