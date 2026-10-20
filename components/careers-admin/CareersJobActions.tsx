@@ -76,7 +76,7 @@ export default function CareersJobActions({
             type="button"
             disabled={loading !== null}
             onClick={() => changeStatus("published")}
-            className="rounded-lg bg-foreground px-5 py-2.5 text-sm font-medium text-background disabled:opacity-50"
+            className="rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-semibold text-black disabled:opacity-50"
           >
             {loading === "published"
               ? "Publication..."
@@ -89,7 +89,7 @@ export default function CareersJobActions({
             type="button"
             disabled={loading !== null}
             onClick={() => changeStatus("closed")}
-            className="rounded-lg border px-5 py-2.5 text-sm font-medium disabled:opacity-50"
+            className="rounded-xl border border-white/10 px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
           >
             {loading === "closed"
               ? "Clôture..."
@@ -103,7 +103,7 @@ export default function CareersJobActions({
               type="button"
               disabled={loading !== null}
               onClick={() => changeStatus("draft")}
-              className="rounded-lg border px-5 py-2.5 text-sm font-medium disabled:opacity-50"
+              className="rounded-xl border border-white/10 px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
             >
               Repasser en brouillon
             </button>
@@ -114,7 +114,7 @@ export default function CareersJobActions({
             type="button"
             disabled={loading !== null}
             onClick={() => changeStatus("archived")}
-            className="rounded-lg border px-5 py-2.5 text-sm font-medium text-muted-foreground disabled:opacity-50"
+            className="rounded-xl border border-white/10 px-5 py-2.5 text-sm font-medium text-zinc-400 disabled:opacity-50"
           >
             {loading === "archived"
               ? "Archivage..."
