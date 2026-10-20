@@ -44,10 +44,10 @@ export default async function CareersJobsPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <main className="space-y-8">
-      <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+    <main className="space-y-6 pb-10">
+      <div className="flex flex-col justify-between gap-5 rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white lg:flex-row lg:items-end">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">
             LMG Careers
           </p>
 
@@ -55,14 +55,14 @@ export default async function CareersJobsPage() {
             Offres
           </h1>
 
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-zinc-400">
             Gérez les opportunités publiées sur LMG Careers.
           </p>
         </div>
 
         <Link
           href="/recrutement/offres/nouvelle"
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-foreground px-5 text-sm font-medium text-background"
+          className="inline-flex h-11 items-center justify-center rounded-xl bg-amber-400 px-5 text-sm font-semibold text-black transition hover:bg-amber-300"
         >
           Nouvelle offre
         </Link>
@@ -75,7 +75,7 @@ export default async function CareersJobsPage() {
       )}
 
       {!error && (!jobs || jobs.length === 0) && (
-        <div className="rounded-xl border bg-card px-6 py-16 text-center">
+        <div className="rounded-2xl border border-white/10 bg-zinc-950 px-6 py-16 text-center text-white">
           <h2 className="text-lg font-semibold">
             Aucune offre pour le moment
           </h2>
@@ -87,7 +87,7 @@ export default async function CareersJobsPage() {
 
           <Link
             href="/recrutement/offres/nouvelle"
-            className="mt-6 inline-flex rounded-lg bg-foreground px-5 py-3 text-sm font-medium text-background"
+            className="mt-6 inline-flex rounded-xl bg-amber-400 px-5 py-3 text-sm font-semibold text-black"
           >
             Créer une offre
           </Link>
@@ -95,20 +95,20 @@ export default async function CareersJobsPage() {
       )}
 
       {jobs && jobs.length > 0 && (
-        <div className="overflow-hidden rounded-xl border bg-card">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 text-white">
           {jobs.map((job, index) => (
             <Link
               key={job.id}
               href={`/recrutement/offres/${job.id}`}
-              className={`grid gap-5 p-5 transition hover:bg-muted/40 md:grid-cols-[1fr_auto] md:items-center ${
+              className={`grid gap-5 p-5 transition hover:bg-white/[0.035] md:grid-cols-[1fr_auto] md:items-center ${
                 index !== jobs.length - 1
-                  ? "border-b"
+                  ? "border-b border-white/10"
                   : ""
               }`}
             >
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  <span className="text-xs font-medium uppercase tracking-[0.14em] text-amber-400">
                     {departmentLabels[job.department] ??
                       job.department}
                   </span>
@@ -139,7 +139,7 @@ export default async function CareersJobsPage() {
               </div>
 
               <div>
-                <span className="inline-flex rounded-full border px-3 py-1.5 text-xs font-medium">
+                <span className="inline-flex rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-300">
                   {statusLabels[job.status] ?? job.status}
                 </span>
               </div>
