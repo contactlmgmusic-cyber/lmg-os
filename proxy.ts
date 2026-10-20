@@ -16,7 +16,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(target, 308);
   }
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-lmg-language", careers ? "en" : "fr");
+  const careersLocale = request.cookies.get("lmg-careers-locale")?.value;
+  requestHeaders.set("x-lmg-language", careers && careersLocale === "en" ? "en" : "fr");
   requestHeaders.set("x-lmg-public-path", path);
   const options = { request: { headers: requestHeaders } };
   const redirectTo = (pathname: string) => { const url = request.nextUrl.clone(); url.pathname = pathname; return NextResponse.redirect(url); };
