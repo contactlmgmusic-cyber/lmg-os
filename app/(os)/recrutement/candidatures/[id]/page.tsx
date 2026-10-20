@@ -107,7 +107,7 @@ export default async function ApplicationPage({
   }
 
   return (
-    <main className="space-y-8">
+    <main className="space-y-6 pb-10">
       <div>
         <Link
           href="/recrutement/candidatures"
@@ -116,9 +116,9 @@ export default async function ApplicationPage({
           ← Candidatures
         </Link>
 
-        <div className="mt-6">
-          <p className="text-sm text-muted-foreground">
-            Candidature
+        <div className="mt-6 rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">
+            Dossier candidat
           </p>
 
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">
@@ -126,7 +126,7 @@ export default async function ApplicationPage({
             {application.last_name}
           </h1>
 
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-zinc-400">
             Reçue le{" "}
             {new Intl.DateTimeFormat("fr-FR", {
               dateStyle: "long",
@@ -140,7 +140,7 @@ export default async function ApplicationPage({
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
-          <section className="rounded-2xl border bg-card p-6">
+          <section className="rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Offre
             </p>
@@ -151,11 +151,7 @@ export default async function ApplicationPage({
 
             {job && (
               <div className="mt-4 flex flex-wrap gap-2">
-                <Meta>
-                  {departmentLabels[
-                    job.department
-                  ] ?? job.department}
-                </Meta>
+                <Meta>{departmentLabels[job.department] ?? job.department}</Meta>
 
                 <Meta>
                   {contractLabels[
@@ -170,7 +166,7 @@ export default async function ApplicationPage({
             )}
           </section>
 
-          <section className="rounded-2xl border bg-card p-6">
+          <section className="rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Vivier LMG
             </p>
@@ -186,7 +182,7 @@ export default async function ApplicationPage({
             )}
           </section>
 
-          <section className="rounded-2xl border bg-card p-6">
+          <section className="rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Coordonnées
             </p>
@@ -214,7 +210,7 @@ export default async function ApplicationPage({
             </div>
           </section>
 
-          <section className="rounded-2xl border bg-card p-6">
+          <section className="rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Profil
             </p>
@@ -225,7 +221,7 @@ export default async function ApplicationPage({
                   href={application.linkedin_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-xl border px-4 py-3 text-sm font-medium transition hover:bg-muted"
+                  className="rounded-xl border border-white/10 px-4 py-3 text-sm font-medium transition hover:border-amber-400/30"
                 >
                   LinkedIn ↗
                 </a>
@@ -236,7 +232,7 @@ export default async function ApplicationPage({
                   href={application.portfolio_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-xl border px-4 py-3 text-sm font-medium transition hover:bg-muted"
+                  className="rounded-xl border border-white/10 px-4 py-3 text-sm font-medium transition hover:border-amber-400/30"
                 >
                   Portfolio ↗
                 </a>
@@ -247,7 +243,7 @@ export default async function ApplicationPage({
                   href={cvUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground"
+                  className="rounded-xl bg-amber-400 px-4 py-3 text-sm font-semibold text-black"
                 >
                   Ouvrir le CV ↗
                 </a>
@@ -256,7 +252,7 @@ export default async function ApplicationPage({
           </section>
 
           {application.cover_letter && (
-            <section className="rounded-2xl border bg-card p-6">
+            <section className="rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Message du candidat
               </p>
@@ -269,7 +265,7 @@ export default async function ApplicationPage({
         </div>
 
         <aside>
-          <div className="sticky top-6 rounded-2xl border bg-card p-6">
+          <div className="sticky top-6 rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white">
             <h2 className="text-lg font-semibold">
               Suivi de candidature
             </h2>
@@ -301,7 +297,7 @@ function Meta({
   children: React.ReactNode;
 }) {
   return (
-    <span className="rounded-full bg-muted px-3 py-1.5 text-xs">
+    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-zinc-300">
       {children}
     </span>
   );
