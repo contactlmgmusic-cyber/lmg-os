@@ -118,7 +118,7 @@ export default function CareersHome() {
                 fill
                 priority
                 sizes="38vw"
-                className="object-cover object-center"
+                className="object-cover object-top"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
               <div className="relative w-full border-t border-white/20 p-7">
