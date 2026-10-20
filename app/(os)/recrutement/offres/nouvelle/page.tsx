@@ -11,16 +11,16 @@ export default async function NewCareersJobPage() {
   ]);
 
   return (
-    <main className="space-y-8">
-      <div>
+    <main className="space-y-6 pb-10">
+      <div className="rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white sm:p-8">
         <Link
           href="/recrutement/offres"
-          className="text-sm text-muted-foreground transition hover:text-foreground"
+          className="text-sm text-zinc-400 transition hover:text-amber-400"
         >
           ← Retour aux offres
         </Link>
 
-        <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">
           LMG Careers
         </p>
 
@@ -28,7 +28,7 @@ export default async function NewCareersJobPage() {
           Nouvelle offre
         </h1>
 
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
           Créez une nouvelle opportunité et choisissez de la conserver
           en brouillon ou de la publier immédiatement.
         </p>
