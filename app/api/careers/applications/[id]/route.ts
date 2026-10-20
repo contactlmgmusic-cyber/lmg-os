@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createAuthenticatedSupabaseClient } from "@/lib/supabase-auth.server";
 import { requireRole } from "@/lib/require-role.server";
 import { ROLES } from "@/lib/roles";
+import { createServiceSupabaseClient } from "@/lib/service-supabase.server";
 
 const allowedStatuses = [
   "new",
@@ -74,6 +75,15 @@ export async function PATCH(
     const supabase = await authorize();
     const { id } = await context.params;
     const body = await request.json();
+
+    if (body.mode === "archive") {
+      const { error } = await supabase.rpc("manage_careers_archive", {
+        p_application_id: id,
+        p_archived: body.archived === true,
+      });
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ ok: true });
+    }
 
     if (body.mode === "planning") {
       const assignedTo = body.assignedTo || null;
@@ -165,5 +175,29 @@ export async function PATCH(
       { error: "Unauthorized" },
       { status: 401 }
     );
+  }
+}
+
+export async function DELETE(_request: Request, context: Context) {
+  try {
+    await authorize();
+    const { id } = await context.params;
+    const service = createServiceSupabaseClient();
+    const { data: application, error: readError } = await service
+      .from("careers_applications")
+      .select("id, cv_url, archived_at")
+      .eq("id", id)
+      .single();
+    if (readError || !application) return NextResponse.json({ error: "Application not found" }, { status: 404 });
+    if (!application.archived_at) return NextResponse.json({ error: "Archive the application before deletion" }, { status: 409 });
+    if (application.cv_url) {
+      const { error: storageError } = await service.storage.from("careers-cv").remove([application.cv_url]);
+      if (storageError) return NextResponse.json({ error: storageError.message }, { status: 500 });
+    }
+    const { error } = await service.from("careers_applications").delete().eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 }
