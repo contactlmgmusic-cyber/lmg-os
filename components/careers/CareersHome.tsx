@@ -337,15 +337,17 @@ export default function CareersHome() {
               >
                 {worldVisuals[world.number] && (
                   <>
-                    <Image
-                      src={worldVisuals[world.number].src}
-                      alt={worldVisuals[world.number].alt}
-                      fill
-                      sizes="100vw"
-                      style={{ objectPosition: worldVisuals[world.number].position }}
-                      className="pointer-events-none object-cover opacity-[0.16] grayscale transition duration-700 group-hover:opacity-[0.24] group-hover:grayscale-0"
-                    />
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black via-black/90 to-black/55" />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 w-[62%] overflow-hidden md:w-[34%]">
+                      <Image
+                        src={worldVisuals[world.number].src}
+                        alt={worldVisuals[world.number].alt}
+                        fill
+                        sizes="(max-width: 767px) 62vw, 34vw"
+                        style={{ objectPosition: worldVisuals[world.number].position }}
+                        className="object-cover opacity-[0.45] saturate-[0.82] transition duration-700 group-hover:scale-[1.025] group-hover:opacity-60 group-hover:saturate-100"
+                      />
+                    </div>
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black via-black/90 to-black/25" />
                   </>
                 )}
 
