@@ -9,6 +9,7 @@ import {
   getYouTubeChannelVideos,
   resolveYouTubeChannel,
 } from "@/lib/youtube.server";
+import { savePlatformMetricsSnapshot } from "@/lib/platform-metrics.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -223,6 +224,13 @@ export async function GET(
             );
           }
         }
+
+        await savePlatformMetricsSnapshot(supabaseAdmin, {
+          artisteId: artiste.id,
+          plateforme: "YouTube",
+          followers: channel.subscriberCount,
+          vues: channel.viewCount,
+        });
 
         synchronized += 1;
         importedVideos +=

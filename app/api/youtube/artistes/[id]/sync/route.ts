@@ -12,6 +12,7 @@ import {
   getYouTubeChannelVideos,
   resolveYouTubeChannel,
 } from "@/lib/youtube.server";
+import { savePlatformMetricsSnapshot } from "@/lib/platform-metrics.server";
 import { ROLES } from "@/lib/roles";
 
 export const runtime = "nodejs";
@@ -327,6 +328,13 @@ export async function POST(
         );
       }
     }
+
+    await savePlatformMetricsSnapshot(supabaseAdmin, {
+      artisteId: id,
+      plateforme: "YouTube",
+      followers: channel.subscriberCount,
+      vues: channel.viewCount,
+    });
 
     return NextResponse.json({
       success: true,

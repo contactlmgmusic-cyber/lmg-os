@@ -13,7 +13,7 @@ import {
   getSpotifyArtist,
   getSpotifyArtistReleases,
 } from "@/lib/spotify.server";
-import { saveSpotifyFollowersSnapshot } from "@/lib/spotify-followers.server";
+import { savePlatformMetricsSnapshot } from "@/lib/platform-metrics.server";
 import { ROLES } from "@/lib/roles";
 
 export const runtime = "nodejs";
@@ -325,11 +325,11 @@ export async function POST(
       spotifyArtist.followers?.total || 0
     );
 
-    await saveSpotifyFollowersSnapshot(
-      supabaseAdmin,
-      artiste.id,
-      followers
-    );
+    await savePlatformMetricsSnapshot(supabaseAdmin, {
+      artisteId: artiste.id,
+      plateforme: "Spotify",
+      followers,
+    });
 
     return NextResponse.json({
       success: true,
