@@ -7,6 +7,7 @@ import {
   getSpotifyArtist,
   getSpotifyArtistReleases,
 } from "@/lib/spotify.server";
+import { saveSpotifyFollowersSnapshot } from "@/lib/spotify-followers.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -206,6 +207,12 @@ export async function GET(
             );
           }
         }
+
+        await saveSpotifyFollowersSnapshot(
+          supabaseAdmin,
+          artiste.id,
+          spotifyArtist.followers?.total || 0
+        );
 
         synchronized += 1;
 

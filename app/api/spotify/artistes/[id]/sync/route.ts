@@ -13,6 +13,7 @@ import {
   getSpotifyArtist,
   getSpotifyArtistReleases,
 } from "@/lib/spotify.server";
+import { saveSpotifyFollowersSnapshot } from "@/lib/spotify-followers.server";
 import { ROLES } from "@/lib/roles";
 
 export const runtime = "nodejs";
@@ -320,6 +321,16 @@ export async function POST(
       }
     }
 
+    const followers = Number(
+      spotifyArtist.followers?.total || 0
+    );
+
+    await saveSpotifyFollowersSnapshot(
+      supabaseAdmin,
+      artiste.id,
+      followers
+    );
+
     return NextResponse.json({
       success: true,
 
@@ -334,6 +345,7 @@ export async function POST(
             ?.spotify || null,
         imageUrl:
           spotifyImageUrl,
+        followers,
       },
 
       releasesImported:

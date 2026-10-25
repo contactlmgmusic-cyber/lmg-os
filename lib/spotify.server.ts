@@ -14,6 +14,9 @@ export type SpotifyArtist = {
     spotify: string;
   };
   images: SpotifyImage[];
+  followers: {
+    total: number;
+  };
 };
 
 export type SpotifyRelease = {

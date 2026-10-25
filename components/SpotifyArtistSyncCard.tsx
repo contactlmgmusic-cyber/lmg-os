@@ -9,6 +9,7 @@ type SpotifyArtistData = {
   name: string;
   url: string | null;
   imageUrl: string | null;
+  followers?: number;
 };
 
 export default function SpotifyArtistSyncCard({
@@ -142,7 +143,7 @@ export default function SpotifyArtistSyncCard({
       }
 
       setSuccessMessage(
-        `${result.releasesImported} sortie(s) Spotify synchronisée(s).`
+        `${Number(result.artist?.followers || 0).toLocaleString("fr-FR")} followers et ${result.releasesImported} sortie(s) Spotify synchronisés.`
       );
     } catch (
       synchronizationError
