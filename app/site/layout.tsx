@@ -10,6 +10,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const path = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
   const pages: Record<string, [string, string]> = {
     "/": ["LMG Music | Artistes, musique et développement artistique", "LMG Music accompagne ses artistes en management, développement artistique, marketing et booking. Découvrez les artistes, sorties et actualités."],
+    "/about": ["À propos | LMG Music", "Découvrez la vision de LMG Music et notre manière de construire des trajectoires artistiques durables."],
+    "/about/what-we-do": ["Notre approche | LMG Music", "Management, stratégie, image, marketing et développement artistique : découvrez l'approche de LMG Music."],
+    "/about/live": ["LMG Live | Concerts, booking et événements", "Découvrez les activités live de LMG Music : booking, concerts, événements et accompagnement scénique."],
+    "/artistes": ["Artistes | LMG Music", "Découvrez les artistes accompagnés par LMG Music, leurs univers, leurs actualités et leurs projets."],
+    "/releases": ["Sorties musicales | LMG Music", "Retrouvez les dernières sorties, projets et nouveautés des artistes accompagnés par LMG Music."],
+    "/services": ["Services | LMG Music", "Découvrez les services de LMG Music en management, développement artistique, marketing, image et booking."],
+    "/team": ["Équipe | LMG Music", "Découvrez l'équipe de LMG Music et les expertises réunies au service des artistes et de leurs projets."],
+    "/press": ["Presse | LMG Music", "Accédez aux actualités presse, informations officielles et ressources médias de LMG Music."],
+    "/contact": ["Contact | LMG Music", "Contactez LMG Music pour une demande professionnelle, média, partenariat ou information."],
+    "/accessibilite": ["Accessibilité | LMG Music", "Consultez la déclaration et les engagements d'accessibilité du site LMG Music."],
     "/mentions-legales": ["Mentions légales | LMG Music", "Éditeur, domiciliation confirmée à Paris et informations légales de LMG Music."],
     "/confidentialite": ["Confidentialité | LMG Music", "Traitement des candidatures, données personnelles, cookies et droits sur le site LMG Music."],
     "/cookies": ["Politique de cookies | LMG Music", "Choisissez et gérez les cookies de mesure d’audience sur LMG Music."],
