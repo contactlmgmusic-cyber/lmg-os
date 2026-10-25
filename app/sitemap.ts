@@ -5,15 +5,21 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { kind, origin } = await publicDomain();
   if (kind === "os" || kind === "preview") return [];
+  const lastModified = new Date("2026-10-25T00:00:00.000Z");
   const paths = kind === "careers" ? ["", "/jobs", "/spontaneous", "/faq", "/privacy"] : kind === "artist" ? ["", "/mentions-legales", "/confidentialite"] : ["", "/artistes", "/releases", "/about", "/about/what-we-do", "/about/live", "/services", "/team", "/news", "/press", "/contact", "/faq", "/rejoindre", "/mentions-legales", "/confidentialite", "/cookies", "/accessibilite", "/plan-du-site"];
-  const pages: MetadataRoute.Sitemap = paths.map(path => ({ url: `${origin}${path}`, changeFrequency: "weekly" }));
+  const pages: MetadataRoute.Sitemap = paths.map(path => ({
+    url: `${origin}${path}`,
+    lastModified,
+    changeFrequency: path === "" ? "daily" : "weekly",
+    priority: path === "" ? 1 : ["/artistes", "/releases", "/about", "/services"].includes(path) ? 0.8 : 0.6,
+  }));
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL, key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key || kind === "artist") return pages;
   const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
   if (kind === "careers") {
     const { data, error } = await db.from("careers_jobs").select("slug").eq("status", "published");
     if (error) console.error("Careers sitemap unavailable", error.code);
-    return [...pages, ...(data ?? []).map(job => ({ url: `${origin}/jobs/${encodeURIComponent(job.slug)}` }))];
+    return [...pages, ...(data ?? []).map(job => ({ url: `${origin}/jobs/${encodeURIComponent(job.slug)}`, lastModified, changeFrequency: "weekly" as const, priority: 0.8 }))];
   }
   const [artists, releases, news] = await Promise.all([
     db.from("public_artistes").select("slug").not("slug", "is", null),
@@ -22,8 +28,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
   for (const result of [artists, releases, news]) if (result.error) console.error("Music sitemap source unavailable", result.error.code);
   return [...pages,
-    ...(artists.data ?? []).map(row => ({ url: `${origin}/artistes/${encodeURIComponent(row.slug)}` })),
-    ...(releases.data ?? []).map(row => ({ url: `${origin}/projets/${encodeURIComponent(row.slug)}` })),
-    ...(news.data ?? []).map(row => ({ url: `${origin}/news/${encodeURIComponent(row.slug)}` })),
+    ...(artists.data ?? []).map(row => ({ url: `${origin}/artistes/${encodeURIComponent(row.slug)}`, lastModified, changeFrequency: "weekly" as const, priority: 0.8 })),
+    ...(releases.data ?? []).map(row => ({ url: `${origin}/projets/${encodeURIComponent(row.slug)}`, lastModified, changeFrequency: "weekly" as const, priority: 0.8 })),
+    ...(news.data ?? []).map(row => ({ url: `${origin}/news/${encodeURIComponent(row.slug)}`, lastModified, changeFrequency: "weekly" as const, priority: 0.7 })),
   ];
 }
