@@ -23,6 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
     "/mentions-legales": ["Mentions légales | LMG Music", "Éditeur, domiciliation confirmée à Paris et informations légales de LMG Music."],
     "/confidentialite": ["Confidentialité | LMG Music", "Traitement des candidatures, données personnelles, cookies et droits sur le site LMG Music."],
     "/cookies": ["Politique de cookies | LMG Music", "Choisissez et gérez les cookies de mesure d’audience sur LMG Music."],
+    "/newsletter/confirmation": ["Inscription confirmée | LMG Music", "Votre inscription à la newsletter LMG Music est confirmée."],
     "/rejoindre": ["Présenter un projet | LMG Music", "Présentez votre projet artistique et candidatez auprès de LMG Music."],
     "/news": ["Actualités | LMG Music", "Retrouvez les dernières actualités des artistes et projets de LMG Music."],
   };
