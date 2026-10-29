@@ -2,8 +2,7 @@
 import Script from "next/script";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-const configuredGaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-const GA_ID = configuredGaId && configuredGaId !== "G-WX2YGFMR7B" ? configuredGaId : "G-8CKDE6WLDS";
+import { PUBLIC_GA_ID as GA_ID } from "@/lib/public-analytics";
 type AnalyticsWindow = Window & { gtag?: (...args: unknown[]) => void; dataLayer?: unknown[] };
 export default function PublicAnalytics({ enabled }: { enabled: boolean }) {
   const pathname = usePathname();
