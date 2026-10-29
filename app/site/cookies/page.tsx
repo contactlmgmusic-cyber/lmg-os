@@ -109,6 +109,15 @@ export default function CookiesPage() {
                         Local Storage
                       </p>
                     </div>
+
+                    <div className="md:col-span-3">
+                      <p className="text-xs uppercase tracking-wider text-zinc-600">
+                        {fr ? "Durée" : "Duration"}
+                      </p>
+                      <p className="mt-2 text-zinc-300">
+                        {fr ? "6 mois" : "6 months"}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </section>
@@ -124,6 +133,12 @@ export default function CookiesPage() {
                   {fr
                     ? "Avec votre consentement, LMG Music utilise Google Analytics afin de comprendre l’utilisation du site, notamment la fréquentation et les interactions avec les pages. Google Analytics n’est chargé qu’après votre acceptation des cookies Analytics."
                     : "With your consent, LMG Music uses Google Analytics to understand how the website is used, including traffic and interactions with its pages. Google Analytics is only loaded after you accept Analytics cookies."}
+                </p>
+
+                <p className="mt-4 text-sm leading-7 text-zinc-400">
+                  {fr
+                    ? "Votre acceptation ou votre refus est conservé pendant six mois. À l’issue de cette période, le site vous demandera à nouveau d’exprimer votre choix."
+                    : "Your acceptance or refusal is stored for six months. After this period, the website will ask you to make a new choice."}
                 </p>
 
                 <div className="mt-6 border-y border-zinc-900 py-5">
