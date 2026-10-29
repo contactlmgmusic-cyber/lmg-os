@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { useSiteLanguage } from "@/components/site/LanguageProvider";
+import NewsletterSignup from "@/components/site/NewsletterSignup";
 
 export default function Footer() {
   const { locale } = useSiteLanguage();
@@ -10,6 +11,7 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-zinc-900 bg-black text-white">
+      <NewsletterSignup />
       {/* SOCIALS */}
       <div className="border-b border-zinc-900 px-6 py-11">
         <div className="mx-auto flex items-center justify-center gap-11">
