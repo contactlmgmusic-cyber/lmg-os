@@ -5,13 +5,17 @@ import PublicAnalytics from "@/components/PublicAnalytics";
 import { useEffect, useState } from "react";
 
 import { useSiteLanguage } from "@/components/site/LanguageProvider";
+import { PUBLIC_GA_ID as GA_ID } from "@/lib/public-analytics";
 
 const STORAGE_KEY = "lmg-music-cookie-consent";
-const GA_ID = "G-WX2YGFMR7B";
+const CONSENT_VERSION = 2;
+const CONSENT_MAX_AGE = 180 * 24 * 60 * 60 * 1000;
 
 type Consent = {
   necessary: true;
   analytics: boolean;
+  savedAt: number;
+  version: number;
 };
 
 export default function CookieConsent() {
@@ -27,9 +31,18 @@ export default function CookieConsent() {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       const parsed = saved ? JSON.parse(saved) : null;
-      if (parsed?.necessary === true && typeof parsed.analytics === "boolean") {
+      const current =
+        parsed?.necessary === true &&
+        typeof parsed.analytics === "boolean" &&
+        parsed.version === CONSENT_VERSION &&
+        typeof parsed.savedAt === "number" &&
+        Date.now() - parsed.savedAt < CONSENT_MAX_AGE;
+      if (current) {
         setConsent(parsed); setAnalytics(parsed.analytics);
-      } else setOpen(true);
+      } else {
+        window.localStorage.removeItem(STORAGE_KEY);
+        setOpen(true);
+      }
     } catch { setOpen(true); }
     const handleOpen = () => { setCustomize(true); setOpen(true); };
     window.addEventListener("lmg-open-cookie-settings", handleOpen);
@@ -61,6 +74,8 @@ export default function CookieConsent() {
     save({
       necessary: true,
       analytics: true,
+      savedAt: Date.now(),
+      version: CONSENT_VERSION,
     });
   }
 
@@ -68,6 +83,8 @@ export default function CookieConsent() {
     save({
       necessary: true,
       analytics: false,
+      savedAt: Date.now(),
+      version: CONSENT_VERSION,
     });
   }
 
@@ -75,6 +92,8 @@ export default function CookieConsent() {
     save({
       necessary: true,
       analytics,
+      savedAt: Date.now(),
+      version: CONSENT_VERSION,
     });
   }
 
@@ -117,7 +136,7 @@ export default function CookieConsent() {
                   <button
                     type="button"
                     onClick={rejectOptional}
-                    className="rounded-full border border-zinc-700 px-5 py-3 text-sm font-semibold transition hover:border-white"
+                    className="rounded-full bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-zinc-200"
                   >
                     {fr ? "Tout refuser" : "Reject all"}
                   </button>
@@ -233,7 +252,7 @@ export default function CookieConsent() {
                   <button
                     type="button"
                     onClick={rejectOptional}
-                    className="rounded-full border border-zinc-700 px-5 py-3 text-sm font-semibold transition hover:border-white"
+                    className="rounded-full bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-zinc-200"
                   >
                     {fr ? "Tout refuser" : "Reject all"}
                   </button>
