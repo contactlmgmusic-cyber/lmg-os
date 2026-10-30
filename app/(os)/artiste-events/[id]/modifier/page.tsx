@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { ROLES } from "@/lib/roles";
+import { ARTIST_EVENT_TYPE_GROUPS, ARTIST_EVENT_TYPES } from "@/lib/artist-event-options";
 import DeleteArtistEventButton from "@/components/DeleteArtistEventButton";
 
 export default function ModifierEvenementArtistePage() {
@@ -189,7 +190,7 @@ if (profile?.role === ROLES.MANAGER) {
         <h1 className="text-5xl font-bold">Modifier événement artiste</h1>
 
         <p className="mt-3 text-zinc-400">
-          Modifie une répétition, session studio, shooting, tournage ou rendez-vous.
+          Modifie une date live, un booking, une session de production ou un rendez-vous.
         </p>
       </div>
 
@@ -223,13 +224,16 @@ if (profile?.role === ROLES.MANAGER) {
           onChange={(e) => setType(e.target.value)}
           className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4"
         >
-          <option>Rendez-vous manager</option>
-          <option>Répétition</option>
-          <option>Session studio</option>
-          <option>Shooting photo</option>
-          <option>Tournage clip</option>
-          <option>Interview</option>
-          <option>Événement promo</option>
+          {type && !ARTIST_EVENT_TYPES.includes(type as (typeof ARTIST_EVENT_TYPES)[number]) && (
+            <option value={type}>{type} (ancien type)</option>
+          )}
+          {ARTIST_EVENT_TYPE_GROUPS.map((group) => (
+            <optgroup key={group.label} label={group.label}>
+              {group.options.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </optgroup>
+          ))}
         </select>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
