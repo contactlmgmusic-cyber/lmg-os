@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { ROLES } from "@/lib/roles";
+import { ARTIST_EVENT_TYPE_GROUPS } from "@/lib/artist-event-options";
 
 export default function NouvelEvenementArtistePage() {
   const router = useRouter();
@@ -151,7 +152,7 @@ router.refresh();
       <div className="mb-10">
         <h1 className="text-5xl font-bold">Nouvel événement artiste</h1>
         <p className="mt-3 text-zinc-400">
-          Ajoute une répétition, session studio, shooting, tournage ou rendez-vous.
+          Ajoute une date live, un booking, une session de production ou un rendez-vous.
         </p>
       </div>
 
@@ -184,13 +185,13 @@ router.refresh();
           onChange={(e) => setType(e.target.value)}
           className="w-full rounded-xl border border-zinc-800 bg-black px-4 py-4"
         >
-          <option>Rendez-vous manager</option>
-          <option>Répétition</option>
-          <option>Session studio</option>
-          <option>Shooting photo</option>
-          <option>Tournage clip</option>
-          <option>Interview</option>
-          <option>Événement promo</option>
+          {ARTIST_EVENT_TYPE_GROUPS.map((group) => (
+            <optgroup key={group.label} label={group.label}>
+              {group.options.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </optgroup>
+          ))}
         </select>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
