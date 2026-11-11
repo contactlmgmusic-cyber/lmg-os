@@ -133,6 +133,29 @@ export default function ChatPriveDetailPage() {
         .neq("sender_id", currentUserId)
         .eq("lu", false);
 
+      const notificationLinks = [
+        `/chat/prive/conversation/${conversationId}`,
+        `/mobile/messages/prives/conversation/${conversationId}`,
+      ];
+
+      await Promise.all([
+        supabaseBrowser
+          .from("notifications")
+          .update({ lu: true, is_read: true })
+          .eq("user_id", currentUserId)
+          .eq("type", "Chat")
+          .in("lien", notificationLinks),
+        supabaseBrowser
+          .from("notifications")
+          .update({ lu: true, is_read: true })
+          .eq("user_id", currentUserId)
+          .eq("type", "Chat")
+          .in("link", notificationLinks),
+      ]);
+
+      window.dispatchEvent(new Event("lmg:notifications-changed"));
+      window.dispatchEvent(new Event("lmg:private-messages-changed"));
+
       return true;
     },
     [conversationId, mobile]
@@ -236,28 +259,8 @@ export default function ChatPriveDetailPage() {
     }
 
     setMessage("");
-
-    const recipients = members.filter(
-      (member) => member.user_id !== userId
-    );
-
-    if (recipients.length > 0) {
-      await supabaseBrowser.from("notifications").insert(
-        recipients.map((member) => ({
-          user_id: member.user_id,
-          type: "Chat",
-          titre: "Nouveau message privé",
-          description: cleanMessage.slice(0, 100),
-          lien: mobile
-            ? `/mobile/messages/prives/conversation/${conversationId}`
-            : `/chat/prive/conversation/${conversationId}`,
-          niveau: "Info",
-          lu: false,
-          is_read: false,
-        }))
-      );
-    }
-
+    await loadConversation(userId);
+    window.dispatchEvent(new Event("lmg:private-messages-changed"));
     setSending(false);
   }
 
@@ -273,7 +276,10 @@ export default function ChatPriveDetailPage() {
 
     if (deleteError) {
       setError("Le message n’a pas pu être supprimé.");
+      return;
     }
+
+    await loadConversation(userId);
   }
 
   const otherMembers = members.filter(
