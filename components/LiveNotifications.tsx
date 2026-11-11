@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
 type NotificationToast = {
@@ -14,6 +15,7 @@ type NotificationToast = {
 };
 
 export default function LiveNotifications() {
+  const router = useRouter();
   const [notification, setNotification] =
     useState<NotificationToast | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -115,8 +117,14 @@ export default function LiveNotifications() {
         </div>
         <Link
           href={href}
-          onClick={() => setNotification(null)}
-          className="mt-4 block rounded-xl bg-cyan-300 px-4 py-2.5 text-center text-sm font-bold text-cyan-950 transition hover:bg-cyan-200"
+          onClick={async (event) => {
+            event.preventDefault();
+            await supabaseBrowser.from("notifications").update({ lu: true, is_read: true }).eq("id", notification.id);
+            window.dispatchEvent(new Event("lmg:notifications-changed"));
+            setNotification(null);
+            router.push(href);
+          }}
+          className="mt-4 block rounded-xl bg-yellow-400 px-4 py-2.5 text-center text-sm font-bold text-black transition hover:bg-yellow-300"
         >
           Ouvrir
         </Link>
