@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
 type Notification = {
@@ -22,6 +23,7 @@ function isRead(notification: Notification) {
 }
 
 export default function NotificationsBell() {
+  const router = useRouter();
   const [userId, setUserId] = useState("");
   const [notifications, setNotifications] =
     useState<Notification[]>([]);
@@ -91,6 +93,26 @@ export default function NotificationsBell() {
     };
   }, [loadNotifications, userId]);
 
+  useEffect(() => {
+    if (!userId) return;
+    const refresh = () => void loadNotifications(userId);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    window.addEventListener("lmg:notifications-changed", refresh);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("lmg:notifications-changed", refresh);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [loadNotifications, userId]);
+
+  useEffect(() => {
+    if (open && userId) void loadNotifications(userId);
+  }, [loadNotifications, open, userId]);
+
   async function markAsRead(id: string) {
     if (!userId) {
       return;
@@ -104,11 +126,17 @@ export default function NotificationsBell() {
       )
     );
 
-    await supabaseBrowser
+    const { error } = await supabaseBrowser
       .from("notifications")
       .update({ lu: true, is_read: true })
       .eq("id", id)
       .eq("user_id", userId);
+    if (error) {
+      await loadNotifications(userId);
+      return false;
+    }
+    window.dispatchEvent(new Event("lmg:notifications-changed"));
+    return true;
   }
 
   async function markAllAsRead() {
@@ -124,11 +152,13 @@ export default function NotificationsBell() {
       }))
     );
 
-    await supabaseBrowser
+    const { error } = await supabaseBrowser
       .from("notifications")
       .update({ lu: true, is_read: true })
       .eq("user_id", userId)
-      .or("lu.eq.false,is_read.eq.false");
+      .eq("is_read", false);
+    if (error) await loadNotifications(userId);
+    else window.dispatchEvent(new Event("lmg:notifications-changed"));
   }
 
   const unreadCount = notifications.filter(
@@ -201,11 +231,13 @@ export default function NotificationsBell() {
                 <Link
                   key={notification.id}
                   href={href}
-                  onClick={() => {
+                  onClick={async (event) => {
+                    event.preventDefault();
                     if (!notificationRead) {
-                      void markAsRead(notification.id);
+                      await markAsRead(notification.id);
                     }
                     setOpen(false);
+                    router.push(href);
                   }}
                   className={`block rounded-2xl border p-3 transition ${
                     notificationRead
