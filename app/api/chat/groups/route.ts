@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "L’artiste concerné est obligatoire." }, { status: 400 });
   }
 
-  const admin = serviceClient();
+  const admin = context.supabase;
   const ids = [...new Set(body.members.map((member) => member.userId))];
   const { data: profiles, error: profilesError } = await admin.from("profiles").select("id,role").in("id", ids);
   if (profilesError || (profiles || []).length !== ids.length) {
@@ -117,7 +117,8 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  if (!(await superAdminContext())) {
+  const context = await superAdminContext();
+  if (!context) {
     return NextResponse.json({ error: "Accès réservé aux super admins." }, { status: 403 });
   }
   const raw = await request.json().catch(() => null) as Record<string, unknown> | null;
@@ -127,7 +128,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Configuration du groupe incomplète." }, { status: 400 });
   }
 
-  const admin = serviceClient();
+  const admin = context.supabase;
   const ids = [...new Set(body.members.map((member) => member.userId))];
   const { data: profiles, error: profilesError } = await admin.from("profiles").select("id,role").in("id", ids);
   if (profilesError || (profiles || []).length !== ids.length) {
