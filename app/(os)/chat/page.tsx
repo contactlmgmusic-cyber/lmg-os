@@ -94,6 +94,14 @@ function ChatContent() {
     const live=supabaseBrowser.channel(`chat-${active}`).on("postgres_changes",{event:"*",schema:"public",table:"chat_messages",filter:`channel=eq.${active}`},()=>void loadMessages(active)).subscribe();
     return ()=>{ void supabaseBrowser.removeChannel(live); };
   },[active,loadMessages]);
+  useEffect(()=>{
+    if (!active || !profile?.id) return;
+    async function markChannelNotificationsRead() {
+      const { error: readError } = await supabaseBrowser.from("notifications").update({lu:true,is_read:true}).eq("user_id",profile!.id).eq("type","Chat").eq("lien",`/chat?channel=${active}`).eq("is_read",false);
+      if (!readError) window.dispatchEvent(new Event("lmg:notifications-changed"));
+    }
+    void markChannelNotificationsRead();
+  },[active,profile]);
   useEffect(()=>{ bottomRef.current?.scrollIntoView({behavior:"smooth",block:"end"}); },[messages.length]);
 
   const channel=channels.find(item=>item.slug===active); const membership=channel?.chat_channel_members.find(item=>item.user_id===profile?.id);
