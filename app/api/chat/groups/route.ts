@@ -52,9 +52,10 @@ export async function GET() {
   if (!context) {
     return NextResponse.json({ error: "Accès réservé aux super admins." }, { status: 403 });
   }
+  const admin = serviceClient();
   const [{ data: profiles, error: profilesError }, { data: artists, error: artistsError }] = await Promise.all([
-    context.supabase.from("profiles").select("id,nom,full_name,email,role,artiste_id").order("nom"),
-    context.supabase.from("artistes").select("id,nom,manager_id").order("nom"),
+    admin.from("profiles").select("id,nom,full_name,email,role,artiste_id").order("nom"),
+    admin.from("artistes").select("id,nom,manager_id").order("nom"),
   ]);
   if (profilesError || artistsError) {
     return NextResponse.json(
@@ -62,7 +63,10 @@ export async function GET() {
       { status: 500 }
     );
   }
-  return NextResponse.json({ profiles: profiles || [], artists: artists || [] });
+  return NextResponse.json(
+    { profiles: profiles || [], artists: artists || [], profileCount: profiles?.length || 0 },
+    { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } }
+  );
 }
 
 export async function POST(request: Request) {
