@@ -25,7 +25,7 @@ async function superAdminContext() {
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
-  return profile?.role === ROLES.SUPER_ADMIN ? { user } : null;
+  return profile?.role === ROLES.SUPER_ADMIN ? { user, supabase } : null;
 }
 
 function cleanBody(body: unknown) {
@@ -48,13 +48,13 @@ function cleanBody(body: unknown) {
 }
 
 export async function GET() {
-  if (!(await superAdminContext())) {
+  const context = await superAdminContext();
+  if (!context) {
     return NextResponse.json({ error: "Accès réservé aux super admins." }, { status: 403 });
   }
-  const admin = serviceClient();
   const [{ data: profiles, error: profilesError }, { data: artists, error: artistsError }] = await Promise.all([
-    admin.from("profiles").select("id,nom,full_name,email,role,artiste_id").order("nom"),
-    admin.from("artistes").select("id,nom,manager_id").order("nom"),
+    context.supabase.from("profiles").select("id,nom,full_name,email,role,artiste_id").order("nom"),
+    context.supabase.from("artistes").select("id,nom,manager_id").order("nom"),
   ]);
   if (profilesError || artistsError) {
     return NextResponse.json(
