@@ -23,6 +23,8 @@ function mobileNotificationLink(value: string | null) {
   const booking = value.match(/^\/booking\/([^/?#]+)/); if (booking) return `/mobile/agenda/bookings/${booking[1]}`;
   const internalEvent = value.match(/^\/evenements\/([^/?#]+)/); if (internalEvent) return `/mobile/agenda/interne/${internalEvent[1]}`;
   if (value.startsWith("/validations-artiste")) return "/mobile/validations";
+  const privateConversation = value.match(/^\/chat\/prive\/conversation\/([^/?#]+)/); if (privateConversation) return `/mobile/messages/prives/conversation/${privateConversation[1]}`;
+  if (value.startsWith("/chat/prive")) return "/mobile/messages/prives";
   if (value.startsWith("/chat")) return "/mobile/messages";
   return null;
 }
