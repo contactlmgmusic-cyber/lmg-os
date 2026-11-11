@@ -9,7 +9,7 @@ type Profile = { id:string; nom:string|null; full_name:string|null; email?:strin
 type Artist = { id:string; nom:string; manager_id:string|null };
 type Member = { user_id:string; can_write:boolean; profiles:Profile|null };
 type Channel = {
-  id:string; name:string; slug:string; type:string|null; description:string|null;
+  id:string; name:string; slug:string; type:string|null; group_kind:"staff"|"artist"|"direction"|"custom"; description:string|null;
   write_mode:"all_members"|"selected_members"|"super_admin_only";
   allowed_roles:string[]; artiste_id:string|null; projet_id:string|null;
   is_archived:boolean; chat_channel_members:Member[];
@@ -31,11 +31,6 @@ function dateLabel(value:string) {
   const date = new Date(value); const today = new Date();
   return date.toLocaleString("fr-FR", { ...(date.toDateString() === today.toDateString() ? {} : {day:"2-digit",month:"short"}), hour:"2-digit", minute:"2-digit" });
 }
-function slugify(name:string) {
-  const root = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,42);
-  return `${root || "groupe"}-${crypto.randomUUID().slice(0,6)}`;
-}
-
 function ChatContent() {
   const pathname = usePathname(); const mobile = pathname.startsWith("/mobile/"); const params = useSearchParams();
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -53,13 +48,22 @@ function ChatContent() {
     const current = me as Profile;
     if (current.role === "prestataire") { window.location.href = mobile ? "/mobile/messages/prives" : "/chat/prive"; return; }
     setProfile(current);
-    const channelQuery = supabaseBrowser.from("chat_channels").select("id,name,slug,type,description,write_mode,allowed_roles,artiste_id,projet_id,is_archived,chat_channel_members(user_id,can_write,profiles(id,nom,full_name,email,role,artiste_id))").eq("is_archived",false).order("created_at");
-    const profileQuery = current.role === "super_admin" ? supabaseBrowser.from("profiles").select("id,nom,full_name,email,role,artiste_id").order("nom") : Promise.resolve({data:[],error:null});
-    const artistQuery = current.role === "super_admin" ? supabaseBrowser.from("artistes").select("id,nom,manager_id").order("nom") : Promise.resolve({data:[],error:null});
-    const [channelResult,profileResult,artistResult] = await Promise.all([channelQuery,profileQuery,artistQuery]);
+    const channelQuery = supabaseBrowser.from("chat_channels").select("id,name,slug,type,group_kind,description,write_mode,allowed_roles,artiste_id,projet_id,is_archived,chat_channel_members(user_id,can_write,profiles(id,nom,full_name,email,role,artiste_id))").eq("is_archived",false).order("created_at");
+    const directoryQuery = current.role === "super_admin"
+      ? fetch("/api/chat/groups", { cache: "no-store" }).then(async response => {
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Annuaire indisponible.");
+          return payload as { profiles: Profile[]; artists: Artist[] };
+        })
+      : Promise.resolve({ profiles: [] as Profile[], artists: [] as Artist[] });
+    const [channelResult,directoryResult] = await Promise.all([channelQuery,directoryQuery]).catch(error => {
+      setError(error instanceof Error ? error.message : "Impossible de charger les membres.");
+      return [null, null] as const;
+    });
+    if (!channelResult || !directoryResult) { setLoading(false); return; }
     if (channelResult.error) { setError("Impossible de charger les groupes de discussion."); setLoading(false); return; }
     const list = (channelResult.data || []) as unknown as Channel[];
-    setChannels(list); setDirectory((profileResult.data || []) as Profile[]); setArtists((artistResult.data || []) as Artist[]);
+    setChannels(list); setDirectory(directoryResult.profiles); setArtists(directoryResult.artists);
     const requested=params.get("channel"); setActive(list.some(item=>item.slug===requested) ? requested || "" : list[0]?.slug || ""); setLoading(false);
   },[mobile,params]);
 
@@ -91,7 +95,7 @@ function ChatContent() {
     return profile?[profile.id]:[];
   }
   function createGroup() { const ids=automaticMembers("staff"); setDraft({...EMPTY,memberIds:ids,writerIds:ids}); setModal(true); }
-  function editGroup(item:Channel) { const ids=item.chat_channel_members.map(member=>member.user_id); setDraft({id:item.id,name:item.name,description:item.description||"",type:(GROUP[item.type||""]?item.type:"custom") as Draft["type"],artisteId:item.artiste_id||"",writeMode:item.write_mode,memberIds:ids,writerIds:item.chat_channel_members.filter(member=>member.can_write).map(member=>member.user_id)}); setModal(true); }
+  function editGroup(item:Channel) { const ids=item.chat_channel_members.map(member=>member.user_id); setDraft({id:item.id,name:item.name,description:item.description||"",type:item.group_kind||"custom",artisteId:item.artiste_id||"",writeMode:item.write_mode,memberIds:ids,writerIds:item.chat_channel_members.filter(member=>member.can_write).map(member=>member.user_id)}); setModal(true); }
   function changeType(type:Draft["type"]) { const artisteId=type==="artist"?draft.artisteId:""; const ids=automaticMembers(type,artisteId); setDraft(current=>({...current,type,artisteId,memberIds:ids,writerIds:ids})); }
   function changeArtist(artisteId:string) { const ids=automaticMembers("artist",artisteId); const nom=artists.find(item=>item.id===artisteId)?.nom; setDraft(current=>({...current,artisteId,name:current.name||(nom?`Équipe ${nom}`:""),memberIds:ids,writerIds:ids})); }
   function toggleMember(id:string) { setDraft(current=>{ const has=current.memberIds.includes(id); return {...current,memberIds:has?current.memberIds.filter(item=>item!==id):[...current.memberIds,id],writerIds:has?current.writerIds.filter(item=>item!==id):[...current.writerIds,id]}; }); }
@@ -100,16 +104,11 @@ function ChatContent() {
   async function saveGroup(event:FormEvent) {
     event.preventDefault(); if (!profile||!superAdmin||saving) return; const name=draft.name.trim();
     if (!name) { setError("Donnez un nom au groupe."); return; } if (draft.type==="artist"&&!draft.artisteId) { setError("Sélectionnez l’artiste concerné."); return; } if (!draft.memberIds.length) { setError("Ajoutez au moins un membre au groupe."); return; }
-    setSaving(true); setError(""); const roles=[...new Set(directory.filter(item=>draft.memberIds.includes(item.id)).map(item=>item.role))]; let id=draft.id;
-    const values={name,description:draft.description.trim()||null,type:draft.type,artiste_id:draft.type==="artist"?draft.artisteId:null,projet_id:null,write_mode:draft.writeMode,allowed_roles:roles};
-    if (id) {
-      const {error:updateError}=await supabaseBrowser.from("chat_channels").update(values).eq("id",id); if (updateError) {setError("Le groupe n’a pas pu être modifié.");setSaving(false);return;}
-      const {error:clearError}=await supabaseBrowser.from("chat_channel_members").delete().eq("channel_id",id); if(clearError){setError("Les membres n’ont pas pu être actualisés.");setSaving(false);return;}
-    } else {
-      const {data,error:createError}=await supabaseBrowser.from("chat_channels").insert({...values,slug:slugify(name),created_by:profile.id}).select("id").single(); if(createError||!data){setError("Le groupe n’a pas pu être créé.");setSaving(false);return;} id=data.id;
-    }
-    const {error:memberError}=await supabaseBrowser.from("chat_channel_members").upsert(draft.memberIds.map(user_id=>({channel_id:id,user_id,can_write:draft.writeMode==="all_members"||(draft.writeMode==="selected_members"&&draft.writerIds.includes(user_id))})),{onConflict:"channel_id,user_id"});
-    if(memberError){setError("Le groupe existe, mais ses membres n’ont pas tous pu être ajoutés.");setSaving(false);return;}
+    setSaving(true); setError("");
+    const payload={channelId:draft.id,name,description:draft.description.trim(),groupKind:draft.type,artisteId:draft.type==="artist"?draft.artisteId:null,writeMode:draft.writeMode,members:draft.memberIds.map(userId=>({userId,canWrite:draft.writeMode==="all_members"||(draft.writeMode==="selected_members"&&draft.writerIds.includes(userId))}))};
+    const response=await fetch("/api/chat/groups",{method:draft.id?"PATCH":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const result=await response.json().catch(()=>({error:"Réponse serveur invalide."}));
+    if(!response.ok){setError(result.error||"Le groupe n’a pas pu être enregistré.");setSaving(false);return;}
     setModal(false);setDraft(EMPTY);setSaving(false);await loadWorkspace();
   }
   async function sendMessage(event:FormEvent) { event.preventDefault(); const clean=text.trim(); if(!clean||!profile||!channel||!canWrite||sending)return; setSending(true);setError(""); const {error:sendError}=await supabaseBrowser.from("chat_messages").insert({channel:channel.slug,user_id:profile.id,message:clean}); if(sendError)setError("Le message n’a pas pu être envoyé.");else setText("");setSending(false); }
@@ -134,7 +133,7 @@ function ChatContent() {
       <div className={mobile?"grid min-w-0 gap-4":"grid min-h-[680px] gap-4 xl:h-[calc(100vh-220px)] xl:min-h-[620px] xl:grid-cols-[310px_1fr]"}>
         <aside className="rounded-[26px] border border-zinc-800 bg-zinc-950 p-4 sm:p-5">
           <div className="flex items-center justify-between"><h2 className="font-bold">Mes groupes</h2><span className="rounded-full bg-zinc-900 px-2.5 py-1 text-xs text-zinc-500">{channels.length}</span></div>
-          {!channels.length?<p className="mt-5 rounded-2xl border border-dashed border-zinc-800 p-4 text-sm text-zinc-500">Aucun groupe accessible pour le moment.</p>:<div className={mobile?"mt-4 flex gap-2 overflow-x-auto [scrollbar-width:none]":"mt-4 flex gap-2 overflow-x-auto xl:block xl:space-y-2 xl:overflow-visible"}>{channels.map(item=><button key={item.id} onClick={()=>selectChannel(item.slug)} className={`${mobile?"min-w-[175px]":"min-w-fit xl:w-full"} rounded-2xl px-4 py-3 text-left ${active===item.slug?"bg-yellow-400 font-bold text-black":"border border-zinc-800 bg-black text-zinc-300 hover:border-zinc-600"}`}><span className="block truncate">{item.name}</span><span className={`mt-1 flex justify-between gap-2 text-xs ${active===item.slug?"text-black/60":"text-zinc-600"}`}><span>{GROUP[item.type||""]||"Groupe"}</span><span>{item.chat_channel_members.length} membre{item.chat_channel_members.length!==1?"s":""}</span></span></button>)}</div>}
+          {!channels.length?<p className="mt-5 rounded-2xl border border-dashed border-zinc-800 p-4 text-sm text-zinc-500">Aucun groupe accessible pour le moment.</p>:<div className={mobile?"mt-4 flex gap-2 overflow-x-auto [scrollbar-width:none]":"mt-4 flex gap-2 overflow-x-auto xl:block xl:space-y-2 xl:overflow-visible"}>{channels.map(item=><button key={item.id} onClick={()=>selectChannel(item.slug)} className={`${mobile?"min-w-[175px]":"min-w-fit xl:w-full"} rounded-2xl px-4 py-3 text-left ${active===item.slug?"bg-yellow-400 font-bold text-black":"border border-zinc-800 bg-black text-zinc-300 hover:border-zinc-600"}`}><span className="block truncate">{item.name}</span><span className={`mt-1 flex justify-between gap-2 text-xs ${active===item.slug?"text-black/60":"text-zinc-600"}`}><span>{GROUP[item.group_kind]||"Groupe"}</span><span>{item.chat_channel_members.length} membre{item.chat_channel_members.length!==1?"s":""}</span></span></button>)}</div>}
         </aside>
         <section className={`${mobile?"h-[min(650px,calc(100dvh-250px))] min-h-[500px]":"min-h-[560px]"} flex min-w-0 flex-col overflow-hidden rounded-[26px] border border-zinc-800 bg-zinc-950`}>
           <div className="flex flex-col gap-3 border-b border-zinc-800 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
