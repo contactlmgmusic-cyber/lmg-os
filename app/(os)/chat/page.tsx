@@ -107,7 +107,23 @@ function ChatContent() {
     if (type==="artist"&&artistId) { const artist=artists.find(item=>item.id===artistId); return directory.filter(item=>DIRECTION.includes(item.role)||item.artiste_id===artistId||item.id===artist?.manager_id).map(item=>item.id); }
     return profile?[profile.id]:[];
   }
-  function createGroup() { const ids=automaticMembers("staff"); setDraft({...EMPTY,memberIds:ids,writerIds:ids}); setModal(true); }
+  async function createGroup() {
+    setError("");
+    const response = await fetch(`/api/chat/groups?refresh=${Date.now()}`, { cache: "no-store" });
+    const result = await response.json().catch(() => ({ error: "Réponse serveur invalide." }));
+    if (!response.ok) { setError(result.error || "Impossible de charger l’annuaire LMG."); return; }
+    const freshProfiles = (result.profiles || []) as Profile[];
+    const freshArtists = (result.artists || []) as Artist[];
+    if (freshProfiles.length === 0) {
+      setError("L’annuaire Supabase ne contient aucun profil. Vérifiez la table profiles avant de créer un groupe.");
+      return;
+    }
+    setDirectory(freshProfiles);
+    setArtists(freshArtists);
+    const ids = freshProfiles.filter(item => STAFF.includes(item.role)).map(item => item.id);
+    setDraft({...EMPTY,memberIds:ids,writerIds:ids});
+    setModal(true);
+  }
   function editGroup(item:Channel) { const ids=item.chat_channel_members.map(member=>member.user_id); setDraft({id:item.id,name:item.name,description:item.description||"",type:item.group_kind||"custom",artisteId:item.artiste_id||"",writeMode:item.write_mode,memberIds:ids,writerIds:item.chat_channel_members.filter(member=>member.can_write).map(member=>member.user_id)}); setModal(true); }
   function changeType(type:Draft["type"]) { const artisteId=type==="artist"?draft.artisteId:""; const ids=automaticMembers(type,artisteId); setDraft(current=>({...current,type,artisteId,memberIds:ids,writerIds:ids})); }
   function changeArtist(artisteId:string) { const ids=automaticMembers("artist",artisteId); const nom=artists.find(item=>item.id===artisteId)?.nom; setDraft(current=>({...current,artisteId,name:current.name||(nom?`Équipe ${nom}`:""),memberIds:ids,writerIds:ids})); }
