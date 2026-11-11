@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -58,6 +58,7 @@ function formatDate(value?: string) {
 
 export default function ChatPrivePage() {
   const pathname = usePathname();
+  const router = useRouter();
   const mobile = pathname.startsWith("/mobile/");
   const [userId, setUserId] = useState("");
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -261,7 +262,11 @@ export default function ChatPrivePage() {
     );
 
     if (existing) {
-      window.location.href = mobile ? `/mobile/messages/prives/conversation/${existing.conversation_id}` : `/chat/prive/conversation/${existing.conversation_id}`;
+      router.push(
+        mobile
+          ? `/mobile/messages/prives/conversation/${existing.conversation_id}`
+          : `/chat/prive/conversation/${existing.conversation_id}`
+      );
       return;
     }
 
@@ -301,7 +306,11 @@ export default function ChatPrivePage() {
       return;
     }
 
-    window.location.href = mobile ? `/mobile/messages/prives/conversation/${conversation.id}` : `/chat/prive/conversation/${conversation.id}`;
+    router.push(
+      mobile
+        ? `/mobile/messages/prives/conversation/${conversation.id}`
+        : `/chat/prive/conversation/${conversation.id}`
+    );
   }
 
   if (loading) {
