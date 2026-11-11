@@ -63,7 +63,20 @@ function ChatContent() {
     if (!channelResult || !directoryResult) { setLoading(false); return; }
     if (channelResult.error) { setError("Impossible de charger les groupes de discussion."); setLoading(false); return; }
     const list = (channelResult.data || []) as unknown as Channel[];
-    setChannels(list); setDirectory(directoryResult.profiles); setArtists(directoryResult.artists);
+    let loadedProfiles = directoryResult.profiles;
+    let loadedArtists = directoryResult.artists;
+    if (current.role === "super_admin" && loadedProfiles.length === 0) {
+      const [{ data: fallbackProfiles, error: fallbackProfileError }, { data: fallbackArtists, error: fallbackArtistError }] = await Promise.all([
+        supabaseBrowser.from("profiles").select("id,nom,full_name,email,role,artiste_id").order("nom"),
+        supabaseBrowser.from("artistes").select("id,nom,manager_id").order("nom"),
+      ]);
+      if (fallbackProfileError || fallbackArtistError) {
+        setError(fallbackProfileError?.message || fallbackArtistError?.message || "Impossible de charger l’annuaire LMG.");
+      }
+      loadedProfiles = (fallbackProfiles || []) as Profile[];
+      loadedArtists = (fallbackArtists || []) as Artist[];
+    }
+    setChannels(list); setDirectory(loadedProfiles); setArtists(loadedArtists);
     const requested=params.get("channel"); setActive(list.some(item=>item.slug===requested) ? requested || "" : list[0]?.slug || ""); setLoading(false);
   },[mobile,params]);
 
