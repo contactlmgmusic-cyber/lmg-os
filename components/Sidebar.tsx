@@ -312,6 +312,7 @@ export default function Sidebar() {
   useEffect(() => {
     let active = true;
     let channel: ReturnType<typeof supabaseBrowser.channel> | null = null;
+    let refreshCounts: (() => void) | null = null;
 
     async function fetchUserData() {
       const { data: { user } } = await supabaseBrowser.auth.getUser();
@@ -337,9 +338,9 @@ export default function Sidebar() {
         const [{ count: notifications }, { count: chat }, { count: candidatures }] =
           await Promise.all([
             supabaseBrowser.from("notifications").select("*", { count: "exact", head: true })
-              .eq("user_id", userId).or("lu.eq.false,is_read.eq.false"),
+              .eq("user_id", userId).eq("is_read", false),
             supabaseBrowser.from("notifications").select("*", { count: "exact", head: true })
-              .eq("user_id", userId).eq("type", "Chat").or("lu.eq.false,is_read.eq.false"),
+              .eq("user_id", userId).eq("type", "Chat").eq("is_read", false),
             supabaseBrowser.from("candidatures").select("*", { count: "exact", head: true })
               .eq("statut", "Nouvelle"),
           ]);
@@ -351,8 +352,10 @@ export default function Sidebar() {
       }
 
       await loadCounts(user.id);
-      channel = supabaseBrowser.channel("sidebar-notifications-count")
-        .on("postgres_changes", { event: "*", schema: "public", table: "notifications" },
+      refreshCounts = () => void loadCounts(user.id);
+      window.addEventListener("lmg:notifications-changed", refreshCounts);
+      channel = supabaseBrowser.channel(`sidebar-notifications-count-${user.id}`)
+        .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
           () => loadCounts(user.id))
         .subscribe();
     }
@@ -360,6 +363,7 @@ export default function Sidebar() {
     fetchUserData();
     return () => {
       active = false;
+      if (refreshCounts) window.removeEventListener("lmg:notifications-changed", refreshCounts);
       if (channel) supabaseBrowser.removeChannel(channel);
     };
   }, []);
