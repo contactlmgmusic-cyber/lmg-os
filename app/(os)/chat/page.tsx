@@ -34,6 +34,7 @@ function dateLabel(value:string) {
 function ChatContent() {
   const pathname = usePathname(); const mobile = pathname.startsWith("/mobile/"); const params = useSearchParams();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const initialChannelRef = useRef(params.get("channel"));
   const [profile,setProfile] = useState<Profile|null>(null); const [directory,setDirectory] = useState<Profile[]>([]); const [artists,setArtists] = useState<Artist[]>([]);
   const [channels,setChannels] = useState<Channel[]>([]); const [active,setActive] = useState(""); const [messages,setMessages] = useState<Message[]>([]);
   const [text,setText] = useState(""); const [search,setSearch] = useState(""); const [loading,setLoading] = useState(true); const [loadingMessages,setLoadingMessages] = useState(false);
@@ -77,8 +78,8 @@ function ChatContent() {
       loadedArtists = (fallbackArtists || []) as Artist[];
     }
     setChannels(list); setDirectory(loadedProfiles); setArtists(loadedArtists);
-    const requested=params.get("channel"); setActive(list.some(item=>item.slug===requested) ? requested || "" : list[0]?.slug || ""); setLoading(false);
-  },[mobile,params]);
+    const requested=initialChannelRef.current; setActive(list.some(item=>item.slug===requested) ? requested || "" : list[0]?.slug || ""); setLoading(false);
+  },[mobile]);
 
   const loadMessages = useCallback(async (channel:string) => {
     if (!channel) { setMessages([]); return; } setLoadingMessages(true);
@@ -140,7 +141,7 @@ function ChatContent() {
     if(!response.ok){setError(result.error||"Le groupe n’a pas pu être enregistré.");setSaving(false);return;}
     setModal(false);setDraft(EMPTY);setSaving(false);await loadWorkspace();
   }
-  async function sendMessage(event:FormEvent) { event.preventDefault(); const clean=text.trim(); if(!clean||!profile||!channel||!canWrite||sending)return; setSending(true);setError(""); const {error:sendError}=await supabaseBrowser.from("chat_messages").insert({channel:channel.slug,user_id:profile.id,message:clean}); if(sendError)setError("Le message n’a pas pu être envoyé.");else setText("");setSending(false); }
+  async function sendMessage(event:FormEvent) { event.preventDefault(); const clean=text.trim(); if(!clean||!profile||!channel||!canWrite||sending)return; setSending(true);setError(""); const {error:sendError}=await supabaseBrowser.from("chat_messages").insert({channel:channel.slug,user_id:profile.id,message:clean}); if(sendError)setError("Le message n’a pas pu être envoyé.");else {setText("");await loadMessages(channel.slug);}setSending(false); }
   async function deleteMessage(id:string) { if(!window.confirm("Supprimer définitivement ce message ?"))return; const {error:deleteError}=await supabaseBrowser.from("chat_messages").delete().eq("id",id); if(deleteError)setError("Le message n’a pas pu être supprimé."); }
 
   if(loading)return <main className="min-h-screen bg-black p-6 text-white"><div className="mx-auto max-w-[1500px] rounded-[26px] border border-zinc-800 bg-zinc-950 p-8 text-zinc-500">Chargement des discussions...</div></main>;
